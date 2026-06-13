@@ -203,14 +203,14 @@ h1, h2, h3, h4, p { margin: 0; }
 .nav__toggle { display: none; background: none; border: 0; padding: 6px; color: var(--color-carbon); }
 
 /* ---------- Hero ---------- */
-.hero { padding-top: 86px; padding-bottom: var(--s-80); text-align: center; }
+.hero { padding-top: 56px; padding-bottom: var(--s-80); text-align: center; }
 .hero__kicker {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 30px;
   padding: 5px 14px;
-  margin-bottom: var(--s-20);
+  margin-bottom: var(--s-16);
   border: 1px solid var(--color-hairline);
   border-radius: var(--r-pill);
   color: var(--color-ash);
@@ -218,15 +218,15 @@ h1, h2, h3, h4, p { margin: 0; }
   font-size: var(--text-caption);
   letter-spacing: -0.01em;
 }
-.hero .display { margin-bottom: var(--s-20); }
-.hero .lead { margin: 0 auto var(--s-32); max-width: 760px; }
-.hero .btn-row { margin-bottom: var(--s-20); }
+.hero .display { margin-bottom: var(--s-12); }
+.hero .lead { margin: 0 auto var(--s-20); max-width: 600px; }
+.hero .btn-row { margin-bottom: var(--s-16); }
 .hero__assurance {
   display: flex;
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: var(--s-48);
+  margin-bottom: var(--s-24);
 }
 .hero__assurance span {
   display: inline-flex;
@@ -249,7 +249,7 @@ h1, h2, h3, h4, p { margin: 0; }
   justify-content: center;
   margin: 0 auto;
   max-width: 1180px;
-  min-height: 450px;
+  min-height: 470px;
   isolation: isolate;
 }
 .hero-stage::before {
@@ -278,9 +278,9 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .hero-photo {
   width: min(100%, 1120px);
-  height: 440px;
+  height: 470px;
   object-fit: cover;
-  object-position: center center;
+  object-position: center 42%;
   border-radius: var(--r-img);
   border: 1px solid rgba(210,210,215,0.78);
   box-shadow: var(--shadow-product);
@@ -294,9 +294,10 @@ h1, h2, h3, h4, p { margin: 0; }
   z-index: 5;
 }
 @media (max-width: 720px) {
-  .passport-float { position: static; margin: var(--s-32) auto 0; right: auto; bottom: auto; }
+  .hero { padding-top: 40px; }
+  .passport-float { position: static; margin: var(--s-20) auto 0; right: auto; bottom: auto; }
   .hero-stage { flex-direction: column; min-height: auto; }
-  .hero-photo { width: 100%; height: 250px; object-position: left center; }
+  .hero-photo { width: 100%; height: 320px; object-position: center 42%; }
 }
 
 /* ---------- Passport Card component ---------- */

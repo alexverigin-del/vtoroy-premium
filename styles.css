@@ -1371,6 +1371,35 @@ h1, h2, h3, h4, p { margin: 0; }
 .level__features li { display: flex; gap: 10px; font-size: var(--text-body-sm); color: #e3e3e6; }
 .level__features .ck { color: var(--color-signal-blue); flex-shrink: 0; }
 @media (max-width: 880px) { .club-levels { grid-template-columns: 1fr; } .level__tag { min-height: auto; } }
+.level__who {
+  font-size: var(--text-body-sm);
+  color: #e3e3e6;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #3a3a3d;
+}
+.level__cta {
+  margin-top: 24px;
+  align-self: flex-start;
+  color: var(--color-signal-blue);
+  font-size: var(--text-body-sm);
+  font-weight: var(--w-semibold);
+}
+.level__cta--primary {
+  align-self: stretch;
+  text-align: center;
+  padding: 11px 18px;
+  border-radius: var(--r-pill);
+  background: var(--color-apple-blue);
+  color: var(--color-white);
+}
+/* Trade/Club calculator: optional unit label after the value */
+.trade-calc__result small {
+  width: 100%;
+  text-align: right;
+  color: var(--color-mist);
+  font-size: var(--text-caption);
+}
 
 /* ---------- Comparison ---------- */
 .diagnostics-photo {

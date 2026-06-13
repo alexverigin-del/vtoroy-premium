@@ -280,7 +280,7 @@ h1, h2, h3, h4, p { margin: 0; }
   width: min(100%, 1120px);
   height: 440px;
   object-fit: cover;
-  object-position: center 64%;
+  object-position: center center;
   border-radius: var(--r-img);
   border: 1px solid rgba(210,210,215,0.78);
   box-shadow: var(--shadow-product);
@@ -288,15 +288,15 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Floating passport card over device */
 .passport-float {
   position: absolute;
-  right: 2%;
-  bottom: 4%;
+  right: 5%;
+  bottom: 8%;
   width: 344px;
   z-index: 5;
 }
 @media (max-width: 720px) {
   .passport-float { position: static; margin: var(--s-32) auto 0; right: auto; bottom: auto; }
   .hero-stage { flex-direction: column; min-height: auto; }
-  .hero-photo { width: 100%; height: 250px; object-position: center 72%; }
+  .hero-photo { width: 100%; height: 250px; object-position: left center; }
 }
 
 /* ---------- Passport Card component ---------- */

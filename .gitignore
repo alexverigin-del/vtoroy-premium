@@ -1,1 +1,8 @@
 node_modules/
+
+assets/qa-*.png
+*.env
+.env*
+*.secret
+*.pem
+*.key

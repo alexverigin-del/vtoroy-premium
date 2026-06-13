@@ -1701,3 +1701,60 @@ h1, h2, h3, h4, p { margin: 0; }
   .page-hero { padding-top: 76px; }
   .page-cta-band { padding: 34px 24px; }
 }
+
+/* ---------- Passport page ---------- */
+.passport--hero {
+  box-shadow: var(--shadow-soft);
+  padding: 28px;
+}
+.passport-modules { margin-top: var(--s-48); }
+
+.grade-legend {
+  max-width: 760px;
+  margin: var(--s-48) auto 0;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--r-card);
+  background: var(--color-white);
+  overflow: hidden;
+}
+.grade-legend__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-20);
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+.grade-legend__row:last-child { border-bottom: 0; }
+.grade-legend__badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: var(--r-card);
+  background: var(--color-frost);
+  border: 1px solid var(--color-hairline);
+  font-size: var(--text-subheading);
+  font-weight: var(--w-semibold);
+  letter-spacing: -0.01em;
+}
+.grade-legend__text { display: flex; flex-direction: column; gap: 3px; }
+.grade-legend__text strong { font-size: var(--text-body); font-weight: var(--w-semibold); letter-spacing: -0.01em; }
+.grade-legend__text span { font-size: var(--text-body-sm); color: var(--color-ash); }
+
+.exit-econ { align-items: stretch; }
+.exit-econ__grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-20);
+  max-width: none;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .exit-econ__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .grade-legend__row { padding: 16px 18px; gap: var(--s-16); }
+  .grade-legend__badge { width: 42px; height: 42px; }
+  .passport--hero { padding: 22px; }
+}

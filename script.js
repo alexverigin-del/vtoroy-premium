@@ -45,15 +45,14 @@
   // (e.g. opening pages over file://). Either way we end up with a list.
   function needsDevices() {
     return !!(document.getElementById('catalogGrid') ||
-              document.getElementById('device-detail') ||
               document.getElementById('productPage'));
   }
 
   function loadDevices() {
     var embedded = (window.VP_DEVICES && window.VP_DEVICES.devices) || null;
-    // Pages without a catalog grid, in-page detail, or product host (Store,
-    // Trade, Club, Passport) never consume the device list — skip the fetch so
-    // we don't log a spurious 404 for a data file they don't need.
+    // Pages without a catalog grid or product host (Store, Trade, Club,
+    // Passport) never consume the device list — skip the fetch so we don't
+    // log a spurious 404 for a data file they don't need.
     if (!needsDevices()) {
       return Promise.resolve(embedded || []);
     }
@@ -117,26 +116,13 @@
 
     body.appendChild(el('div', 'device-card__price', device.priceText));
 
-    // An in-page detail section only exists on the home page. There, devices
-    // without their own product page open the detail panel via a button. On
-    // every other page (e.g. the standalone catalog) a button would do nothing,
-    // so always render a navigating link — to the device's own product page, or
-    // to the iPhone 13 Pro page as the shared example target.
-    var hasInlineDetail = !!document.getElementById('device-detail');
-    if (device.hasDetailPage) {
-      var link = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть паспорт');
-      link.href = resolve(device.detailHref || ('device/' + device.id + '/index.html'));
-      body.appendChild(link);
-    } else if (hasInlineDetail) {
-      var btn = el('button', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть пример');
-      btn.type = 'button';
-      btn.setAttribute('data-open-device', device.id);
-      body.appendChild(btn);
-    } else {
-      var exampleLink = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть пример');
-      exampleLink.href = resolve('device/iphone-13-pro/index.html');
-      body.appendChild(exampleLink);
-    }
+    // Every card navigates to a product page: the device's own page when it
+    // has one, otherwise the iPhone 13 Pro page as the shared example target.
+    var link = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть паспорт');
+    link.href = resolve(device.hasDetailPage
+      ? (device.detailHref || ('device/' + device.id + '/index.html'))
+      : 'device/iphone-13-pro/index.html');
+    body.appendChild(link);
 
     article.appendChild(media);
     article.appendChild(body);
@@ -163,42 +149,6 @@
     var topupResult = document.getElementById('topupResult');
     if (!oldDevice || !topupResult || !selectedDevice) return;
     topupResult.textContent = formatRub(selectedDevice.price - Number(oldDevice.value || 0));
-  }
-
-  function openDevice(device) {
-    if (!device) return;
-    selectedDevice = device;
-
-    var sub = [device.specs, device.color, device.serial].filter(Boolean).join(' · ');
-    var map = {
-      detailTitle: device.title,
-      detailSub: sub,
-      detailPrice: device.priceText,
-      detailGrade: 'Грейд ' + device.grade,
-      detailBattery: device.batteryText,
-      detailExit: device.exit,
-      passportDevice: device.title,
-      passportSub: sub + ' · проверка пройдена',
-      passportGrade: device.grade,
-      passportBattery: device.battery,
-      passportRepair: device.repair || (device.passport && device.passport.repair) || '—',
-      passportExit: device.exit
-    };
-    Object.keys(map).forEach(function (key) {
-      var node = document.getElementById(key);
-      if (node) node.textContent = map[key];
-    });
-
-    var detailVisual = document.getElementById('detailVisual');
-    if (detailVisual) {
-      detailVisual.innerHTML = '';
-      var product = el('div', device.visualClass);
-      detailVisual.appendChild(product);
-    }
-
-    updateTopup();
-    var section = document.getElementById('device-detail');
-    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // --- Product (detail) page rendering ----------------------------------
@@ -348,14 +298,6 @@
     });
   }
 
-  function wireOpenButtons(byId) {
-    document.querySelectorAll('[data-open-device]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        openDevice(byId[button.getAttribute('data-open-device')] || byId['iphone-13-pro']);
-      });
-    });
-  }
-
   loadDevices().then(function (list) {
     var byId = indexById(list);
 
@@ -363,16 +305,6 @@
     if (document.getElementById('catalogGrid')) {
       renderCatalog(list);
       wireFilters();
-      wireOpenButtons(byId);
-    }
-
-    // Index in-page detail default selection + trade calculator.
-    if (document.getElementById('device-detail')) {
-      var initial = byId['iphone-13-pro'] || list[0];
-      if (initial) {
-        selectedDevice = initial;
-        updateTopup();
-      }
     }
 
     // Product detail page.

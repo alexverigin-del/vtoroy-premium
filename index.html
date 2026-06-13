@@ -165,108 +165,6 @@
   </div>
 </section>
 
-<!-- ============== DEVICE DETAIL ============== -->
-<section class="section device-detail-section" id="device-detail" aria-live="polite">
-  <div class="wrap">
-    <div class="device-detail reveal">
-      <div class="detail-gallery">
-        <div class="detail-gallery__main" id="detailVisual" aria-hidden="true">
-          <div class="detail-product detail-product--phone"></div>
-        </div>
-        <div class="detail-gallery__thumbs" aria-label="Фотографии состояния">
-          <button type="button" class="thumb is-active">Общий вид</button>
-          <button type="button" class="thumb">Экран</button>
-          <button type="button" class="thumb">Корпус</button>
-          <button type="button" class="thumb">Дефекты</button>
-        </div>
-      </div>
-
-      <aside class="buy-panel">
-        <div class="eyebrow">Карточка устройства</div>
-        <h2 class="h2" id="detailTitle">iPhone 13 Pro</h2>
-        <p class="detail-sub" id="detailSub">256 GB · Graphite · IMEI ···4821</p>
-        <div class="detail-price" id="detailPrice">59 900 ₽</div>
-        <div class="detail-chips">
-          <span id="detailGrade">Грейд A−</span>
-          <span id="detailBattery">Батарея 89%</span>
-          <span>Гарантия 90 дней</span>
-        </div>
-        <div class="detail-exit">
-          <span>Цена выхода через 6 месяцев</span>
-          <strong id="detailExit">до 42 000 ₽</strong>
-        </div>
-        <div class="btn-row">
-          <a href="#final" class="btn btn--filled">Забронировать</a>
-          <a href="#trade-calculator" class="btn btn--outlined">Рассчитать обмен</a>
-        </div>
-      </aside>
-    </div>
-
-    <div class="detail-lower">
-      <div class="passport-panel reveal">
-        <div class="passport">
-          <div class="passport__head">
-            <div>
-              <div class="passport__device" id="passportDevice">iPhone 13 Pro</div>
-              <div class="passport__sub" id="passportSub">256 GB · Graphite · проверка пройдена</div>
-            </div>
-            <div class="grade"><b id="passportGrade">A−</b><span>Грейд</span></div>
-          </div>
-          <div class="passport__rows">
-            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Батарея</span><span class="val" id="passportBattery">89%</span></div>
-            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Ремонт</span><span class="val val--ok" id="passportRepair">не вскрывался</span></div>
-            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Функции</span><span class="val val--ok">проверены</span></div>
-            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Влага</span><span class="val val--ok">следов нет</span></div>
-          </div>
-          <div class="passport__exit">
-            <span class="x-lbl">Цена выхода через 6 мес</span>
-            <span class="x-val" id="passportExit">до 42 000 ₽</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="trade-widget reveal" id="trade-calculator">
-        <div class="eyebrow">Trade calculator</div>
-        <h3 class="h3">Есть старое устройство?</h3>
-        <p>Выберите модель — покажем примерную доплату до выбранного устройства.</p>
-        <label>
-          <span>Ваше устройство</span>
-          <select id="oldDevice">
-            <option value="26000">iPhone 12 · примерная оценка 26 000 ₽</option>
-            <option value="32000">iPhone 12 Pro · примерная оценка 32 000 ₽</option>
-            <option value="38000">iPhone 13 · примерная оценка 38 000 ₽</option>
-            <option value="52000">MacBook Air M1 · примерная оценка 52 000 ₽</option>
-          </select>
-        </label>
-        <div class="trade-widget__result">
-          <span>Доплата до выбранного устройства</span>
-          <strong id="topupResult">от 33 900 ₽</strong>
-        </div>
-        <a href="#final" class="btn btn--filled">Получить точную оценку</a>
-        <p class="trade-widget__note">Точная цена определяется после открытой диагностики в Store.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============== PREMIUM SHOWCASE ============== -->
-<section class="premium-showcase" aria-label="Премиальная техника без мутных историй">
-  <div class="wrap premium-showcase__inner">
-    <div class="premium-showcase__copy reveal">
-      <div class="eyebrow">Проверенный премиум</div>
-      <h2 class="h2">Не витрина б/у техники. Система спокойного владения.</h2>
-      <p class="lead">Покупка, обмен, оценка и клубный апгрейд собраны в один маршрут. Устройство не просто продаётся — оно получает историю, цену выхода и понятный следующий шаг.</p>
-    </div>
-    <div class="premium-showcase__visual reveal" aria-hidden="true">
-      <img class="showcase-photo" src="assets/generated-premium-hero.webp" alt="" />
-      <div class="showcase-card">
-        <span>Паспорт Премиума</span>
-        <strong>История · гарантия · цена выхода</strong>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ============== PASSPORT ============== -->
 <section class="section passport-section" id="passport">
   <div class="wrap">
@@ -362,6 +260,10 @@
       <div class="step reveal"><div class="step__num">02</div><div class="step__title">Проверяете</div><div class="step__desc">Открытая диагностика при вас. Сначала проверка — потом покупка.</div></div>
       <div class="step reveal"><div class="step__num">03</div><div class="step__title">Покупаете</div><div class="step__desc">Получаете паспорт, чек и письменную гарантию на 90 дней.</div></div>
       <div class="step reveal"><div class="step__num">04</div><div class="step__title">Выходите</div><div class="step__desc">Захотели сменить — знаете цену обмена заранее. Без потери и торга.</div></div>
+    </div>
+    <div class="btn-row center reveal" style="margin-top:40px;">
+      <a class="btn btn--filled" href="store/index.html">Как проходит визит в Store</a>
+      <a class="btn btn--outlined" href="catalog/index.html">Смотреть устройства</a>
     </div>
   </div>
 </section>

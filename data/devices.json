@@ -2,7 +2,10 @@
   "devices": [
     {
       "id": "iphone-13-pro",
-      "tags": ["iphone", "club"],
+      "tags": [
+        "iphone",
+        "club"
+      ],
       "category": "iphone",
       "title": "iPhone 13 Pro",
       "model": "iPhone 13 Pro",
@@ -27,31 +30,82 @@
       "listingAlt": "iPhone 13 Pro в графитовом цвете на светлой студийной поверхности",
       "ctaLabel": "Смотреть паспорт",
       "hasDetailPage": true,
+      "detailHref": "device/iphone-13-pro/index.html",
       "visualClass": "detail-product detail-product--phone",
       "gallery": [
-        { "src": "assets/device-iphone-13-main.webp", "label": "Общий вид", "alt": "iPhone 13 Pro в графитовом цвете на светлой каменной поверхности" },
-        { "src": "assets/device-iphone-13-screen.webp", "label": "Экран", "alt": "Экран iPhone 13 Pro с выключенным чёрным стеклом и отражениями" },
-        { "src": "assets/device-iphone-13-body.webp", "label": "Корпус", "alt": "Корпус iPhone 13 Pro крупным планом с микроследами использования" },
-        { "src": "assets/device-iphone-13-defect.webp", "label": "Дефекты", "alt": "Крупный план маленькой царапины на металлическом ребре устройства" }
+        {
+          "src": "assets/device-iphone-13-main.webp",
+          "label": "Общий вид",
+          "alt": "iPhone 13 Pro в графитовом цвете на светлой каменной поверхности"
+        },
+        {
+          "src": "assets/device-iphone-13-screen.webp",
+          "label": "Экран",
+          "alt": "Экран iPhone 13 Pro с выключенным чёрным стеклом и отражениями"
+        },
+        {
+          "src": "assets/device-iphone-13-body.webp",
+          "label": "Корпус",
+          "alt": "Корпус iPhone 13 Pro крупным планом с микроследами использования"
+        },
+        {
+          "src": "assets/device-iphone-13-defect.webp",
+          "label": "Дефекты",
+          "alt": "Крупный план маленькой царапины на металлическом ребре устройства"
+        }
       ],
       "passport": {
         "summaryRows": [
-          { "label": "Батарея", "value": "89%", "state": "ok" },
-          { "label": "Ремонт", "value": "не вскрывался", "state": "ok" },
-          { "label": "Face ID", "value": "работает", "state": "ok" },
-          { "label": "Влага", "value": "следов нет", "state": "ok" }
+          {
+            "label": "Батарея",
+            "value": "89%",
+            "state": "ok"
+          },
+          {
+            "label": "Ремонт",
+            "value": "не вскрывался",
+            "state": "ok"
+          },
+          {
+            "label": "Face ID",
+            "value": "работает",
+            "state": "ok"
+          },
+          {
+            "label": "Влага",
+            "value": "следов нет",
+            "state": "ok"
+          }
         ],
         "repair": "не вскрывался",
         "water": "следов нет",
         "diagnostics": {
           "status": "пройдена",
           "checklist": [
-            { "text": "Face ID работает", "state": "ok" },
-            { "text": "Камеры проверены", "state": "ok" },
-            { "text": "Динамики и микрофоны работают", "state": "ok" },
-            { "text": "Wi‑Fi / Bluetooth / связь в норме", "state": "ok" },
-            { "text": "Кнопки и разъём проверены", "state": "ok" },
-            { "text": "Следов влаги не обнаружено", "state": "ok" }
+            {
+              "text": "Face ID работает",
+              "state": "ok"
+            },
+            {
+              "text": "Камеры проверены",
+              "state": "ok"
+            },
+            {
+              "text": "Динамики и микрофоны работают",
+              "state": "ok"
+            },
+            {
+              "text": "Wi‑Fi / Bluetooth / связь в норме",
+              "state": "ok"
+            },
+            {
+              "text": "Кнопки и разъём проверены",
+              "state": "ok"
+            },
+            {
+              "text": "Следов влаги не обнаружено",
+              "state": "ok"
+            }
           ]
         },
         "condition": {
@@ -80,15 +134,26 @@
       },
       "trade": {
         "options": [
-          { "value": 26000, "label": "iPhone 12 · 26 000 ₽" },
-          { "value": 32000, "label": "iPhone 12 Pro · 32 000 ₽" },
-          { "value": 38000, "label": "iPhone 13 · 38 000 ₽" }
+          {
+            "value": 26000,
+            "label": "iPhone 12 · 26 000 ₽"
+          },
+          {
+            "value": 32000,
+            "label": "iPhone 12 Pro · 32 000 ₽"
+          },
+          {
+            "value": 38000,
+            "label": "iPhone 13 · 38 000 ₽"
+          }
         ]
       }
     },
     {
       "id": "iphone-14",
-      "tags": ["iphone"],
+      "tags": [
+        "iphone"
+      ],
       "category": "iphone",
       "title": "iPhone 14",
       "model": "iPhone 14",
@@ -106,19 +171,123 @@
       "warrantyText": "Гарантия 90 дней",
       "exit": "до 45 000 ₽",
       "exitText": "Выход до 45 000 ₽",
-      "availability": "Пример карточки. Устройство уточняется в Store.",
+      "availability": "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
       "shortDescription": "128 GB · Starlight · грейд A · батарея 94% · гарантия 90 дней · цена выхода до 45 000 ₽.",
       "headline": "iPhone 14. Не новый. Проверенный.",
       "listingImage": "assets/catalog-iphone-14.webp",
       "listingAlt": "Светлый премиальный смартфон на витринной поверхности",
-      "ctaLabel": "Смотреть пример",
-      "hasDetailPage": false,
+      "ctaLabel": "Смотреть паспорт",
+      "hasDetailPage": true,
+      "detailHref": "device/iphone-14/index.html",
       "visualClass": "detail-product detail-product--phone",
-      "repair": "оригинальный сервис"
+      "gallery": [
+        {
+          "src": "assets/catalog-iphone-14.webp",
+          "label": "Общий вид",
+          "alt": "iPhone 14 Starlight на светлой витринной поверхности"
+        }
+      ],
+      "passport": {
+        "summaryRows": [
+          {
+            "label": "Батарея",
+            "value": "94%",
+            "state": "ok"
+          },
+          {
+            "label": "Ремонт",
+            "value": "оригинальный сервис",
+            "state": "ok"
+          },
+          {
+            "label": "Face ID",
+            "value": "работает",
+            "state": "ok"
+          },
+          {
+            "label": "Влага",
+            "value": "следов нет",
+            "state": "ok"
+          }
+        ],
+        "repair": "оригинальный сервис",
+        "water": "следов нет",
+        "diagnostics": {
+          "status": "пройдена",
+          "checklist": [
+            {
+              "text": "Face ID работает",
+              "state": "ok"
+            },
+            {
+              "text": "Камеры проверены",
+              "state": "ok"
+            },
+            {
+              "text": "Динамики и микрофоны работают",
+              "state": "ok"
+            },
+            {
+              "text": "Wi‑Fi / Bluetooth / связь в норме",
+              "state": "ok"
+            },
+            {
+              "text": "Кнопки и разъём проверены",
+              "state": "ok"
+            },
+            {
+              "text": "Следов влаги не обнаружено",
+              "state": "ok"
+            }
+          ]
+        },
+        "condition": {
+          "gradeText": "грейд A",
+          "note": "Устройство в почти безупречном состоянии. Обслуживалось в оригинальном сервисе, следов вскрытия нет. Корпус и экран без значимых повреждений.",
+          "notes": [
+            "Экран: без царапин при обычном освещении.",
+            "Корпус: без вмятин и сколов.",
+            "Функционально: без ограничений."
+          ],
+          "defectPhoto": "assets/catalog-iphone-14.webp",
+          "defectPhotoAlt": "iPhone 14 Starlight крупным планом на светлой поверхности"
+        },
+        "warranty": {
+          "duration": "90 дней",
+          "covered": "Заявленные функции устройства: связь, экран, камеры, Face ID, разъёмы, динамики, микрофоны и базовая работоспособность.",
+          "notCovered": "Механические повреждения после покупки, следы влаги после передачи, самостоятельный ремонт и нарушение условий эксплуатации."
+        },
+        "exitPrice": {
+          "headline": "до 45 000 ₽",
+          "buyToday": "64 900 ₽",
+          "tradeInEstimate": "до 45 000 ₽",
+          "condition": "состояние не ниже B+",
+          "note": "Цена выхода не является безусловным обещанием выкупа: финальная сумма зависит от состояния, комплектации, спроса и результатов повторной диагностики."
+        }
+      },
+      "trade": {
+        "options": [
+          {
+            "value": 30000,
+            "label": "iPhone 12 · 30 000 ₽"
+          },
+          {
+            "value": 38000,
+            "label": "iPhone 13 · 38 000 ₽"
+          },
+          {
+            "value": 44000,
+            "label": "iPhone 13 Pro · 44 000 ₽"
+          }
+        ]
+      }
     },
     {
       "id": "macbook-air-m1",
-      "tags": ["macbook", "club"],
+      "tags": [
+        "macbook",
+        "club"
+      ],
       "category": "macbook",
       "title": "MacBook Air M1",
       "model": "MacBook Air M1",
@@ -136,19 +305,123 @@
       "warrantyText": "Гарантия 90 дней",
       "exit": "до 49 000 ₽",
       "exitText": "Выход до 49 000 ₽",
-      "availability": "Пример карточки. Устройство уточняется в Store.",
+      "availability": "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
       "shortDescription": "8 / 256 GB · Silver · грейд B+ · 214 циклов · гарантия 90 дней · цена выхода до 49 000 ₽.",
       "headline": "MacBook Air M1. Не новый. Проверенный.",
       "listingImage": "assets/catalog-macbook-air.webp",
       "listingAlt": "Серебристый тонкий ноутбук на каменной витрине",
-      "ctaLabel": "Смотреть пример",
-      "hasDetailPage": false,
+      "ctaLabel": "Смотреть паспорт",
+      "hasDetailPage": true,
+      "detailHref": "device/macbook-air-m1/index.html",
       "visualClass": "detail-product detail-product--laptop",
-      "repair": "не вскрывался"
+      "gallery": [
+        {
+          "src": "assets/catalog-macbook-air.webp",
+          "label": "Общий вид",
+          "alt": "Серебристый MacBook Air M1 на каменной витрине"
+        }
+      ],
+      "passport": {
+        "summaryRows": [
+          {
+            "label": "Циклы АКБ",
+            "value": "214",
+            "state": "ok"
+          },
+          {
+            "label": "Ремонт",
+            "value": "не вскрывался",
+            "state": "ok"
+          },
+          {
+            "label": "Клавиатура",
+            "value": "работает",
+            "state": "ok"
+          },
+          {
+            "label": "Влага",
+            "value": "следов нет",
+            "state": "ok"
+          }
+        ],
+        "repair": "не вскрывался",
+        "water": "следов нет",
+        "diagnostics": {
+          "status": "пройдена",
+          "checklist": [
+            {
+              "text": "Клавиатура и трекпад работают",
+              "state": "ok"
+            },
+            {
+              "text": "Экран без битых пикселей",
+              "state": "ok"
+            },
+            {
+              "text": "Динамики и микрофоны работают",
+              "state": "ok"
+            },
+            {
+              "text": "Wi‑Fi / Bluetooth в норме",
+              "state": "ok"
+            },
+            {
+              "text": "Порты и зарядка проверены",
+              "state": "ok"
+            },
+            {
+              "text": "Следов влаги не обнаружено",
+              "state": "ok"
+            }
+          ]
+        },
+        "condition": {
+          "gradeText": "грейд B+",
+          "note": "Рабочий ноутбук с аккуратными следами эксплуатации. 214 циклов батареи, состояние корпуса хорошее. Грейд B+ и цена это учитывают.",
+          "notes": [
+            "Экран: без царапин и засветов.",
+            "Корпус: лёгкие потёртости на дне.",
+            "Батарея: 214 циклов, ёмкость в норме."
+          ],
+          "defectPhoto": "assets/catalog-macbook-air.webp",
+          "defectPhotoAlt": "MacBook Air M1 крупным планом на каменной поверхности"
+        },
+        "warranty": {
+          "duration": "90 дней",
+          "covered": "Заявленные функции устройства: экран, клавиатура, трекпад, порты, динамики, микрофоны, Wi‑Fi и базовая работоспособность.",
+          "notCovered": "Механические повреждения после покупки, следы влаги после передачи, самостоятельный ремонт и нарушение условий эксплуатации."
+        },
+        "exitPrice": {
+          "headline": "до 49 000 ₽",
+          "buyToday": "72 900 ₽",
+          "tradeInEstimate": "до 49 000 ₽",
+          "condition": "состояние не ниже B",
+          "note": "Цена выхода не является безусловным обещанием выкупа: финальная сумма зависит от состояния, числа циклов, спроса и результатов повторной диагностики."
+        }
+      },
+      "trade": {
+        "options": [
+          {
+            "value": 30000,
+            "label": "MacBook Air 2019 · 30 000 ₽"
+          },
+          {
+            "value": 42000,
+            "label": "MacBook Air M1 (B) · 42 000 ₽"
+          },
+          {
+            "value": 52000,
+            "label": "MacBook Pro 13 M1 · 52 000 ₽"
+          }
+        ]
+      }
     },
     {
       "id": "ipad-air",
-      "tags": ["ipad", "club"],
+      "tags": [
+        "ipad",
+        "club"
+      ],
       "category": "ipad",
       "title": "iPad Air",
       "model": "iPad Air",
@@ -166,15 +439,116 @@
       "warrantyText": "Гарантия 90 дней",
       "exit": "до 31 000 ₽",
       "exitText": "Выход до 31 000 ₽",
-      "availability": "Пример карточки. Устройство уточняется в Store.",
+      "availability": "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
       "shortDescription": "64 GB · Wi‑Fi · грейд A · гарантия 90 дней · цена выхода до 31 000 ₽.",
       "headline": "iPad Air. Не новый. Проверенный.",
       "listingImage": "assets/catalog-ipad-air.webp",
       "listingAlt": "Светлый планшет на минималистичной студийной поверхности",
-      "ctaLabel": "Смотреть пример",
-      "hasDetailPage": false,
+      "ctaLabel": "Смотреть паспорт",
+      "hasDetailPage": true,
+      "detailHref": "device/ipad-air/index.html",
       "visualClass": "detail-product detail-product--tablet",
-      "repair": "не вскрывался"
+      "gallery": [
+        {
+          "src": "assets/catalog-ipad-air.webp",
+          "label": "Общий вид",
+          "alt": "iPad Air на минималистичной студийной поверхности"
+        }
+      ],
+      "passport": {
+        "summaryRows": [
+          {
+            "label": "Батарея",
+            "value": "в норме",
+            "state": "ok"
+          },
+          {
+            "label": "Ремонт",
+            "value": "не вскрывался",
+            "state": "ok"
+          },
+          {
+            "label": "Touch ID",
+            "value": "работает",
+            "state": "ok"
+          },
+          {
+            "label": "Влага",
+            "value": "следов нет",
+            "state": "ok"
+          }
+        ],
+        "repair": "не вскрывался",
+        "water": "следов нет",
+        "diagnostics": {
+          "status": "пройдена",
+          "checklist": [
+            {
+              "text": "Touch ID работает",
+              "state": "ok"
+            },
+            {
+              "text": "Камеры проверены",
+              "state": "ok"
+            },
+            {
+              "text": "Динамики и микрофоны работают",
+              "state": "ok"
+            },
+            {
+              "text": "Wi‑Fi / Bluetooth в норме",
+              "state": "ok"
+            },
+            {
+              "text": "Сенсор и кнопки проверены",
+              "state": "ok"
+            },
+            {
+              "text": "Следов влаги не обнаружено",
+              "state": "ok"
+            }
+          ]
+        },
+        "condition": {
+          "gradeText": "грейд A",
+          "note": "Планшет в отличном состоянии. Корпус грейда A, экран без значимых дефектов, аккумулятор в норме.",
+          "notes": [
+            "Экран: без царапин при обычном освещении.",
+            "Корпус: без вмятин и сколов.",
+            "Функционально: без ограничений."
+          ],
+          "defectPhoto": "assets/catalog-ipad-air.webp",
+          "defectPhotoAlt": "iPad Air крупным планом на студийной поверхности"
+        },
+        "warranty": {
+          "duration": "90 дней",
+          "covered": "Заявленные функции устройства: экран, Touch ID, камеры, разъёмы, динамики, микрофоны, Wi‑Fi и базовая работоспособность.",
+          "notCovered": "Механические повреждения после покупки, следы влаги после передачи, самостоятельный ремонт и нарушение условий эксплуатации."
+        },
+        "exitPrice": {
+          "headline": "до 31 000 ₽",
+          "buyToday": "44 900 ₽",
+          "tradeInEstimate": "до 31 000 ₽",
+          "condition": "состояние не ниже B+",
+          "note": "Цена выхода не является безусловным обещанием выкупа: финальная сумма зависит от состояния, комплектации, спроса и результатов повторной диагностики."
+        }
+      },
+      "trade": {
+        "options": [
+          {
+            "value": 16000,
+            "label": "iPad 9 · 16 000 ₽"
+          },
+          {
+            "value": 22000,
+            "label": "iPad Air 3 · 22 000 ₽"
+          },
+          {
+            "value": 28000,
+            "label": "iPad Pro 11 (2020) · 28 000 ₽"
+          }
+        ]
+      }
     }
   ]
 }

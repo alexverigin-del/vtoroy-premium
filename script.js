@@ -113,7 +113,7 @@
     var hasInlineDetail = !!document.getElementById('device-detail');
     if (device.hasDetailPage) {
       var link = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть паспорт');
-      link.href = resolve('device/' + device.id + '/index.html');
+      link.href = resolve(device.detailHref || ('device/' + device.id + '/index.html'));
       body.appendChild(link);
     } else if (hasInlineDetail) {
       var btn = el('button', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть пример');

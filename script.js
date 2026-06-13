@@ -105,15 +105,25 @@
 
     body.appendChild(el('div', 'device-card__price', device.priceText));
 
+    // An in-page detail section only exists on the home page. There, devices
+    // without their own product page open the detail panel via a button. On
+    // every other page (e.g. the standalone catalog) a button would do nothing,
+    // so always render a navigating link — to the device's own product page, or
+    // to the iPhone 13 Pro page as the shared example target.
+    var hasInlineDetail = !!document.getElementById('device-detail');
     if (device.hasDetailPage) {
       var link = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть паспорт');
       link.href = resolve('device/' + device.id + '/index.html');
       body.appendChild(link);
-    } else {
+    } else if (hasInlineDetail) {
       var btn = el('button', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть пример');
       btn.type = 'button';
       btn.setAttribute('data-open-device', device.id);
       body.appendChild(btn);
+    } else {
+      var exampleLink = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть пример');
+      exampleLink.href = resolve('device/iphone-13-pro/index.html');
+      body.appendChild(exampleLink);
     }
 
     article.appendChild(media);

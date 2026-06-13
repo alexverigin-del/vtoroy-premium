@@ -203,7 +203,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .nav__toggle { display: none; background: none; border: 0; padding: 6px; color: var(--color-carbon); }
 
 /* ---------- Hero ---------- */
-.hero { padding-top: 94px; padding-bottom: var(--s-80); text-align: center; }
+.hero { padding-top: 86px; padding-bottom: var(--s-80); text-align: center; }
 .hero__kicker {
   display: inline-flex;
   align-items: center;
@@ -226,7 +226,7 @@ h1, h2, h3, h4, p { margin: 0; }
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: var(--s-64);
+  margin-bottom: var(--s-48);
 }
 .hero__assurance span {
   display: inline-flex;
@@ -248,8 +248,8 @@ h1, h2, h3, h4, p { margin: 0; }
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  max-width: 1040px;
-  min-height: 520px;
+  max-width: 1180px;
+  min-height: 450px;
   isolation: isolate;
 }
 .hero-stage::before {
@@ -277,10 +277,10 @@ h1, h2, h3, h4, p { margin: 0; }
   z-index: -1;
 }
 .hero-photo {
-  width: min(100%, 980px);
-  aspect-ratio: 16 / 9;
+  width: min(100%, 1120px);
+  height: 440px;
   object-fit: cover;
-  object-position: center;
+  object-position: center 74%;
   border-radius: var(--r-img);
   border: 1px solid rgba(210,210,215,0.78);
   box-shadow: var(--shadow-product);
@@ -288,15 +288,15 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Floating passport card over device */
 .passport-float {
   position: absolute;
-  right: 5%;
-  bottom: 4%;
+  right: 4%;
+  bottom: 7%;
   width: 344px;
   z-index: 5;
 }
 @media (max-width: 720px) {
   .passport-float { position: static; margin: var(--s-32) auto 0; right: auto; bottom: auto; }
   .hero-stage { flex-direction: column; min-height: auto; }
-  .hero-photo { width: 100%; min-height: 230px; }
+  .hero-photo { width: 100%; height: 250px; object-position: center 72%; }
 }
 
 /* ---------- Passport Card component ---------- */

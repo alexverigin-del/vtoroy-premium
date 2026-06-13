@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Каталог — Второй Премиум</title>
+<meta name="description" content="Каталог проверенной премиум-техники с Паспортом Премиума, гарантией и ценой выхода." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="../" aria-label="Второй Премиум — на главную">
+      <svg class="logo" viewBox="0 0 34 34" fill="none" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="9" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor"/><path d="M18 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor" opacity="0.45"/></svg>
+      <span class="brandname">Второй&nbsp;Премиум</span>
+    </a>
+    <nav class="nav__links" id="navLinks" aria-label="Основная навигация">
+      <a href="../catalog/">Каталог</a><a href="../store/">Store</a><a href="../passport/">Паспорт</a><a href="../trade/">Trade</a><a href="../club/">Club</a>
+    </nav>
+    <div class="nav__cta"><a href="../#final" class="btn btn--filled btn--sm">Получить подборку</a><button class="nav__toggle" id="navToggle" aria-label="Открыть меню" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button></div>
+  </div>
+</header>
+<main>
+  <section class="page-hero wrap">
+    <div class="breadcrumb-pill">Главная / Каталог</div>
+    <h1 class="display">Каталог проверенного премиума.</h1>
+    <p class="lead">Выбирайте не только по цене. Смотрите грейд, батарею, гарантию, Паспорт Премиума и цену выхода до покупки.</p>
+  </section>
+  <section class="section catalog-section">
+    <div class="wrap">
+      <div class="catalog-controls" aria-label="Фильтры каталога">
+        <button class="filter-chip is-active" type="button" data-filter="all">Все</button>
+        <button class="filter-chip" type="button" data-filter="iphone">iPhone</button>
+        <button class="filter-chip" type="button" data-filter="macbook">MacBook</button>
+        <button class="filter-chip" type="button" data-filter="ipad">iPad</button>
+        <button class="filter-chip" type="button" data-filter="club">Для Club</button>
+      </div>
+      <div class="catalog-grid" id="catalogGrid">
+        <article class="device-card" data-type="iphone club">
+          <div class="device-card__media device-card__media--graphite"></div>
+          <div class="device-card__body"><div class="device-card__top"><div><h3>iPhone 13 Pro</h3><p>256 GB · Graphite</p></div><span class="grade-mini">A−</span></div><div class="device-card__meta"><span>Батарея 89%</span><span>Гарантия 90 дней</span><span>Выход до 42 000 ₽</span></div><div class="device-card__price">59 900 ₽</div><a class="btn btn--outlined device-card__cta" href="../device/iphone-13-pro/">Смотреть паспорт</a></div>
+        </article>
+        <article class="device-card" data-type="iphone">
+          <div class="device-card__media device-card__media--silver"></div>
+          <div class="device-card__body"><div class="device-card__top"><div><h3>iPhone 14</h3><p>128 GB · Starlight</p></div><span class="grade-mini">A</span></div><div class="device-card__meta"><span>Батарея 94%</span><span>Гарантия 90 дней</span><span>Выход до 45 000 ₽</span></div><div class="device-card__price">64 900 ₽</div><a class="btn btn--outlined device-card__cta" href="../device/iphone-13-pro/">Смотреть пример</a></div>
+        </article>
+        <article class="device-card" data-type="macbook club">
+          <div class="device-card__media device-card__media--laptop"></div>
+          <div class="device-card__body"><div class="device-card__top"><div><h3>MacBook Air M1</h3><p>8 / 256 GB · Silver</p></div><span class="grade-mini">B+</span></div><div class="device-card__meta"><span>Циклы 214</span><span>Гарантия 90 дней</span><span>Выход до 49 000 ₽</span></div><div class="device-card__price">72 900 ₽</div><a class="btn btn--outlined device-card__cta" href="../device/iphone-13-pro/">Смотреть пример</a></div>
+        </article>
+        <article class="device-card" data-type="ipad club">
+          <div class="device-card__media device-card__media--tablet"></div>
+          <div class="device-card__body"><div class="device-card__top"><div><h3>iPad Air</h3><p>64 GB · Wi‑Fi</p></div><span class="grade-mini">A</span></div><div class="device-card__meta"><span>Корпус A</span><span>Гарантия 90 дней</span><span>Выход до 31 000 ₽</span></div><div class="device-card__price">44 900 ₽</div><a class="btn btn--outlined device-card__cta" href="../device/iphone-13-pro/">Смотреть пример</a></div>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="section section--wash"><div class="wrap"><div class="page-cta-band"><h2 class="h2">Не нашли нужную модель?</h2><p class="lead">Оставьте сценарий и бюджет. Подготовим 3 проверенных варианта с паспортом и ценой выхода.</p><div class="btn-row"><a class="btn btn--filled" href="../#final">Получить подборку</a><a class="btn btn--outlined" href="../trade/">Оценить своё устройство</a></div></div></div></section>
+</main>
+<footer class="footer"><div class="wrap"><div class="footer__legal"><span>© 2025 Второй Премиум. Концепт-прототип.</span><a class="site-back" href="../">На главную</a></div></div></footer>
+<script src="../script.js"></script>
+</body>
+</html>

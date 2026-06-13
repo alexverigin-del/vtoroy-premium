@@ -25,6 +25,7 @@
       <span class="brandname">Второй&nbsp;Премиум</span>
     </a>
     <nav class="nav__links" id="navLinks" aria-label="Основная навигация">
+      <a href="#catalog">Каталог</a>
       <a href="#store">Store</a>
       <a href="#passport">Паспорт</a>
       <a href="#trade">Trade</a>
@@ -138,6 +139,191 @@
         <p>Для тех, кто хочет пользоваться премиумом, сохранять стоимость и обновляться без Avito.</p>
         <span class="path-card__link">Посмотреть Club ›</span>
       </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CATALOG ============== -->
+<section class="section catalog-section" id="catalog">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Каталог</div>
+      <h2 class="h2">Проверенные устройства в наличии.</h2>
+      <p class="lead text-wrap" style="margin-top:16px;">Каждая карточка показывает не только цену, но и состояние: грейд, батарею, гарантию и цену выхода.</p>
+    </div>
+
+    <div class="catalog-controls reveal" aria-label="Фильтры каталога">
+      <button class="filter-chip is-active" type="button" data-filter="all">Все</button>
+      <button class="filter-chip" type="button" data-filter="iphone">iPhone</button>
+      <button class="filter-chip" type="button" data-filter="macbook">MacBook</button>
+      <button class="filter-chip" type="button" data-filter="ipad">iPad</button>
+      <button class="filter-chip" type="button" data-filter="club">Для Club</button>
+    </div>
+
+    <div class="catalog-grid reveal" id="catalogGrid">
+      <article class="device-card" data-device="iphone-13-pro" data-type="iphone club">
+        <div class="device-card__media device-card__media--graphite"></div>
+        <div class="device-card__body">
+          <div class="device-card__top">
+            <div>
+              <h3>iPhone 13 Pro</h3>
+              <p>256 GB · Graphite</p>
+            </div>
+            <span class="grade-mini">A−</span>
+          </div>
+          <div class="device-card__meta">
+            <span>Батарея 89%</span>
+            <span>Гарантия 90 дней</span>
+            <span>Выход до 42 000 ₽</span>
+          </div>
+          <div class="device-card__price">59 900 ₽</div>
+          <button class="btn btn--outlined device-card__cta" type="button" data-open-device="iphone-13-pro">Смотреть паспорт</button>
+        </div>
+      </article>
+
+      <article class="device-card" data-device="iphone-14" data-type="iphone">
+        <div class="device-card__media device-card__media--silver"></div>
+        <div class="device-card__body">
+          <div class="device-card__top">
+            <div>
+              <h3>iPhone 14</h3>
+              <p>128 GB · Starlight</p>
+            </div>
+            <span class="grade-mini">A</span>
+          </div>
+          <div class="device-card__meta">
+            <span>Батарея 94%</span>
+            <span>Гарантия 90 дней</span>
+            <span>Выход до 45 000 ₽</span>
+          </div>
+          <div class="device-card__price">64 900 ₽</div>
+          <button class="btn btn--outlined device-card__cta" type="button" data-open-device="iphone-14">Смотреть паспорт</button>
+        </div>
+      </article>
+
+      <article class="device-card" data-device="macbook-air-m1" data-type="macbook club">
+        <div class="device-card__media device-card__media--laptop"></div>
+        <div class="device-card__body">
+          <div class="device-card__top">
+            <div>
+              <h3>MacBook Air M1</h3>
+              <p>8 / 256 GB · Silver</p>
+            </div>
+            <span class="grade-mini">B+</span>
+          </div>
+          <div class="device-card__meta">
+            <span>Циклы 214</span>
+            <span>Гарантия 90 дней</span>
+            <span>Выход до 49 000 ₽</span>
+          </div>
+          <div class="device-card__price">72 900 ₽</div>
+          <button class="btn btn--outlined device-card__cta" type="button" data-open-device="macbook-air-m1">Смотреть паспорт</button>
+        </div>
+      </article>
+
+      <article class="device-card" data-device="ipad-air" data-type="ipad club">
+        <div class="device-card__media device-card__media--tablet"></div>
+        <div class="device-card__body">
+          <div class="device-card__top">
+            <div>
+              <h3>iPad Air</h3>
+              <p>64 GB · Wi‑Fi</p>
+            </div>
+            <span class="grade-mini">A</span>
+          </div>
+          <div class="device-card__meta">
+            <span>Корпус A</span>
+            <span>Гарантия 90 дней</span>
+            <span>Выход до 31 000 ₽</span>
+          </div>
+          <div class="device-card__price">44 900 ₽</div>
+          <button class="btn btn--outlined device-card__cta" type="button" data-open-device="ipad-air">Смотреть паспорт</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DEVICE DETAIL ============== -->
+<section class="section device-detail-section" id="device-detail" aria-live="polite">
+  <div class="wrap">
+    <div class="device-detail reveal">
+      <div class="detail-gallery">
+        <div class="detail-gallery__main" id="detailVisual" aria-hidden="true">
+          <div class="detail-product detail-product--phone"></div>
+        </div>
+        <div class="detail-gallery__thumbs" aria-label="Фотографии состояния">
+          <button type="button" class="thumb is-active">Общий вид</button>
+          <button type="button" class="thumb">Экран</button>
+          <button type="button" class="thumb">Корпус</button>
+          <button type="button" class="thumb">Дефекты</button>
+        </div>
+      </div>
+
+      <aside class="buy-panel">
+        <div class="eyebrow">Карточка устройства</div>
+        <h2 class="h2" id="detailTitle">iPhone 13 Pro</h2>
+        <p class="detail-sub" id="detailSub">256 GB · Graphite · IMEI ···4821</p>
+        <div class="detail-price" id="detailPrice">59 900 ₽</div>
+        <div class="detail-chips">
+          <span id="detailGrade">Грейд A−</span>
+          <span id="detailBattery">Батарея 89%</span>
+          <span>Гарантия 90 дней</span>
+        </div>
+        <div class="detail-exit">
+          <span>Цена выхода через 6 месяцев</span>
+          <strong id="detailExit">до 42 000 ₽</strong>
+        </div>
+        <div class="btn-row">
+          <a href="#final" class="btn btn--filled">Забронировать</a>
+          <a href="#trade-calculator" class="btn btn--outlined">Рассчитать обмен</a>
+        </div>
+      </aside>
+    </div>
+
+    <div class="detail-lower">
+      <div class="passport-panel reveal">
+        <div class="passport">
+          <div class="passport__head">
+            <div>
+              <div class="passport__device" id="passportDevice">iPhone 13 Pro</div>
+              <div class="passport__sub" id="passportSub">256 GB · Graphite · проверка пройдена</div>
+            </div>
+            <div class="grade"><b id="passportGrade">A−</b><span>Грейд</span></div>
+          </div>
+          <div class="passport__rows">
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Батарея</span><span class="val" id="passportBattery">89%</span></div>
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Ремонт</span><span class="val val--ok" id="passportRepair">не вскрывался</span></div>
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Функции</span><span class="val val--ok">проверены</span></div>
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Влага</span><span class="val val--ok">следов нет</span></div>
+          </div>
+          <div class="passport__exit">
+            <span class="x-lbl">Цена выхода через 6 мес</span>
+            <span class="x-val" id="passportExit">до 42 000 ₽</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="trade-widget reveal" id="trade-calculator">
+        <div class="eyebrow">Trade calculator</div>
+        <h3 class="h3">Есть старое устройство?</h3>
+        <p>Выберите модель — покажем примерную доплату до выбранного устройства.</p>
+        <label>
+          <span>Ваше устройство</span>
+          <select id="oldDevice">
+            <option value="26000">iPhone 12 · примерная оценка 26 000 ₽</option>
+            <option value="32000">iPhone 12 Pro · примерная оценка 32 000 ₽</option>
+            <option value="38000">iPhone 13 · примерная оценка 38 000 ₽</option>
+            <option value="52000">MacBook Air M1 · примерная оценка 52 000 ₽</option>
+          </select>
+        </label>
+        <div class="trade-widget__result">
+          <span>Доплата до выбранного устройства</span>
+          <strong id="topupResult">от 33 900 ₽</strong>
+        </div>
+        <a href="#final" class="btn btn--filled">Получить точную оценку</a>
+        <p class="trade-widget__note">Точная цена определяется после открытой диагностики в Store.</p>
+      </div>
     </div>
   </div>
 </section>

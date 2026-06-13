@@ -315,7 +315,8 @@ h1, h2, h3, h4, p { margin: 0; }
   margin-top: 14px;
 }
 .passport__exit .x-lbl { font-size: var(--text-caption); color: var(--color-ash); }
-.passport__exit .x-val { font-size: var(--text-subheading); font-weight: var(--w-semibold); letter-spacing: -0.01em; color: var(--color-link-blue); }
+.passport__exit .x-val { font-size: var(--text-subheading); font-weight: var(--w-semibold); letter-spacing: -0.01em; color: var(--color-link-blue); white-space: nowrap; text-align: right; }
+.passport__exit .x-lbl { max-width: 130px; }
 .passport__foot {
   display: flex; align-items: center; justify-content: space-between;
   margin-top: 14px; padding-top: 14px;
@@ -482,6 +483,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .level__features { display: grid; gap: 12px; margin-top: auto; }
 .level__features li { display: flex; gap: 10px; font-size: var(--text-body-sm); color: #e3e3e6; }
 .level__features .ck { color: var(--color-signal-blue); flex-shrink: 0; }
+@media (max-width: 880px) { .club-levels { grid-template-columns: 1fr; } .level__tag { min-height: auto; } }
 
 /* ---------- Comparison ---------- */
 .compare {

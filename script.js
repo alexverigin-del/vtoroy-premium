@@ -32,7 +32,11 @@
           io.unobserve(e.target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
     reveals.forEach(function (el) { io.observe(el); });
+    // Safety net: never leave content hidden if the observer is bypassed.
+    setTimeout(function () {
+      reveals.forEach(function (el) { el.classList.add('in'); });
+    }, 2500);
   }
 })();

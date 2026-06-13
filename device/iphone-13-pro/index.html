@@ -11,7 +11,7 @@
 <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="../../styles.css" />
 </head>
-<body>
+<body data-base-path="../../">
 <header class="nav">
   <div class="wrap nav__inner">
     <a class="nav__brand" href="../../index.html"><svg class="logo" viewBox="0 0 34 34" fill="none" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="9" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor"/><path d="M18 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor" opacity="0.45"/></svg><span class="brandname">Второй&nbsp;Премиум</span></a>
@@ -19,11 +19,11 @@
     <div class="nav__cta"><a href="../../index.html#final" class="btn btn--filled btn--sm">Забронировать</a><button class="nav__toggle" id="navToggle" aria-label="Открыть меню" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button></div>
   </div>
 </header>
-<main>
+<main id="productPage" data-device-id="iphone-13-pro">
   <section class="page-hero wrap">
-    <div class="breadcrumb-pill">Каталог / iPhone 13 Pro</div>
-    <h1 class="display">iPhone 13 Pro. Не новый. Проверенный.</h1>
-    <p class="lead">256 GB · Graphite · грейд A− · батарея 89% · гарантия 90 дней · цена выхода до 42 000 ₽.</p>
+    <div class="breadcrumb-pill" id="productBreadcrumb">Каталог / iPhone 13 Pro</div>
+    <h1 class="display" id="productHeadline">iPhone 13 Pro. Не новый. Проверенный.</h1>
+    <p class="lead" id="productLead">256 GB · Graphite · грейд A− · батарея 89% · гарантия 90 дней · цена выхода до 42 000 ₽.</p>
   </section>
   <section class="section device-detail-section" style="padding-top:0;">
     <div class="wrap">
@@ -32,34 +32,29 @@
           <div class="detail-gallery__main detail-gallery__main--photo">
             <img id="deviceGalleryImage" src="../../assets/device-iphone-13-main.webp" alt="iPhone 13 Pro в графитовом цвете на светлой каменной поверхности" />
           </div>
-          <div class="detail-gallery__thumbs">
-            <button type="button" class="thumb is-active" data-gallery-src="../../assets/device-iphone-13-main.webp" data-gallery-alt="iPhone 13 Pro в графитовом цвете на светлой каменной поверхности">Общий вид</button>
-            <button type="button" class="thumb" data-gallery-src="../../assets/device-iphone-13-screen.webp" data-gallery-alt="Экран iPhone 13 Pro с выключенным чёрным стеклом и отражениями">Экран</button>
-            <button type="button" class="thumb" data-gallery-src="../../assets/device-iphone-13-body.webp" data-gallery-alt="Корпус iPhone 13 Pro крупным планом с микроследами использования">Корпус</button>
-            <button type="button" class="thumb" data-gallery-src="../../assets/device-iphone-13-defect.webp" data-gallery-alt="Крупный план маленькой царапины на металлическом ребре устройства">Дефекты</button>
-          </div>
+          <div class="detail-gallery__thumbs" id="deviceGalleryThumbs"></div>
         </div>
         <aside class="buy-panel">
           <div class="eyebrow">Паспорт пройден</div>
-          <h2 class="h2">59 900 ₽</h2>
-          <p class="detail-sub">Устройство в наличии в Store. Иллюстративная карточка прототипа.</p>
-          <div class="detail-chips"><span>Грейд A−</span><span>Батарея 89%</span><span>Гарантия 90 дней</span></div>
-          <div class="detail-exit"><span>Цена выхода через 6 месяцев</span><strong>до 42 000 ₽</strong></div>
+          <h2 class="h2" id="productPrice">59 900 ₽</h2>
+          <p class="detail-sub" id="productAvailability">Устройство в наличии в Store. Иллюстративная карточка прототипа.</p>
+          <div class="detail-chips" id="productChips"><span>Грейд A−</span><span>Батарея 89%</span><span>Гарантия 90 дней</span></div>
+          <div class="detail-exit"><span>Цена выхода через 6 месяцев</span><strong id="productExitChip">до 42 000 ₽</strong></div>
           <div class="btn-row"><a href="../../index.html#final" class="btn btn--filled">Забронировать</a><a href="#trade-calculator" class="btn btn--outlined">Рассчитать обмен</a></div>
         </aside>
       </div>
       <div class="detail-lower">
         <div class="passport-panel">
           <div class="passport">
-            <div class="passport__head"><div><div class="passport__device">iPhone 13 Pro</div><div class="passport__sub">256 GB · Graphite · IMEI ···4821</div></div><div class="grade"><b>A−</b><span>Грейд</span></div></div>
-            <div class="passport__rows"><div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Батарея</span><span class="val">89%</span></div><div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Ремонт</span><span class="val val--ok">не вскрывался</span></div><div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Face ID</span><span class="val val--ok">работает</span></div><div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Влага</span><span class="val val--ok">следов нет</span></div></div>
-            <div class="passport__exit"><span class="x-lbl">Цена выхода через 6 мес</span><span class="x-val">до 42 000 ₽</span></div>
+            <div class="passport__head"><div><div class="passport__device" id="passportDevice">iPhone 13 Pro</div><div class="passport__sub" id="passportSub">256 GB · Graphite · IMEI ···4821</div></div><div class="grade"><b id="passportGrade">A−</b><span>Грейд</span></div></div>
+            <div class="passport__rows" id="passportRows"></div>
+            <div class="passport__exit"><span class="x-lbl">Цена выхода через 6 мес</span><span class="x-val" id="passportExit">до 42 000 ₽</span></div>
           </div>
         </div>
         <div class="trade-widget" id="trade-calculator">
           <div class="eyebrow">Trade calculator</div><h3 class="h3">Есть старое устройство?</h3><p>Выберите модель — покажем примерную доплату.</p>
-          <label><span>Ваше устройство</span><select id="oldDevice"><option value="26000">iPhone 12 · 26 000 ₽</option><option value="32000">iPhone 12 Pro · 32 000 ₽</option><option value="38000">iPhone 13 · 38 000 ₽</option></select></label>
-          <div class="trade-widget__result"><span>Доплата до iPhone 13 Pro</span><strong id="topupResult">от 33 900 ₽</strong></div>
+          <label><span>Ваше устройство</span><select id="oldDevice"></select></label>
+          <div class="trade-widget__result"><span id="tradeTarget">Доплата до iPhone 13 Pro</span><strong id="topupResult">от 33 900 ₽</strong></div>
           <a href="../../index.html#final" class="btn btn--filled">Получить точную оценку</a>
           <p class="trade-widget__note">Точная цена определяется после открытой диагностики.</p>
         </div>
@@ -72,53 +67,42 @@
         </div>
         <div class="passport-accordion">
           <details class="passport-detail" open>
-            <summary><span>Диагностика функций</span><strong>пройдена</strong></summary>
+            <summary><span>Диагностика функций</span><strong id="passportDiagStatus">пройдена</strong></summary>
             <div class="passport-detail__body">
-              <div class="check-grid">
-                <div><span class="dot dot--ok"></span>Face ID работает</div>
-                <div><span class="dot dot--ok"></span>Камеры проверены</div>
-                <div><span class="dot dot--ok"></span>Динамики и микрофоны работают</div>
-                <div><span class="dot dot--ok"></span>Wi‑Fi / Bluetooth / связь в норме</div>
-                <div><span class="dot dot--ok"></span>Кнопки и разъём проверены</div>
-                <div><span class="dot dot--ok"></span>Следов влаги не обнаружено</div>
-              </div>
+              <div class="check-grid" id="passportCheckGrid"></div>
             </div>
           </details>
 
           <details class="passport-detail">
-            <summary><span>Состояние и дефекты</span><strong>грейд A−</strong></summary>
+            <summary><span>Состояние и дефекты</span><strong id="passportConditionGrade">грейд A−</strong></summary>
             <div class="passport-detail__body passport-detail__body--split">
               <div>
-                <p>Устройство в отличном состоянии, но не называется «как новое». На металлическом ребре есть небольшие следы использования, учтённые в грейде A− и цене.</p>
-                <ul class="condition-list">
-                  <li>Экран: микроцарапины видны только под углом.</li>
-                  <li>Корпус: небольшие следы на ребре.</li>
-                  <li>Функционально: без ограничений.</li>
-                </ul>
+                <p id="passportConditionNote">Устройство в отличном состоянии, но не называется «как новое». На металлическом ребре есть небольшие следы использования, учтённые в грейде A− и цене.</p>
+                <ul class="condition-list" id="passportConditionList"></ul>
               </div>
-              <img src="../../assets/device-iphone-13-defect.webp" alt="Крупный план маленькой царапины на металлическом ребре устройства" />
+              <img id="passportDefectPhoto" src="../../assets/device-iphone-13-defect.webp" alt="Крупный план маленькой царапины на металлическом ребре устройства" />
             </div>
           </details>
 
           <details class="passport-detail">
-            <summary><span>Гарантия</span><strong>90 дней</strong></summary>
+            <summary><span>Гарантия</span><strong id="passportWarrantyDuration">90 дней</strong></summary>
             <div class="passport-detail__body">
               <div class="terms-grid">
-                <div><h3>Покрывается</h3><p>Заявленные функции устройства: связь, экран, камеры, Face ID, разъёмы, динамики, микрофоны и базовая работоспособность.</p></div>
-                <div><h3>Не покрывается</h3><p>Механические повреждения после покупки, следы влаги после передачи, самостоятельный ремонт и нарушение условий эксплуатации.</p></div>
+                <div><h3>Покрывается</h3><p id="passportWarrantyCovered">Заявленные функции устройства: связь, экран, камеры, Face ID, разъёмы, динамики, микрофоны и базовая работоспособность.</p></div>
+                <div><h3>Не покрывается</h3><p id="passportWarrantyNotCovered">Механические повреждения после покупки, следы влаги после передачи, самостоятельный ремонт и нарушение условий эксплуатации.</p></div>
               </div>
             </div>
           </details>
 
           <details class="passport-detail">
-            <summary><span>Цена выхода</span><strong>до 42 000 ₽</strong></summary>
+            <summary><span>Цена выхода</span><strong id="passportExitHeadline">до 42 000 ₽</strong></summary>
             <div class="passport-detail__body">
               <div class="exit-economics">
-                <div><span>Покупка сегодня</span><strong>59 900 ₽</strong></div>
-                <div><span>Ориентир trade-in через 6 мес.</span><strong>до 42 000 ₽</strong></div>
-                <div><span>Условие</span><strong>состояние не ниже B+</strong></div>
+                <div><span>Покупка сегодня</span><strong id="passportExitBuyToday">59 900 ₽</strong></div>
+                <div><span>Ориентир trade-in через 6 мес.</span><strong id="passportExitTradeIn">до 42 000 ₽</strong></div>
+                <div><span>Условие</span><strong id="passportExitCondition">состояние не ниже B+</strong></div>
               </div>
-              <p class="passport-small">Цена выхода не является безусловным обещанием выкупа: финальная сумма зависит от состояния, комплектации, спроса и результатов повторной диагностики.</p>
+              <p class="passport-small" id="passportExitNote">Цена выхода не является безусловным обещанием выкупа: финальная сумма зависит от состояния, комплектации, спроса и результатов повторной диагностики.</p>
             </div>
           </details>
         </div>
@@ -127,6 +111,7 @@
   </section>
 </main>
 <footer class="footer"><div class="wrap"><div class="footer__legal"><span>© 2025 Второй Премиум. Концепт-прототип.</span><a class="site-back" href="../../catalog/index.html">Вернуться в каталог</a></div></div></footer>
+<script src="../../data/devices.js"></script>
 <script src="../../script.js"></script>
 </body>
 </html>

@@ -2,6 +2,15 @@
 (function () {
   'use strict';
 
+  // Path prefix from site root to the current page (""/"../"/"../../").
+  // Declared per page via <body data-base-path="..">. Used to resolve the
+  // root-relative asset/link paths stored in the device data.
+  var BASE = document.body.getAttribute('data-base-path') || '';
+  function resolve(path) {
+    if (!path) return path;
+    return BASE + path;
+  }
+
   // Mobile nav toggle
   var toggle = document.getElementById('navToggle');
   var links = document.getElementById('navLinks');
@@ -30,59 +39,97 @@
     });
   }
 
-  // Main site prototype: catalog filters + interactive device detail.
-  var devices = {
-    'iphone-13-pro': {
-      title: 'iPhone 13 Pro',
-      sub: '256 GB · Graphite · IMEI ···4821',
-      price: 59900,
-      priceText: '59 900 ₽',
-      grade: 'A−',
-      battery: '89%',
-      batteryText: 'Батарея 89%',
-      exitText: 'до 42 000 ₽',
-      repair: 'не вскрывался',
-      visualClass: 'detail-product detail-product--phone'
-    },
-    'iphone-14': {
-      title: 'iPhone 14',
-      sub: '128 GB · Starlight · IMEI ···7310',
-      price: 64900,
-      priceText: '64 900 ₽',
-      grade: 'A',
-      battery: '94%',
-      batteryText: 'Батарея 94%',
-      exitText: 'до 45 000 ₽',
-      repair: 'оригинальный сервис',
-      visualClass: 'detail-product detail-product--phone'
-    },
-    'macbook-air-m1': {
-      title: 'MacBook Air M1',
-      sub: '8 / 256 GB · Silver · SN ···1094',
-      price: 72900,
-      priceText: '72 900 ₽',
-      grade: 'B+',
-      battery: '214 циклов',
-      batteryText: 'Циклы 214',
-      exitText: 'до 49 000 ₽',
-      repair: 'не вскрывался',
-      visualClass: 'detail-product detail-product--laptop'
-    },
-    'ipad-air': {
-      title: 'iPad Air',
-      sub: '64 GB · Wi‑Fi · SN ···5208',
-      price: 44900,
-      priceText: '44 900 ₽',
-      grade: 'A',
-      battery: 'норма',
-      batteryText: 'Батарея в норме',
-      exitText: 'до 31 000 ₽',
-      repair: 'не вскрывался',
-      visualClass: 'detail-product detail-product--tablet'
+  // --- Device data loading ---------------------------------------------
+  // Prefer the structured JSON file when served over HTTP. Fall back to the
+  // embedded window.VP_DEVICES object (data/devices.js) when fetch is blocked
+  // (e.g. opening pages over file://). Either way we end up with a list.
+  function loadDevices() {
+    var embedded = (window.VP_DEVICES && window.VP_DEVICES.devices) || null;
+    if (!('fetch' in window) || location.protocol === 'file:') {
+      return Promise.resolve(embedded || []);
     }
-  };
+    return fetch(resolve('data/devices.json'))
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (json) {
+        return (json && json.devices) || embedded || [];
+      })
+      .catch(function () {
+        return embedded || [];
+      });
+  }
 
-  var selectedDevice = devices['iphone-13-pro'];
+  function indexById(list) {
+    var map = {};
+    list.forEach(function (d) { map[d.id] = d; });
+    return map;
+  }
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  // --- Catalog rendering ------------------------------------------------
+  function buildCard(device) {
+    var article = el('article', 'device-card');
+    article.setAttribute('data-device', device.id);
+    article.setAttribute('data-type', (device.tags || []).join(' '));
+
+    var media = el('div', 'device-card__media device-card__media--photo');
+    var img = el('img');
+    img.src = resolve(device.listingImage);
+    img.alt = device.listingAlt || device.title;
+    img.loading = 'lazy';
+    media.appendChild(img);
+
+    var body = el('div', 'device-card__body');
+
+    var top = el('div', 'device-card__top');
+    var titleWrap = el('div');
+    titleWrap.appendChild(el('h3', null, device.title));
+    titleWrap.appendChild(el('p', null, [device.specs, device.color].filter(Boolean).join(' · ')));
+    top.appendChild(titleWrap);
+    top.appendChild(el('span', 'grade-mini', device.grade));
+    body.appendChild(top);
+
+    var meta = el('div', 'device-card__meta');
+    meta.appendChild(el('span', null, device.metaBattery || device.batteryText));
+    meta.appendChild(el('span', null, device.warrantyText || ('Гарантия ' + device.warranty)));
+    meta.appendChild(el('span', null, device.exitText || ('Выход ' + device.exit)));
+    body.appendChild(meta);
+
+    body.appendChild(el('div', 'device-card__price', device.priceText));
+
+    if (device.hasDetailPage) {
+      var link = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть паспорт');
+      link.href = resolve('device/' + device.id + '/index.html');
+      body.appendChild(link);
+    } else {
+      var btn = el('button', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть пример');
+      btn.type = 'button';
+      btn.setAttribute('data-open-device', device.id);
+      body.appendChild(btn);
+    }
+
+    article.appendChild(media);
+    article.appendChild(body);
+    return article;
+  }
+
+  function renderCatalog(list) {
+    var grid = document.getElementById('catalogGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    list.forEach(function (device) { grid.appendChild(buildCard(device)); });
+  }
+
+  // --- Index in-page device detail + trade calculator -------------------
+  var selectedDevice = null;
 
   function formatRub(value) {
     var safe = Math.max(0, value);
@@ -96,34 +143,34 @@
     topupResult.textContent = formatRub(selectedDevice.price - Number(oldDevice.value || 0));
   }
 
-  function openDevice(id) {
-    var device = devices[id] || devices['iphone-13-pro'];
+  function openDevice(device) {
+    if (!device) return;
     selectedDevice = device;
 
+    var sub = [device.specs, device.color, device.serial].filter(Boolean).join(' · ');
     var map = {
       detailTitle: device.title,
-      detailSub: device.sub,
+      detailSub: sub,
       detailPrice: device.priceText,
       detailGrade: 'Грейд ' + device.grade,
       detailBattery: device.batteryText,
-      detailExit: device.exitText,
+      detailExit: device.exit,
       passportDevice: device.title,
-      passportSub: device.sub + ' · проверка пройдена',
+      passportSub: sub + ' · проверка пройдена',
       passportGrade: device.grade,
       passportBattery: device.battery,
-      passportRepair: device.repair,
-      passportExit: device.exitText
+      passportRepair: device.repair || (device.passport && device.passport.repair) || '—',
+      passportExit: device.exit
     };
     Object.keys(map).forEach(function (key) {
-      var el = document.getElementById(key);
-      if (el) el.textContent = map[key];
+      var node = document.getElementById(key);
+      if (node) node.textContent = map[key];
     });
 
     var detailVisual = document.getElementById('detailVisual');
     if (detailVisual) {
       detailVisual.innerHTML = '';
-      var product = document.createElement('div');
-      product.className = device.visualClass;
+      var product = el('div', device.visualClass);
       detailVisual.appendChild(product);
     }
 
@@ -132,46 +179,197 @@
     if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  document.querySelectorAll('[data-open-device]').forEach(function (button) {
-    button.addEventListener('click', function () {
-      openDevice(button.getAttribute('data-open-device'));
-    });
-  });
+  // --- Product (detail) page rendering ----------------------------------
+  function renderGallery(device) {
+    var mainImg = document.getElementById('deviceGalleryImage');
+    var thumbsWrap = document.getElementById('deviceGalleryThumbs');
+    if (!mainImg || !thumbsWrap || !device.gallery || !device.gallery.length) return;
 
-  document.querySelectorAll('.filter-chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      var filter = chip.getAttribute('data-filter');
-      document.querySelectorAll('.filter-chip').forEach(function (item) { item.classList.remove('is-active'); });
-      chip.classList.add('is-active');
-      document.querySelectorAll('.device-card').forEach(function (card) {
-        var type = card.getAttribute('data-type') || '';
-        card.hidden = filter !== 'all' && type.indexOf(filter) === -1;
+    var first = device.gallery[0];
+    mainImg.src = resolve(first.src);
+    mainImg.alt = first.alt || device.title;
+
+    thumbsWrap.innerHTML = '';
+    device.gallery.forEach(function (shot, i) {
+      var btn = el('button', 'thumb' + (i === 0 ? ' is-active' : ''), shot.label);
+      btn.type = 'button';
+      btn.setAttribute('data-gallery-src', resolve(shot.src));
+      btn.setAttribute('data-gallery-alt', shot.alt || '');
+      btn.addEventListener('click', function () {
+        mainImg.src = btn.getAttribute('data-gallery-src');
+        mainImg.alt = btn.getAttribute('data-gallery-alt') || '';
+        thumbsWrap.querySelectorAll('.thumb').forEach(function (t) { t.classList.remove('is-active'); });
+        btn.classList.add('is-active');
       });
+      thumbsWrap.appendChild(btn);
     });
-  });
+  }
 
-  var oldDeviceSelect = document.getElementById('oldDevice');
-  if (oldDeviceSelect) oldDeviceSelect.addEventListener('change', updateTopup);
-  updateTopup();
+  function setText(id, value) {
+    var node = document.getElementById(id);
+    if (node && value != null) node.textContent = value;
+  }
 
-  // Device page gallery.
-  var galleryImage = document.getElementById('deviceGalleryImage');
-  if (galleryImage) {
-    document.querySelectorAll('[data-gallery-src]').forEach(function (thumb) {
-      thumb.addEventListener('click', function () {
-        galleryImage.src = thumb.getAttribute('data-gallery-src');
-        galleryImage.alt = thumb.getAttribute('data-gallery-alt') || '';
-        document.querySelectorAll('[data-gallery-src]').forEach(function (item) { item.classList.remove('is-active'); });
-        thumb.classList.add('is-active');
+  function renderProduct(device) {
+    if (!device) return;
+    var sub = [device.specs, device.color, device.serial].filter(Boolean).join(' · ');
+    var p = device.passport || {};
+
+    document.title = device.title + ' с Паспортом Премиума — Второй Премиум';
+
+    setText('productBreadcrumb', 'Каталог / ' + device.title);
+    setText('productHeadline', device.headline || (device.title + '. Не новый. Проверенный.'));
+    setText('productLead', device.shortDescription);
+    setText('productPrice', device.priceText);
+    setText('productAvailability', device.availability);
+
+    // Chips
+    var chips = document.getElementById('productChips');
+    if (chips) {
+      chips.innerHTML = '';
+      chips.appendChild(el('span', null, 'Грейд ' + device.grade));
+      chips.appendChild(el('span', null, device.batteryText));
+      chips.appendChild(el('span', null, 'Гарантия ' + device.warranty));
+    }
+    setText('productExitChip', device.exit);
+
+    renderGallery(device);
+
+    // Passport summary panel
+    setText('passportDevice', device.title);
+    setText('passportSub', sub);
+    setText('passportGrade', device.grade);
+    var rowsWrap = document.getElementById('passportRows');
+    if (rowsWrap && p.summaryRows) {
+      rowsWrap.innerHTML = '';
+      p.summaryRows.forEach(function (row) {
+        var prow = el('div', 'prow');
+        var lbl = el('span', 'lbl');
+        lbl.appendChild(el('span', 'dot dot--' + (row.state || 'ok')));
+        lbl.appendChild(document.createTextNode(row.label));
+        prow.appendChild(lbl);
+        prow.appendChild(el('span', 'val' + (row.state === 'ok' ? ' val--ok' : ''), row.value));
+        rowsWrap.appendChild(prow);
+      });
+    }
+    setText('passportExit', device.exit);
+
+    // Trade calculator
+    var oldDevice = document.getElementById('oldDevice');
+    if (oldDevice && device.trade && device.trade.options) {
+      oldDevice.innerHTML = '';
+      device.trade.options.forEach(function (opt) {
+        var o = el('option', null, opt.label);
+        o.value = opt.value;
+        oldDevice.appendChild(o);
+      });
+    }
+    setText('tradeTarget', 'Доплата до ' + device.title);
+
+    // Full passport accordion
+    var diag = p.diagnostics || {};
+    setText('passportDiagStatus', diag.status);
+    var checkGrid = document.getElementById('passportCheckGrid');
+    if (checkGrid && diag.checklist) {
+      checkGrid.innerHTML = '';
+      diag.checklist.forEach(function (item) {
+        var cell = el('div');
+        cell.appendChild(el('span', 'dot dot--' + (item.state || 'ok')));
+        cell.appendChild(document.createTextNode(item.text));
+        checkGrid.appendChild(cell);
+      });
+    }
+
+    var cond = p.condition || {};
+    setText('passportConditionGrade', cond.gradeText || ('грейд ' + device.grade));
+    setText('passportConditionNote', cond.note);
+    var condList = document.getElementById('passportConditionList');
+    if (condList && cond.notes) {
+      condList.innerHTML = '';
+      cond.notes.forEach(function (n) { condList.appendChild(el('li', null, n)); });
+    }
+    var defectImg = document.getElementById('passportDefectPhoto');
+    if (defectImg && cond.defectPhoto) {
+      defectImg.src = resolve(cond.defectPhoto);
+      defectImg.alt = cond.defectPhotoAlt || '';
+    }
+
+    var warr = p.warranty || {};
+    setText('passportWarrantyDuration', warr.duration || device.warranty);
+    setText('passportWarrantyCovered', warr.covered);
+    setText('passportWarrantyNotCovered', warr.notCovered);
+
+    var exit = p.exitPrice || {};
+    setText('passportExitHeadline', exit.headline || device.exit);
+    setText('passportExitBuyToday', exit.buyToday || device.priceText);
+    setText('passportExitTradeIn', exit.tradeInEstimate || device.exit);
+    setText('passportExitCondition', exit.condition);
+    setText('passportExitNote', exit.note);
+
+    // Wire trade calculator with this device as the target.
+    selectedDevice = device;
+    updateTopup();
+  }
+
+  // --- Wire up after data loads ----------------------------------------
+  function wireFilters() {
+    document.querySelectorAll('.filter-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var filter = chip.getAttribute('data-filter');
+        document.querySelectorAll('.filter-chip').forEach(function (item) { item.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        document.querySelectorAll('.device-card').forEach(function (card) {
+          var type = card.getAttribute('data-type') || '';
+          card.hidden = filter !== 'all' && type.indexOf(filter) === -1;
+        });
       });
     });
   }
 
-  // Scroll reveal
+  function wireOpenButtons(byId) {
+    document.querySelectorAll('[data-open-device]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        openDevice(byId[button.getAttribute('data-open-device')] || byId['iphone-13-pro']);
+      });
+    });
+  }
+
+  loadDevices().then(function (list) {
+    var byId = indexById(list);
+
+    // Catalog pages (index preview + full catalog).
+    if (document.getElementById('catalogGrid')) {
+      renderCatalog(list);
+      wireFilters();
+      wireOpenButtons(byId);
+    }
+
+    // Index in-page detail default selection + trade calculator.
+    if (document.getElementById('device-detail')) {
+      var initial = byId['iphone-13-pro'] || list[0];
+      if (initial) {
+        selectedDevice = initial;
+        updateTopup();
+      }
+    }
+
+    // Product detail page.
+    var productHost = document.getElementById('productPage');
+    if (productHost) {
+      var pid = productHost.getAttribute('data-device-id');
+      renderProduct(byId[pid] || byId['iphone-13-pro']);
+    }
+
+    var oldDeviceSelect = document.getElementById('oldDevice');
+    if (oldDeviceSelect) oldDeviceSelect.addEventListener('change', updateTopup);
+    updateTopup();
+  });
+
+  // Scroll reveal (independent of data load)
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var reveals = document.querySelectorAll('.reveal');
   if (reduce || !('IntersectionObserver' in window)) {
-    reveals.forEach(function (el) { el.classList.add('in'); });
+    reveals.forEach(function (elm) { elm.classList.add('in'); });
   } else {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
@@ -181,10 +379,9 @@
         }
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
-    reveals.forEach(function (el) { io.observe(el); });
-    // Safety net: never leave content hidden if the observer is bypassed.
+    reveals.forEach(function (elm) { io.observe(elm); });
     setTimeout(function () {
-      reveals.forEach(function (el) { el.classList.add('in'); });
+      reveals.forEach(function (elm) { elm.classList.add('in'); });
     }, 2500);
   }
 })();

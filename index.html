@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Второй Премиум — Не новый. Проверенный.</title>
+<meta name="description" content="Проверенный премиум без переплаты. Премиальная техника с Паспортом Премиума, гарантией и понятной ценой выхода. Северодвинск." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============== NAV ============== -->
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="#top" aria-label="Второй Премиум — на главную">
+      <svg class="logo" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="1" width="32" height="32" rx="9" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M9.5 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor"/>
+        <path d="M18 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor" opacity="0.45"/>
+      </svg>
+      <span class="brandname">Второй&nbsp;Премиум</span>
+    </a>
+    <nav class="nav__links" id="navLinks" aria-label="Основная навигация">
+      <a href="#store">Store</a>
+      <a href="#passport">Паспорт</a>
+      <a href="#trade">Trade</a>
+      <a href="#club">Club</a>
+      <a href="#diagnostics">Диагностика</a>
+    </nav>
+    <div class="nav__cta">
+      <a href="#final" class="btn btn--filled btn--sm">Подобрать устройство</a>
+      <button class="nav__toggle" id="navToggle" aria-label="Открыть меню" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============== HERO ============== -->
+<section class="hero wrap">
+  <h1 class="display reveal">Не новый. Проверенный.</h1>
+  <p class="lead reveal">Премиальная техника с Паспортом&nbsp;Премиума, гарантией и понятной ценой выхода.</p>
+  <div class="btn-row center reveal">
+    <a href="#final" class="btn btn--filled">Подобрать устройство</a>
+    <a href="#passport" class="btn btn--outlined">Как работает паспорт</a>
+  </div>
+
+  <div class="hero-stage reveal">
+    <div class="device" aria-hidden="true">
+      <div class="device__screen">
+        <div class="device__glow"></div>
+        <div class="device__notch"></div>
+        <svg class="device__mark" width="40" height="40" viewBox="0 0 34 34" fill="none">
+          <path d="M9.5 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor"/>
+          <path d="M18 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor" opacity="0.45"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Floating Passport Card -->
+    <div class="passport passport-float" aria-label="Паспорт Премиума устройства">
+      <div class="passport__head">
+        <div>
+          <div class="passport__device">iPhone 13 Pro</div>
+          <div class="passport__sub">256 GB · Графитовый</div>
+        </div>
+        <div class="grade"><b>A−</b><span>Грейд</span></div>
+      </div>
+      <div class="passport__rows">
+        <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Батарея</span><span class="val">89%</span></div>
+        <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Ремонт</span><span class="val val--ok">не вскрывался</span></div>
+        <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Face ID</span><span class="val val--ok">работает</span></div>
+        <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Влага</span><span class="val val--ok">следов нет</span></div>
+      </div>
+      <div class="passport__exit">
+        <span class="x-lbl">Цена выхода через 6 мес</span>
+        <span class="x-val">до 42 000 ₽</span>
+      </div>
+      <div class="passport__foot">
+        <span class="passport__warranty">Гарантия <b>90 дней</b></span>
+        <svg class="qr" viewBox="0 0 44 44" aria-hidden="true" role="img">
+          <rect width="44" height="44" rx="6" fill="#f5f5f7"/>
+          <g fill="#1d1d1f">
+            <rect x="6" y="6" width="11" height="11"/><rect x="9" y="9" width="5" height="5" fill="#f5f5f7"/>
+            <rect x="27" y="6" width="11" height="11"/><rect x="30" y="9" width="5" height="5" fill="#f5f5f7"/>
+            <rect x="6" y="27" width="11" height="11"/><rect x="9" y="30" width="5" height="5" fill="#f5f5f7"/>
+            <rect x="21" y="6" width="3" height="3"/><rect x="21" y="14" width="3" height="3"/>
+            <rect x="21" y="21" width="3" height="3"/><rect x="27" y="21" width="3" height="3"/>
+            <rect x="33" y="21" width="3" height="3"/><rect x="21" y="27" width="3" height="3"/>
+            <rect x="27" y="27" width="3" height="3"/><rect x="33" y="33" width="3" height="3"/>
+            <rect x="27" y="33" width="3" height="3"/><rect x="33" y="27" width="3" height="3"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TRUST STRIP ============== -->
+<section class="trust" aria-label="Гарантии и проверка">
+  <div class="wrap">
+    <div class="trust__grid">
+      <div class="trust__item"><div class="big">90 дней</div><div class="cap">гарантии на каждое устройство</div></div>
+      <div class="trust__item"><div class="big">A / B / C</div><div class="cap">честный грейд состояния</div></div>
+      <div class="trust__item"><div class="big">Цена выхода</div><div class="cap">известна ещё до покупки</div></div>
+      <div class="trust__item"><div class="big">Открытая</div><div class="cap">диагностика при вас</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PASSPORT ============== -->
+<section class="section passport-section" id="passport">
+  <div class="wrap">
+    <div class="layout">
+      <div class="reveal">
+        <div class="eyebrow">Паспорт Премиума</div>
+        <h2 class="h2">У каждого устройства есть понятная история.</h2>
+        <p class="lead" style="margin-top:16px;">Не PDF и не отписка. Документ, в котором простым языком сказано всё, что важно знать перед покупкой.</p>
+        <ul class="feature-list">
+          <li>
+            <svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6M9 11h6"/></svg>
+            <div><div class="fi-title">Состояние и грейд</div><div class="fi-desc">Батарея, корпус, экран — оценка по прозрачной шкале A / B / C.</div></div>
+          </li>
+          <li>
+            <svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 4v5c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V7l7-4Z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>
+            <div><div class="fi-title">История и проверка</div><div class="fi-desc">Ремонт, вскрытие, влага, Face ID — зафиксировано по результатам диагностики.</div></div>
+          </li>
+          <li>
+            <svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <div><div class="fi-title">Гарантия 90 дней</div><div class="fi-desc">Письменная гарантия, а не «верьте на слово».</div></div>
+          </li>
+          <li>
+            <svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l6-6 4 4 6-7"/><path d="M20 8v4h-4"/></svg>
+            <div><div class="fi-title">Цена выхода</div><div class="fi-desc">Сколько устройство будет стоить при обмене или выкупе — известно заранее.</div></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="reveal">
+        <!-- Full passport card as product hero -->
+        <div class="passport">
+          <div class="passport__head">
+            <div>
+              <div class="passport__device">iPhone 13 Pro</div>
+              <div class="passport__sub">256 GB · Графитовый · IMEI ···4821</div>
+            </div>
+            <div class="grade"><b>A−</b><span>Грейд</span></div>
+          </div>
+          <div class="passport__rows">
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Батарея</span><span class="val">89%</span></div>
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Ремонт</span><span class="val val--ok">не вскрывался</span></div>
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Face ID</span><span class="val val--ok">работает</span></div>
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Влага</span><span class="val val--ok">следов нет</span></div>
+            <div class="prow"><span class="lbl"><span class="dot dot--ok"></span>Экран / корпус</span><span class="val">микроцарапины</span></div>
+          </div>
+          <div class="passport__exit">
+            <span class="x-lbl">Цена выхода через 6 мес</span>
+            <span class="x-val">до 42 000 ₽</span>
+          </div>
+          <div class="passport__foot">
+            <span class="passport__warranty">Гарантия <b>90 дней</b> · проверка пройдена</span>
+            <svg class="qr" viewBox="0 0 44 44" aria-hidden="true" role="img">
+              <rect width="44" height="44" rx="6" fill="#f5f5f7"/>
+              <g fill="#1d1d1f">
+                <rect x="6" y="6" width="11" height="11"/><rect x="9" y="9" width="5" height="5" fill="#f5f5f7"/>
+                <rect x="27" y="6" width="11" height="11"/><rect x="30" y="9" width="5" height="5" fill="#f5f5f7"/>
+                <rect x="6" y="27" width="11" height="11"/><rect x="9" y="30" width="5" height="5" fill="#f5f5f7"/>
+                <rect x="21" y="6" width="3" height="3"/><rect x="21" y="14" width="3" height="3"/>
+                <rect x="21" y="21" width="3" height="3"/><rect x="27" y="21" width="3" height="3"/>
+                <rect x="33" y="21" width="3" height="3"/><rect x="21" y="27" width="3" height="3"/>
+                <rect x="27" y="27" width="3" height="3"/><rect x="33" y="33" width="3" height="3"/>
+                <rect x="27" y="33" width="3" height="3"/><rect x="33" y="27" width="3" height="3"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== STORE ============== -->
+<section class="section section--wash" id="store">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Store</div>
+      <h2 class="h2">Не с рук. С гарантией.</h2>
+      <p class="lead text-wrap" style="margin-top:16px;">Оффлайн-магазин проверенного премиума. Открытая диагностика, паспорт устройства и понятная цена выхода. Мы конкурируем с Avito спокойствием, а не ценой.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="step__num">01</div><div class="step__title">Выбираете</div><div class="step__desc">Подбираем устройство под задачу и бюджет. Каждое — с паспортом и грейдом.</div></div>
+      <div class="step reveal"><div class="step__num">02</div><div class="step__title">Проверяете</div><div class="step__desc">Открытая диагностика при вас. Сначала проверка — потом покупка.</div></div>
+      <div class="step reveal"><div class="step__num">03</div><div class="step__title">Покупаете</div><div class="step__desc">Получаете паспорт, чек и письменную гарантию на 90 дней.</div></div>
+      <div class="step reveal"><div class="step__num">04</div><div class="step__title">Выходите</div><div class="step__desc">Захотели сменить — знаете цену обмена заранее. Без потери и торга.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TRADE ============== -->
+<section class="section" id="trade">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Trade</div>
+      <h2 class="h2">Не продавайте старый iPhone. Переходите на следующий.</h2>
+      <p class="lead text-wrap" style="margin-top:16px;">Без объявлений. Без торга. Без незнакомцев. После честной оценки — три понятных пути.</p>
+    </div>
+    <div class="trade-choices">
+      <div class="choice reveal">
+        <svg class="choice__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+        <div class="choice__title">Получить деньги сейчас</div>
+        <div class="choice__desc">Быстрый выкуп по честной оценке. Деньги в день обращения, без ожидания покупателя.</div>
+      </div>
+      <div class="choice reveal">
+        <svg class="choice__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l6-6 4 4 6-7"/><path d="M20 8v4h-4"/></svg>
+        <div class="choice__title">Продать дороже через комиссию</div>
+        <div class="choice__desc">Мы продаём устройство за вас — с паспортом и проверкой. Вы получаете больше, мы берём комиссию.</div>
+      </div>
+      <div class="choice reveal">
+        <svg class="choice__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 7h11l-2.5-2.5M17 17H6l2.5 2.5"/></svg>
+        <div class="choice__title">Перейти на следующую модель</div>
+        <div class="choice__desc">Сдаёте текущее в зачёт и доплачиваете разницу. Апгрейд без продажи и хлопот.</div>
+      </div>
+    </div>
+
+    <div class="valuation reveal">
+      <div class="valuation__head">Пример оценки и перехода</div>
+      <div class="valuation__flow">
+        <div class="val-box">
+          <div class="device-name">iPhone 12</div>
+          <div class="device-note">ваш, грейд B · 128 GB</div>
+        </div>
+        <svg class="val-arrow" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <div class="val-box">
+          <div class="device-name">iPhone 13 Pro / 14 Pro</div>
+          <div class="device-note">проверенный, с паспортом</div>
+        </div>
+      </div>
+      <div class="valuation__topup">
+        <div class="lbl">Доплата при переходе — от</div>
+        <div class="amount">19 900 ₽</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CLUB ============== -->
+<section class="section section--carbon" id="club">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Club</div>
+      <h2 class="h2">Система умного владения.</h2>
+      <p class="lead text-wrap" style="margin-top:16px;">Не про дешевизну, а про контроль: пользоваться, менять, выкупать или возвращать — на ваших условиях.</p>
+    </div>
+    <div class="club-levels">
+      <div class="level reveal">
+        <div class="level__badge">Care</div>
+        <div class="level__name">Care</div>
+        <div class="level__tag">Спокойное владение с защитой и приоритетным сервисом.</div>
+        <ul class="level__features">
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Продлённая гарантия</li>
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Приоритетная диагностика</li>
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Зафиксированная цена выкупа</li>
+        </ul>
+      </div>
+      <div class="level level--featured reveal">
+        <div class="level__badge">Популярный</div>
+        <div class="level__name">Upgrade</div>
+        <div class="level__tag">Плановый переход на следующую модель без потери в цене.</div>
+        <ul class="level__features">
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Всё из уровня Care</li>
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Обмен по известной цене выхода</li>
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Ранний доступ к новым поступлениям</li>
+        </ul>
+      </div>
+      <div class="level reveal">
+        <div class="level__badge">Flex</div>
+        <div class="level__name">Flex</div>
+        <div class="level__tag">Максимум гибкости: пользуйтесь, выкупайте или возвращайте.</div>
+        <ul class="level__features">
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Всё из уровня Upgrade</li>
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Право возврата устройства</li>
+          <li><svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Выкуп в собственность в любой момент</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DIAGNOSTICS + COMPARISON ============== -->
+<section class="section" id="diagnostics">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Открытая диагностика</div>
+      <h2 class="h2">Мы не просим верить. Мы показываем.</h2>
+      <p class="lead text-wrap" style="margin-top:16px;">Сначала проверка. Потом покупка. Сравните, как это работает с рук — и как у нас.</p>
+    </div>
+
+    <div class="compare reveal" role="table" aria-label="Сравнение покупки с рук и во Втором Премиуме">
+      <div class="compare__row compare__head" role="row">
+        <div class="compare__cell compare__cell--label" role="columnheader">Что вы получаете</div>
+        <div class="compare__cell compare__cell--bad" role="columnheader">С рук</div>
+        <div class="compare__cell compare__cell--good" role="columnheader">Во «Втором Премиуме»</div>
+      </div>
+      <div class="compare__row" role="row">
+        <div class="compare__cell compare__cell--label" role="cell">История устройства</div>
+        <div class="compare__cell compare__cell--bad" role="cell"><svg class="x-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>неизвестна</div>
+        <div class="compare__cell compare__cell--good" role="cell"><svg class="v-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>Паспорт Премиума</div>
+      </div>
+      <div class="compare__row" role="row">
+        <div class="compare__cell compare__cell--label" role="cell">Где встреча</div>
+        <div class="compare__cell compare__cell--bad" role="cell"><svg class="x-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>с незнакомцем</div>
+        <div class="compare__cell compare__cell--good" role="cell"><svg class="v-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>точка доверия</div>
+      </div>
+      <div class="compare__row" role="row">
+        <div class="compare__cell compare__cell--label" role="cell">Цена</div>
+        <div class="compare__cell compare__cell--bad" role="cell"><svg class="x-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>только сегодня</div>
+        <div class="compare__cell compare__cell--good" role="cell"><svg class="v-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>цена выхода известна</div>
+      </div>
+      <div class="compare__row" role="row">
+        <div class="compare__cell compare__cell--label" role="cell">Состояние</div>
+        <div class="compare__cell compare__cell--bad" role="cell"><svg class="x-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>вера на слово</div>
+        <div class="compare__cell compare__cell--good" role="cell"><svg class="v-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>проверка при вас</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FINAL CTA ============== -->
+<section class="section section--wash final-cta" id="final">
+  <div class="wrap">
+    <h2 class="h2 reveal">Премиумом надо пользоваться,<br>а не переплачивать за него.</h2>
+    <div class="btn-row center reveal">
+      <a href="#top" class="btn btn--filled">Записаться на диагностику</a>
+      <a href="#top" class="btn btn--outlined">Принести устройство на оценку</a>
+    </div>
+    <p class="muted reveal" style="margin-top:24px;font-size:var(--text-body-sm);">Северодвинск. Мы здесь. Нас можно найти. Мы отвечаем за то, что продаём.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="wrap">
+    <p class="footer__note">Прототип лендинга. «Второй Премиум» — концепт магазина-клуба проверенной премиум-техники. Указанные модели устройств, цены, грейды и сроки гарантии приведены как пример и не являются публичной офертой. Названия и товарные знаки принадлежат их правообладателям; устройства показаны схематично.</p>
+    <div class="footer__cols">
+      <div class="footer__brand">
+        <svg class="logo" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="1" y="1" width="32" height="32" rx="9" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M9.5 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor"/>
+          <path d="M18 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor" opacity="0.45"/>
+        </svg>
+        <p>Проверенный премиум без переплаты. Северодвинск.</p>
+      </div>
+      <div>
+        <h4>Магазин</h4>
+        <a href="#store">Store</a>
+        <a href="#passport">Паспорт Премиума</a>
+        <a href="#diagnostics">Открытая диагностика</a>
+      </div>
+      <div>
+        <h4>Сервисы</h4>
+        <a href="#trade">Trade</a>
+        <a href="#club">Club</a>
+        <a href="#final">Подобрать устройство</a>
+      </div>
+      <div>
+        <h4>Контакты</h4>
+        <a href="#top">Северодвинск</a>
+        <a href="#final">Записаться на диагностику</a>
+        <a href="#final">Принести на оценку</a>
+      </div>
+    </div>
+    <div class="footer__legal">
+      <span>© 2025 Второй Премиум. Концепт-прототип.</span>
+      <span>Не новый. Проверенный.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

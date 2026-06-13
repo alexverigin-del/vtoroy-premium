@@ -19,6 +19,17 @@
     });
   }
 
+  // Prototype lead form: show a clear success state without sending data.
+  var leadForm = document.getElementById('leadForm');
+  var formNote = document.getElementById('formNote');
+  if (leadForm && formNote) {
+    leadForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      formNote.textContent = 'Заявка в прототипе не отправляется. Для реального запуска подключите CRM, Telegram-бота или форму записи.';
+      formNote.classList.add('is-success');
+    });
+  }
+
   // Scroll reveal
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var reveals = document.querySelectorAll('.reveal');

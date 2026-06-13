@@ -32,7 +32,7 @@
       <a href="#diagnostics">Диагностика</a>
     </nav>
     <div class="nav__cta">
-      <a href="#final" class="btn btn--filled btn--sm">Подобрать устройство</a>
+      <a href="#final" class="btn btn--filled btn--sm">Получить подборку</a>
       <button class="nav__toggle" id="navToggle" aria-label="Открыть меню" aria-expanded="false">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
@@ -46,10 +46,15 @@
 <section class="hero wrap">
   <div class="hero__kicker reveal">Северодвинск · Store / Trade / Club</div>
   <h1 class="display reveal">Не новый. Проверенный.</h1>
-  <p class="lead reveal">Премиальная техника с Паспортом&nbsp;Премиума, гарантией и понятной ценой выхода.</p>
+  <p class="lead reveal">Премиальная техника с Паспортом&nbsp;Премиума, гарантией и понятной ценой выхода. Подберём 3 проверенных варианта под ваш бюджет и сценарий владения.</p>
   <div class="btn-row center reveal">
-    <a href="#final" class="btn btn--filled">Подобрать устройство</a>
-    <a href="#passport" class="btn btn--outlined">Как работает паспорт</a>
+    <a href="#final" class="btn btn--filled">Получить подборку</a>
+    <a href="#trade" class="btn btn--outlined">Оценить своё устройство</a>
+  </div>
+  <div class="hero__assurance reveal" aria-label="Условия обращения">
+    <span>Без обязательств</span>
+    <span>Ответим в день обращения</span>
+    <span>Store в Северодвинске</span>
   </div>
 
   <div class="hero-stage reveal">
@@ -111,6 +116,37 @@
       <div class="trust__item"><div class="big">A / B / C</div><div class="cap">честный грейд состояния</div></div>
       <div class="trust__item"><div class="big">Цена выхода</div><div class="cap">известна ещё до покупки</div></div>
       <div class="trust__item"><div class="big">Открытая</div><div class="cap">диагностика при вас</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CONVERSION PATHS ============== -->
+<section class="section conversion-paths" aria-label="Выберите свой сценарий">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">С чего начать</div>
+      <h2 class="h2">Три спокойных входа в премиум.</h2>
+      <p class="lead text-wrap" style="margin-top:16px;">Не нужно сразу решать, покупать, менять или вступать в Club. Начните с понятного действия — мы покажем лучший маршрут.</p>
+    </div>
+    <div class="path-grid">
+      <a class="path-card reveal" href="#final">
+        <span class="path-card__num">01</span>
+        <strong>Подобрать устройство</strong>
+        <p>Расскажите бюджет и задачу. Подготовим 3 варианта с паспортом, гарантией и ценой выхода.</p>
+        <span class="path-card__link">Получить подборку ›</span>
+      </a>
+      <a class="path-card reveal" href="#trade">
+        <span class="path-card__num">02</span>
+        <strong>Оценить старое</strong>
+        <p>Покажем честную вилку: быстрый выкуп, комиссия или переход на следующую модель.</p>
+        <span class="path-card__link">Перейти к Trade ›</span>
+      </a>
+      <a class="path-card reveal" href="#club">
+        <span class="path-card__num">03</span>
+        <strong>Войти в Club</strong>
+        <p>Для тех, кто хочет пользоваться премиумом, сохранять стоимость и обновляться без Avito.</p>
+        <span class="path-card__link">Посмотреть Club ›</span>
+      </a>
     </div>
   </div>
 </section>
@@ -362,10 +398,38 @@
 <!-- ============== FINAL CTA ============== -->
 <section class="section section--wash final-cta" id="final">
   <div class="wrap">
-    <h2 class="h2 reveal">Премиумом надо пользоваться,<br>а не переплачивать за него.</h2>
-    <div class="btn-row center reveal">
-      <a href="#top" class="btn btn--filled">Записаться на диагностику</a>
-      <a href="#top" class="btn btn--outlined">Принести устройство на оценку</a>
+    <div class="final-panel reveal">
+      <div class="final-panel__copy">
+        <div class="eyebrow">Следующий шаг</div>
+        <h2 class="h2">Получите подборку проверенного премиума.</h2>
+        <p class="lead">Оставьте сценарий — покупка, обмен или Club. В ответ вы получите понятные варианты: состояние, паспорт, гарантия и цена выхода.</p>
+        <div class="final-panel__proof">
+          <span>3 варианта под бюджет</span>
+          <span>без агрессивных продаж</span>
+          <span>сначала проверка — потом решение</span>
+        </div>
+      </div>
+      <form class="lead-form" id="leadForm">
+        <label>
+          <span>Что хотите сделать?</span>
+          <select name="scenario" aria-label="Сценарий обращения">
+            <option>Подобрать устройство</option>
+            <option>Оценить старое устройство</option>
+            <option>Перейти на следующую модель</option>
+            <option>Узнать про Club</option>
+          </select>
+        </label>
+        <label>
+          <span>Какое устройство интересно?</span>
+          <input name="device" type="text" placeholder="Например, iPhone 13 Pro или MacBook Air" />
+        </label>
+        <label>
+          <span>Контакт для ответа</span>
+          <input name="contact" type="text" placeholder="Телефон или Telegram" />
+        </label>
+        <button class="btn btn--filled lead-form__submit" type="submit">Получить подборку</button>
+        <p class="lead-form__note" id="formNote">Прототип формы: в реальном запуске здесь будет отправка заявки в CRM или мессенджер.</p>
+      </form>
     </div>
     <p class="muted reveal" style="margin-top:24px;font-size:var(--text-body-sm);">Северодвинск. Мы здесь. Нас можно найти. Мы отвечаем за то, что продаём.</p>
   </div>

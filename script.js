@@ -154,6 +154,19 @@
   if (oldDeviceSelect) oldDeviceSelect.addEventListener('change', updateTopup);
   updateTopup();
 
+  // Device page gallery.
+  var galleryImage = document.getElementById('deviceGalleryImage');
+  if (galleryImage) {
+    document.querySelectorAll('[data-gallery-src]').forEach(function (thumb) {
+      thumb.addEventListener('click', function () {
+        galleryImage.src = thumb.getAttribute('data-gallery-src');
+        galleryImage.alt = thumb.getAttribute('data-gallery-alt') || '';
+        document.querySelectorAll('[data-gallery-src]').forEach(function (item) { item.classList.remove('is-active'); });
+        thumb.classList.add('is-active');
+      });
+    });
+  }
+
   // Scroll reveal
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var reveals = document.querySelectorAll('.reveal');

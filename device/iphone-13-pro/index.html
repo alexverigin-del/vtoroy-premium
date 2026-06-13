@@ -29,8 +29,15 @@
     <div class="wrap">
       <div class="device-detail">
         <div class="detail-gallery">
-          <div class="detail-gallery__main"><div class="detail-product detail-product--phone"></div></div>
-          <div class="detail-gallery__thumbs"><button class="thumb is-active">Общий вид</button><button class="thumb">Экран</button><button class="thumb">Корпус</button><button class="thumb">Дефекты</button></div>
+          <div class="detail-gallery__main detail-gallery__main--photo">
+            <img id="deviceGalleryImage" src="../../assets/device-iphone-13-main.webp" alt="iPhone 13 Pro в графитовом цвете на светлой каменной поверхности" />
+          </div>
+          <div class="detail-gallery__thumbs">
+            <button type="button" class="thumb is-active" data-gallery-src="../../assets/device-iphone-13-main.webp" data-gallery-alt="iPhone 13 Pro в графитовом цвете на светлой каменной поверхности">Общий вид</button>
+            <button type="button" class="thumb" data-gallery-src="../../assets/device-iphone-13-screen.webp" data-gallery-alt="Экран iPhone 13 Pro с выключенным чёрным стеклом и отражениями">Экран</button>
+            <button type="button" class="thumb" data-gallery-src="../../assets/device-iphone-13-body.webp" data-gallery-alt="Корпус iPhone 13 Pro крупным планом с микроследами использования">Корпус</button>
+            <button type="button" class="thumb" data-gallery-src="../../assets/device-iphone-13-defect.webp" data-gallery-alt="Крупный план маленькой царапины на металлическом ребре устройства">Дефекты</button>
+          </div>
         </div>
         <aside class="buy-panel">
           <div class="eyebrow">Паспорт пройден</div>

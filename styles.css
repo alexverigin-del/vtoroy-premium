@@ -643,6 +643,18 @@ h1, h2, h3, h4, p { margin: 0; }
   justify-content: center;
   overflow: hidden;
 }
+.detail-gallery__main--photo {
+  padding: 0;
+  background: var(--color-frost);
+}
+.detail-gallery__main--photo img {
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
 .detail-product {
   width: 190px;
   height: 330px;
@@ -787,6 +799,7 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 @media (max-width: 560px) {
   .detail-gallery__main { min-height: 330px; }
+  .detail-gallery__main--photo img { min-height: 330px; }
   .detail-product { transform: scale(.82); }
   .detail-gallery__thumbs { grid-template-columns: repeat(2, 1fr); }
   .buy-panel { padding: 26px 22px; }
@@ -1258,6 +1271,7 @@ h1, h2, h3, h4, p { margin: 0; }
 @media (max-width: 600px) {
   .wrap { padding-left: 20px; padding-right: 20px; }
   :root { --section-gap: 80px; }
+  .page-hero .display { font-size: clamp(38px, 11vw, 48px); letter-spacing: -0.026em; }
 }
 
 /* ---------- Multi-page shell ---------- */

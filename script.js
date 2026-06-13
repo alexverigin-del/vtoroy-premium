@@ -43,8 +43,20 @@
   // Prefer the structured JSON file when served over HTTP. Fall back to the
   // embedded window.VP_DEVICES object (data/devices.js) when fetch is blocked
   // (e.g. opening pages over file://). Either way we end up with a list.
+  function needsDevices() {
+    return !!(document.getElementById('catalogGrid') ||
+              document.getElementById('device-detail') ||
+              document.getElementById('productPage'));
+  }
+
   function loadDevices() {
     var embedded = (window.VP_DEVICES && window.VP_DEVICES.devices) || null;
+    // Pages without a catalog grid, in-page detail, or product host (Store,
+    // Trade, Club, Passport) never consume the device list — skip the fetch so
+    // we don't log a spurious 404 for a data file they don't need.
+    if (!needsDevices()) {
+      return Promise.resolve(embedded || []);
+    }
     if (!('fetch' in window) || location.protocol === 'file:') {
       return Promise.resolve(embedded || []);
     }

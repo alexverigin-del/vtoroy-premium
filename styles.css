@@ -295,9 +295,20 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 @media (max-width: 720px) {
   .hero { padding-top: 40px; }
-  .passport-float { position: static; margin: var(--s-20) auto 0; right: auto; bottom: auto; }
-  .hero-stage { flex-direction: column; min-height: auto; }
-  .hero-photo { width: 100%; height: 320px; object-position: center 42%; }
+  /* Phone + passport read as a single product-proof block. */
+  .hero-stage { flex-direction: column; min-height: auto; gap: 0; }
+  /* The phone sits ~31% from the left of the source image; pan the cover crop
+     there so it stays centered in the narrow mobile frame instead of drifting
+     to the left edge. Slightly taller crop makes the phone read larger. */
+  .hero-photo { width: 100%; height: 340px; object-position: 31% 42%; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .passport-float {
+    position: static;
+    right: auto;
+    bottom: auto;
+    width: min(100%, 420px);
+    margin: -32px auto 0;
+    box-shadow: var(--shadow-product);
+  }
 }
 
 /* ---------- Passport Card component ---------- */

@@ -1,4 +1,5 @@
 export * from "./device.js";
+export * from "./content.js";
 
 import type { Device } from "./device.js";
 

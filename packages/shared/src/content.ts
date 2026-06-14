@@ -1,0 +1,99 @@
+// Domain types for editable site content (texts), mirroring the Directus
+// collections specified in directus/schema/content-model.md.
+//
+// Structured CMS, not a page builder: templates are fixed; editors fill a
+// bounded set of fields per section plus a typed `content` JSON.
+
+export type PublishStatus = "draft" | "published" | "archived";
+
+export type PageSlug =
+  | "home"
+  | "catalog"
+  | "store"
+  | "trade"
+  | "club"
+  | "passport"
+  | "product";
+
+export interface SiteSettings {
+  brandName: string;
+  tagline: string;
+  city: string;
+  phone?: string;
+  telegram?: string;
+  email?: string;
+  address?: string;
+  footerLegal?: string;
+  maintenanceMode?: boolean;
+}
+
+export type NavLocation = "header" | "footer" | "mobile";
+
+export interface NavigationItem {
+  id: string;
+  label: string;
+  url: string;
+  location: NavLocation;
+  sort: number;
+  isActive: boolean;
+  openInNew?: boolean;
+}
+
+/** Section-specific structured payloads keyed loosely by section_key. */
+export interface SectionContent {
+  // trust
+  items?: { title: string; text: string }[];
+  // path_router
+  cards?: { title: string; text: string; url: string }[];
+  // catalog_preview / store_preview
+  limit?: number;
+  filter?: string;
+  // trade_calculator_intro
+  note?: string;
+  disclaimer?: string;
+  // faq
+  faqKeys?: string[];
+  // passport_disclaimer / generic text
+  text?: string;
+  // escape hatch for anything else
+  [key: string]: unknown;
+}
+
+export interface PageSection {
+  id: string;
+  sectionKey: string;
+  variant?: string;
+  eyebrow?: string;
+  headline?: string;
+  subheadline?: string;
+  body?: string;
+  primaryCtaLabel?: string;
+  primaryCtaUrl?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaUrl?: string;
+  /** Absolute image URL (already resolved from a Directus file id). */
+  image?: string;
+  sortOrder: number;
+  isActive: boolean;
+  content: SectionContent;
+}
+
+export interface SitePage {
+  slug: PageSlug | string;
+  template: string;
+  status: PublishStatus;
+  title: string;
+  metaDescription?: string;
+  ogImage?: string;
+  sections: PageSection[];
+}
+
+export interface FaqItem {
+  id: string;
+  key: string;
+  question: string;
+  answer: string;
+  category: "passport" | "trade" | "club" | "general" | string;
+  sort: number;
+  isActive: boolean;
+}

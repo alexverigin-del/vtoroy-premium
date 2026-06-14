@@ -1,10 +1,14 @@
-import { directusConfig, fetchDevices } from "@/lib/directus";
+import { directusConfig, getPublishedDevices } from "@/lib/directus";
+import { DeviceCard } from "@/components/DeviceCard";
+import { CTAButton } from "@/components/CTAButton";
+
+export const revalidate = 300;
 
 export default async function HomePage() {
-  // Placeholder: once a Directus instance is configured via
-  // NEXT_PUBLIC_DIRECTUS_URL, fetchDevices() will return live catalog data.
-  // For now it returns an empty list so the scaffold builds without a backend.
-  const devices = await fetchDevices();
+  // Catalog data comes from Directus when configured, otherwise from the
+  // bundled fallback (data/devices.ts). The home page shows a short preview;
+  // the full grid lives at /catalog.
+  const devices = (await getPublishedDevices()).slice(0, 4);
 
   return (
     <main className="mx-auto max-w-content px-6 py-20">
@@ -15,46 +19,37 @@ export default async function HomePage() {
         Не новый. Проверенный.
       </h1>
       <p className="mt-6 max-w-2xl text-lg text-muted">
-        Это будущий публичный сайт на Next.js + Tailwind, который будет получать
-        каталог, паспорта устройств и trade-in данные из Directus. Текущий
-        опубликованный сайт — статический, лежит в корне репозитория и пока не
+        Премиальная техника Apple с Паспортом Премиума, гарантией и понятной ценой
+        выхода. Будущий публичный сайт на Next.js + Tailwind, который читает каталог
+        и контент из Directus. Текущий статический сайт в корне репозитория не
         затрагивается.
       </p>
 
-      <div className="mt-10 flex gap-4">
-        <a className="btn-pill" href="#">
-          Получить подборку
-        </a>
+      <div className="mt-10 flex flex-wrap gap-4">
+        <CTAButton href="/catalog" label="Смотреть каталог" />
+        <CTAButton href="/trade" label="Оценить своё устройство" variant="secondary" />
       </div>
 
       <section className="mt-16">
-        <h2 className="text-2xl font-semibold">Каталог (из Directus)</h2>
-        {devices.length === 0 ? (
-          <div className="card mt-6 p-8">
-            <p className="text-muted">
-              Источник данных Directus ещё не настроен. Укажите{" "}
-              <code className="rounded bg-surface px-1.5 py-0.5">
-                NEXT_PUBLIC_DIRECTUS_URL
-              </code>{" "}
-              в <code>.env.local</code> и реализуйте запросы в{" "}
-              <code>lib/directus.ts</code>.
-            </p>
-            <p className="mt-3 text-sm text-muted">
-              Текущая цель API:{" "}
-              <code>{directusConfig.url ?? "(не задан)"}</code>
-            </p>
-          </div>
-        ) : (
-          <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {devices.map((d) => (
-              <li key={d.id} className="card p-6">
-                <h3 className="font-semibold">{d.title}</h3>
-                <p className="mt-1 text-sm text-muted">{d.shortDescription}</p>
-                <p className="mt-4 font-medium">{d.priceText}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="flex items-end justify-between">
+          <h2 className="text-2xl font-semibold">Каталог</h2>
+          <a href="/catalog" className="text-sm font-medium text-accent hover:underline">
+            Все устройства →
+          </a>
+        </div>
+        <p className="mt-2 text-sm text-muted">
+          {directusConfig.enabled
+            ? "Данные загружаются из Directus."
+            : "Directus не настроен — показаны демо-данные из data/devices.json."}
+        </p>
+
+        <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {devices.map((device) => (
+            <li key={device.id}>
+              <DeviceCard device={device} />
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   );

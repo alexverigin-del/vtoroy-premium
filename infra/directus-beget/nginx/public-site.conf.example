@@ -1,0 +1,39 @@
+# nginx vhost for the PUBLIC site (Next.js).
+#
+# Replace your-domain.ru with the real domain. TLS certs are assumed to be
+# issued by certbot/Let's Encrypt; adjust paths as needed. This is an EXAMPLE —
+# review before using in production.
+
+server {
+    listen 80;
+    server_name your-domain.ru www.your-domain.ru;
+    # Redirect all HTTP to HTTPS.
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.ru www.your-domain.ru;
+
+    ssl_certificate     /etc/letsencrypt/live/your-domain.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.ru/privkey.pem;
+
+    # The Next.js app (`next start`) listening on localhost:3000.
+    # During the transition you may instead point root at the static site files.
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # --- TRANSITION OPTION ---
+    # To keep serving the current static site instead of Next.js, comment out
+    # the location / proxy above and serve the repo root directly:
+    #
+    # root /var/www/vtoroy-premium-landing;
+    # index index.html;
+    # location / { try_files $uri $uri/ $uri/index.html =404; }
+}

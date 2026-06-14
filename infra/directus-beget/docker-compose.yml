@@ -1,0 +1,76 @@
+# Directus + PostgreSQL (+ optional Redis cache) for a Beget VPS.
+#
+# Secrets are NOT stored here — every sensitive value is read from a local .env
+# file (see .env.example). Copy it first:
+#
+#   cp .env.example .env   # then edit .env with real values, never commit it
+#   docker compose up -d
+#
+# nginx (see ./nginx/) terminates TLS and proxies the public site and the
+# api/admin subdomain to the Directus container.
+
+services:
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Optional: Directus uses this for caching and rate-limiting when enabled.
+    # Remove this service (and the CACHE_*/REDIS env in .env) if not needed.
+
+  directus:
+    image: directus/directus:11
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      # Bind to localhost only; nginx proxies to it. Adjust if running without nginx.
+      - "127.0.0.1:8055:8055"
+    volumes:
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+    environment:
+      SECRET: ${SECRET}
+
+      DB_CLIENT: pg
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # First-run bootstrap admin. Change the password after first login.
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+      # Public URL Directus advertises (used for links, assets, OAuth, etc.).
+      PUBLIC_URL: ${PUBLIC_URL}
+
+      # Realtime / WebSockets.
+      WEBSOCKETS_ENABLED: ${WEBSOCKETS_ENABLED}
+
+      # Optional Redis cache (remove if the cache service is removed).
+      CACHE_ENABLED: ${CACHE_ENABLED}
+      CACHE_STORE: redis
+      REDIS: redis://cache:6379
+
+      # CORS so the Next.js site can call the API from the browser.
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: ${CORS_ORIGIN}
+
+# Named bind mounts above keep DB data, uploads and extensions on the host.
+# These directories are gitignored (see repo .gitignore).

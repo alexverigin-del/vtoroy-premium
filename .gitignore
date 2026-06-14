@@ -3,6 +3,32 @@ node_modules/
 assets/qa-*.png
 *.env
 .env*
+!.env.example
 *.secret
 *.pem
 *.key
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Build / TS
+dist/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+
+# Directus / infra runtime data
+infra/directus-beget/data/
+infra/directus-beget/uploads/
+infra/directus-beget/extensions/
+
+# OS / editor
+.DS_Store

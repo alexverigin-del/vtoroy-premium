@@ -1,0 +1,7 @@
+# Python jobs for Второй Премиум (Excel import, image optimization, Telegram).
+# Pin loosely for now; tighten before production.
+
+requests>=2.31          # Directus REST API calls
+python-dotenv>=1.0      # load .env (never commit real secrets)
+openpyxl>=3.1           # read/write .xlsx for device import/export
+Pillow>=10.0            # image optimization / webp conversion

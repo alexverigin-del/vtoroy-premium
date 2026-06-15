@@ -1,8 +1,11 @@
 import type {
   Device,
+  DevicePassport,
+  GalleryImage,
   SitePage,
   PageSection,
   FaqItem,
+  TradeInfo,
 } from "@vtoroy/shared";
 import { fallbackDevices } from "@/data/devices";
 
@@ -62,6 +65,87 @@ export function directusAssetUrl(fileId: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Directus row -> app Device mapping
+// ---------------------------------------------------------------------------
+//
+// The MVP stores devices in a single `devices` collection (see
+// scripts/seed_directus.py): scalars as snake_case columns, and tags/gallery/
+// passport/trade as JSON columns. Directus returns those raw, so map them into
+// the camelCase `Device` contract used across the app.
+
+function str(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : value == null ? fallback : String(value);
+}
+
+function num(value: unknown, fallback = 0): number {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function bool(value: unknown, fallback = false): boolean {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+// JSON columns may arrive already parsed (object/array) or as a string.
+function json<T>(value: unknown, fallback: T): T {
+  if (value == null) return fallback;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return fallback;
+    }
+  }
+  return value as T;
+}
+
+const EMPTY_PASSPORT: DevicePassport = {
+  summaryRows: [],
+  repair: "",
+  water: "",
+  diagnostics: { status: "", checklist: [] },
+  condition: { gradeText: "", note: "", notes: [] },
+  warranty: { duration: "", covered: "", notCovered: "" },
+  exitPrice: { headline: "", buyToday: "", tradeInEstimate: "", condition: "", note: "" },
+};
+
+export function mapDeviceFromDirectus(row: Record<string, unknown>): Device {
+  return {
+    id: str(row.id),
+    tags: json<string[]>(row.tags, []),
+    category: str(row.category),
+    title: str(row.title),
+    model: str(row.model),
+    specs: str(row.specs),
+    storage: str(row.storage),
+    color: str(row.color),
+    serial: str(row.serial),
+    price: num(row.price),
+    priceText: str(row.price_text),
+    grade: str(row.grade),
+    battery: str(row.battery),
+    batteryText: str(row.battery_text),
+    metaBattery: str(row.meta_battery),
+    warranty: str(row.warranty),
+    warrantyText: str(row.warranty_text),
+    exit: str(row.exit),
+    exitText: str(row.exit_text),
+    availability: str(row.availability),
+    shortDescription: str(row.short_description),
+    headline: str(row.headline),
+    listingImage: str(row.listing_image),
+    listingAlt: str(row.listing_alt),
+    ctaLabel: str(row.cta_label),
+    hasDetailPage: bool(row.has_detail_page),
+    detailHref: str(row.detail_href),
+    visualClass: str(row.visual_class),
+    gallery: json<GalleryImage[]>(row.gallery, []),
+    passport: json<DevicePassport>(row.passport, EMPTY_PASSPORT),
+    trade: json<TradeInfo>(row.trade, { options: [] }),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Catalog
 // ---------------------------------------------------------------------------
 
@@ -69,28 +153,28 @@ export function directusAssetUrl(fileId: string): string {
  * Published devices for the catalog. Falls back to bundled data when Directus
  * is not configured or unreachable.
  *
- * Directus REST shape (once the `devices` collection exists):
- *   GET /items/devices?filter[status][_eq]=published&fields=*,gallery.*,passport.*,trade_options.*
+ * The MVP `devices` collection stores everything in columns + JSON fields, so a
+ * flat `fields=*` is enough; rows are mapped to the app `Device` shape.
+ *   GET /items/devices?filter[status][_eq]=published&fields=*&sort=sort
  */
 export async function getPublishedDevices(): Promise<Device[]> {
-  const data = await directusGet<Device[]>(
-    "/items/devices?filter[status][_eq]=published&fields=*,gallery.*,passport.*,trade_options.*&sort=sort",
+  const data = await directusGet<Record<string, unknown>[]>(
+    "/items/devices?filter[status][_eq]=published&fields=*&sort=sort",
   );
-  if (data && data.length > 0) return data;
+  if (data && data.length > 0) return data.map(mapDeviceFromDirectus);
   return fallbackDevices;
 }
 
 /**
  * A single device by slug (id). Falls back to bundled data.
  *
- * Directus REST shape:
- *   GET /items/devices?filter[id][_eq]={slug}&fields=*.* (limit 1)
+ *   GET /items/devices?filter[id][_eq]={slug}&fields=*&limit=1
  */
 export async function getDeviceBySlug(slug: string): Promise<Device | null> {
-  const data = await directusGet<Device[]>(
-    `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=*.*&limit=1`,
+  const data = await directusGet<Record<string, unknown>[]>(
+    `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=*&limit=1`,
   );
-  if (data && data.length > 0) return data[0];
+  if (data && data.length > 0) return mapDeviceFromDirectus(data[0]);
   return fallbackDevices.find((d) => d.id === slug) ?? null;
 }
 

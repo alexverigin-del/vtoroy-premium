@@ -63,13 +63,58 @@ npm run web:dev
 ## Switch to Directus
 
 1. Stand up Directus (see `infra/directus-beget/README.md`).
-2. Create the `devices` collection (and related) per
-   `directus/schema/collections.md`, and the content collections per
-   `directus/schema/content-model.md`.
+2. Seed the catalog automatically: `python scripts/seed_directus.py` creates the
+   `devices` collection (if absent) and upserts the 4 devices from
+   `data/devices.json`. See **Local run** below for the full flow. (Editable site
+   content collections are separate — see `directus/schema/content-model.md`.)
 3. Set `DIRECTUS_URL` (and a `DIRECTUS_TOKEN` if your public role is not
    anonymous-read) in `apps/web/.env.local`.
 4. `getPublishedDevices()` / `getDeviceBySlug()` automatically use live data; the
    fallback engages only on missing config or error.
+
+### MVP `devices` shape
+
+The MVP uses a **single** `devices` collection: scalar fields are snake_case
+columns, and `tags` / `gallery` / `passport` / `trade` are **JSON columns**
+(`listing_image` is a plain string path — no file relation, so no binary upload
+is required for the MVP). The fetcher requests a flat `fields=*` and maps each
+row to the app `Device` type via `mapDeviceFromDirectus()` in `lib/directus.ts`.
+The relational sub-collections in `directus/schema/collections.md`
+(`device_gallery`, `device_passports`, `trade_options`) remain the documented
+future target for richer admin editing.
+
+## Local run (Docker)
+
+End-to-end on a local machine with Docker:
+
+```bash
+# 1. Directus + Postgres
+cd infra/directus-beget
+cp .env.example .env          # set SECRET (openssl rand -hex 32), DB_*, ADMIN_*; PUBLIC_URL=http://localhost:8055
+docker compose up -d          # Directus → http://localhost:8055
+
+# 2. In Directus Studio (http://localhost:8055), log in with ADMIN_* and create a
+#    static token for an Editor (or Admin) service account: User → Token → save.
+
+# 3. Seed the catalog
+cd ../../scripts
+cp .env.example .env          # set DIRECTUS_URL=http://localhost:8055 and DIRECTUS_TOKEN=<the token>
+pip install -r requirements.txt
+python seed_directus.py --dry-run   # optional: preview calls, no writes
+python seed_directus.py             # creates collection + upserts 4 devices (idempotent)
+
+# 4. Point the Next.js app at Directus
+cd ../apps/web
+cp .env.example .env.local    # set DIRECTUS_URL=http://localhost:8055 (token only if the public role is not anon-read)
+npm run web:dev               # from repo root, or: npm run dev
+
+# 5. Verify LIVE data (not fallback)
+#    http://localhost:3000/catalog              → grid from Directus
+#    http://localhost:3000/device/iphone-13-pro → product + Passport from Directus
+#    The home page note reads "Данные загружаются из Directus." when DIRECTUS_URL is set.
+```
+
+`.env` / `.env.local` are gitignored — never commit real tokens.
 
 ## Regenerate fallback data
 

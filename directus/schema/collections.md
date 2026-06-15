@@ -9,6 +9,16 @@ a snapshot/migration. The shared TypeScript contract lives in
 Field types use Directus terminology. `M2O` = many-to-one, `O2M` = one-to-many,
 `M2M` = many-to-many.
 
+> **MVP divergence (current implementation).** The seed script
+> `scripts/seed_directus.py` and the Next.js fetcher (`apps/web/lib/directus.ts`)
+> currently use a **single `devices` collection**: scalar fields as snake_case
+> columns, and `tags` / `gallery` / `passport` / `trade` as **JSON columns**.
+> `listing_image` is a plain string path (no file relation) so the MVP needs no
+> binary uploads. The relational sub-collections below (`device_gallery`,
+> `device_passports`, `trade_options`) remain the documented future target for
+> richer per-row admin editing; promote the JSON fields to them when that UX is
+> needed.
+
 ---
 
 ## `devices` (main catalog)

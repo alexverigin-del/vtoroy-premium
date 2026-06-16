@@ -9,7 +9,7 @@ const stateColor: Record<PassportState, string> = {
 export function PassportSummary({ passport }: { passport: DevicePassport }) {
   return (
     <div className="card p-6">
-      <h2 className="text-lg font-semibold">Паспорт Премиума</h2>
+      <h2 className="text-lg font-semibold">ISVOI Passport</h2>
 
       <dl className="mt-4 divide-y divide-hairline">
         {passport.summaryRows.map((row) => (

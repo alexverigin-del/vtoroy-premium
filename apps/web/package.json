@@ -2,7 +2,7 @@
   "name": "@vtoroy/web",
   "version": "0.1.0",
   "private": true,
-  "description": "Future Next.js public site for Второй Премиум, backed by Directus. Not yet in production — the live site is the static HTML at the repo root.",
+  "description": "Future Next.js public site for ISVOI, backed by Directus. Not yet in production — the live site is the static HTML at the repo root.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

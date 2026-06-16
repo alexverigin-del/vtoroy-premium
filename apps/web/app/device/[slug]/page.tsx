@@ -21,9 +21,9 @@ export async function generateMetadata({
   params: { slug: string };
 }): Promise<Metadata> {
   const device = await getDeviceBySlug(params.slug);
-  if (!device) return { title: "Устройство не найдено — Второй Премиум" };
+  if (!device) return { title: "Вещь не найдена — ISVOI" };
   return {
-    title: `${device.title} — Второй Премиум`,
+    title: `${device.title} — ISVOI`,
     description: device.shortDescription,
   };
 }
@@ -39,7 +39,7 @@ export default async function DevicePage({
   return (
     <main className="mx-auto max-w-content px-6 py-16">
       <a href="/catalog" className="text-sm text-accent hover:underline">
-        ← Каталог
+        ← Store
       </a>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
@@ -62,7 +62,7 @@ export default async function DevicePage({
 
           <div className="mt-8 flex flex-wrap gap-4">
             <CTAButton href="/#final" label="Получить подборку" />
-            <CTAButton href="/trade" label="Оценить своё устройство" variant="secondary" />
+            <CTAButton href="/trade" label="Оценить свою вещь" variant="secondary" />
           </div>
 
           <p className="mt-6 text-sm text-muted">{device.availability}</p>

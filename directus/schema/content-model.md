@@ -20,15 +20,15 @@ Global, site-wide values. Configure as a **singleton** in Directus.
 | Field                | Type                 | Notes                                  |
 | -------------------- | -------------------- | -------------------------------------- |
 | `id`                 | integer (PK)         | Always 1 (singleton).                  |
-| `brand_name`         | string               | `Второй Премиум`.                      |
-| `tagline`            | string               | `Не новый. Проверенный.`               |
+| `brand_name`         | string               | `ISVOI`.                               |
+| `tagline`            | string               | `Хорошие вещи проходят через своих.`   |
 | `city`               | string               | `Северодвинск`.                        |
 | `phone`              | string               |                                        |
 | `telegram`           | string               | `@handle` or URL.                      |
 | `email`              | string               |                                        |
 | `address`            | text                 |                                        |
 | `default_og_image`   | M2O → directus_files | Social share fallback.                 |
-| `footer_legal`       | text                 | `© 2025 Второй Премиум. …`             |
+| `footer_legal`       | text                 | `© 2025 ISVOI. …`                      |
 | `maintenance_mode`   | boolean              | Optional kill-switch for the public site. |
 
 ## `navigation_items`
@@ -158,8 +158,8 @@ Templates are fixed in code; this is the canonical mapping editors work within.
   "slug": "home",
   "template": "home",
   "status": "published",
-  "title": "Второй Премиум — Не новый. Проверенный.",
-  "meta_description": "Премиальная техника Apple с Паспортом Премиума, гарантией и понятной ценой выхода."
+  "title": "ISVOI — клуб разумного владения. Хорошие вещи проходят через своих.",
+  "meta_description": "ISVOI — клуб разумного владения. Хорошие вещи проходят через своих: с ISVOI Passport, гарантией и понятной ценой выхода."
 }
 ```
 
@@ -169,12 +169,12 @@ Templates are fixed in code; this is the canonical mapping editors work within.
   "page": "<home page id>",
   "section_key": "hero",
   "variant": "hero.split",
-  "eyebrow": "Северодвинск · Store / Trade / Club",
-  "headline": "Не новый. Проверенный.",
-  "body": "Премиальная техника с Паспортом Премиума, гарантией и понятной ценой выхода. Подберём 3 проверенных варианта под ваш бюджет и сценарий владения.",
-  "primary_cta_label": "Получить подборку",
+  "eyebrow": "ISVOI · Северодвинск · Store / Trade / Club",
+  "headline": "Хорошие вещи проходят через своих.",
+  "body": "ISVOI — клуб разумного владения. Вещь идёт дальше через своих, с ISVOI Passport, гарантией и понятной ценой выхода. Подберём 3 проверенных варианта под ваш бюджет и сценарий владения.",
+  "primary_cta_label": "Войти в круг",
   "primary_cta_url": "#final",
-  "secondary_cta_label": "Оценить своё устройство",
+  "secondary_cta_label": "Оценить свою вещь",
   "secondary_cta_url": "/trade",
   "image": "<hero file id>",
   "sort_order": 1,
@@ -190,8 +190,8 @@ Templates are fixed in code; this is the canonical mapping editors work within.
   "section_key": "store_preview",
   "variant": "preview.card",
   "eyebrow": "Store",
-  "headline": "Витрина проверенного премиума",
-  "body": "Открытая диагностика, Паспорт Премиума на каждое устройство.",
+  "headline": "Доверенная витрина круга",
+  "body": "Открытая проверка, ISVOI Passport на каждую вещь.",
   "primary_cta_label": "Перейти в Store",
   "primary_cta_url": "/store",
   "sort_order": 5,
@@ -222,8 +222,8 @@ Templates are fixed in code; this is the canonical mapping editors work within.
 ```json
 {
   "key": "passport-what",
-  "question": "Что такое Паспорт Премиума?",
-  "answer": "Это стандарт доверия: состояние, история, гарантия и цена выхода устройства простым языком.",
+  "question": "Что такое ISVOI Passport?",
+  "answer": "Это стандарт доверия круга: состояние, история, гарантия и цена выхода вещи простым языком.",
   "category": "passport",
   "sort": 1,
   "is_active": true

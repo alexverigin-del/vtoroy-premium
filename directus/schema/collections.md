@@ -1,4 +1,4 @@
-# Directus collections — Второй Премиум
+# Directus collections — ISVOI
 
 Proposed schema, derived from the current static prototype data
 (`data/devices.json`) and the planned admin workflow. This is the **spec** the
@@ -64,7 +64,7 @@ Field types use Directus terminology. `M2O` = many-to-one, `O2M` = one-to-many,
 | `alt`      | string               |                             |
 | `sort`     | integer              |                             |
 
-## `device_passports` (the "Паспорт Премиума")
+## `device_passports` (the "ISVOI Passport")
 
 One row per device.
 

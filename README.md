@@ -1,6 +1,6 @@
-# Второй Премиум
+# ISVOI
 
-Premium refurbished Apple devices — Store / Passport / Trade / Club, Северодвинск.
+ISVOI — клуб разумного владения. Хорошие вещи проходят через своих — Store / Passport / Trade / Club, Северодвинск.
 
 This repository currently contains **two things side by side**:
 

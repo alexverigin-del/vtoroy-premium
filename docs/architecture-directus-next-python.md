@@ -1,6 +1,6 @@
 # Architecture — Next.js + Directus + PostgreSQL + Python jobs
 
-This document describes the **target** architecture for Второй Премиум and how
+This document describes the **target** architecture for ISVOI and how
 the current static site migrates into it. None of this replaces the live site
 yet; the repo holds the foundation so work can begin safely.
 

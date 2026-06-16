@@ -2,7 +2,7 @@
   "name": "vtoroy-premium",
   "version": "0.1.0",
   "private": true,
-  "description": "Второй Премиум — monorepo. The published site today is the static HTML/CSS/JS at the repository root; the workspaces below are the future Next.js + Directus architecture and are NOT yet wired into production.",
+  "description": "ISVOI — monorepo. The published site today is the static HTML/CSS/JS at the repository root; the workspaces below are the future Next.js + Directus architecture and are NOT yet wired into production.",
   "workspaces": [
     "apps/*",
     "packages/*"

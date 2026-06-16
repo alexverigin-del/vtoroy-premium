@@ -1,4 +1,4 @@
-// Domain types for Второй Премиум devices and their passports.
+// Domain types for ISVOI devices and their passports.
 //
 // These mirror the shape of the current static prototype data
 // (`data/devices.json`) and are intended to become the canonical contract

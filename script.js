@@ -1,4 +1,4 @@
-// Второй Премиум — interactions
+// ISVOI — interactions
 (function () {
   'use strict';
 
@@ -187,10 +187,10 @@
     var sub = [device.specs, device.color, device.serial].filter(Boolean).join(' · ');
     var p = device.passport || {};
 
-    document.title = device.title + ' с Паспортом Премиума — Второй Премиум';
+    document.title = device.title + ' с ISVOI Passport — ISVOI';
 
-    setText('productBreadcrumb', 'Каталог / ' + device.title);
-    setText('productHeadline', device.headline || (device.title + '. Не новый. Проверенный.'));
+    setText('productBreadcrumb', 'Store / ' + device.title);
+    setText('productHeadline', device.headline || (device.title + '. Проверен. Идёт дальше.'));
     setText('productLead', device.shortDescription);
     setText('productPrice', device.priceText);
     setText('productAvailability', device.availability);

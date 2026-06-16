@@ -1,6 +1,6 @@
 # Directus + PostgreSQL on a Beget VPS
 
-Infrastructure foundation for the future Второй Премиум backend. This is
+Infrastructure foundation for the future ISVOI backend. This is
 **scaffolding** — nothing here is wired into the live static site.
 
 ## What this provides

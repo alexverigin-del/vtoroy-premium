@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Второй Премиум — Не новый. Проверенный.",
+  title: "ISVOI — клуб разумного владения",
   description:
-    "Премиальная техника Apple с Паспортом Премиума, гарантией и понятной ценой выхода. Будущий сайт на Next.js + Directus.",
+    "ISVOI — клуб разумного владения. Хорошие вещи проходят через своих: с ISVOI Passport, гарантией и понятной ценой выхода. Будущий сайт на Next.js + Directus.",
 };
 
 export default function RootLayout({

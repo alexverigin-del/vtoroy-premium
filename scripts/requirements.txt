@@ -1,4 +1,4 @@
-# Python jobs for Второй Премиум (Excel import, image optimization, Telegram).
+# Python jobs for ISVOI (Excel import, image optimization, Telegram).
 # Pin loosely for now; tighten before production.
 
 requests>=2.31          # Directus REST API calls

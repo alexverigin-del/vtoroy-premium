@@ -2,7 +2,7 @@
   "name": "@vtoroy/shared",
   "version": "0.1.0",
   "private": true,
-  "description": "Shared TypeScript types and helpers for Второй Премиум devices, passports and trade-in data. Consumed by apps/web and (later) Python-adjacent tooling via generated schemas.",
+  "description": "Shared TypeScript types and helpers for ISVOI devices, passports and trade-in data. Consumed by apps/web and (later) Python-adjacent tooling via generated schemas.",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

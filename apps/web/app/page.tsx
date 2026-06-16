@@ -13,28 +13,28 @@ export default async function HomePage() {
   return (
     <main className="mx-auto max-w-content px-6 py-20">
       <p className="mb-4 text-sm font-medium uppercase tracking-wide text-muted">
-        Северодвинск · Store / Trade / Club
+        ISVOI · Северодвинск · Store / Trade / Club
       </p>
       <h1 className="text-5xl font-bold tracking-tight md:text-6xl">
-        Не новый. Проверенный.
+        Хорошие вещи проходят через своих.
       </h1>
       <p className="mt-6 max-w-2xl text-lg text-muted">
-        Премиальная техника Apple с Паспортом Премиума, гарантией и понятной ценой
-        выхода. Будущий публичный сайт на Next.js + Tailwind, который читает каталог
-        и контент из Directus. Текущий статический сайт в корне репозитория не
-        затрагивается.
+        ISVOI — клуб разумного владения. Вещь идёт дальше через своих, с ISVOI
+        Passport, гарантией и понятной ценой выхода. Будущий публичный сайт на
+        Next.js + Tailwind, который читает витрину и контент из Directus. Текущий
+        статический сайт в корне репозитория не затрагивается.
       </p>
 
       <div className="mt-10 flex flex-wrap gap-4">
-        <CTAButton href="/catalog" label="Смотреть каталог" />
-        <CTAButton href="/trade" label="Оценить своё устройство" variant="secondary" />
+        <CTAButton href="/catalog" label="Смотреть Store" />
+        <CTAButton href="/trade" label="Оценить свою вещь" variant="secondary" />
       </div>
 
       <section className="mt-16">
         <div className="flex items-end justify-between">
-          <h2 className="text-2xl font-semibold">Каталог</h2>
+          <h2 className="text-2xl font-semibold">Вещи в кругу</h2>
           <a href="/catalog" className="text-sm font-medium text-accent hover:underline">
-            Все устройства →
+            Все вещи →
           </a>
         </div>
         <p className="mt-2 text-sm text-muted">

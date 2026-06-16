@@ -1,4 +1,4 @@
-// Второй Премиум — embedded device data fallback.
+// ISVOI — embedded device data fallback.
 // Mirrors data/devices.json so the site still renders when fetch() is
 // blocked (e.g. opening pages directly over file://). When served over
 // HTTP the loader prefers the JSON file; this object is the safety net.
@@ -29,7 +29,7 @@ window.VP_DEVICES = {
       "exitText": "Выход до 42 000 ₽",
       "availability": "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
       "shortDescription": "256 GB · Graphite · грейд A− · батарея 89% · гарантия 90 дней · цена выхода до 42 000 ₽.",
-      "headline": "iPhone 13 Pro. Не новый. Проверенный.",
+      "headline": "iPhone 13 Pro. Проверен. Идёт дальше.",
       "listingImage": "assets/catalog-iphone-13-pro.webp",
       "listingAlt": "iPhone 13 Pro в графитовом цвете на светлой студийной поверхности",
       "ctaLabel": "Смотреть паспорт",
@@ -177,7 +177,7 @@ window.VP_DEVICES = {
       "exitText": "Выход до 45 000 ₽",
       "availability": "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
       "shortDescription": "128 GB · Starlight · грейд A · батарея 94% · гарантия 90 дней · цена выхода до 45 000 ₽.",
-      "headline": "iPhone 14. Не новый. Проверенный.",
+      "headline": "iPhone 14. Проверен. Идёт дальше.",
       "listingImage": "assets/catalog-iphone-14.webp",
       "listingAlt": "Светлый премиальный смартфон на витринной поверхности",
       "ctaLabel": "Смотреть паспорт",
@@ -326,7 +326,7 @@ window.VP_DEVICES = {
       "exitText": "Выход до 49 000 ₽",
       "availability": "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
       "shortDescription": "8 / 256 GB · Silver · грейд B+ · 214 циклов · гарантия 90 дней · цена выхода до 49 000 ₽.",
-      "headline": "MacBook Air M1. Не новый. Проверенный.",
+      "headline": "MacBook Air M1. Проверен. Идёт дальше.",
       "listingImage": "assets/catalog-macbook-air.webp",
       "listingAlt": "Серебристый тонкий ноутбук на каменной витрине",
       "ctaLabel": "Смотреть паспорт",
@@ -475,7 +475,7 @@ window.VP_DEVICES = {
       "exitText": "Выход до 31 000 ₽",
       "availability": "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
       "shortDescription": "64 GB · Wi‑Fi · грейд A · гарантия 90 дней · цена выхода до 31 000 ₽.",
-      "headline": "iPad Air. Не новый. Проверенный.",
+      "headline": "iPad Air. Проверен. Идёт дальше.",
       "listingImage": "assets/catalog-ipad-air.webp",
       "listingAlt": "Светлый планшет на минималистичной студийной поверхности",
       "ctaLabel": "Смотреть паспорт",

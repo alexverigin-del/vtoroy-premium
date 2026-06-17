@@ -2,10 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import Script from "next/script";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 function legacyHomeMarkup(): string {
   const candidates = [
+    path.join(process.cwd(), "apps", "web", "public", "index.html"),
+    path.join(process.cwd(), "public", "index.html"),
     path.join(process.cwd(), "index.html"),
     path.join(process.cwd(), "..", "..", "index.html"),
   ];

@@ -49,6 +49,17 @@ function pathCardList(value: unknown): { title: string; text: string; url: strin
   });
 }
 
+function filterList(value: unknown): { label: string; value: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const label = typeof record.label === "string" ? record.label : "";
+    const filterValue = typeof record.value === "string" ? record.value : "";
+    return label && filterValue ? [{ label, value: filterValue }] : [];
+  });
+}
+
 function replaceBetween(markup: string, startMarker: string, endMarker: string, replacement: string): string {
   const start = markup.indexOf(startMarker);
   const end = markup.indexOf(endMarker);
@@ -108,10 +119,72 @@ function renderPathRouterSection(section: PageSection): string {
 `;
 }
 
+function renderCatalogPreviewSection(section: PageSection): string {
+  const filters = filterList(section.content.filters);
+  const chips =
+    filters.length > 0
+      ? filters
+      : [
+          { label: "Все", value: "all" },
+          { label: "iPhone", value: "iphone" },
+          { label: "MacBook", value: "macbook" },
+          { label: "iPad", value: "ipad" },
+          { label: "Для Club", value: "club" },
+        ];
+  const actions =
+    section.primaryCtaLabel || section.secondaryCtaLabel
+      ? `<div class="btn-row reveal" style="margin-top:32px;">
+      ${
+        section.primaryCtaLabel
+          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/catalog/index.html")}">${escapeHtml(
+              section.primaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+      ${
+        section.secondaryCtaLabel
+          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "#final")}">${escapeHtml(
+              section.secondaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+    </div>`
+      : "";
+
+  return `<!-- ============== CATALOG ============== -->
+<section class="section catalog-section" id="catalog">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+      ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+      ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
+    </div>
+
+    <div class="catalog-controls reveal" aria-label="${escapeHtml(section.subheadline || "Фильтры каталога")}">
+      ${chips
+        .map(
+          (filter, index) =>
+            `<button class="filter-chip${index === 0 ? " is-active" : ""}" type="button" data-filter="${escapeHtml(
+              filter.value,
+            )}">${escapeHtml(filter.label)}</button>`,
+        )
+        .join("\n      ")}
+    </div>
+
+    <div class="catalog-grid reveal" id="catalogGrid" aria-busy="true"></div>
+    ${actions}
+    <noscript><p class="lead">Каталог загружается через JavaScript. Включите JavaScript, чтобы увидеть проверенные устройства.</p></noscript>
+  </div>
+</section>
+
+`;
+}
+
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
   const pathRouter = byKey.get("path_router");
+  const catalogPreview = byKey.get("catalog_preview");
 
   let nextMarkup = markup;
 
@@ -134,6 +207,18 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
         nextMarkup,
         "<!-- ============== CONVERSION PATHS ============== -->",
         "<!-- ============== CATALOG ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  if (catalogPreview) {
+    const rendered = renderCatalogPreviewSection(catalogPreview);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== CATALOG ============== -->",
+        "<!-- ============== PASSPORT ============== -->",
         rendered,
       );
     }

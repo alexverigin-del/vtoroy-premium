@@ -44,10 +44,11 @@ export interface SectionContent {
   // trust
   items?: { title: string; text: string }[];
   // path_router
-  cards?: { title: string; text: string; url: string }[];
+  cards?: { title: string; text: string; url: string; label?: string }[];
   // catalog_preview / store_preview
   limit?: number;
   filter?: string;
+  filters?: { label: string; value: string }[];
   // trade_calculator_intro
   note?: string;
   disclaimer?: string;

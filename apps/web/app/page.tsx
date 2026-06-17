@@ -25,6 +25,123 @@ function stringList(value: unknown): string[] {
     : [];
 }
 
+function sectionItemList(value: unknown): { title: string; text: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title : "";
+    const text = typeof record.text === "string" ? record.text : "";
+    return title || text ? [{ title, text }] : [];
+  });
+}
+
+function pathCardList(value: unknown): { title: string; text: string; url: string; label: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title : "";
+    const text = typeof record.text === "string" ? record.text : "";
+    const url = typeof record.url === "string" ? record.url : "#final";
+    const label = typeof record.label === "string" ? record.label : "Подробнее ›";
+    return title || text ? [{ title, text, url, label }] : [];
+  });
+}
+
+function replaceBetween(markup: string, startMarker: string, endMarker: string, replacement: string): string {
+  const start = markup.indexOf(startMarker);
+  const end = markup.indexOf(endMarker);
+  if (start === -1 || end === -1 || end <= start) return markup;
+  return `${markup.slice(0, start)}${replacement}${markup.slice(end)}`;
+}
+
+function renderTrustSection(section: PageSection): string {
+  const items = sectionItemList(section.content.items);
+  if (items.length === 0) return "";
+
+  return `<!-- ============== TRUST STRIP ============== -->
+<section class="trust" aria-label="${escapeHtml(section.eyebrow || "Принципы клуба")}">
+  <div class="wrap">
+    <div class="trust__grid">
+      ${items
+        .map(
+          (item) =>
+            `<div class="trust__item"><div class="big">${escapeHtml(item.title)}</div><div class="cap">${escapeHtml(item.text)}</div></div>`,
+        )
+        .join("\n      ")}
+    </div>
+  </div>
+</section>
+
+`;
+}
+
+function renderPathRouterSection(section: PageSection): string {
+  const cards = pathCardList(section.content.cards);
+  if (cards.length === 0) return "";
+
+  return `<!-- ============== CONVERSION PATHS ============== -->
+<section class="section conversion-paths" aria-label="${escapeHtml(section.eyebrow || "Выберите свой сценарий")}">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+      ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+      ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
+    </div>
+    <div class="path-grid">
+      ${cards
+        .map((card, index) => {
+          const number = String(index + 1).padStart(2, "0");
+          return `<a class="path-card reveal" href="${escapeHtml(card.url)}">
+        <span class="path-card__num">${number}</span>
+        <strong>${escapeHtml(card.title)}</strong>
+        <p>${escapeHtml(card.text)}</p>
+        <span class="path-card__link">${escapeHtml(card.label)}</span>
+      </a>`;
+        })
+        .join("\n      ")}
+    </div>
+  </div>
+</section>
+
+`;
+}
+
+function applySectionBlocks(markup: string, sections: PageSection[]): string {
+  const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
+  const trust = byKey.get("trust");
+  const pathRouter = byKey.get("path_router");
+
+  let nextMarkup = markup;
+
+  if (trust) {
+    const rendered = renderTrustSection(trust);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== TRUST STRIP ============== -->",
+        "<!-- ============== CONVERSION PATHS ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  if (pathRouter) {
+    const rendered = renderPathRouterSection(pathRouter);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== CONVERSION PATHS ============== -->",
+        "<!-- ============== CATALOG ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  return nextMarkup;
+}
+
 function applySectionText(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const hero = byKey.get("hero");
@@ -65,7 +182,7 @@ function applySectionText(markup: string, sections: PageSection[]): string {
     if (proof[2]) nextMarkup = replaceText(nextMarkup, "сначала проверка — потом решение", proof[2]);
   }
 
-  return nextMarkup;
+  return applySectionBlocks(nextMarkup, sections);
 }
 
 function legacyHomeMarkup(sections: PageSection[] = []): string {

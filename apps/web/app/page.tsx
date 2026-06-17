@@ -60,6 +60,31 @@ function filterList(value: unknown): { label: string; value: string }[] {
   });
 }
 
+const defaultCatalogPreviewSection: PageSection = {
+  id: "catalog-preview-fallback",
+  sectionKey: "catalog_preview",
+  variant: "catalog.grid",
+  eyebrow: "Store · сейчас в ISVOI",
+  headline: "Вещи в кругу — сейчас в наличии.",
+  subheadline: "Фильтры каталога",
+  body: "Каждая карточка показывает не только цену, но и историю вещи: грейд, батарею, проверку и цену выхода. Это вещи, которые прошли через своих.",
+  primaryCtaLabel: "Смотреть весь Store",
+  primaryCtaUrl: "/catalog/index.html",
+  secondaryCtaLabel: "Подобрать вещь",
+  secondaryCtaUrl: "#final",
+  sortOrder: 4,
+  isActive: true,
+  content: {
+    filters: [
+      { label: "Все", value: "all" },
+      { label: "iPhone", value: "iphone" },
+      { label: "MacBook", value: "macbook" },
+      { label: "iPad", value: "ipad" },
+      { label: "Для Club", value: "club" },
+    ],
+  },
+};
+
 function replaceBetween(markup: string, startMarker: string, endMarker: string, replacement: string): string {
   const start = markup.indexOf(startMarker);
   const end = markup.indexOf(endMarker);
@@ -184,7 +209,7 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
   const pathRouter = byKey.get("path_router");
-  const catalogPreview = byKey.get("catalog_preview");
+  const catalogPreview = byKey.get("catalog_preview") ?? defaultCatalogPreviewSection;
 
   let nextMarkup = markup;
 

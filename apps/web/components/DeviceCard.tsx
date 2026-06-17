@@ -5,12 +5,14 @@ function isAbsolute(url: string): boolean {
   return /^https?:\/\//.test(url);
 }
 
+function imageSrc(path: string): string {
+  if (!path) return "";
+  if (isAbsolute(path) || path.startsWith("/")) return path;
+  return `/${path}`;
+}
+
 export function DeviceCard({ device }: { device: Device }) {
-  // Fallback device images reference repo-root-relative paths (e.g.
-  // "assets/...") that this app does not serve. Render the real image only when
-  // it is an absolute URL (e.g. a resolved Directus asset); otherwise show a
-  // neutral placeholder so the MVP stays credible without copying binaries.
-  const showImage = isAbsolute(device.listingImage);
+  const src = imageSrc(device.listingImage);
 
   return (
     <Link
@@ -18,10 +20,10 @@ export function DeviceCard({ device }: { device: Device }) {
       className="card group flex flex-col overflow-hidden transition hover:shadow-product"
     >
       <div className="flex aspect-[4/3] items-center justify-center bg-surface">
-        {showImage ? (
+        {src ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={device.listingImage}
+            src={src}
             alt={device.listingAlt}
             className="h-full w-full object-cover"
           />

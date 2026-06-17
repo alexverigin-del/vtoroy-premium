@@ -39,16 +39,21 @@ export const directusConfig = {
 /** Cache window for ISR-style revalidation (seconds). */
 const REVALIDATE = 300;
 
-async function directusGet<T>(path: string): Promise<T | null> {
+type DirectusGetOptions = {
+  cache?: "revalidate" | "no-store";
+};
+
+async function directusGet<T>(path: string, options: DirectusGetOptions = {}): Promise<T | null> {
   if (!directusConfig.url) return null;
   const headers: Record<string, string> = {};
   if (directusConfig.token) {
     headers.Authorization = `Bearer ${directusConfig.token}`;
   }
   try {
+    const cacheMode = options.cache ?? "revalidate";
     const res = await fetch(`${directusConfig.url}${path}`, {
       headers,
-      next: { revalidate: REVALIDATE },
+      ...(cacheMode === "no-store" ? { cache: "no-store" as const } : { next: { revalidate: REVALIDATE } }),
     });
     if (!res.ok) return null;
     const json = (await res.json()) as { data: T };
@@ -237,11 +242,13 @@ function mapFaqItemFromDirectus(row: Record<string, unknown>): FaqItem {
 export async function getSitePage(slug: string): Promise<SitePage | null> {
   const data = await directusGet<Record<string, unknown>[]>(
     `/items/site_pages?filter[slug][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*&limit=1`,
+    { cache: "no-store" },
   );
   if (data && data.length > 0) {
     const page = mapSitePageFromDirectus(data[0]);
     const sections = await directusGet<Record<string, unknown>[]>(
       `/items/page_sections?filter[page][_eq]=${encodeURIComponent(str(data[0].id))}&filter[is_active][_eq]=true&fields=*&sort=sort_order`,
+      { cache: "no-store" },
     );
     return {
       ...page,

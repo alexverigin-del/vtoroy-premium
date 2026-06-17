@@ -26,6 +26,7 @@ venv/
 .pytest_cache/
 
 # Directus / infra runtime data
+var/
 infra/directus-beget/data/
 infra/directus-beget/uploads/
 infra/directus-beget/extensions/

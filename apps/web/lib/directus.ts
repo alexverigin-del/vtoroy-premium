@@ -182,6 +182,51 @@ export async function getDeviceBySlug(slug: string): Promise<Device | null> {
 // Editable site content (texts)
 // ---------------------------------------------------------------------------
 
+function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
+  return {
+    id: str(row.id),
+    sectionKey: str(row.section_key),
+    variant: str(row.variant),
+    eyebrow: str(row.eyebrow),
+    headline: str(row.headline),
+    subheadline: str(row.subheadline),
+    body: str(row.body),
+    primaryCtaLabel: str(row.primary_cta_label),
+    primaryCtaUrl: str(row.primary_cta_url),
+    secondaryCtaLabel: str(row.secondary_cta_label),
+    secondaryCtaUrl: str(row.secondary_cta_url),
+    image: str(row.image) ? directusAssetUrl(str(row.image)) : "",
+    sortOrder: num(row.sort_order),
+    isActive: bool(row.is_active, true),
+    content: json(row.content, {}),
+  };
+}
+
+function mapSitePageFromDirectus(row: Record<string, unknown>): SitePage {
+  const sections = json<Record<string, unknown>[]>(row.sections, []);
+  return {
+    slug: str(row.slug),
+    template: str(row.template),
+    status: str(row.status, "draft") as SitePage["status"],
+    title: str(row.title),
+    metaDescription: str(row.meta_description),
+    ogImage: str(row.og_image) ? directusAssetUrl(str(row.og_image)) : "",
+    sections: sections.map(mapPageSectionFromDirectus),
+  };
+}
+
+function mapFaqItemFromDirectus(row: Record<string, unknown>): FaqItem {
+  return {
+    id: str(row.id),
+    key: str(row.key),
+    question: str(row.question),
+    answer: str(row.answer),
+    category: str(row.category),
+    sort: num(row.sort),
+    isActive: bool(row.is_active, true),
+  };
+}
+
 /**
  * A published site page by slug, with its active sections.
  *
@@ -190,10 +235,19 @@ export async function getDeviceBySlug(slug: string): Promise<Device | null> {
  * fallback by design (the static prototype is the reference, not seed data).
  */
 export async function getSitePage(slug: string): Promise<SitePage | null> {
-  const data = await directusGet<SitePage[]>(
-    `/items/site_pages?filter[slug][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*,sections.*&limit=1`,
+  const data = await directusGet<Record<string, unknown>[]>(
+    `/items/site_pages?filter[slug][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*&limit=1`,
   );
-  if (data && data.length > 0) return data[0];
+  if (data && data.length > 0) {
+    const page = mapSitePageFromDirectus(data[0]);
+    const sections = await directusGet<Record<string, unknown>[]>(
+      `/items/page_sections?filter[page][_eq]=${encodeURIComponent(str(data[0].id))}&filter[is_active][_eq]=true&fields=*&sort=sort_order`,
+    );
+    return {
+      ...page,
+      sections: sections?.map(mapPageSectionFromDirectus) ?? [],
+    };
+  }
   return null;
 }
 
@@ -211,8 +265,8 @@ export async function getFaqItems(category?: string): Promise<FaqItem[]> {
   const catFilter = category
     ? `&filter[category][_eq]=${encodeURIComponent(category)}`
     : "";
-  const data = await directusGet<FaqItem[]>(
+  const data = await directusGet<Record<string, unknown>[]>(
     `/items/faq_items?filter[is_active][_eq]=true${catFilter}&sort=sort`,
   );
-  return data ?? [];
+  return data?.map(mapFaqItemFromDirectus) ?? [];
 }

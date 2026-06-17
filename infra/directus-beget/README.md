@@ -3,6 +3,11 @@
 Infrastructure foundation for the future ISVOI backend. This is
 **scaffolding** — nothing here is wired into the live static site.
 
+> **Full launch runbook:** for an end-to-end, copy-paste VPS deployment
+> (DNS → Docker → seed → Next.js → nginx → TLS → backups → production
+> checklist), see [`docs/beget-vps-launch-checklist.md`](../../docs/beget-vps-launch-checklist.md).
+> This README is the backend-only quick start.
+
 ## What this provides
 
 - **PostgreSQL 16** — the database.

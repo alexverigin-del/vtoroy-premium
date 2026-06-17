@@ -37,7 +37,7 @@ export default function HomePage() {
       <link rel="stylesheet" href="/styles.css?v=20260616a" />
       <div dangerouslySetInnerHTML={{ __html: legacyHomeMarkup() }} />
       <Script src="/data/devices.js?v=20260616a" strategy="afterInteractive" />
-      <Script src="/script.js?v=20260617leads" strategy="afterInteractive" />
+      <Script src="/script.js?v=20260617intake" strategy="afterInteractive" />
     </>
   );
 }

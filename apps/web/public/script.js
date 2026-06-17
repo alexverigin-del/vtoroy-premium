@@ -59,7 +59,7 @@
       formNote.textContent = 'Отправляем заявку...';
       formNote.classList.remove('is-success');
 
-      fetch('/api/leads', {
+      fetch('/lead-intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -81,6 +81,27 @@ export interface SectionContent {
     features: string[];
     featured?: boolean;
   }[];
+  diagnostics?: {
+    imageSrc?: string;
+    image_src?: string;
+    imageAlt?: string;
+    image_alt?: string;
+    noteLabel?: string;
+    note_label?: string;
+    noteText?: string;
+    note_text?: string;
+  };
+  comparison?: {
+    ariaLabel?: string;
+    aria_label?: string;
+    labelHeader?: string;
+    label_header?: string;
+    badHeader?: string;
+    bad_header?: string;
+    goodHeader?: string;
+    good_header?: string;
+    rows?: { label: string; bad: string; good: string }[];
+  };
   // passport_preview
   features?: { title: string; text: string; icon?: string }[];
   passport?: {

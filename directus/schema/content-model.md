@@ -104,6 +104,7 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
 - `passport_preview` → `{ "features": [{ "title": string, "text": string, "icon": "device" | "shield" | "clock" | "chart" }], "passport": { "device": string, "sub": string, "grade": string, "grade_label": string, "rows": [{ "label": string, "value": string, "state": "ok" | "warn" | "bad" }], "exit_label": string, "exit_value": string, "warranty": string, "warranty_strong": string } }`
 - `trade_preview` → `{ "choices": [{ "title": string, "text": string, "icon": "money" | "chart" | "swap" }], "valuation": { "heading": string, "from_device": string, "from_note": string, "to_device": string, "to_note": string, "label": string, "amount": string } }`
 - `club_preview` → `{ "levels": [{ "badge": string, "name": string, "tag": string, "features": string[], "featured": boolean }] }`
+- `diagnostics_compare` → `{ "diagnostics": { "image_src": string, "image_alt": string, "note_label": string, "note_text": string }, "comparison": { "aria_label": string, "label_header": string, "bad_header": string, "good_header": string, "rows": [{ "label": string, "bad": string, "good": string }] } }`
 - `passport_disclaimer` → `{ "text": string }`
 - everything else → `{}` (uses only the flat text/CTA fields).
 
@@ -375,6 +376,40 @@ Templates are fixed in code; this is the canonical mapping editors work within.
         "featured": false
       }
     ]
+  }
+}
+```
+
+### `page_sections` — homepage diagnostics compare
+```json
+{
+  "page": "<home page id>",
+  "section_key": "diagnostics_compare",
+  "variant": "diagnostics.compare",
+  "eyebrow": "Открытая проверка",
+  "headline": "Мы не просим верить. Мы показываем.",
+  "body": "Сначала проверка и история вещи. Потом решение. Сравните, как вещь переходит на случайном рынке — и как через своих в ISVOI.",
+  "sort_order": 9,
+  "is_active": true,
+  "content": {
+    "diagnostics": {
+      "image_src": "/assets/generated-diagnostics.webp",
+      "image_alt": "Открытая диагностика смартфона на чистом белом столе в премиальной сервисной зоне",
+      "note_label": "Открытая проверка",
+      "note_text": "Состояние видно до решения о покупке."
+    },
+    "comparison": {
+      "aria_label": "Сравнение случайного рынка и круга ISVOI",
+      "label_header": "Что вы получаете",
+      "bad_header": "Случайный рынок",
+      "good_header": "Круг ISVOI",
+      "rows": [
+        { "label": "История вещи", "bad": "неизвестна", "good": "ISVOI Passport" },
+        { "label": "Через кого вещь", "bad": "через незнакомца", "good": "через своих" },
+        { "label": "Цена", "bad": "только сегодня", "good": "цена выхода известна" },
+        { "label": "Состояние", "bad": "вера на слово", "good": "проверка при вас" }
+      ]
+    }
   }
 }
 ```

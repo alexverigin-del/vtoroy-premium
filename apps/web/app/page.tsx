@@ -155,6 +155,71 @@ function valuationContent(value: unknown): {
   };
 }
 
+function diagnosticsContent(value: unknown): { imageSrc: string; imageAlt: string; noteLabel: string; noteText: string } {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const text = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelField = record[camelKey];
+    const snakeField = record[snakeKey];
+    if (typeof camelField === "string") return camelField;
+    if (typeof snakeField === "string") return snakeField;
+    return fallback;
+  };
+
+  return {
+    imageSrc: text("imageSrc", "image_src", "/assets/generated-diagnostics.webp"),
+    imageAlt: text(
+      "imageAlt",
+      "image_alt",
+      "Открытая диагностика смартфона на чистом белом столе в премиальной сервисной зоне",
+    ),
+    noteLabel: text("noteLabel", "note_label", "Открытая проверка"),
+    noteText: text("noteText", "note_text", "Состояние видно до решения о покупке."),
+  };
+}
+
+function comparisonContent(value: unknown): {
+  ariaLabel: string;
+  labelHeader: string;
+  badHeader: string;
+  goodHeader: string;
+  rows: { label: string; bad: string; good: string }[];
+} {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const text = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelField = record[camelKey];
+    const snakeField = record[snakeKey];
+    if (typeof camelField === "string") return camelField;
+    if (typeof snakeField === "string") return snakeField;
+    return fallback;
+  };
+  const rows = Array.isArray(record.rows)
+    ? record.rows.flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const row = item as Record<string, unknown>;
+        const label = typeof row.label === "string" ? row.label : "";
+        const bad = typeof row.bad === "string" ? row.bad : "";
+        const good = typeof row.good === "string" ? row.good : "";
+        return label || bad || good ? [{ label, bad, good }] : [];
+      })
+    : [];
+
+  return {
+    ariaLabel: text("ariaLabel", "aria_label", "Сравнение случайного рынка и круга ISVOI"),
+    labelHeader: text("labelHeader", "label_header", "Что вы получаете"),
+    badHeader: text("badHeader", "bad_header", "Случайный рынок"),
+    goodHeader: text("goodHeader", "good_header", "Круг ISVOI"),
+    rows:
+      rows.length > 0
+        ? rows
+        : [
+            { label: "История вещи", bad: "неизвестна", good: "ISVOI Passport" },
+            { label: "Через кого вещь", bad: "через незнакомца", good: "через своих" },
+            { label: "Цена", bad: "только сегодня", good: "цена выхода известна" },
+            { label: "Состояние", bad: "вера на слово", good: "проверка при вас" },
+          ],
+  };
+}
+
 function passportRows(value: unknown): { label: string; value: string; state: string }[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -639,6 +704,14 @@ function renderCheckIcon(): string {
   return `<svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>`;
 }
 
+function renderCompareXIcon(): string {
+  return `<svg class="x-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+}
+
+function renderCompareCheckIcon(): string {
+  return `<svg class="v-mark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>`;
+}
+
 function renderClubPreviewSection(section: PageSection): string {
   const levels = clubLevelList(section.content.levels);
   const renderedLevels =
@@ -714,6 +787,49 @@ function renderClubPreviewSection(section: PageSection): string {
 `;
 }
 
+function renderDiagnosticsCompareSection(section: PageSection): string {
+  const diagnostics = diagnosticsContent(section.content.diagnostics);
+  const comparison = comparisonContent(section.content.comparison);
+
+  return `<!-- ============== DIAGNOSTICS + COMPARISON ============== -->
+<section class="section" id="diagnostics">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+      ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+      ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
+    </div>
+
+    <div class="diagnostics-photo reveal">
+      <img src="${escapeHtml(section.image || diagnostics.imageSrc)}" alt="${escapeHtml(diagnostics.imageAlt)}" />
+      <div class="diagnostics-photo__note">
+        <span>${escapeHtml(diagnostics.noteLabel)}</span>
+        <strong>${escapeHtml(diagnostics.noteText)}</strong>
+      </div>
+    </div>
+
+    <div class="compare reveal" role="table" aria-label="${escapeHtml(comparison.ariaLabel)}">
+      <div class="compare__row compare__head" role="row">
+        <div class="compare__cell compare__cell--label" role="columnheader">${escapeHtml(comparison.labelHeader)}</div>
+        <div class="compare__cell compare__cell--bad" role="columnheader">${escapeHtml(comparison.badHeader)}</div>
+        <div class="compare__cell compare__cell--good" role="columnheader">${escapeHtml(comparison.goodHeader)}</div>
+      </div>
+      ${comparison.rows
+        .map(
+          (row) => `<div class="compare__row" role="row">
+        <div class="compare__cell compare__cell--label" role="cell">${escapeHtml(row.label)}</div>
+        <div class="compare__cell compare__cell--bad" role="cell">${renderCompareXIcon()}${escapeHtml(row.bad)}</div>
+        <div class="compare__cell compare__cell--good" role="cell">${renderCompareCheckIcon()}${escapeHtml(row.good)}</div>
+      </div>`,
+        )
+        .join("\n      ")}
+    </div>
+  </div>
+</section>
+
+`;
+}
+
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
@@ -723,6 +839,7 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const storePreview = byKey.get("store_preview");
   const tradePreview = byKey.get("trade_preview");
   const clubPreview = byKey.get("club_preview");
+  const diagnosticsCompare = byKey.get("diagnostics_compare");
 
   let nextMarkup = markup;
 
@@ -805,6 +922,18 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
         nextMarkup,
         "<!-- ============== CLUB ============== -->",
         "<!-- ============== DIAGNOSTICS + COMPARISON ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  if (diagnosticsCompare) {
+    const rendered = renderDiagnosticsCompareSection(diagnosticsCompare);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== DIAGNOSTICS + COMPARISON ============== -->",
+        "<!-- ============== FINAL CTA ============== -->",
         rendered,
       );
     }

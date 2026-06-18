@@ -140,3 +140,14 @@ When the schema changes:
 1. Update this file.
 2. Update `packages/shared/src/device.ts` to match.
 3. (Optional) generate Directus SDK types and reconcile.
+
+## Current image migration path
+
+For device thumbnails, prefer `devices.listing_file` as a Directus Files field.
+Keep `devices.listing_image` as a legacy fallback for repo-hosted paths such as
+`assets/catalog-iphone-13-pro.webp`.
+
+For `devices.gallery` JSON during the MVP phase, each item may point to a file
+with any of these keys: `src`, `file`, `file_id`, or `image`. The Next.js
+mapper resolves Directus file ids to `/assets/{id}` URLs and leaves existing
+relative/absolute paths intact.

@@ -71,6 +71,28 @@ export function directusAssetUrl(fileId: string): string {
   return directusConfig.url ? `${directusConfig.url}/assets/${fileId}` : "";
 }
 
+function isExternalOrLocalAsset(value: string): boolean {
+  return /^https?:\/\//.test(value) || value.startsWith("/") || value.startsWith("assets/");
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function directusFileId(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object") return "";
+  const record = value as Record<string, unknown>;
+  return str(record.id);
+}
+
+function mediaUrl(value: unknown): string {
+  const idOrPath = directusFileId(value);
+  if (!idOrPath) return "";
+  if (isExternalOrLocalAsset(idOrPath)) return idOrPath;
+  return isUuid(idOrPath) ? directusAssetUrl(idOrPath) : idOrPath;
+}
+
 // ---------------------------------------------------------------------------
 // Directus row -> app Device mapping
 // ---------------------------------------------------------------------------
@@ -116,6 +138,34 @@ const EMPTY_PASSPORT: DevicePassport = {
   exitPrice: { headline: "", buyToday: "", tradeInEstimate: "", condition: "", note: "" },
 };
 
+function mapGalleryFromDirectus(value: unknown): GalleryImage[] {
+  const gallery = json<Record<string, unknown>[]>(value, []);
+  if (!Array.isArray(gallery)) return [];
+
+  return gallery.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const src = mediaUrl(item.src ?? item.file ?? item.file_id ?? item.image);
+    const label = str(item.label);
+    const alt = str(item.alt);
+    return src ? [{ src, label, alt }] : [];
+  });
+}
+
+function mapPassportFromDirectus(value: unknown): DevicePassport {
+  const passport = json<DevicePassport>(value, EMPTY_PASSPORT);
+  const defectPhoto = passport.condition?.defectPhoto
+    ? mediaUrl(passport.condition.defectPhoto)
+    : "";
+
+  return {
+    ...passport,
+    condition: {
+      ...passport.condition,
+      defectPhoto: defectPhoto || passport.condition?.defectPhoto,
+    },
+  };
+}
+
 export function mapDeviceFromDirectus(row: Record<string, unknown>): Device {
   return {
     id: str(row.id),
@@ -140,14 +190,14 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>): Device {
     availability: str(row.availability),
     shortDescription: str(row.short_description),
     headline: str(row.headline),
-    listingImage: str(row.listing_image),
+    listingImage: mediaUrl(row.listing_file) || mediaUrl(row.listing_image),
     listingAlt: str(row.listing_alt),
     ctaLabel: str(row.cta_label),
     hasDetailPage: bool(row.has_detail_page),
     detailHref: str(row.detail_href),
     visualClass: str(row.visual_class),
-    gallery: json<GalleryImage[]>(row.gallery, []),
-    passport: json<DevicePassport>(row.passport, EMPTY_PASSPORT),
+    gallery: mapGalleryFromDirectus(row.gallery),
+    passport: mapPassportFromDirectus(row.passport),
     trade: json<TradeInfo>(row.trade, { options: [] }),
   };
 }

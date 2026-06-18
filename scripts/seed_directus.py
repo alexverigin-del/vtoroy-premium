@@ -7,7 +7,8 @@ of its bundled fallback.
 MVP schema shape (see directus/schema/collections.md for the relational future target):
 a SINGLE `devices` collection. Scalar fields are snake_case columns; the nested
 `tags`, `gallery`, `passport` and `trade` structures are stored as JSON columns;
-`listing_image` is a plain string path (no file relation, so no binary uploads).
+`listing_file` is the preferred Directus Files thumbnail. `listing_image` stays
+as a plain string fallback for legacy repo assets.
 
 The script is idempotent:
   - schema: GET-before-create at the collection and per-field level;
@@ -107,6 +108,7 @@ FIELD_SPECS: list[dict[str, Any]] = [
     {"field": "availability", "type": "text", "schema": {}, "meta": {"interface": "input-multiline"}},
     {"field": "short_description", "type": "text", "schema": {}, "meta": {"interface": "input-multiline"}},
     {"field": "headline", "type": "string", "schema": {}, "meta": {"interface": "input"}},
+    {"field": "listing_file", "type": "uuid", "schema": {}, "meta": {"interface": "file-image", "special": "file"}},
     {"field": "listing_image", "type": "string", "schema": {}, "meta": {"interface": "input"}},
     {"field": "listing_alt", "type": "string", "schema": {}, "meta": {"interface": "input"}},
     {"field": "cta_label", "type": "string", "schema": {}, "meta": {"interface": "input"}},

@@ -220,6 +220,45 @@ function comparisonContent(value: unknown): {
   };
 }
 
+function finalCtaFormContent(value: unknown): {
+  scenarioLabel: string;
+  scenarioAriaLabel: string;
+  scenarioOptions: string[];
+  deviceLabel: string;
+  devicePlaceholder: string;
+  contactLabel: string;
+  contactPlaceholder: string;
+  submitLabel: string;
+  note: string;
+} {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const text = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelField = record[camelKey];
+    const snakeField = record[snakeKey];
+    if (typeof camelField === "string") return camelField;
+    if (typeof snakeField === "string") return snakeField;
+    return fallback;
+  };
+  const scenarioOptions = stringList(record.scenarioOptions).length
+    ? stringList(record.scenarioOptions)
+    : stringList(record.scenario_options);
+
+  return {
+    scenarioLabel: text("scenarioLabel", "scenario_label", "Что хотите сделать?"),
+    scenarioAriaLabel: text("scenarioAriaLabel", "scenario_aria_label", "Сценарий обращения"),
+    scenarioOptions:
+      scenarioOptions.length > 0
+        ? scenarioOptions
+        : ["Найти вещь в кругу", "Передать свою вещь дальше", "Обновиться на следующую", "Узнать про Club"],
+    deviceLabel: text("deviceLabel", "device_label", "Какая вещь интересна?"),
+    devicePlaceholder: text("devicePlaceholder", "device_placeholder", "Например, iPhone 13 Pro или MacBook Air"),
+    contactLabel: text("contactLabel", "contact_label", "Контакт для ответа"),
+    contactPlaceholder: text("contactPlaceholder", "contact_placeholder", "Телефон или Telegram"),
+    submitLabel: text("submitLabel", "submit_label", "Войти в круг"),
+    note: text("note", "note", "Прототип формы: в реальном запуске здесь будет отправка заявки в CRM или мессенджер."),
+  };
+}
+
 function passportRows(value: unknown): { label: string; value: string; state: string }[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -830,6 +869,59 @@ function renderDiagnosticsCompareSection(section: PageSection): string {
 `;
 }
 
+function renderFinalCtaSection(section: PageSection): string {
+  const proof = stringList(section.content.proof);
+  const renderedProof =
+    proof.length > 0
+      ? proof
+      : ["варианты под задачу", "без агрессивных продаж", "сначала проверка — потом решение"];
+  const form = finalCtaFormContent(section.content.form);
+  const footerNote =
+    typeof section.content.footerNote === "string"
+      ? section.content.footerNote
+      : typeof section.content.footer_note === "string"
+        ? section.content.footer_note
+        : "Северодвинск. Мы здесь. Нас можно найти. Мы отвечаем за то, что проходит через своих.";
+
+  return `<!-- ============== FINAL CTA ============== -->
+<section class="section section--wash final-cta" id="final">
+  <div class="wrap">
+    <div class="final-panel reveal">
+      <div class="final-panel__copy">
+        ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+        ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+        ${section.body ? `<p class="lead">${escapeHtml(section.body)}</p>` : ""}
+        <div class="final-panel__proof">
+          ${renderedProof.map((item) => `<span>${escapeHtml(item)}</span>`).join("\n          ")}
+        </div>
+      </div>
+      <form class="lead-form" id="leadForm">
+        <label>
+          <span>${escapeHtml(form.scenarioLabel)}</span>
+          <select name="scenario" aria-label="${escapeHtml(form.scenarioAriaLabel)}">
+            ${form.scenarioOptions.map((option) => `<option>${escapeHtml(option)}</option>`).join("\n            ")}
+          </select>
+        </label>
+        <label>
+          <span>${escapeHtml(form.deviceLabel)}</span>
+          <input name="device" type="text" placeholder="${escapeHtml(form.devicePlaceholder)}" />
+        </label>
+        <label>
+          <span>${escapeHtml(form.contactLabel)}</span>
+          <input name="contact" type="text" placeholder="${escapeHtml(form.contactPlaceholder)}" />
+        </label>
+        <input name="website" type="text" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;height:1px;width:1px;opacity:0;" />
+        <button class="btn btn--filled lead-form__submit" type="submit">${escapeHtml(form.submitLabel)}</button>
+        <p class="lead-form__note" id="formNote">${escapeHtml(form.note)}</p>
+      </form>
+    </div>
+    <p class="muted reveal" style="margin-top:24px;font-size:var(--text-body-sm);">${escapeHtml(footerNote)}</p>
+  </div>
+</section>
+
+`;
+}
+
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
@@ -840,6 +932,7 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const tradePreview = byKey.get("trade_preview");
   const clubPreview = byKey.get("club_preview");
   const diagnosticsCompare = byKey.get("diagnostics_compare");
+  const finalCta = byKey.get("final_cta");
 
   let nextMarkup = markup;
 
@@ -939,13 +1032,24 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
     }
   }
 
+  if (finalCta) {
+    const rendered = renderFinalCtaSection(finalCta);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== FINAL CTA ============== -->",
+        "<!-- ============== FOOTER ============== -->",
+        rendered,
+      );
+    }
+  }
+
   return nextMarkup;
 }
 
 function applySectionText(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const hero = byKey.get("hero");
-  const finalCta = byKey.get("final_cta");
 
   let nextMarkup = markup;
 
@@ -965,21 +1069,6 @@ function applySectionText(markup: string, sections: PageSection[]): string {
       "ISVOI — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
       hero.body,
     );
-  }
-
-  if (finalCta) {
-    nextMarkup = replaceText(nextMarkup, "Следующий шаг", finalCta.eyebrow);
-    nextMarkup = replaceText(nextMarkup, "Войдите в круг ISVOI.", finalCta.headline);
-    nextMarkup = replaceText(
-      nextMarkup,
-      "Оставьте сценарий — найти вещь, передать свою дальше или войти в Club. В ответ вы получите понятные варианты: история, состояние, Passport и цена выхода.",
-      finalCta.body,
-    );
-
-    const proof = stringList(finalCta.content.proof);
-    if (proof[0]) nextMarkup = replaceText(nextMarkup, "варианты под задачу", proof[0]);
-    if (proof[1]) nextMarkup = replaceText(nextMarkup, "без агрессивных продаж", proof[1]);
-    if (proof[2]) nextMarkup = replaceText(nextMarkup, "сначала проверка — потом решение", proof[2]);
   }
 
   return applySectionBlocks(nextMarkup, sections);

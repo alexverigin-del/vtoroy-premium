@@ -105,6 +105,7 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
 - `trade_preview` → `{ "choices": [{ "title": string, "text": string, "icon": "money" | "chart" | "swap" }], "valuation": { "heading": string, "from_device": string, "from_note": string, "to_device": string, "to_note": string, "label": string, "amount": string } }`
 - `club_preview` → `{ "levels": [{ "badge": string, "name": string, "tag": string, "features": string[], "featured": boolean }] }`
 - `diagnostics_compare` → `{ "diagnostics": { "image_src": string, "image_alt": string, "note_label": string, "note_text": string }, "comparison": { "aria_label": string, "label_header": string, "bad_header": string, "good_header": string, "rows": [{ "label": string, "bad": string, "good": string }] } }`
+- `final_cta` → `{ "proof": string[], "form": { "scenario_label": string, "scenario_aria_label": string, "scenario_options": string[], "device_label": string, "device_placeholder": string, "contact_label": string, "contact_placeholder": string, "submit_label": string, "note": string }, "footer_note": string }`
 - `passport_disclaimer` → `{ "text": string }`
 - everything else → `{}` (uses only the flat text/CTA fields).
 
@@ -410,6 +411,35 @@ Templates are fixed in code; this is the canonical mapping editors work within.
         { "label": "Состояние", "bad": "вера на слово", "good": "проверка при вас" }
       ]
     }
+  }
+}
+```
+
+### `page_sections` — homepage final CTA
+```json
+{
+  "page": "<home page id>",
+  "section_key": "final_cta",
+  "variant": "final.form",
+  "eyebrow": "Следующий шаг",
+  "headline": "Войдите в круг ISVOI.",
+  "body": "Оставьте сценарий — найти вещь, передать свою дальше или войти в Club. В ответ вы получите понятные варианты: история, состояние, Passport и цена выхода.",
+  "sort_order": 10,
+  "is_active": true,
+  "content": {
+    "proof": ["варианты под задачу", "без агрессивных продаж", "сначала проверка — потом решение"],
+    "form": {
+      "scenario_label": "Что хотите сделать?",
+      "scenario_aria_label": "Сценарий обращения",
+      "scenario_options": ["Найти вещь в кругу", "Передать свою вещь дальше", "Обновиться на следующую", "Узнать про Club"],
+      "device_label": "Какая вещь интересна?",
+      "device_placeholder": "Например, iPhone 13 Pro или MacBook Air",
+      "contact_label": "Контакт для ответа",
+      "contact_placeholder": "Телефон или Telegram",
+      "submit_label": "Войти в круг",
+      "note": "Прототип формы: в реальном запуске здесь будет отправка заявки в CRM или мессенджер."
+    },
+    "footer_note": "Северодвинск. Мы здесь. Нас можно найти. Мы отвечаем за то, что проходит через своих."
   }
 }
 ```

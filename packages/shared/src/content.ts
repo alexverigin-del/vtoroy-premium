@@ -102,6 +102,29 @@ export interface SectionContent {
     good_header?: string;
     rows?: { label: string; bad: string; good: string }[];
   };
+  // final_cta
+  proof?: string[];
+  form?: {
+    scenarioLabel?: string;
+    scenario_label?: string;
+    scenarioAriaLabel?: string;
+    scenario_aria_label?: string;
+    scenarioOptions?: string[];
+    scenario_options?: string[];
+    deviceLabel?: string;
+    device_label?: string;
+    devicePlaceholder?: string;
+    device_placeholder?: string;
+    contactLabel?: string;
+    contact_label?: string;
+    contactPlaceholder?: string;
+    contact_placeholder?: string;
+    submitLabel?: string;
+    submit_label?: string;
+    note?: string;
+  };
+  footerNote?: string;
+  footer_note?: string;
   // passport_preview
   features?: { title: string; text: string; icon?: string }[];
   passport?: {

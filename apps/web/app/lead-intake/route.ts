@@ -17,6 +17,7 @@ type StoredLead = {
   created_at: string;
   kind: string;
   contact: string;
+  device: string;
   message: string;
   source: string;
   status: "new";
@@ -60,6 +61,7 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
     const directusLead = {
       kind: lead.kind,
       contact: lead.contact,
+      device: lead.device,
       message: lead.message,
       source: lead.source,
       status: lead.status,
@@ -110,6 +112,7 @@ export async function POST(request: NextRequest) {
     created_at: new Date().toISOString(),
     kind: inferKind(scenario),
     contact,
+    device,
     message: [
       scenario ? `Сценарий: ${scenario}` : "",
       device ? `Интерес: ${device}` : "",

@@ -386,3 +386,67 @@
     }, 2500);
   }
 })();
+
+// Lead form override for the Next.js-rendered homepage. Kept outside the legacy
+// interaction bundle so the user-facing messages stay valid UTF-8.
+(function () {
+  'use strict';
+
+  var leadForm = document.getElementById('leadForm');
+  var formNote = document.getElementById('formNote');
+  if (!leadForm || !formNote) return;
+
+  leadForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    var submit = leadForm.querySelector('[type="submit"]');
+    var previousText = submit ? submit.textContent : '';
+    var formData = new FormData(leadForm);
+    var payload = {
+      scenario: formData.get('scenario') || '',
+      device: formData.get('device') || '',
+      contact: formData.get('contact') || '',
+      source: window.location.pathname || '/',
+      website: formData.get('website') || ''
+    };
+
+    if (!payload.contact) {
+      formNote.textContent = 'Оставьте контакт, чтобы мы могли ответить.';
+      formNote.classList.remove('is-success');
+      return;
+    }
+
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = 'Отправляем...';
+    }
+    formNote.textContent = 'Отправляем заявку...';
+    formNote.classList.remove('is-success');
+
+    fetch('/lead-intake', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function () {
+        leadForm.reset();
+        formNote.textContent = 'Заявка принята. Мы свяжемся с вами и предложим спокойный следующий шаг.';
+        formNote.classList.add('is-success');
+      })
+      .catch(function () {
+        formNote.textContent = 'Не удалось отправить заявку. Попробуйте ещё раз или напишите нам напрямую.';
+        formNote.classList.remove('is-success');
+      })
+      .finally(function () {
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = previousText;
+        }
+      });
+  }, true);
+})();

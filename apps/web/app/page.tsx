@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import Script from "next/script";
-import type { PageSection } from "@vtoroy/shared";
-import { getSitePage } from "@/lib/directus";
+import type { NavigationItem, PageSection, SiteSettings } from "@vtoroy/shared";
+import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +17,142 @@ function escapeHtml(value: string): string {
 function replaceText(markup: string, currentText: string, nextText?: string): string {
   if (!nextText) return markup;
   return markup.replace(currentText, escapeHtml(nextText));
+}
+
+function logoSvg(): string {
+  return `<svg class="logo" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="1" width="32" height="32" rx="9" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M9.5 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor"/>
+        <path d="M18 23V11.6c0-.4.46-.62.78-.37l7.2 5.6c.27.2.27.6 0 .8l-7.2 5.6c-.32.25-.78.03-.78-.37Z" fill="currentColor" opacity="0.45"/>
+      </svg>`;
+}
+
+type SiteChrome = {
+  settings: SiteSettings;
+  navigation: NavigationItem[];
+};
+
+const defaultSiteSettings: SiteSettings = {
+  brandName: "ISVOI",
+  tagline: "Хорошие вещи проходят через своих.",
+  city: "Северодвинск",
+  footerNote:
+    "Прототип лендинга. ISVOI — концепт клуба разумного владения: проверенные вещи проходят дальше через своих. Указанные модели устройств, цены, грейды и сроки гарантии приведены как пример и не являются публичной офертой. Названия и товарные знаки принадлежат их правообладателям; устройства показаны схематично.",
+  footerBrandText: "Клуб разумного владения. Хорошие вещи проходят через своих. Северодвинск.",
+  footerLegal: "Хорошие вещи проходят через своих.",
+  footerCopyright: "© 2026 ISVOI. Концепт-прототип.",
+};
+
+const defaultNavigationItems: NavigationItem[] = [
+  { id: "header-store", label: "Store", url: "/catalog/index.html", location: "header", sort: 1, isActive: true },
+  { id: "header-club-local", label: "Клуб", url: "/store/index.html", location: "header", sort: 2, isActive: true },
+  { id: "header-passport", label: "Passport", url: "/passport/index.html", location: "header", sort: 3, isActive: true },
+  { id: "header-trade", label: "Trade", url: "/trade/index.html", location: "header", sort: 4, isActive: true },
+  { id: "header-club", label: "Club", url: "/club/index.html", location: "header", sort: 5, isActive: true },
+  { id: "header-diagnostics", label: "Проверка", url: "#diagnostics", location: "header", sort: 6, isActive: true },
+  { id: "footer-club", label: "Клуб", url: "#top", location: "footer", sort: 1, isActive: true },
+  { id: "footer-club-store", label: "Store", url: "#store", location: "footer", parent: "footer-club", sort: 1, isActive: true },
+  { id: "footer-club-passport", label: "ISVOI Passport", url: "#passport", location: "footer", parent: "footer-club", sort: 2, isActive: true },
+  { id: "footer-club-diagnostics", label: "Открытая проверка", url: "#diagnostics", location: "footer", parent: "footer-club", sort: 3, isActive: true },
+  { id: "footer-services", label: "Сервисы", url: "#top", location: "footer", sort: 2, isActive: true },
+  { id: "footer-services-trade", label: "Trade", url: "#trade", location: "footer", parent: "footer-services", sort: 1, isActive: true },
+  { id: "footer-services-club", label: "Club", url: "#club", location: "footer", parent: "footer-services", sort: 2, isActive: true },
+  { id: "footer-services-final", label: "Найти вещь в кругу", url: "#final", location: "footer", parent: "footer-services", sort: 3, isActive: true },
+  { id: "footer-contacts", label: "Контакты", url: "#top", location: "footer", sort: 3, isActive: true },
+  { id: "footer-contacts-city", label: "Северодвинск", url: "#top", location: "footer", parent: "footer-contacts", sort: 1, isActive: true },
+  { id: "footer-contacts-check", label: "Записаться на проверку", url: "#final", location: "footer", parent: "footer-contacts", sort: 2, isActive: true },
+  { id: "footer-contacts-sell", label: "Передать вещь дальше", url: "#final", location: "footer", parent: "footer-contacts", sort: 3, isActive: true },
+];
+
+function siteChrome(settings: SiteSettings | null, navigation: NavigationItem[]): SiteChrome {
+  const text = (value: string | undefined, fallback: string): string => (value && value.trim() ? value : fallback);
+  return {
+    settings: {
+      ...defaultSiteSettings,
+      ...settings,
+      brandName: text(settings?.brandName, defaultSiteSettings.brandName),
+      tagline: text(settings?.tagline, defaultSiteSettings.tagline),
+      city: text(settings?.city, defaultSiteSettings.city),
+      footerNote: text(settings?.footerNote, defaultSiteSettings.footerNote ?? ""),
+      footerBrandText: text(settings?.footerBrandText, defaultSiteSettings.footerBrandText ?? ""),
+      footerLegal: text(settings?.footerLegal, defaultSiteSettings.footerLegal ?? ""),
+      footerCopyright: text(settings?.footerCopyright, defaultSiteSettings.footerCopyright ?? ""),
+    },
+    navigation: navigation.length > 0 ? navigation : defaultNavigationItems,
+  };
+}
+
+function sortNavigation(items: NavigationItem[]): NavigationItem[] {
+  return [...items].filter((item) => item.isActive).sort((a, b) => a.sort - b.sort);
+}
+
+function linkTargetAttrs(item: NavigationItem): string {
+  return item.openInNew ? ' target="_blank" rel="noopener noreferrer"' : "";
+}
+
+function renderHeaderChrome(chrome: SiteChrome): string {
+  const headerItems = sortNavigation(
+    chrome.navigation.filter((item) => item.location === "header" && !item.parent),
+  );
+
+  return `<!-- ============== NAV ============== -->
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="#top" aria-label="${escapeHtml(chrome.settings.brandName)} — на главную">
+      ${logoSvg()}
+      <span class="brandname">${escapeHtml(chrome.settings.brandName)}</span>
+    </a>
+    <nav class="nav__links" id="navLinks" aria-label="Основная навигация">
+      ${headerItems
+        .map((item) => `<a href="${escapeHtml(item.url)}"${linkTargetAttrs(item)}>${escapeHtml(item.label)}</a>`)
+        .join("\n      ")}
+    </nav>
+    <div class="nav__cta">
+      <a href="#final" class="btn btn--filled btn--sm">Войти в круг</a>
+      <button class="nav__toggle" id="navToggle" aria-label="Открыть меню" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+`;
+}
+
+function renderFooterChrome(chrome: SiteChrome): string {
+  const footerItems = sortNavigation(chrome.navigation.filter((item) => item.location === "footer"));
+  const parentItems = footerItems.filter((item) => !item.parent);
+  const columns = parentItems.length
+    ? parentItems
+    : [{ id: "footer-links", label: "Навигация", url: "#top", location: "footer" as const, sort: 1, isActive: true }];
+
+  return `<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="wrap">
+    <p class="footer__note">${escapeHtml(chrome.settings.footerNote ?? "")}</p>
+    <div class="footer__cols">
+      <div class="footer__brand">
+        ${logoSvg()}
+        <p>${escapeHtml(chrome.settings.footerBrandText ?? chrome.settings.tagline)}</p>
+      </div>
+      ${columns
+        .map((column) => {
+          const links = parentItems.length ? footerItems.filter((item) => item.parent === column.id) : footerItems;
+          return `<div>
+        <h4>${escapeHtml(column.label)}</h4>
+        ${links
+          .map((item) => `<a href="${escapeHtml(item.url)}"${linkTargetAttrs(item)}>${escapeHtml(item.label)}</a>`)
+          .join("\n        ")}
+      </div>`;
+        })
+        .join("\n      ")}
+    </div>
+    <div class="footer__legal">
+      <span>${escapeHtml(chrome.settings.footerCopyright ?? "")}</span>
+      <span>${escapeHtml(chrome.settings.footerLegal ?? "")}</span>
+    </div>
+  </div>
+</footer>`;
 }
 
 function stringList(value: unknown): string[] {
@@ -1074,7 +1210,15 @@ function applySectionText(markup: string, sections: PageSection[]): string {
   return applySectionBlocks(nextMarkup, sections);
 }
 
-function legacyHomeMarkup(sections: PageSection[] = []): string {
+function applySiteChrome(markup: string, chrome: SiteChrome): string {
+  const withHeader = replaceBetween(markup, "<!-- ============== NAV ============== -->", '<main id="top">', renderHeaderChrome(chrome));
+  return withHeader.replace(
+    /<!-- ============== FOOTER ============== -->\s*<footer class="footer">[\s\S]*?<\/footer>/,
+    renderFooterChrome(chrome),
+  );
+}
+
+function legacyHomeMarkup(sections: PageSection[] = [], chrome: SiteChrome = siteChrome(null, [])): string {
   const candidates = [
     path.join(process.cwd(), "apps", "web", "public", "index.html"),
     path.join(process.cwd(), "public", "index.html"),
@@ -1100,16 +1244,20 @@ function legacyHomeMarkup(sections: PageSection[] = []): string {
     .replace(/src="assets\//g, 'src="/assets/')
     .replace(/href="assets\//g, 'href="/assets/');
 
-  return applySectionText(normalized, sections);
+  return applySiteChrome(applySectionText(normalized, sections), chrome);
 }
 
 export default async function HomePage() {
-  const page = await getSitePage("home");
+  const [page, settings, navigation] = await Promise.all([
+    getSitePage("home"),
+    getSiteSettings(),
+    getNavigationItems(),
+  ]);
 
   return (
     <>
       <link rel="stylesheet" href="/styles.css?v=20260616a" />
-      <div dangerouslySetInnerHTML={{ __html: legacyHomeMarkup(page?.sections) }} />
+      <div dangerouslySetInnerHTML={{ __html: legacyHomeMarkup(page?.sections, siteChrome(settings, navigation)) }} />
       <Script src="/data/devices.js?v=20260616a" strategy="afterInteractive" />
       <Script src="/script.js?v=20260617intake" strategy="afterInteractive" />
     </>

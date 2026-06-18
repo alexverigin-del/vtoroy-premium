@@ -28,7 +28,10 @@ Global, site-wide values. Configure as a **singleton** in Directus.
 | `email`              | string               |                                        |
 | `address`            | text                 |                                        |
 | `default_og_image`   | M2O → directus_files | Social share fallback.                 |
+| `footer_note`        | text                 | Long disclaimer above footer columns.  |
+| `footer_brand_text`  | text                 | Short brand text next to the logo.     |
 | `footer_legal`       | text                 | `© 2025 ISVOI. …`                      |
+| `footer_copyright`   | string               | First line in footer legal row.        |
 | `maintenance_mode`   | boolean              | Optional kill-switch for the public site. |
 
 ## `navigation_items`

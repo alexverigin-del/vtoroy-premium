@@ -23,7 +23,10 @@ export interface SiteSettings {
   telegram?: string;
   email?: string;
   address?: string;
+  footerNote?: string;
+  footerBrandText?: string;
   footerLegal?: string;
+  footerCopyright?: string;
   maintenanceMode?: boolean;
 }
 
@@ -34,6 +37,7 @@ export interface NavigationItem {
   label: string;
   url: string;
   location: NavLocation;
+  parent?: string | null;
   sort: number;
   isActive: boolean;
   openInNew?: boolean;

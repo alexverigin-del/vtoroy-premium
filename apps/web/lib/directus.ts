@@ -4,6 +4,8 @@ import type {
   GalleryImage,
   SitePage,
   PageSection,
+  SiteSettings,
+  NavigationItem,
   FaqItem,
   TradeInfo,
 } from "@vtoroy/shared";
@@ -232,6 +234,37 @@ function mapFaqItemFromDirectus(row: Record<string, unknown>): FaqItem {
   };
 }
 
+function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings {
+  return {
+    brandName: str(row.brand_name, "ISVOI"),
+    tagline: str(row.tagline),
+    city: str(row.city),
+    phone: str(row.phone),
+    telegram: str(row.telegram),
+    email: str(row.email),
+    address: str(row.address),
+    footerNote: str(row.footer_note),
+    footerBrandText: str(row.footer_brand_text),
+    footerLegal: str(row.footer_legal),
+    footerCopyright: str(row.footer_copyright),
+    maintenanceMode: bool(row.maintenance_mode),
+  };
+}
+
+function mapNavigationItemFromDirectus(row: Record<string, unknown>): NavigationItem {
+  const parent = row.parent;
+  return {
+    id: str(row.id),
+    label: str(row.label),
+    url: str(row.url, "#"),
+    location: str(row.location, "header") as NavigationItem["location"],
+    parent: typeof parent === "string" ? parent : parent && typeof parent === "object" ? str((parent as Record<string, unknown>).id) : null,
+    sort: num(row.sort),
+    isActive: bool(row.is_active, true),
+    openInNew: bool(row.open_in_new),
+  };
+}
+
 /**
  * A published site page by slug, with its active sections.
  *
@@ -265,6 +298,25 @@ export async function getPageSections(slug: string): Promise<PageSection[]> {
   return page.sections
     .filter((s) => s.isActive)
     .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+/** Global site settings singleton. */
+export async function getSiteSettings(): Promise<SiteSettings | null> {
+  const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
+    "/items/site_settings?limit=1",
+    { cache: "no-store" },
+  );
+  const row = Array.isArray(data) ? data[0] : data;
+  return row ? mapSiteSettingsFromDirectus(row) : null;
+}
+
+/** Active navigation links for header/footer/mobile chrome. */
+export async function getNavigationItems(): Promise<NavigationItem[]> {
+  const data = await directusGet<Record<string, unknown>[]>(
+    "/items/navigation_items?filter[is_active][_eq]=true&fields=*&sort=location,sort",
+    { cache: "no-store" },
+  );
+  return data?.map(mapNavigationItemFromDirectus).filter((item) => item.label && item.url) ?? [];
 }
 
 /** Active FAQ items, optionally filtered by category. */

@@ -60,6 +60,20 @@ export interface SectionContent {
     caption_text?: string;
   };
   steps?: { title: string; text: string }[];
+  choices?: { title: string; text: string; icon?: string }[];
+  valuation?: {
+    heading?: string;
+    fromDevice?: string;
+    from_device?: string;
+    fromNote?: string;
+    from_note?: string;
+    toDevice?: string;
+    to_device?: string;
+    toNote?: string;
+    to_note?: string;
+    label?: string;
+    amount?: string;
+  };
   // passport_preview
   features?: { title: string; text: string; icon?: string }[];
   passport?: {

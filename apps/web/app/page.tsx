@@ -100,6 +100,47 @@ function featureList(value: unknown): { title: string; text: string; icon: strin
   });
 }
 
+function choiceList(value: unknown): { title: string; text: string; icon: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item, index) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title : "";
+    const text = typeof record.text === "string" ? record.text : "";
+    const icon = typeof record.icon === "string" ? record.icon : ["money", "chart", "swap"][index] ?? "money";
+    return title || text ? [{ title, text, icon }] : [];
+  });
+}
+
+function valuationContent(value: unknown): {
+  heading: string;
+  fromDevice: string;
+  fromNote: string;
+  toDevice: string;
+  toNote: string;
+  label: string;
+  amount: string;
+} {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const text = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelField = record[camelKey];
+    const snakeField = record[snakeKey];
+    if (typeof camelField === "string") return camelField;
+    if (typeof snakeField === "string") return snakeField;
+    return fallback;
+  };
+
+  return {
+    heading: text("heading", "heading", "Пример оценки и перехода"),
+    fromDevice: text("fromDevice", "from_device", "iPhone 12"),
+    fromNote: text("fromNote", "from_note", "ваш, грейд B · 128 GB"),
+    toDevice: text("toDevice", "to_device", "iPhone 13 Pro / 14 Pro"),
+    toNote: text("toNote", "to_note", "проверенный, с Passport"),
+    label: text("label", "label", "Доплата при переходе — от"),
+    amount: text("amount", "amount", "19 900 ₽"),
+  };
+}
+
 function passportRows(value: unknown): { label: string; value: string; state: string }[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -123,6 +164,16 @@ function passportIconSvg(icon: string): string {
     return `<svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l6-6 4 4 6-7"/><path d="M20 8v4h-4"/></svg>`;
   }
   return `<svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6M9 11h6"/></svg>`;
+}
+
+function tradeIconSvg(icon: string): string {
+  if (icon === "chart") {
+    return `<svg class="choice__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l6-6 4 4 6-7"/><path d="M20 8v4h-4"/></svg>`;
+  }
+  if (icon === "swap") {
+    return `<svg class="choice__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 7h11l-2.5-2.5M17 17H6l2.5 2.5"/></svg>`;
+  }
+  return `<svg class="choice__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>`;
 }
 
 function passportQrSvg(): string {
@@ -486,6 +537,90 @@ function renderStorePreviewSection(section: PageSection): string {
 `;
 }
 
+function renderTradePreviewSection(section: PageSection): string {
+  const choices = choiceList(section.content.choices);
+  const valuation = valuationContent(section.content.valuation);
+  const renderedChoices =
+    choices.length > 0
+      ? choices
+      : [
+          {
+            title: "Получить деньги сейчас",
+            text: "Спокойный выкуп по честной оценке. Деньги в день обращения, без ожидания случайного покупателя.",
+            icon: "money",
+          },
+          {
+            title: "Передать дальше через комиссию",
+            text: "Мы проводим вещь дальше за вас — с Passport и проверкой. Вы получаете больше, круг получает проверенную вещь.",
+            icon: "chart",
+          },
+          {
+            title: "Обновиться на следующую",
+            text: "Передаёте текущую вещь в зачёт и доплачиваете разницу. Обновление без продажи и хлопот.",
+            icon: "swap",
+          },
+        ];
+
+  return `<!-- ============== TRADE ============== -->
+<section class="section" id="trade">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+      ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+      ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
+    </div>
+    <div class="trade-choices">
+      ${renderedChoices
+        .map(
+          (choice) => `<div class="choice reveal">
+        ${tradeIconSvg(choice.icon)}
+        <div class="choice__title">${escapeHtml(choice.title)}</div>
+        <div class="choice__desc">${escapeHtml(choice.text)}</div>
+      </div>`,
+        )
+        .join("\n      ")}
+    </div>
+
+    <div class="valuation reveal">
+      <div class="valuation__head">${escapeHtml(valuation.heading)}</div>
+      <div class="valuation__flow">
+        <div class="val-box">
+          <div class="device-name">${escapeHtml(valuation.fromDevice)}</div>
+          <div class="device-note">${escapeHtml(valuation.fromNote)}</div>
+        </div>
+        <svg class="val-arrow" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <div class="val-box">
+          <div class="device-name">${escapeHtml(valuation.toDevice)}</div>
+          <div class="device-note">${escapeHtml(valuation.toNote)}</div>
+        </div>
+      </div>
+      <div class="valuation__topup">
+        <div class="lbl">${escapeHtml(valuation.label)}</div>
+        <div class="amount">${escapeHtml(valuation.amount)}</div>
+      </div>
+    </div>
+    <div class="btn-row center reveal" style="margin-top:40px;">
+      ${
+        section.primaryCtaLabel
+          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/trade/index.html")}">${escapeHtml(
+              section.primaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+      ${
+        section.secondaryCtaLabel
+          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/#final")}">${escapeHtml(
+              section.secondaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+    </div>
+  </div>
+</section>
+
+`;
+}
+
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
@@ -493,6 +628,7 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const catalogPreview = byKey.get("catalog_preview") ?? defaultCatalogPreviewSection;
   const passportPreview = byKey.get("passport_preview");
   const storePreview = byKey.get("store_preview");
+  const tradePreview = byKey.get("trade_preview");
 
   let nextMarkup = markup;
 
@@ -551,6 +687,18 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
         nextMarkup,
         "<!-- ============== STORE ============== -->",
         "<!-- ============== TRADE ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  if (tradePreview) {
+    const rendered = renderTradePreviewSection(tradePreview);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== TRADE ============== -->",
+        "<!-- ============== CLUB ============== -->",
         rendered,
       );
     }

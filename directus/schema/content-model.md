@@ -102,6 +102,7 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
 - `catalog_preview` → `{ "limit": number, "filter": string, "filters": [{ "label": string, "value": string }] }`
 - `store_preview` → `{ "visual": { "image_src": string, "image_alt": string, "caption_title": string, "caption_text": string }, "steps": [{ "title": string, "text": string }] }`
 - `passport_preview` → `{ "features": [{ "title": string, "text": string, "icon": "device" | "shield" | "clock" | "chart" }], "passport": { "device": string, "sub": string, "grade": string, "grade_label": string, "rows": [{ "label": string, "value": string, "state": "ok" | "warn" | "bad" }], "exit_label": string, "exit_value": string, "warranty": string, "warranty_strong": string } }`
+- `trade_preview` → `{ "choices": [{ "title": string, "text": string, "icon": "money" | "chart" | "swap" }], "valuation": { "heading": string, "from_device": string, "from_note": string, "to_device": string, "to_note": string, "label": string, "amount": string } }`
 - `passport_disclaimer` → `{ "text": string }`
 - everything else → `{}` (uses only the flat text/CTA fields).
 
@@ -283,6 +284,52 @@ Templates are fixed in code; this is the canonical mapping editors work within.
       "exit_value": "до 42 000 ₽",
       "warranty": "Гарантия",
       "warranty_strong": "90 дней"
+    }
+  }
+}
+```
+
+### `page_sections` — homepage trade preview
+```json
+{
+  "page": "<home page id>",
+  "section_key": "trade_preview",
+  "variant": "trade.choices",
+  "eyebrow": "ISVOI Trade",
+  "headline": "Передайте вещь дальше. Через своих.",
+  "body": "Без объявлений. Без торга. Без незнакомцев. Ваша вещь не теряется — она идёт дальше внутри круга. После честной оценки — три понятных пути.",
+  "primary_cta_label": "Рассчитать обновление",
+  "primary_cta_url": "/trade/index.html",
+  "secondary_cta_label": "Оценить свою вещь",
+  "secondary_cta_url": "/#final",
+  "sort_order": 7,
+  "is_active": true,
+  "content": {
+    "choices": [
+      {
+        "title": "Получить деньги сейчас",
+        "text": "Спокойный выкуп по честной оценке. Деньги в день обращения, без ожидания случайного покупателя.",
+        "icon": "money"
+      },
+      {
+        "title": "Передать дальше через комиссию",
+        "text": "Мы проводим вещь дальше за вас — с Passport и проверкой. Вы получаете больше, круг получает проверенную вещь.",
+        "icon": "chart"
+      },
+      {
+        "title": "Обновиться на следующую",
+        "text": "Передаёте текущую вещь в зачёт и доплачиваете разницу. Обновление без продажи и хлопот.",
+        "icon": "swap"
+      }
+    ],
+    "valuation": {
+      "heading": "Пример оценки и перехода",
+      "from_device": "iPhone 12",
+      "from_note": "ваш, грейд B · 128 GB",
+      "to_device": "iPhone 13 Pro / 14 Pro",
+      "to_note": "проверенный, с Passport",
+      "label": "Доплата при переходе — от",
+      "amount": "19 900 ₽"
     }
   }
 }

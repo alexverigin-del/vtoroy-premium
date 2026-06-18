@@ -99,7 +99,8 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
 - `faq` → `{ "faq_keys": string[] }` (references `faq_items.key`) **or** leave
   empty and attach `faq_items` by `page`.
 - `trade_calculator_intro` → `{ "note": string, "disclaimer": string }`
-- `catalog_preview` / `store_preview` → `{ "limit": number, "filter": string }`
+- `catalog_preview` → `{ "limit": number, "filter": string, "filters": [{ "label": string, "value": string }] }`
+- `store_preview` → `{ "visual": { "image_src": string, "image_alt": string, "caption_title": string, "caption_text": string }, "steps": [{ "title": string, "text": string }] }`
 - `passport_preview` → `{ "features": [{ "title": string, "text": string, "icon": "device" | "shield" | "clock" | "chart" }], "passport": { "device": string, "sub": string, "grade": string, "grade_label": string, "rows": [{ "label": string, "value": string, "state": "ok" | "warn" | "bad" }], "exit_label": string, "exit_value": string, "warranty": string, "warranty_strong": string } }`
 - `passport_disclaimer` → `{ "text": string }`
 - everything else → `{}` (uses only the flat text/CTA fields).
@@ -141,7 +142,7 @@ Templates are fixed in code; this is the canonical mapping editors work within.
 
 | Page slug  | Template      | `section_key`s (in order)                                                        |
 | ---------- | ------------- | -------------------------------------------------------------------------------- |
-| `home`     | `home`        | `hero`, `trust`, `path_router`, `catalog_preview`, `store_preview`, `passport_preview`, `trade_preview`, `club_preview`, `diagnostics_compare`, `final_cta` |
+| `home`     | `home`        | `hero`, `trust`, `path_router`, `catalog_preview`, `passport_preview`, `store_preview`, `trade_preview`, `club_preview`, `diagnostics_compare`, `final_cta` |
 | `catalog`  | `catalog`     | `catalog_hero`, `catalog_grid` (grid is data-driven from `devices`)              |
 | `store`    | `store`       | `store_hero`, `store_offer`, `store_location`, `final_cta`                       |
 | `trade`    | `trade`       | `trade_hero`, `trade_calculator_intro`, `trade_steps`, `faq`, `final_cta`        |
@@ -189,15 +190,42 @@ Templates are fixed in code; this is the canonical mapping editors work within.
 {
   "page": "<home page id>",
   "section_key": "store_preview",
-  "variant": "preview.card",
-  "eyebrow": "Store",
-  "headline": "Доверенная витрина круга",
-  "body": "Открытая проверка, ISVOI Passport на каждую вещь.",
-  "primary_cta_label": "Перейти в Store",
-  "primary_cta_url": "/store",
-  "sort_order": 5,
+  "variant": "store.steps",
+  "eyebrow": "ISVOI Store",
+  "headline": "Доверенная витрина. Не случайный рынок.",
+  "body": "Store — место, где вещи проходят дальше через своих. Открытая проверка, Passport на каждую вещь и понятная цена выхода. Здесь спокойно, потому что за вещь отвечают.",
+  "primary_cta_label": "Как проходит визит в Store",
+  "primary_cta_url": "/store/index.html",
+  "secondary_cta_label": "Смотреть вещи в кругу",
+  "secondary_cta_url": "/catalog/index.html",
+  "sort_order": 6,
   "is_active": true,
-  "content": { "limit": 4, "filter": "all" }
+  "content": {
+    "visual": {
+      "image_src": "/assets/store-real-premium-hero.webp",
+      "image_alt": "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
+      "caption_title": "Store как точка доверия.",
+      "caption_text": "Чистая витрина, видимая ответственность и спокойная консультация без давления."
+    },
+    "steps": [
+      {
+        "title": "Выбираете",
+        "text": "Подбираем вещь под задачу и бюджет. Каждая — с Passport и грейдом."
+      },
+      {
+        "title": "Проверяете",
+        "text": "Открытая проверка при вас. Сначала история и состояние — потом решение."
+      },
+      {
+        "title": "Забираете",
+        "text": "Получаете Passport, чек и письменную гарантию на 90 дней."
+      },
+      {
+        "title": "Передаёте дальше",
+        "text": "Захотели обновиться — знаете цену выхода заранее. Вещь идёт дальше через своих."
+      }
+    ]
+  }
 }
 ```
 

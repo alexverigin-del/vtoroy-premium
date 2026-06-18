@@ -49,6 +49,17 @@ export interface SectionContent {
   limit?: number;
   filter?: string;
   filters?: { label: string; value: string }[];
+  visual?: {
+    imageSrc?: string;
+    image_src?: string;
+    imageAlt?: string;
+    image_alt?: string;
+    captionTitle?: string;
+    caption_title?: string;
+    captionText?: string;
+    caption_text?: string;
+  };
+  steps?: { title: string; text: string }[];
   // passport_preview
   features?: { title: string; text: string; icon?: string }[];
   passport?: {

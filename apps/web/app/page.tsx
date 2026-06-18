@@ -60,6 +60,34 @@ function filterList(value: unknown): { label: string; value: string }[] {
   });
 }
 
+function visualContent(
+  value: unknown,
+): { imageSrc: string; imageAlt: string; captionTitle: string; captionText: string } {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const text = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelField = record[camelKey];
+    const snakeField = record[snakeKey];
+    if (typeof camelField === "string") return camelField;
+    if (typeof snakeField === "string") return snakeField;
+    return fallback;
+  };
+
+  return {
+    imageSrc: text("imageSrc", "image_src", "/assets/store-real-premium-hero.webp"),
+    imageAlt: text(
+      "imageAlt",
+      "image_alt",
+      "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
+    ),
+    captionTitle: text("captionTitle", "caption_title", "Store как точка доверия."),
+    captionText: text(
+      "captionText",
+      "caption_text",
+      "Чистая витрина, видимая ответственность и спокойная консультация без давления.",
+    ),
+  };
+}
+
 function featureList(value: unknown): { title: string; text: string; icon: string }[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item, index) => {
@@ -386,12 +414,85 @@ function renderPassportSection(section: PageSection): string {
 `;
 }
 
+function renderStorePreviewSection(section: PageSection): string {
+  const visual = visualContent(section.content.visual);
+  const steps = sectionItemList(section.content.steps);
+  const renderedSteps =
+    steps.length > 0
+      ? steps
+      : [
+          {
+            title: "Выбираете",
+            text: "Подбираем вещь под задачу и бюджет. Каждая — с Passport и грейдом.",
+          },
+          {
+            title: "Проверяете",
+            text: "Открытая проверка при вас. Сначала история и состояние — потом решение.",
+          },
+          {
+            title: "Забираете",
+            text: "Получаете Passport, чек и письменную гарантию на 90 дней.",
+          },
+          {
+            title: "Передаёте дальше",
+            text: "Захотели обновиться — знаете цену выхода заранее. Вещь идёт дальше через своих.",
+          },
+        ];
+
+  return `<!-- ============== STORE ============== -->
+<section class="section section--wash" id="store">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+      ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+      ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
+    </div>
+    <div class="store-visual reveal">
+      <img src="${escapeHtml(section.image || visual.imageSrc)}" alt="${escapeHtml(visual.imageAlt)}" />
+      <div class="store-visual__caption">
+        <strong>${escapeHtml(visual.captionTitle)}</strong>
+        <span>${escapeHtml(visual.captionText)}</span>
+      </div>
+    </div>
+    <div class="steps">
+      ${renderedSteps
+        .map((step, index) => {
+          const number = String(index + 1).padStart(2, "0");
+          return `<div class="step reveal"><div class="step__num">${number}</div><div class="step__title">${escapeHtml(
+            step.title,
+          )}</div><div class="step__desc">${escapeHtml(step.text)}</div></div>`;
+        })
+        .join("\n      ")}
+    </div>
+    <div class="btn-row center reveal" style="margin-top:40px;">
+      ${
+        section.primaryCtaLabel
+          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/store/index.html")}">${escapeHtml(
+              section.primaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+      ${
+        section.secondaryCtaLabel
+          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/catalog/index.html")}">${escapeHtml(
+              section.secondaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+    </div>
+  </div>
+</section>
+
+`;
+}
+
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
   const pathRouter = byKey.get("path_router");
   const catalogPreview = byKey.get("catalog_preview") ?? defaultCatalogPreviewSection;
   const passportPreview = byKey.get("passport_preview");
+  const storePreview = byKey.get("store_preview");
 
   let nextMarkup = markup;
 
@@ -438,6 +539,18 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
         nextMarkup,
         "<!-- ============== PASSPORT ============== -->",
         "<!-- ============== STORE ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  if (storePreview) {
+    const rendered = renderStorePreviewSection(storePreview);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== STORE ============== -->",
+        "<!-- ============== TRADE ============== -->",
         rendered,
       );
     }

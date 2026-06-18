@@ -100,6 +100,7 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
   empty and attach `faq_items` by `page`.
 - `trade_calculator_intro` → `{ "note": string, "disclaimer": string }`
 - `catalog_preview` / `store_preview` → `{ "limit": number, "filter": string }`
+- `passport_preview` → `{ "features": [{ "title": string, "text": string, "icon": "device" | "shield" | "clock" | "chart" }], "passport": { "device": string, "sub": string, "grade": string, "grade_label": string, "rows": [{ "label": string, "value": string, "state": "ok" | "warn" | "bad" }], "exit_label": string, "exit_value": string, "warranty": string, "warranty_strong": string } }`
 - `passport_disclaimer` → `{ "text": string }`
 - everything else → `{}` (uses only the flat text/CTA fields).
 
@@ -197,6 +198,65 @@ Templates are fixed in code; this is the canonical mapping editors work within.
   "sort_order": 5,
   "is_active": true,
   "content": { "limit": 4, "filter": "all" }
+}
+```
+
+### `page_sections` — homepage passport preview
+```json
+{
+  "page": "<home page id>",
+  "section_key": "passport_preview",
+  "variant": "passport.split",
+  "eyebrow": "ISVOI Passport",
+  "headline": "У каждой вещи есть понятная история.",
+  "body": "Не «как новая», а честно проверенная. Passport — документ, в котором простым языком сказано всё, что важно знать о вещи до того, как она перейдёт к вам.",
+  "primary_cta_label": "Как работает Passport",
+  "primary_cta_url": "/passport/index.html",
+  "secondary_cta_label": "Смотреть Store",
+  "secondary_cta_url": "/catalog/index.html",
+  "sort_order": 5,
+  "is_active": true,
+  "content": {
+    "features": [
+      {
+        "title": "Состояние и грейд",
+        "text": "Батарея, корпус, экран — оценка по прозрачной шкале A / B / C.",
+        "icon": "device"
+      },
+      {
+        "title": "История и проверка",
+        "text": "Ремонт, вскрытие, влага, Face ID — зафиксировано по результатам диагностики.",
+        "icon": "shield"
+      },
+      {
+        "title": "Гарантия 90 дней",
+        "text": "Письменная гарантия, а не «верьте на слово».",
+        "icon": "clock"
+      },
+      {
+        "title": "Цена выхода",
+        "text": "Сколько вещь будет стоить, когда пойдёт дальше через своих — известно заранее.",
+        "icon": "chart"
+      }
+    ],
+    "passport": {
+      "device": "iPhone 13 Pro",
+      "sub": "256 GB · Графитовый · IMEI ···4821",
+      "grade": "A−",
+      "grade_label": "Грейд",
+      "rows": [
+        { "label": "Батарея", "value": "89%", "state": "ok" },
+        { "label": "Ремонт", "value": "не вскрывался", "state": "ok" },
+        { "label": "Face ID", "value": "работает", "state": "ok" },
+        { "label": "Влага", "value": "следов нет", "state": "ok" },
+        { "label": "Экран / корпус", "value": "микроцарапины", "state": "ok" }
+      ],
+      "exit_label": "Цена выхода через 6 мес",
+      "exit_value": "до 42 000 ₽",
+      "warranty": "Гарантия",
+      "warranty_strong": "90 дней"
+    }
+  }
 }
 ```
 

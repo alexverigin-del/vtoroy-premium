@@ -60,6 +60,59 @@ function filterList(value: unknown): { label: string; value: string }[] {
   });
 }
 
+function featureList(value: unknown): { title: string; text: string; icon: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item, index) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title : "";
+    const text = typeof record.text === "string" ? record.text : "";
+    const icon = typeof record.icon === "string" ? record.icon : ["device", "shield", "clock", "chart"][index] ?? "device";
+    return title || text ? [{ title, text, icon }] : [];
+  });
+}
+
+function passportRows(value: unknown): { label: string; value: string; state: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const label = typeof record.label === "string" ? record.label : "";
+    const rowValue = typeof record.value === "string" ? record.value : "";
+    const state = typeof record.state === "string" ? record.state : "ok";
+    return label && rowValue ? [{ label, value: rowValue, state }] : [];
+  });
+}
+
+function passportIconSvg(icon: string): string {
+  if (icon === "shield") {
+    return `<svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 4v5c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V7l7-4Z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>`;
+  }
+  if (icon === "clock") {
+    return `<svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
+  }
+  if (icon === "chart") {
+    return `<svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l6-6 4 4 6-7"/><path d="M20 8v4h-4"/></svg>`;
+  }
+  return `<svg class="fi-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6M9 11h6"/></svg>`;
+}
+
+function passportQrSvg(): string {
+  return `<svg class="qr" viewBox="0 0 44 44" aria-hidden="true" role="img">
+              <rect width="44" height="44" rx="6" fill="#f5f5f7"/>
+              <g fill="#1d1d1f">
+                <rect x="6" y="6" width="11" height="11"/><rect x="9" y="9" width="5" height="5" fill="#f5f5f7"/>
+                <rect x="27" y="6" width="11" height="11"/><rect x="30" y="9" width="5" height="5" fill="#f5f5f7"/>
+                <rect x="6" y="27" width="11" height="11"/><rect x="9" y="30" width="5" height="5" fill="#f5f5f7"/>
+                <rect x="21" y="6" width="3" height="3"/><rect x="21" y="14" width="3" height="3"/>
+                <rect x="21" y="21" width="3" height="3"/><rect x="27" y="21" width="3" height="3"/>
+                <rect x="33" y="21" width="3" height="3"/><rect x="21" y="27" width="3" height="3"/>
+                <rect x="27" y="27" width="3" height="3"/><rect x="33" y="33" width="3" height="3"/>
+                <rect x="27" y="33" width="3" height="3"/><rect x="33" y="27" width="3" height="3"/>
+              </g>
+            </svg>`;
+}
+
 const defaultCatalogPreviewSection: PageSection = {
   id: "catalog-preview-fallback",
   sectionKey: "catalog_preview",
@@ -205,11 +258,140 @@ function renderCatalogPreviewSection(section: PageSection): string {
 `;
 }
 
+function renderPassportSection(section: PageSection): string {
+  const features = featureList(section.content.features);
+  const card = section.content.passport && typeof section.content.passport === "object" ? section.content.passport : {};
+  const cardRecord = card as Record<string, unknown>;
+  const cardText = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelValue = cardRecord[camelKey];
+    const snakeValue = cardRecord[snakeKey];
+    if (typeof camelValue === "string") return camelValue;
+    if (typeof snakeValue === "string") return snakeValue;
+    return fallback;
+  };
+  const rows = passportRows(cardRecord.rows);
+  const device = cardText("device", "device", "iPhone 13 Pro");
+  const sub = cardText("sub", "sub", "256 GB · Графитовый · IMEI ···4821");
+  const grade = cardText("grade", "grade", "A−");
+  const gradeLabel = cardText("gradeLabel", "grade_label", "Грейд");
+  const exitLabel = cardText("exitLabel", "exit_label", "Цена выхода через 6 мес");
+  const exitValue = cardText("exitValue", "exit_value", "до 42 000 ₽");
+  const warranty = cardText("warranty", "warranty", "Гарантия");
+  const warrantyStrong = cardText("warrantyStrong", "warranty_strong", "90 дней");
+  const defaultRows =
+    rows.length > 0
+      ? rows
+      : [
+          { label: "Батарея", value: "89%", state: "ok" },
+          { label: "Ремонт", value: "не вскрывался", state: "ok" },
+          { label: "Face ID", value: "работает", state: "ok" },
+          { label: "Влага", value: "следов нет", state: "ok" },
+          { label: "Экран / корпус", value: "микроцарапины", state: "ok" },
+        ];
+  const renderedFeatures =
+    features.length > 0
+      ? features
+      : [
+          {
+            title: "Состояние и грейд",
+            text: "Батарея, корпус, экран — оценка по прозрачной шкале A / B / C.",
+            icon: "device",
+          },
+          {
+            title: "История и проверка",
+            text: "Ремонт, вскрытие, влага, Face ID — зафиксировано по результатам диагностики.",
+            icon: "shield",
+          },
+          {
+            title: "Гарантия 90 дней",
+            text: "Письменная гарантия, а не «верьте на слово».",
+            icon: "clock",
+          },
+          {
+            title: "Цена выхода",
+            text: "Сколько вещь будет стоить, когда пойдёт дальше через своих — известно заранее.",
+            icon: "chart",
+          },
+        ];
+
+  return `<!-- ============== PASSPORT ============== -->
+<section class="section passport-section" id="passport">
+  <div class="wrap">
+    <div class="layout">
+      <div class="reveal">
+        ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+        ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+        ${section.body ? `<p class="lead" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
+        <ul class="feature-list">
+          ${renderedFeatures
+            .map(
+              (feature) => `<li>
+            ${passportIconSvg(feature.icon)}
+            <div><div class="fi-title">${escapeHtml(feature.title)}</div><div class="fi-desc">${escapeHtml(feature.text)}</div></div>
+          </li>`,
+            )
+            .join("\n          ")}
+        </ul>
+        <div class="btn-row" style="margin-top:32px;">
+          ${
+            section.primaryCtaLabel
+              ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/passport/index.html")}">${escapeHtml(
+                  section.primaryCtaLabel,
+                )}</a>`
+              : ""
+          }
+          ${
+            section.secondaryCtaLabel
+              ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/catalog/index.html")}">${escapeHtml(
+                  section.secondaryCtaLabel,
+                )}</a>`
+              : ""
+          }
+        </div>
+      </div>
+
+      <div class="reveal">
+        <div class="passport">
+          <div class="passport__head">
+            <div>
+              <div class="passport__device">${escapeHtml(device)}</div>
+              <div class="passport__sub">${escapeHtml(sub)}</div>
+            </div>
+            <div class="grade"><b>${escapeHtml(grade)}</b><span>${escapeHtml(gradeLabel)}</span></div>
+          </div>
+          <div class="passport__rows">
+            ${defaultRows
+              .map((row) => {
+                const isOk = row.state === "ok";
+                return `<div class="prow"><span class="lbl"><span class="dot${isOk ? " dot--ok" : ""}"></span>${escapeHtml(
+                  row.label,
+                )}</span><span class="val${isOk ? " val--ok" : ""}">${escapeHtml(row.value)}</span></div>`;
+              })
+              .join("\n            ")}
+          </div>
+          <div class="passport__exit">
+            <span class="x-lbl">${escapeHtml(exitLabel)}</span>
+            <span class="x-val">${escapeHtml(exitValue)}</span>
+          </div>
+          <div class="passport__foot">
+            <span class="passport__warranty">${escapeHtml(warranty)} <b>${escapeHtml(warrantyStrong)}</b> · проверка пройдена</span>
+            ${passportQrSvg()}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+`;
+}
+
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
   const pathRouter = byKey.get("path_router");
   const catalogPreview = byKey.get("catalog_preview") ?? defaultCatalogPreviewSection;
+  const passportPreview = byKey.get("passport_preview");
 
   let nextMarkup = markup;
 
@@ -244,6 +426,18 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
         nextMarkup,
         "<!-- ============== CATALOG ============== -->",
         "<!-- ============== PASSPORT ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  if (passportPreview) {
+    const rendered = renderPassportSection(passportPreview);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== PASSPORT ============== -->",
+        "<!-- ============== STORE ============== -->",
         rendered,
       );
     }

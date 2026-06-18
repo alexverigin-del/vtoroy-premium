@@ -49,6 +49,23 @@ export interface SectionContent {
   limit?: number;
   filter?: string;
   filters?: { label: string; value: string }[];
+  // passport_preview
+  features?: { title: string; text: string; icon?: string }[];
+  passport?: {
+    device?: string;
+    sub?: string;
+    grade?: string;
+    gradeLabel?: string;
+    grade_label?: string;
+    rows?: { label: string; value: string; state?: "ok" | "warn" | "bad" | string }[];
+    exitLabel?: string;
+    exit_label?: string;
+    exitValue?: string;
+    exit_value?: string;
+    warranty?: string;
+    warrantyStrong?: string;
+    warranty_strong?: string;
+  };
   // trade_calculator_intro
   note?: string;
   disclaimer?: string;

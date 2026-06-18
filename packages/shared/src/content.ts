@@ -74,6 +74,13 @@ export interface SectionContent {
     label?: string;
     amount?: string;
   };
+  levels?: {
+    badge?: string;
+    name: string;
+    tag: string;
+    features: string[];
+    featured?: boolean;
+  }[];
   // passport_preview
   features?: { title: string; text: string; icon?: string }[];
   passport?: {

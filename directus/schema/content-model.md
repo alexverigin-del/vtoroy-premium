@@ -103,6 +103,7 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
 - `store_preview` → `{ "visual": { "image_src": string, "image_alt": string, "caption_title": string, "caption_text": string }, "steps": [{ "title": string, "text": string }] }`
 - `passport_preview` → `{ "features": [{ "title": string, "text": string, "icon": "device" | "shield" | "clock" | "chart" }], "passport": { "device": string, "sub": string, "grade": string, "grade_label": string, "rows": [{ "label": string, "value": string, "state": "ok" | "warn" | "bad" }], "exit_label": string, "exit_value": string, "warranty": string, "warranty_strong": string } }`
 - `trade_preview` → `{ "choices": [{ "title": string, "text": string, "icon": "money" | "chart" | "swap" }], "valuation": { "heading": string, "from_device": string, "from_note": string, "to_device": string, "to_note": string, "label": string, "amount": string } }`
+- `club_preview` → `{ "levels": [{ "badge": string, "name": string, "tag": string, "features": string[], "featured": boolean }] }`
 - `passport_disclaimer` → `{ "text": string }`
 - everything else → `{}` (uses only the flat text/CTA fields).
 
@@ -331,6 +332,49 @@ Templates are fixed in code; this is the canonical mapping editors work within.
       "label": "Доплата при переходе — от",
       "amount": "19 900 ₽"
     }
+  }
+}
+```
+
+### `page_sections` — homepage club preview
+```json
+{
+  "page": "<home page id>",
+  "section_key": "club_preview",
+  "variant": "club.levels",
+  "eyebrow": "ISVOI Club",
+  "headline": "Владеть ценным проще среди своих.",
+  "body": "Не про дешевизну, а про круг: ранний доступ к вещам, рекомендации, понятный путь обновления. Пользуйтесь, обновляйтесь, выкупайте или передавайте дальше — на ваших условиях, среди своих.",
+  "primary_cta_label": "Как работает Club",
+  "primary_cta_url": "/club/index.html",
+  "secondary_cta_label": "Узнать условия",
+  "secondary_cta_url": "/#final",
+  "sort_order": 8,
+  "is_active": true,
+  "content": {
+    "levels": [
+      {
+        "badge": "Care",
+        "name": "Care",
+        "tag": "Спокойное владение с защитой и приоритетным сервисом.",
+        "features": ["Продлённая гарантия", "Приоритетная диагностика", "Зафиксированная цена выкупа"],
+        "featured": false
+      },
+      {
+        "badge": "Популярный",
+        "name": "Upgrade",
+        "tag": "Плановое обновление на следующую вещь без потери в цене.",
+        "features": ["Всё из уровня Care", "Обновление по известной цене выхода", "Ранний доступ к новым лотам в кругу"],
+        "featured": true
+      },
+      {
+        "badge": "Flex",
+        "name": "Flex",
+        "tag": "Максимум гибкости: пользуйтесь, выкупайте или возвращайте.",
+        "features": ["Всё из уровня Upgrade", "Право возврата устройства", "Выкуп в собственность в любой момент"],
+        "featured": false
+      }
+    ]
   }
 }
 ```

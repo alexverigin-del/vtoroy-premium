@@ -112,6 +112,20 @@ function choiceList(value: unknown): { title: string; text: string; icon: string
   });
 }
 
+function clubLevelList(value: unknown): { badge: string; name: string; tag: string; features: string[]; featured: boolean }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const badge = typeof record.badge === "string" ? record.badge : "";
+    const name = typeof record.name === "string" ? record.name : "";
+    const tag = typeof record.tag === "string" ? record.tag : "";
+    const features = stringList(record.features);
+    const featured = typeof record.featured === "boolean" ? record.featured : false;
+    return name || tag || features.length > 0 ? [{ badge, name, tag, features, featured }] : [];
+  });
+}
+
 function valuationContent(value: unknown): {
   heading: string;
   fromDevice: string;
@@ -621,6 +635,85 @@ function renderTradePreviewSection(section: PageSection): string {
 `;
 }
 
+function renderCheckIcon(): string {
+  return `<svg class="ck" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 10-10"/></svg>`;
+}
+
+function renderClubPreviewSection(section: PageSection): string {
+  const levels = clubLevelList(section.content.levels);
+  const renderedLevels =
+    levels.length > 0
+      ? levels
+      : [
+          {
+            badge: "Care",
+            name: "Care",
+            tag: "Спокойное владение с защитой и приоритетным сервисом.",
+            features: ["Продлённая гарантия", "Приоритетная диагностика", "Зафиксированная цена выкупа"],
+            featured: false,
+          },
+          {
+            badge: "Популярный",
+            name: "Upgrade",
+            tag: "Плановое обновление на следующую вещь без потери в цене.",
+            features: ["Всё из уровня Care", "Обновление по известной цене выхода", "Ранний доступ к новым лотам в кругу"],
+            featured: true,
+          },
+          {
+            badge: "Flex",
+            name: "Flex",
+            tag: "Максимум гибкости: пользуйтесь, выкупайте или возвращайте.",
+            features: ["Всё из уровня Upgrade", "Право возврата устройства", "Выкуп в собственность в любой момент"],
+            featured: false,
+          },
+        ];
+
+  return `<!-- ============== CLUB ============== -->
+<section class="section section--carbon" id="club">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
+      ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+      ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
+    </div>
+    <div class="club-levels">
+      ${renderedLevels
+        .map(
+          (level) => `<div class="level${level.featured ? " level--featured" : ""} reveal">
+        ${level.badge ? `<div class="level__badge">${escapeHtml(level.badge)}</div>` : ""}
+        ${level.name ? `<div class="level__name">${escapeHtml(level.name)}</div>` : ""}
+        ${level.tag ? `<div class="level__tag">${escapeHtml(level.tag)}</div>` : ""}
+        <ul class="level__features">
+          ${level.features
+            .map((feature) => `<li>${renderCheckIcon()}${escapeHtml(feature)}</li>`)
+            .join("\n          ")}
+        </ul>
+      </div>`,
+        )
+        .join("\n      ")}
+    </div>
+    <div class="btn-row center reveal" style="margin-top:40px;">
+      ${
+        section.primaryCtaLabel
+          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/club/index.html")}">${escapeHtml(
+              section.primaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+      ${
+        section.secondaryCtaLabel
+          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/#final")}">${escapeHtml(
+              section.secondaryCtaLabel,
+            )}</a>`
+          : ""
+      }
+    </div>
+  </div>
+</section>
+
+`;
+}
+
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
   const trust = byKey.get("trust");
@@ -629,6 +722,7 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const passportPreview = byKey.get("passport_preview");
   const storePreview = byKey.get("store_preview");
   const tradePreview = byKey.get("trade_preview");
+  const clubPreview = byKey.get("club_preview");
 
   let nextMarkup = markup;
 
@@ -699,6 +793,18 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
         nextMarkup,
         "<!-- ============== TRADE ============== -->",
         "<!-- ============== CLUB ============== -->",
+        rendered,
+      );
+    }
+  }
+
+  if (clubPreview) {
+    const rendered = renderClubPreviewSection(clubPreview);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== CLUB ============== -->",
+        "<!-- ============== DIAGNOSTICS + COMPARISON ============== -->",
         rendered,
       );
     }

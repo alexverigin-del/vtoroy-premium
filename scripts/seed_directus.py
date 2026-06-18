@@ -108,7 +108,13 @@ FIELD_SPECS: list[dict[str, Any]] = [
     {"field": "availability", "type": "text", "schema": {}, "meta": {"interface": "input-multiline"}},
     {"field": "short_description", "type": "text", "schema": {}, "meta": {"interface": "input-multiline"}},
     {"field": "headline", "type": "string", "schema": {}, "meta": {"interface": "input"}},
-    {"field": "listing_file", "type": "uuid", "schema": {}, "meta": {"interface": "file-image", "special": "file"}},
+    {"field": "listing_file", "type": "uuid", "schema": {}, "meta": {
+        "interface": "file-image",
+        "special": "m2o",
+        "width": "full",
+        "note": "Main product photo from Directus Files. If empty, the site uses legacy listing_image.",
+        "translations": [{"language": "ru-RU", "translation": "Card photo"}],
+    }},
     {"field": "listing_image", "type": "string", "schema": {}, "meta": {"interface": "input"}},
     {"field": "listing_alt", "type": "string", "schema": {}, "meta": {"interface": "input"}},
     {"field": "cta_label", "type": "string", "schema": {}, "meta": {"interface": "input"}},
@@ -151,6 +157,7 @@ def ensure_schema(cfg: dict[str, str], dry_run: bool) -> None:
         print(f"[dry-run] GET {base}/collections/{COLLECTION} (create if missing)")
         for spec in FIELD_SPECS:
             print(f"[dry-run] ensure field {COLLECTION}.{spec['field']} ({spec['type']})")
+        print(f"[dry-run] ensure relation {COLLECTION}.listing_file -> directus_files")
         return
 
     headers = _headers(cfg)
@@ -182,6 +189,34 @@ def ensure_schema(cfg: dict[str, str], dry_run: bool) -> None:
         r = requests.post(f"{base}/fields/{COLLECTION}", headers=headers, json=spec, timeout=30)
         r.raise_for_status()
         print(f"[create] field {COLLECTION}.{field} ({spec['type']})")
+
+    ensure_listing_file_relation(cfg)
+
+
+def ensure_listing_file_relation(cfg: dict[str, str]) -> None:
+    """Ensure the catalog thumbnail field is a Directus Files M2O relation."""
+    base = cfg["url"]
+    headers = _headers(cfg)
+    params = {
+        "filter[many_collection][_eq]": COLLECTION,
+        "filter[many_field][_eq]": "listing_file",
+        "fields": "many_collection,many_field,one_collection",
+        "limit": "1",
+    }
+    existing = requests.get(f"{base}/relations", headers=headers, params=params, timeout=30)
+    existing.raise_for_status()
+    if existing.json().get("data"):
+        print(f"[skip] relation {COLLECTION}.listing_file -> directus_files")
+        return
+
+    payload = {
+        "collection_many": COLLECTION,
+        "field_many": "listing_file",
+        "collection_one": "directus_files",
+    }
+    created = requests.post(f"{base}/relations", headers=headers, json=payload, timeout=30)
+    created.raise_for_status()
+    print(f"[create] relation {COLLECTION}.listing_file -> directus_files")
 
 
 def to_row(device: dict[str, Any], index: int) -> dict[str, Any]:

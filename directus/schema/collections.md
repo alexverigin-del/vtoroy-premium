@@ -46,7 +46,8 @@ Field types use Directus terminology. `M2O` = many-to-one, `O2M` = one-to-many,
 | `availability`    | text            |                                                    |
 | `short_description` | text          | Catalog card subtitle.                              |
 | `headline`        | string          | Product page H1.                                    |
-| `listing_image`   | M2O → directus_files | Catalog thumbnail.                            |
+| `listing_file`    | M2O -> directus_files | Catalog thumbnail managed in Directus Files.  |
+| `listing_image`   | string          | Legacy catalog thumbnail path fallback.        |
 | `listing_alt`     | string          | Alt text.                                           |
 | `cta_label`       | string          | e.g. `Смотреть паспорт`.                            |
 | `gallery`         | O2M → `device_gallery` | Ordered images.                             |
@@ -143,7 +144,8 @@ When the schema changes:
 
 ## Current image migration path
 
-For device thumbnails, prefer `devices.listing_file` as a Directus Files field.
+For device thumbnails, prefer `devices.listing_file` as a Directus Files M2O
+relation to `directus_files`.
 Keep `devices.listing_image` as a legacy fallback for repo-hosted paths such as
 `assets/catalog-iphone-13-pro.webp`.
 

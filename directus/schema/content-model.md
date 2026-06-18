@@ -192,6 +192,10 @@ Templates are fixed in code; this is the canonical mapping editors work within.
 }
 ```
 
+Hero renderer also accepts optional `content.assurance`, `content.visual`, and
+`content.passport` to control the first-screen assurance chips, hero image, and
+floating Passport card from Directus.
+
 ### `page_sections` — homepage store preview
 ```json
 {

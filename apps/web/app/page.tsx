@@ -224,6 +224,26 @@ function visualContent(
   };
 }
 
+function heroVisualContent(value: unknown): { imageSrc: string; imageAlt: string } {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const text = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelField = record[camelKey];
+    const snakeField = record[snakeKey];
+    if (typeof camelField === "string") return camelField;
+    if (typeof snakeField === "string") return snakeField;
+    return fallback;
+  };
+
+  return {
+    imageSrc: text("imageSrc", "image_src", "/assets/hero-apple-like-single-phone-clean.webp"),
+    imageAlt: text(
+      "imageAlt",
+      "image_alt",
+      "Премиальный графитовый смартфон на светло-серой студийной поверхности",
+    ),
+  };
+}
+
 function featureList(value: unknown): { title: string; text: string; icon: string }[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item, index) => {
@@ -446,6 +466,50 @@ function passportQrSvg(): string {
             </svg>`;
 }
 
+function heroPassportContent(value: unknown): {
+  ariaLabel: string;
+  device: string;
+  sub: string;
+  grade: string;
+  gradeLabel: string;
+  rows: { label: string; value: string; state: string }[];
+  exitLabel: string;
+  exitValue: string;
+  warranty: string;
+  warrantyStrong: string;
+} {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const text = (camelKey: string, snakeKey: string, fallback: string): string => {
+    const camelField = record[camelKey];
+    const snakeField = record[snakeKey];
+    if (typeof camelField === "string") return camelField;
+    if (typeof snakeField === "string") return snakeField;
+    return fallback;
+  };
+  const rows = passportRows(record.rows);
+
+  return {
+    ariaLabel: text("ariaLabel", "aria_label", "ISVOI Passport вещи"),
+    device: text("device", "device", "iPhone 13 Pro"),
+    sub: text("sub", "sub", "256 GB · Графитовый"),
+    grade: text("grade", "grade", "A−"),
+    gradeLabel: text("gradeLabel", "grade_label", "Грейд"),
+    rows:
+      rows.length > 0
+        ? rows
+        : [
+            { label: "Батарея", value: "89%", state: "ok" },
+            { label: "Ремонт", value: "не вскрывался", state: "ok" },
+            { label: "Face ID", value: "работает", state: "ok" },
+            { label: "Влага", value: "следов нет", state: "ok" },
+          ],
+    exitLabel: text("exitLabel", "exit_label", "Цена выхода через 6 мес"),
+    exitValue: text("exitValue", "exit_value", "до 42 000 ₽"),
+    warranty: text("warranty", "warranty", "Гарантия"),
+    warrantyStrong: text("warrantyStrong", "warranty_strong", "90 дней"),
+  };
+}
+
 const defaultCatalogPreviewSection: PageSection = {
   id: "catalog-preview-fallback",
   sectionKey: "catalog_preview",
@@ -476,6 +540,67 @@ function replaceBetween(markup: string, startMarker: string, endMarker: string, 
   const end = markup.indexOf(endMarker);
   if (start === -1 || end === -1 || end <= start) return markup;
   return `${markup.slice(0, start)}${replacement}${markup.slice(end)}`;
+}
+
+function renderHeroSection(section: PageSection): string {
+  const assurance = stringList(section.content.assurance);
+  const visual = heroVisualContent(section.content.visual);
+  const passport = heroPassportContent(section.content.passport);
+  const imageSrc = section.image || visual.imageSrc;
+  const primaryLabel = section.primaryCtaLabel || "Войти в круг";
+  const primaryUrl = section.primaryCtaUrl || "#final";
+  const secondaryLabel = section.secondaryCtaLabel || "Смотреть Store";
+  const secondaryUrl = section.secondaryCtaUrl || "/catalog/index.html";
+  const assuranceItems =
+    assurance.length > 0 ? assurance : ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"];
+
+  return `<!-- ============== HERO ============== -->
+<section class="hero wrap">
+  ${section.eyebrow ? `<div class="hero__kicker reveal">${escapeHtml(section.eyebrow)}</div>` : ""}
+  ${section.headline ? `<h1 class="display reveal">${escapeHtml(section.headline)}</h1>` : ""}
+  ${section.body ? `<p class="lead reveal">${escapeHtml(section.body)}</p>` : ""}
+  <div class="btn-row center reveal">
+    <a href="${escapeHtml(primaryUrl)}" class="btn btn--filled">${escapeHtml(primaryLabel)}</a>
+    <a href="${escapeHtml(secondaryUrl)}" class="btn btn--outlined">${escapeHtml(secondaryLabel)}</a>
+  </div>
+  <div class="hero__assurance reveal" aria-label="Принципы клуба">
+    ${assuranceItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("\n    ")}
+  </div>
+
+  <div class="hero-stage reveal">
+    <img class="hero-photo" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(visual.imageAlt)}" />
+
+    <div class="passport passport-float" aria-label="${escapeHtml(passport.ariaLabel)}">
+      <div class="passport__head">
+        <div>
+          <div class="passport__device">${escapeHtml(passport.device)}</div>
+          <div class="passport__sub">${escapeHtml(passport.sub)}</div>
+        </div>
+        <div class="grade"><b>${escapeHtml(passport.grade)}</b><span>${escapeHtml(passport.gradeLabel)}</span></div>
+      </div>
+      <div class="passport__rows">
+        ${passport.rows
+          .map(
+            (row) =>
+              `<div class="prow"><span class="lbl"><span class="dot dot--${escapeHtml(row.state)}"></span>${escapeHtml(
+                row.label,
+              )}</span><span class="val val--${escapeHtml(row.state)}">${escapeHtml(row.value)}</span></div>`,
+          )
+          .join("\n        ")}
+      </div>
+      <div class="passport__exit">
+        <span class="x-lbl">${escapeHtml(passport.exitLabel)}</span>
+        <span class="x-val">${escapeHtml(passport.exitValue)}</span>
+      </div>
+      <div class="passport__foot">
+        <span class="passport__warranty">${escapeHtml(passport.warranty)} <b>${escapeHtml(passport.warrantyStrong)}</b></span>
+        ${passportQrSvg()}
+      </div>
+    </div>
+  </div>
+</section>
+
+`;
 }
 
 function renderTrustSection(section: PageSection): string {
@@ -1060,6 +1185,7 @@ function renderFinalCtaSection(section: PageSection): string {
 
 function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
+  const hero = byKey.get("hero");
   const trust = byKey.get("trust");
   const pathRouter = byKey.get("path_router");
   const catalogPreview = byKey.get("catalog_preview") ?? defaultCatalogPreviewSection;
@@ -1071,6 +1197,18 @@ function applySectionBlocks(markup: string, sections: PageSection[]): string {
   const finalCta = byKey.get("final_cta");
 
   let nextMarkup = markup;
+
+  if (hero) {
+    const rendered = renderHeroSection(hero);
+    if (rendered) {
+      nextMarkup = replaceBetween(
+        nextMarkup,
+        "<!-- ============== HERO ============== -->",
+        "<!-- ============== TRUST STRIP ============== -->",
+        rendered,
+      );
+    }
+  }
 
   if (trust) {
     const rendered = renderTrustSection(trust);

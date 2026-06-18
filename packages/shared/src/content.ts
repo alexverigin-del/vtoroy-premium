@@ -45,6 +45,8 @@ export interface NavigationItem {
 
 /** Section-specific structured payloads keyed loosely by section_key. */
 export interface SectionContent {
+  // hero
+  assurance?: string[];
   // trust
   items?: { title: string; text: string }[];
   // path_router
@@ -132,6 +134,8 @@ export interface SectionContent {
   // passport_preview
   features?: { title: string; text: string; icon?: string }[];
   passport?: {
+    ariaLabel?: string;
+    aria_label?: string;
     device?: string;
     sub?: string;
     grade?: string;

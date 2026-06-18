@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import Script from "next/script";
 import type { NavigationItem, PageSection, SiteSettings } from "@vtoroy/shared";
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
@@ -12,11 +10,6 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-function replaceText(markup: string, currentText: string, nextText?: string): string {
-  if (!nextText) return markup;
-  return markup.replace(currentText, escapeHtml(nextText));
 }
 
 function logoSvg(): string {
@@ -535,12 +528,45 @@ const defaultCatalogPreviewSection: PageSection = {
   },
 };
 
-function replaceBetween(markup: string, startMarker: string, endMarker: string, replacement: string): string {
-  const start = markup.indexOf(startMarker);
-  const end = markup.indexOf(endMarker);
-  if (start === -1 || end === -1 || end <= start) return markup;
-  return `${markup.slice(0, start)}${replacement}${markup.slice(end)}`;
-}
+const defaultHeroSection: PageSection = {
+  id: "hero-fallback",
+  sectionKey: "hero",
+  variant: "hero.static",
+  eyebrow: "ISVOI · клуб разумного владения · Северодвинск",
+  headline: "Хорошие вещи проходят через своих.",
+  body:
+    "ISVOI — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
+  primaryCtaLabel: "Войти в круг",
+  primaryCtaUrl: "#final",
+  secondaryCtaLabel: "Смотреть Store",
+  secondaryCtaUrl: "/catalog/index.html",
+  sortOrder: 1,
+  isActive: true,
+  content: {
+    assurance: ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"],
+    visual: {
+      image_src: "/assets/hero-apple-like-single-phone-clean.webp",
+      image_alt: "Премиальный графитовый смартфон на светло-серой студийной поверхности",
+    },
+    passport: {
+      aria_label: "ISVOI Passport вещи",
+      device: "iPhone 13 Pro",
+      sub: "256 GB · Графитовый",
+      grade: "A−",
+      grade_label: "Грейд",
+      rows: [
+        { label: "Батарея", value: "89%", state: "ok" },
+        { label: "Ремонт", value: "не вскрывался", state: "ok" },
+        { label: "Face ID", value: "работает", state: "ok" },
+        { label: "Влага", value: "следов нет", state: "ok" },
+      ],
+      exit_label: "Цена выхода через 6 мес",
+      exit_value: "до 42 000 ₽",
+      warranty: "Гарантия",
+      warranty_strong: "90 дней",
+    },
+  },
+};
 
 function renderHeroSection(section: PageSection): string {
   const assurance = stringList(section.content.assurance);
@@ -1183,206 +1209,56 @@ function renderFinalCtaSection(section: PageSection): string {
 `;
 }
 
-function applySectionBlocks(markup: string, sections: PageSection[]): string {
-  const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
-  const hero = byKey.get("hero");
-  const trust = byKey.get("trust");
-  const pathRouter = byKey.get("path_router");
-  const catalogPreview = byKey.get("catalog_preview") ?? defaultCatalogPreviewSection;
-  const passportPreview = byKey.get("passport_preview");
-  const storePreview = byKey.get("store_preview");
-  const tradePreview = byKey.get("trade_preview");
-  const clubPreview = byKey.get("club_preview");
-  const diagnosticsCompare = byKey.get("diagnostics_compare");
-  const finalCta = byKey.get("final_cta");
-
-  let nextMarkup = markup;
-
-  if (hero) {
-    const rendered = renderHeroSection(hero);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== HERO ============== -->",
-        "<!-- ============== TRUST STRIP ============== -->",
-        rendered,
-      );
-    }
+function renderHomeSection(section: PageSection): string {
+  switch (section.sectionKey) {
+    case "hero":
+      return renderHeroSection(section);
+    case "trust":
+      return renderTrustSection(section);
+    case "path_router":
+      return renderPathRouterSection(section);
+    case "catalog_preview":
+      return renderCatalogPreviewSection(section);
+    case "passport_preview":
+      return renderPassportSection(section);
+    case "store_preview":
+      return renderStorePreviewSection(section);
+    case "trade_preview":
+      return renderTradePreviewSection(section);
+    case "club_preview":
+      return renderClubPreviewSection(section);
+    case "diagnostics_compare":
+      return renderDiagnosticsCompareSection(section);
+    case "final_cta":
+      return renderFinalCtaSection(section);
+    default:
+      return "";
   }
-
-  if (trust) {
-    const rendered = renderTrustSection(trust);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== TRUST STRIP ============== -->",
-        "<!-- ============== CONVERSION PATHS ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (pathRouter) {
-    const rendered = renderPathRouterSection(pathRouter);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== CONVERSION PATHS ============== -->",
-        "<!-- ============== CATALOG ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (catalogPreview) {
-    const rendered = renderCatalogPreviewSection(catalogPreview);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== CATALOG ============== -->",
-        "<!-- ============== PASSPORT ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (passportPreview) {
-    const rendered = renderPassportSection(passportPreview);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== PASSPORT ============== -->",
-        "<!-- ============== STORE ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (storePreview) {
-    const rendered = renderStorePreviewSection(storePreview);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== STORE ============== -->",
-        "<!-- ============== TRADE ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (tradePreview) {
-    const rendered = renderTradePreviewSection(tradePreview);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== TRADE ============== -->",
-        "<!-- ============== CLUB ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (clubPreview) {
-    const rendered = renderClubPreviewSection(clubPreview);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== CLUB ============== -->",
-        "<!-- ============== DIAGNOSTICS + COMPARISON ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (diagnosticsCompare) {
-    const rendered = renderDiagnosticsCompareSection(diagnosticsCompare);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== DIAGNOSTICS + COMPARISON ============== -->",
-        "<!-- ============== FINAL CTA ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  if (finalCta) {
-    const rendered = renderFinalCtaSection(finalCta);
-    if (rendered) {
-      nextMarkup = replaceBetween(
-        nextMarkup,
-        "<!-- ============== FINAL CTA ============== -->",
-        "<!-- ============== FOOTER ============== -->",
-        rendered,
-      );
-    }
-  }
-
-  return nextMarkup;
 }
 
-function applySectionText(markup: string, sections: PageSection[]): string {
-  const byKey = new Map(sections.map((section) => [section.sectionKey, section]));
-  const hero = byKey.get("hero");
+function homeSections(sections: PageSection[] = []): PageSection[] {
+  const active = sections.filter((section) => section.isActive);
+  const byKey = new Map(active.map((section) => [section.sectionKey, section]));
 
-  let nextMarkup = markup;
-
-  if (hero) {
-    nextMarkup = replaceText(
-      nextMarkup,
-      "ISVOI · клуб разумного владения · Северодвинск",
-      hero.eyebrow,
-    );
-    nextMarkup = replaceText(
-      nextMarkup,
-      "Хорошие вещи проходят через своих.",
-      hero.headline,
-    );
-    nextMarkup = replaceText(
-      nextMarkup,
-      "ISVOI — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
-      hero.body,
-    );
+  if (!byKey.has("hero")) {
+    byKey.set("hero", defaultHeroSection);
+  }
+  if (!byKey.has("catalog_preview")) {
+    byKey.set("catalog_preview", defaultCatalogPreviewSection);
   }
 
-  return applySectionBlocks(nextMarkup, sections);
+  return [...byKey.values()].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-function applySiteChrome(markup: string, chrome: SiteChrome): string {
-  const withHeader = replaceBetween(markup, "<!-- ============== NAV ============== -->", '<main id="top">', renderHeaderChrome(chrome));
-  return withHeader.replace(
-    /<!-- ============== FOOTER ============== -->\s*<footer class="footer">[\s\S]*?<\/footer>/,
-    renderFooterChrome(chrome),
-  );
-}
+function renderHomeMarkup(sections: PageSection[] = [], chrome: SiteChrome = siteChrome(null, [])): string {
+  const renderedSections = homeSections(sections).map(renderHomeSection).filter(Boolean).join("\n");
 
-function legacyHomeMarkup(sections: PageSection[] = [], chrome: SiteChrome = siteChrome(null, [])): string {
-  const candidates = [
-    path.join(process.cwd(), "apps", "web", "public", "index.html"),
-    path.join(process.cwd(), "public", "index.html"),
-    path.join(process.cwd(), "index.html"),
-    path.join(process.cwd(), "..", "..", "index.html"),
-  ];
-  const source = candidates.find((candidate) => fs.existsSync(candidate));
-  if (!source) {
-    throw new Error("Legacy homepage index.html was not found.");
-  }
+  return `${renderHeaderChrome(chrome)}<main id="top">
 
-  const html = fs.readFileSync(source, "utf8");
-  const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? "";
+${renderedSections}</main>
 
-  const normalized = body
-    .replace(/<script\b[\s\S]*?<\/script>/gi, "")
-    .replace(/href="catalog\/index\.html"/g, 'href="/catalog/index.html"')
-    .replace(/href="store\/index\.html"/g, 'href="/store/index.html"')
-    .replace(/href="passport\/index\.html"/g, 'href="/passport/index.html"')
-    .replace(/href="trade\/index\.html"/g, 'href="/trade/index.html"')
-    .replace(/href="club\/index\.html"/g, 'href="/club/index.html"')
-    .replace(/href="index\.html#/g, 'href="/#')
-    .replace(/src="assets\//g, 'src="/assets/')
-    .replace(/href="assets\//g, 'href="/assets/');
-
-  return applySiteChrome(applySectionText(normalized, sections), chrome);
+${renderFooterChrome(chrome)}
+`;
 }
 
 export default async function HomePage() {
@@ -1395,7 +1271,7 @@ export default async function HomePage() {
   return (
     <>
       <link rel="stylesheet" href="/styles.css?v=20260616a" />
-      <div dangerouslySetInnerHTML={{ __html: legacyHomeMarkup(page?.sections, siteChrome(settings, navigation)) }} />
+      <div dangerouslySetInnerHTML={{ __html: renderHomeMarkup(page?.sections, siteChrome(settings, navigation)) }} />
       <Script src="/data/devices.js?v=20260616a" strategy="afterInteractive" />
       <Script src="/script.js?v=20260617intake" strategy="afterInteractive" />
     </>

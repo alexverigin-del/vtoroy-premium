@@ -1,7 +1,8 @@
 # Directus + PostgreSQL on a Beget VPS
 
-Infrastructure foundation for the future ISVOI backend. This is
-**scaffolding** — nothing here is wired into the live static site.
+Infrastructure foundation for the ISVOI backend. The current production VPS
+uses this stack for Directus, PostgreSQL, Redis, and the `api.isvoi.ru` Studio
+and API surface.
 
 > **Full launch runbook:** for an end-to-end, copy-paste VPS deployment
 > (DNS → Docker → seed → Next.js → nginx → TLS → backups → production
@@ -52,10 +53,21 @@ Persistent data lives in host directories (gitignored):
    # edit domains/cert paths, then enable + reload nginx
    ```
 4. Set `PUBLIC_URL` and `CORS_ORIGIN` in `.env` to the real https URLs and
-   `docker compose up -d` again.
+   `docker compose up -d directus` again so the container is recreated with the
+   new environment.
 5. Run the Next.js site (`npm run web:build && npm run web:start`) behind the
    public vhost, or keep serving the static site during the transition (see the
    commented block in `public-site.conf.example`).
+
+Current production values for ISVOI are documented in
+`../../docs/beget-vps-launch-checklist.md`. In brief:
+
+- Public site: `https://isvoi.ru/`
+- Directus API: `https://api.isvoi.ru/`
+- Directus Studio: `https://api.isvoi.ru/admin/`
+- Directus is proxied through nginx from `127.0.0.1:8055`.
+- The nginx API vhost should keep gzip, proxy buffering, and the
+  `/admin -> /admin/` redirect enabled.
 
 ## Security notes
 
@@ -64,3 +76,5 @@ Persistent data lives in host directories (gitignored):
 - Rotate `ADMIN_PASSWORD` after first login; consider creating a separate,
   least-privilege role for the public site's read token (see
   `../../directus/schema/collections.md`).
+- Keep `DIRECTUS_TOKEN` server-only in the Next.js environment. Do not expose it
+  through `NEXT_PUBLIC_*`.

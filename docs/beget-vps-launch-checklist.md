@@ -21,6 +21,73 @@ same origin, so the "api" and "admin" surfaces share **one** subdomain
 
 ---
 
+## Current ISVOI production snapshot (2026-06-18)
+
+This repo is currently deployed on the Beget VPS below. Keep this section in
+sync when changing the live infrastructure.
+
+| Item | Current value |
+| ---- | ------------- |
+| VPS IP | `217.114.14.32` |
+| SSH deploy user | `deploy@217.114.14.32` |
+| SSH key | `C:\Users\1\.ssh\isvoi_beget_ed25519` |
+| Server checkout | `/opt/isvoi` |
+| Public site | `https://isvoi.ru/` and `https://www.isvoi.ru/` |
+| Directus API | `https://api.isvoi.ru/` |
+| Directus Studio | `https://api.isvoi.ru/admin/` |
+| Next.js process | PM2 app `isvoi-web` |
+| Directus stack | `/opt/isvoi/infra/directus-beget` |
+| Directus container | `directus-beget-directus-1` |
+| PostgreSQL container | `directus-beget-database-1` |
+| Nginx site config | `/etc/nginx/sites-available/isvoi` |
+| Certbot certificate | `/etc/letsencrypt/live/isvoi.ru/fullchain.pem` |
+
+Live routing notes:
+
+- `isvoi.ru` / `www.isvoi.ru` proxy to Next.js on `127.0.0.1:3000`.
+- `api.isvoi.ru` proxies to Directus on `127.0.0.1:8055`.
+- `http://api.isvoi.ru/admin` redirects to `https://api.isvoi.ru/admin/`.
+- The trailing slash on `/admin/` matters because Directus Studio serves
+  relative assets from `./assets/...`.
+- Nginx gzip is enabled for the Directus API host. This is required in practice
+  because Directus Studio ships a large `v-form-*.js` asset; without gzip it can
+  stay pending in the browser and the Studio remains on `Loading...`.
+- Next reads editable content from Directus with a server-only read token in
+  `DIRECTUS_TOKEN`. Do not expose this token through `NEXT_PUBLIC_*`.
+
+Current production env expectations:
+
+```bash
+# /opt/isvoi/infra/directus-beget/.env
+PUBLIC_URL=https://api.isvoi.ru
+CORS_ORIGIN=https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru,http://isvoi.ru,http://api.isvoi.ru
+
+# /opt/isvoi/apps/web/.env.local
+DIRECTUS_URL=http://127.0.0.1:8055
+NEXT_PUBLIC_DIRECTUS_URL=https://api.isvoi.ru
+DIRECTUS_TOKEN=<public-read static token, server-only>
+```
+
+Useful production checks:
+
+```bash
+curl -I https://isvoi.ru/
+curl -I https://api.isvoi.ru/admin/
+curl -I -H "Accept-Encoding: gzip" \
+  https://api.isvoi.ru/admin/assets/v-form-DeyhrAq5.js
+
+ssh -i C:\Users\1\.ssh\isvoi_beget_ed25519 deploy@217.114.14.32 \
+  "cd /opt/isvoi && pm2 status isvoi-web"
+
+ssh -i C:\Users\1\.ssh\isvoi_beget_ed25519 deploy@217.114.14.32 \
+  "cd /opt/isvoi/infra/directus-beget && docker compose ps"
+```
+
+Certbot was registered with `email = solexin@yandex.ru` in
+`/etc/letsencrypt/cli.ini`. `certbot.timer` is enabled for automatic renewal.
+
+---
+
 ## 0. Prerequisites & assumptions
 
 - A Beget VPS running **Ubuntu 22.04/24.04** with root or sudo access.
@@ -170,7 +237,7 @@ cp .env.example .env
 nano .env
 # Fill: SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, DB_PASSWORD
 #       PUBLIC_URL=https://api.your-domain.ru
-#       CORS_ORIGIN=https://your-domain.ru
+#       CORS_ORIGIN=https://your-domain.ru,https://api.your-domain.ru
 ```
 
 **Python jobs — `scripts/.env`:**
@@ -190,7 +257,7 @@ nano .env
 cd /var/www/vtoroy-premium-landing/apps/web
 cp .env.example .env.local
 nano .env.local
-# Set: DIRECTUS_URL=https://api.your-domain.ru
+# Set: DIRECTUS_URL=http://127.0.0.1:8055   # on the same VPS
 #      NEXT_PUBLIC_DIRECTUS_URL=https://api.your-domain.ru
 #      (optional) DIRECTUS_TOKEN=<public read token>
 ```
@@ -232,7 +299,7 @@ pip install -r scripts/requirements.txt
 
 ## 11. Create the Directus admin & a service token
 
-1. Browse to `https://api.your-domain.ru/admin` (after §12–13 give you TLS) or,
+1. Browse to `https://api.your-domain.ru/admin/` (after §12–13 give you TLS) or,
    before TLS, tunnel locally: `ssh -L 8055:127.0.0.1:8055 youruser@your-domain.ru`
    then open `http://localhost:8055/admin`.
 2. Log in with `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `infra/directus-beget/.env`,
@@ -318,9 +385,11 @@ sudo nginx -t && sudo systemctl reload nginx
 ```
 
 - `isvoi-public.conf` → proxies `your-domain.ru` to the Next.js app on `:3000`.
-- `isvoi-api.conf` → proxies `api.your-domain.ru` (API **and** `/admin`) to
+- `isvoi-api.conf` → proxies `api.your-domain.ru` (API **and** `/admin/`) to
   Directus on `:8055`, with WebSocket upgrade headers and a larger
   `client_max_body_size` for uploads.
+- It also redirects `/admin` to `/admin/`, enables gzip for large Studio
+  assets, and enables proxy buffering for smoother delivery through nginx.
 
 > The example vhosts reference `ssl_certificate` paths that do not exist yet.
 > `nginx -t` will fail until §15 issues the certs. If you prefer, issue certs
@@ -353,7 +422,7 @@ After certs exist, make sure `PUBLIC_URL` / `CORS_ORIGIN` in
 
 ```bash
 cd /var/www/vtoroy-premium-landing/infra/directus-beget
-docker compose up -d      # re-applies env to the Directus container
+docker compose up -d directus      # recreates Directus with the new env
 ```
 
 ---

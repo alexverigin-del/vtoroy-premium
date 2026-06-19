@@ -87,20 +87,16 @@ function linkTargetAttrs(item: NavigationItem): string {
 }
 
 function normalizeSiteUrl(url: string, fallback = "#top"): string {
-  const value = url || fallback;
-  const normalized = value
-    .replace(/^\.\.\/index\.html/, "/")
-    .replace(/^\.\.\/catalog\/index\.html/, "/catalog")
-    .replace(/^\.\.\/store\/index\.html/, "/store")
-    .replace(/^\.\.\/passport\/index\.html/, "/passport")
-    .replace(/^\.\.\/trade\/index\.html/, "/trade")
-    .replace(/^\.\.\/club\/index\.html/, "/club")
-    .replace(/^\/catalog\/index\.html/, "/catalog")
-    .replace(/^\/store\/index\.html/, "/store")
-    .replace(/^\/passport\/index\.html/, "/passport")
-    .replace(/^\/trade\/index\.html/, "/trade")
-    .replace(/^\/club\/index\.html/, "/club");
-  return normalized === "/index.html" ? "/" : normalized;
+  const value = (url || fallback).trim();
+  if (!value) return fallback;
+  if (/^(https?:|mailto:|tel:|#)/i.test(value)) return value;
+
+  const rooted = value.replace(/^\.\.\//, "/");
+  const path = rooted.startsWith("/") ? rooted : `/${rooted}`;
+  if (path === "/index.html") return "/";
+  return path
+    .replace(/^\/(catalog|store|passport|trade|club)\/index\.html$/, "/$1")
+    .replace(/^\/device\/([^/]+)\/index\.html$/, "/device/$1");
 }
 
 function normalizeAssetUrl(url: string): string {
@@ -736,7 +732,7 @@ function renderPathRouterSection(section: PageSection): string {
       ${cards
         .map((card, index) => {
           const number = String(index + 1).padStart(2, "0");
-          return `<a class="path-card reveal" href="${escapeHtml(card.url)}">
+          return `<a class="path-card reveal" href="${escapeHtml(normalizeSiteUrl(card.url))}">
         <span class="path-card__num">${number}</span>
         <strong>${escapeHtml(card.title)}</strong>
         <p>${escapeHtml(card.text)}</p>
@@ -775,7 +771,7 @@ function renderCatalogPreviewSection(section: PageSection, devices: Device[] = [
       }
       ${
         section.secondaryCtaLabel
-          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "#final")}">${escapeHtml(
+          ? `<a class="btn btn--outlined" href="${escapeHtml(normalizeSiteUrl(section.secondaryCtaUrl || "#final"))}">${escapeHtml(
               section.secondaryCtaLabel,
             )}</a>`
           : ""
@@ -1085,7 +1081,7 @@ function renderTradePreviewSection(section: PageSection): string {
       }
       ${
         section.secondaryCtaLabel
-          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/#final")}">${escapeHtml(
+          ? `<a class="btn btn--outlined" href="${escapeHtml(normalizeSiteUrl(section.secondaryCtaUrl || "/#final"))}">${escapeHtml(
               section.secondaryCtaLabel,
             )}</a>`
           : ""
@@ -1172,7 +1168,7 @@ function renderClubPreviewSection(section: PageSection): string {
       }
       ${
         section.secondaryCtaLabel
-          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/#final")}">${escapeHtml(
+          ? `<a class="btn btn--outlined" href="${escapeHtml(normalizeSiteUrl(section.secondaryCtaUrl || "/#final"))}">${escapeHtml(
               section.secondaryCtaLabel,
             )}</a>`
           : ""
@@ -1409,7 +1405,7 @@ function renderCardsGridSection(section: PageSection): string {
         <span class="info-card__num">${escapeHtml(card.badge)}</span>
         <h3>${escapeHtml(card.title)}</h3>
         <p>${escapeHtml(card.text)}</p>
-        ${card.url && card.label ? `<a class="info-card__cta" href="${escapeHtml(card.url)}">${escapeHtml(card.label)}</a>` : ""}
+        ${card.url && card.label ? `<a class="info-card__cta" href="${escapeHtml(normalizeSiteUrl(card.url))}">${escapeHtml(card.label)}</a>` : ""}
       </div>`,
         )
         .join("\n      ")}

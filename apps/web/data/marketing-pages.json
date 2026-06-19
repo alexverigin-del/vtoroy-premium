@@ -1,0 +1,386 @@
+{
+  "store": {
+    "slug": "store",
+    "template": "store",
+    "title": "ISVOI Store — доверенная витрина круга",
+    "metaDescription": "ISVOI Store в Северодвинске: доверенная витрина, открытая проверка, Passport, Trade и Club без случайного рынка.",
+    "sections": [
+      {
+        "sectionKey": "store_hero",
+        "variant": "page.hero",
+        "eyebrow": "Главная / Store",
+        "headline": "Доверенная витрина круга.",
+        "body": "Store — место, где хорошие вещи проходят дальше через своих. Вещь можно увидеть, проверить и забрать с Passport, гарантией и понятной ценой выхода.",
+        "primaryCtaLabel": "Смотреть вещи",
+        "primaryCtaUrl": "/catalog",
+        "secondaryCtaLabel": "Оценить свою вещь",
+        "secondaryCtaUrl": "/trade",
+        "sortOrder": 1,
+        "isActive": true,
+        "content": {}
+      },
+      {
+        "sectionKey": "store_location",
+        "variant": "visual.band",
+        "eyebrow": "Мы здесь",
+        "headline": "Нас можно найти, а проверку можно увидеть.",
+        "body": "Локальный Store с открытой проверкой и понятными условиями. Вещи проходят через своих, а не через незнакомцев.",
+        "sortOrder": 2,
+        "isActive": true,
+        "content": {
+          "visual": {
+            "image_src": "https://api.isvoi.ru/assets/95cbc9d4-532d-4c5c-9bba-e9492416c75f?width=1600&quality=86&format=auto&withoutEnlargement=true",
+            "image_alt": "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
+            "caption_title": "Store как точка доверия.",
+            "caption_text": "Чистая витрина, видимая ответственность и спокойная консультация без давления."
+          }
+        }
+      },
+      {
+        "sectionKey": "store_offer",
+        "variant": "cards.grid",
+        "eyebrow": "Что внутри Store",
+        "headline": "Четыре зоны под одной крышей.",
+        "body": "Каждая зона решает свою задачу: выбор вещи, открытая проверка, Trade и вход в Club.",
+        "sortOrder": 3,
+        "isActive": true,
+        "content": {
+          "items": [
+            { "title": "Доверенная витрина", "text": "Вещи представлены с грейдом, Passport, гарантией и ценой выхода.", "badge": "01" },
+            { "title": "Стол открытой проверки", "text": "Мы показываем при вас, что именно проверено и в каком состоянии.", "badge": "02" },
+            { "title": "Trade Desk", "text": "Оценка вашей вещи и расчёт доплаты до следующей без объявлений и торга.", "badge": "03" },
+            { "title": "Club Desk", "text": "Условия владения, обновления и выхода среди своих.", "badge": "04" }
+          ]
+        }
+      },
+      {
+        "sectionKey": "store_steps",
+        "variant": "steps",
+        "eyebrow": "Как проходит визит",
+        "headline": "Четыре спокойных шага.",
+        "sortOrder": 4,
+        "isActive": true,
+        "content": {
+          "steps": [
+            { "title": "Записаться или прийти", "text": "Договоритесь о времени или зайдите в Store — встретим и сориентируем без спешки." },
+            { "title": "Выбрать или принести", "text": "Подберите вещь из витрины или принесите свою, чтобы передать её дальше." },
+            { "title": "Открытая проверка", "text": "Проверяем при вас экран, корпус, аккумулятор, ремонты и влагу." },
+            { "title": "Решение", "text": "Забрать с Passport, передать свою дальше или войти в Club." }
+          ]
+        }
+      },
+      {
+        "sectionKey": "store_compare",
+        "variant": "compare",
+        "eyebrow": "Почему это важно",
+        "headline": "Почему это круг, а не случайный рынок.",
+        "body": "Разница — в ответственности, которую видно до решения.",
+        "sortOrder": 5,
+        "isActive": true,
+        "content": {
+          "comparison": {
+            "label_header": "Что сравниваем",
+            "bad_header": "Случайный рынок",
+            "good_header": "ISVOI Store",
+            "rows": [
+              { "label": "История вещи", "bad": "неизвестна", "good": "зафиксирована в Passport" },
+              { "label": "Проверка", "bad": "со слов продавца", "good": "открытая, при вас" },
+              { "label": "Гарантия", "bad": "обычно нет", "good": "письменная гарантия" },
+              { "label": "Выход дальше", "bad": "непредсказуем", "good": "понятная цена выхода" }
+            ]
+          }
+        }
+      },
+      {
+        "sectionKey": "final_cta",
+        "variant": "page.cta",
+        "headline": "Войдите в круг через Store.",
+        "body": "Принесите свою вещь, посмотрите проверенные устройства или рассчитайте доплату при обновлении.",
+        "primaryCtaLabel": "Записаться в Store",
+        "primaryCtaUrl": "/#final",
+        "secondaryCtaLabel": "Смотреть каталог",
+        "secondaryCtaUrl": "/catalog",
+        "sortOrder": 6,
+        "isActive": true,
+        "content": {}
+      }
+    ]
+  },
+  "trade": {
+    "slug": "trade",
+    "template": "trade",
+    "title": "ISVOI Trade — передать вещь дальше",
+    "metaDescription": "ISVOI Trade: выкуп, комиссия или обновление. Ваша вещь идёт дальше через своих после открытой проверки.",
+    "sections": [
+      {
+        "sectionKey": "trade_hero",
+        "variant": "page.hero",
+        "eyebrow": "Главная / Trade",
+        "headline": "Передайте вещь дальше. Через своих.",
+        "body": "Без объявлений, торга и встреч с незнакомцами. После открытой проверки — понятный маршрут: выкуп, комиссия или обновление на следующую вещь.",
+        "primaryCtaLabel": "Оценить вещь",
+        "primaryCtaUrl": "/#final",
+        "secondaryCtaLabel": "Смотреть вещи для обновления",
+        "secondaryCtaUrl": "/catalog",
+        "sortOrder": 1,
+        "isActive": true,
+        "content": {}
+      },
+      {
+        "sectionKey": "trade_paths",
+        "variant": "cards.grid",
+        "eyebrow": "Три сценария Trade",
+        "headline": "Один из трёх понятных путей.",
+        "body": "После оценки вы выбираете сценарий. Мы не подталкиваем и не торгуемся.",
+        "sortOrder": 2,
+        "isActive": true,
+        "content": {
+          "items": [
+            { "title": "Быстрый выкуп", "text": "Подходит, когда нужна оплата сразу после проверки.", "badge": "01", "url": "/#final", "label": "Узнать сумму" },
+            { "title": "Комиссия", "text": "Подходит, если готовы подождать ради большей суммы.", "badge": "02", "url": "/#final", "label": "Передать на комиссию" },
+            { "title": "Обновление", "text": "Зачёт текущей вещи и известная доплата до следующей.", "badge": "03", "url": "/catalog", "label": "Выбрать обновление" }
+          ]
+        }
+      },
+      {
+        "sectionKey": "trade_steps",
+        "variant": "steps",
+        "eyebrow": "Как проходит оценка",
+        "headline": "Четыре прозрачных шага.",
+        "sortOrder": 3,
+        "isActive": true,
+        "content": {
+          "steps": [
+            { "title": "Предварительная заявка", "text": "Оставляете модель и состояние — получаете ориентир до визита." },
+            { "title": "Открытая проверка", "text": "Проверяем устройство при вас и фиксируем состояние." },
+            { "title": "Выбор сценария", "text": "Выкуп, комиссия или обновление — решение за вами." },
+            { "title": "Деньги, обмен или Passport", "text": "Получаете оплату, оформляете комиссию или забираете следующую вещь." }
+          ]
+        }
+      },
+      {
+        "sectionKey": "trade_compare",
+        "variant": "compare",
+        "eyebrow": "Почему Trade",
+        "headline": "Случайный рынок или Trade в ISVOI.",
+        "sortOrder": 4,
+        "isActive": true,
+        "content": {
+          "comparison": {
+            "label_header": "Что сравниваем",
+            "bad_header": "Объявления",
+            "good_header": "Trade в ISVOI",
+            "rows": [
+              { "label": "Покупатель", "bad": "поиск и ожидание", "good": "оценка в день обращения" },
+              { "label": "Торг", "bad": "переписки и встречи", "good": "без торга, в Store" },
+              { "label": "Состояние", "bad": "споры после осмотра", "good": "открытая диагностика" },
+              { "label": "Обновление", "bad": "сначала продай, потом ищи", "good": "зачёт и понятная доплата" }
+            ]
+          }
+        }
+      },
+      {
+        "sectionKey": "final_cta",
+        "variant": "page.cta",
+        "headline": "Передайте свою вещь дальше.",
+        "body": "Точная сумма определяется после открытой проверки в Store. Без обязательств.",
+        "primaryCtaLabel": "Оценить свою вещь",
+        "primaryCtaUrl": "/#final",
+        "secondaryCtaLabel": "Смотреть каталог",
+        "secondaryCtaUrl": "/catalog",
+        "sortOrder": 5,
+        "isActive": true,
+        "content": {}
+      }
+    ]
+  },
+  "passport": {
+    "slug": "passport",
+    "template": "passport",
+    "title": "ISVOI Passport — история вещи",
+    "metaDescription": "ISVOI Passport — стандарт доверия: история вещи, состояние, гарантия и цена выхода простым языком.",
+    "sections": [
+      {
+        "sectionKey": "passport_hero",
+        "variant": "page.hero",
+        "eyebrow": "Главная / Passport",
+        "headline": "Сначала история. Потом решение.",
+        "body": "ISVOI Passport рассказывает историю вещи: состояние, проверку, гарантию и цену выхода простым языком. Не «как новая», а честно проверенная.",
+        "primaryCtaLabel": "Смотреть вещи с Passport",
+        "primaryCtaUrl": "/catalog",
+        "secondaryCtaLabel": "Оценить свою вещь",
+        "secondaryCtaUrl": "/trade",
+        "sortOrder": 1,
+        "isActive": true,
+        "content": {}
+      },
+      {
+        "sectionKey": "passport_explainer",
+        "variant": "cards.grid",
+        "eyebrow": "Что внутри Passport",
+        "headline": "Шесть проверенных модулей.",
+        "body": "Каждый модуль — конкретный факт о вещи, а не обещание.",
+        "sortOrder": 2,
+        "isActive": true,
+        "content": {
+          "items": [
+            { "title": "Состояние и грейд", "text": "Корпус, экран и общий вид по честной шкале.", "badge": "01" },
+            { "title": "Батарея", "text": "Реальная ёмкость и запас ресурса.", "badge": "02" },
+            { "title": "Ремонт", "text": "Следы вскрытия и замены компонентов.", "badge": "03" },
+            { "title": "Функции", "text": "Камеры, связь, Face ID, динамики и датчики.", "badge": "04" },
+            { "title": "Гарантия", "text": "Письменные условия без мелкого шрифта.", "badge": "05" },
+            { "title": "Цена выхода", "text": "Ориентир, сколько вещь будет стоить дальше.", "badge": "06" }
+          ]
+        }
+      },
+      {
+        "sectionKey": "passport_steps",
+        "variant": "steps",
+        "eyebrow": "Проверка при вас",
+        "headline": "Как составляется Passport.",
+        "sortOrder": 3,
+        "isActive": true,
+        "content": {
+          "steps": [
+            { "title": "Осмотр", "text": "Фиксируем корпус, экран, комплектность и подлинность." },
+            { "title": "Проверка", "text": "Тестируем аккумулятор, функции, связь, камеры и датчики." },
+            { "title": "Фиксация дефектов", "text": "Все находки вносятся честно, даже если снижают цену." },
+            { "title": "Решение", "text": "Получаете Passport, грейд и цену выхода." }
+          ]
+        }
+      },
+      {
+        "sectionKey": "faq",
+        "variant": "faq",
+        "eyebrow": "Частые вопросы",
+        "headline": "Что обычно спрашивают.",
+        "sortOrder": 4,
+        "isActive": true,
+        "content": {
+          "items": [
+            { "title": "Что если дефект нашли после покупки?", "text": "Письменная гарантия покрывает функциональные неисправности, не зафиксированные в Passport." },
+            { "title": "Почему цена выхода не обещание выкупа?", "text": "Итог зависит от состояния при повторной проверке, спроса и комплектации." },
+            { "title": "Можно ли посмотреть диагностику?", "text": "Да. Проверка проходит открыто в Store." }
+          ]
+        }
+      },
+      {
+        "sectionKey": "final_cta",
+        "variant": "page.cta",
+        "headline": "Выбирайте вещь с Passport.",
+        "body": "Каждая вещь в ISVOI проходит проверку и получает понятную историю.",
+        "primaryCtaLabel": "Смотреть каталог",
+        "primaryCtaUrl": "/catalog",
+        "secondaryCtaLabel": "Записаться на проверку",
+        "secondaryCtaUrl": "/#final",
+        "sortOrder": 5,
+        "isActive": true,
+        "content": {}
+      }
+    ]
+  },
+  "club": {
+    "slug": "club",
+    "template": "club",
+    "title": "ISVOI Club — владеть ценным проще среди своих",
+    "metaDescription": "ISVOI Club — круг разумного владения: пользоваться, менять, выкупать или возвращать вещь среди своих.",
+    "sections": [
+      {
+        "sectionKey": "club_hero",
+        "variant": "page.hero",
+        "eyebrow": "Главная / Club",
+        "headline": "Владеть ценным проще среди своих.",
+        "body": "ISVOI Club — спокойный круг владения: пользоваться, менять, выкупать или возвращать вещь через своих. Вы заранее знаете условия каждого шага.",
+        "primaryCtaLabel": "Войти в Club",
+        "primaryCtaUrl": "/#final",
+        "secondaryCtaLabel": "Смотреть вещи",
+        "secondaryCtaUrl": "/catalog",
+        "sortOrder": 1,
+        "isActive": true,
+        "content": {}
+      },
+      {
+        "sectionKey": "club_levels",
+        "variant": "levels",
+        "eyebrow": "Три уровня Club",
+        "headline": "Контроль на вашем уровне.",
+        "body": "От спокойного сопровождения до полной гибкости.",
+        "sortOrder": 2,
+        "isActive": true,
+        "content": {
+          "levels": [
+            { "badge": "Care", "name": "Care", "tag": "Сопровождение вещи без лишних решений.", "features": ["Периодическая проверка", "Приоритетный сервис", "Зафиксированная цена выхода"] },
+            { "badge": "Популярный", "name": "Upgrade", "tag": "Плановое обновление на следующую вещь.", "featured": true, "features": ["Всё из Care", "Цена выхода известна заранее", "Ранний доступ к поступлениям"] },
+            { "badge": "Flex", "name": "Flex", "tag": "Максимум гибкости: пользоваться, выкупать или возвращать.", "features": ["Всё из Upgrade", "Право вернуть вещь", "Выкуп в собственность"] }
+          ]
+        }
+      },
+      {
+        "sectionKey": "club_steps",
+        "variant": "steps",
+        "eyebrow": "Как работает Club",
+        "headline": "Четыре понятных шага.",
+        "sortOrder": 3,
+        "isActive": true,
+        "content": {
+          "steps": [
+            { "title": "Выбираете вещь", "text": "Подбираем проверенную вещь под задачу и уровень Club." },
+            { "title": "Получаете Passport", "text": "Видите состояние, гарантию и план владения." },
+            { "title": "Пользуетесь с проверкой", "text": "Периодическая проверка обновляет Passport." },
+            { "title": "Меняете, выкупаете или возвращаете", "text": "В конце горизонта выбираете следующий шаг." }
+          ]
+        }
+      },
+      {
+        "sectionKey": "club_rating",
+        "variant": "cards.grid",
+        "eyebrow": "Репутация владельца",
+        "headline": "Аккуратность улучшает условия.",
+        "body": "Репутация складывается из состояния, сроков и истории проверок.",
+        "sortOrder": 4,
+        "isActive": true,
+        "content": {
+          "items": [
+            { "title": "Состояние", "text": "Бережное использование повышает цену выхода.", "badge": "01" },
+            { "title": "Сроки", "text": "Своевременное обновление улучшает следующий цикл.", "badge": "02" },
+            { "title": "История проверок", "text": "Регулярный Passport повышает доверие к вещи.", "badge": "03" }
+          ]
+        }
+      },
+      {
+        "sectionKey": "club_compare",
+        "variant": "compare",
+        "eyebrow": "Почему Club",
+        "headline": "Покупка навсегда, случайный рынок или Club.",
+        "sortOrder": 5,
+        "isActive": true,
+        "content": {
+          "comparison": {
+            "label_header": "Что сравниваем",
+            "bad_header": "Случайный рынок",
+            "good_header": "Club в ISVOI",
+            "rows": [
+              { "label": "Цена выхода", "bad": "непредсказуема", "good": "известна заранее" },
+              { "label": "Контроль", "bad": "продажа незнакомцам", "good": "менять, выкупать или возвращать" },
+              { "label": "Проверка", "bad": "нет истории", "good": "периодический Passport" },
+              { "label": "Обновление", "bad": "сначала продай", "good": "плановый переход с зачётом" }
+            ]
+          }
+        }
+      },
+      {
+        "sectionKey": "final_cta",
+        "variant": "page.cta",
+        "headline": "Войдите в Club.",
+        "body": "Подберём вещь и уровень под вашу задачу. Без обязательств и давления.",
+        "primaryCtaLabel": "Узнать условия Club",
+        "primaryCtaUrl": "/#final",
+        "secondaryCtaLabel": "Смотреть вещи",
+        "secondaryCtaUrl": "/catalog",
+        "sortOrder": 6,
+        "isActive": true,
+        "content": {}
+      }
+    ]
+  }
+}

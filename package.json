@@ -14,7 +14,8 @@
     "directus:seed": "python scripts/seed_directus.py",
     "directus:import:xlsx": "python scripts/import_devices_from_excel.py",
     "directus:media": "node scripts/import_device_media.mjs",
-    "directus:site-assets": "node scripts/import_site_assets.mjs"
+    "directus:site-assets": "node scripts/import_site_assets.mjs",
+    "directus:seed:marketing-pages": "node scripts/seed_marketing_pages_sql.mjs"
   },
   "engines": {
     "node": ">=20"

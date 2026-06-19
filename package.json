@@ -13,7 +13,8 @@
     "web:start": "npm run start --workspace @vtoroy/web",
     "directus:seed": "python scripts/seed_directus.py",
     "directus:import:xlsx": "python scripts/import_devices_from_excel.py",
-    "directus:media": "node scripts/import_device_media.mjs"
+    "directus:media": "node scripts/import_device_media.mjs",
+    "directus:site-assets": "node scripts/import_site_assets.mjs"
   },
   "engines": {
     "node": ">=20"

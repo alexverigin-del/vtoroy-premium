@@ -56,6 +56,7 @@ const ASSET_TRANSFORMS = {
   card: { width: 720, height: 540, quality: 82, fit: "cover", format: "auto", withoutEnlargement: true },
   gallery: { width: 1200, height: 900, quality: 86, fit: "cover", format: "auto", withoutEnlargement: true },
   passport: { width: 900, height: 675, quality: 84, fit: "cover", format: "auto", withoutEnlargement: true },
+  section: { width: 1600, quality: 86, format: "auto", withoutEnlargement: true },
 } satisfies Record<string, AssetTransform>;
 
 type MediaVariant = keyof typeof ASSET_TRANSFORMS;
@@ -336,7 +337,7 @@ function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
     primaryCtaUrl: str(row.primary_cta_url),
     secondaryCtaLabel: str(row.secondary_cta_label),
     secondaryCtaUrl: str(row.secondary_cta_url),
-    image: str(row.image) ? directusAssetUrl(str(row.image)) : "",
+    image: str(row.image) ? mediaUrl(row.image, "section") : "",
     sortOrder: num(row.sort_order),
     isActive: bool(row.is_active, true),
     content: json(row.content, {}),

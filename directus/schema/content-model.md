@@ -92,6 +92,10 @@ stable `section_key`, rendered by a fixed component chosen via `variant`.
 | `is_active`          | boolean               | Hide without deleting.                                       |
 | `content`            | JSON                  | Section-specific typed data (see per-section shapes below).  |
 
+For section imagery, prefer the `image` M2O relation to Directus Files. Legacy
+`content.*.image_src` values are fallback hints only and should point to
+Directus asset URLs after migration, not to `/assets/...` bundle paths.
+
 ### `content` JSON shapes (per `section_key`)
 
 The component for each `section_key` reads a known shape from `content`. Editors

@@ -167,8 +167,8 @@
     // has one, otherwise the iPhone 13 Pro page as the shared example target.
     var link = el('a', 'btn btn--outlined device-card__cta', device.ctaLabel || 'Смотреть паспорт');
     link.href = resolve(device.hasDetailPage
-      ? (device.detailHref || ('device/' + device.id + '/index.html'))
-      : 'device/iphone-13-pro/index.html');
+      ? (device.detailHref || ('device/' + device.id))
+      : 'device/iphone-13-pro');
     body.appendChild(link);
 
     article.appendChild(media);

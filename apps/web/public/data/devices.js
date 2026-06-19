@@ -34,7 +34,7 @@ window.VP_DEVICES = {
       "listingAlt": "iPhone 13 Pro в графитовом цвете на светлой студийной поверхности",
       "ctaLabel": "Смотреть паспорт",
       "hasDetailPage": true,
-      "detailHref": "device/iphone-13-pro/index.html",
+      "detailHref": "device/iphone-13-pro",
       "visualClass": "detail-product detail-product--phone",
       "gallery": [
         {
@@ -182,7 +182,7 @@ window.VP_DEVICES = {
       "listingAlt": "Светлый премиальный смартфон на витринной поверхности",
       "ctaLabel": "Смотреть паспорт",
       "hasDetailPage": true,
-      "detailHref": "device/iphone-14/index.html",
+      "detailHref": "device/iphone-14",
       "visualClass": "detail-product detail-product--phone",
       "gallery": [
         {
@@ -331,7 +331,7 @@ window.VP_DEVICES = {
       "listingAlt": "Серебристый тонкий ноутбук на каменной витрине",
       "ctaLabel": "Смотреть паспорт",
       "hasDetailPage": true,
-      "detailHref": "device/macbook-air-m1/index.html",
+      "detailHref": "device/macbook-air-m1",
       "visualClass": "detail-product detail-product--laptop",
       "gallery": [
         {
@@ -480,7 +480,7 @@ window.VP_DEVICES = {
       "listingAlt": "Светлый планшет на минималистичной студийной поверхности",
       "ctaLabel": "Смотреть паспорт",
       "hasDetailPage": true,
-      "detailHref": "device/ipad-air/index.html",
+      "detailHref": "device/ipad-air",
       "visualClass": "detail-product detail-product--tablet",
       "gallery": [
         {

@@ -212,7 +212,7 @@ floating Passport card from Directus.
   "primary_cta_label": "Как проходит визит в Store",
   "primary_cta_url": "/store/index.html",
   "secondary_cta_label": "Смотреть вещи в кругу",
-  "secondary_cta_url": "/catalog/index.html",
+  "secondary_cta_url": "/catalog",
   "sort_order": 6,
   "is_active": true,
   "content": {
@@ -256,7 +256,7 @@ floating Passport card from Directus.
   "primary_cta_label": "Как работает Passport",
   "primary_cta_url": "/passport/index.html",
   "secondary_cta_label": "Смотреть Store",
-  "secondary_cta_url": "/catalog/index.html",
+  "secondary_cta_url": "/catalog",
   "sort_order": 5,
   "is_active": true,
   "content": {

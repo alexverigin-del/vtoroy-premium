@@ -36,6 +36,13 @@ pip install -r scripts/requirements.txt
 python scripts/optimize_images.py --src ./incoming --out ./optimized --max 2400 --quality 88
 ```
 
+On Beget the Python jobs use the project virtual environment:
+
+```bash
+cd /opt/isvoi
+. .venv/bin/activate
+```
+
 The script:
 
 - applies EXIF orientation;

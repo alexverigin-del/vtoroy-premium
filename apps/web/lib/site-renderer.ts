@@ -40,11 +40,11 @@ const defaultSiteSettings: SiteSettings = {
 };
 
 const defaultNavigationItems: NavigationItem[] = [
-  { id: "header-store", label: "Store", url: "/catalog/index.html", location: "header", sort: 1, isActive: true },
-  { id: "header-club-local", label: "Клуб", url: "/store/index.html", location: "header", sort: 2, isActive: true },
-  { id: "header-passport", label: "Passport", url: "/passport/index.html", location: "header", sort: 3, isActive: true },
-  { id: "header-trade", label: "Trade", url: "/trade/index.html", location: "header", sort: 4, isActive: true },
-  { id: "header-club", label: "Club", url: "/club/index.html", location: "header", sort: 5, isActive: true },
+  { id: "header-store", label: "Store", url: "/catalog", location: "header", sort: 1, isActive: true },
+  { id: "header-club-local", label: "Клуб", url: "/store", location: "header", sort: 2, isActive: true },
+  { id: "header-passport", label: "Passport", url: "/passport", location: "header", sort: 3, isActive: true },
+  { id: "header-trade", label: "Trade", url: "/trade", location: "header", sort: 4, isActive: true },
+  { id: "header-club", label: "Club", url: "/club", location: "header", sort: 5, isActive: true },
   { id: "header-diagnostics", label: "Проверка", url: "#diagnostics", location: "header", sort: 6, isActive: true },
   { id: "footer-club", label: "Клуб", url: "#top", location: "footer", sort: 1, isActive: true },
   { id: "footer-club-store", label: "Store", url: "#store", location: "footer", parent: "footer-club", sort: 1, isActive: true },
@@ -532,7 +532,7 @@ const defaultCatalogPreviewSection: PageSection = {
   subheadline: "Фильтры каталога",
   body: "Каждая карточка показывает не только цену, но и историю вещи: грейд, батарею, проверку и цену выхода. Это вещи, которые прошли через своих.",
   primaryCtaLabel: "Смотреть весь Store",
-  primaryCtaUrl: "/catalog/index.html",
+  primaryCtaUrl: "/catalog",
   secondaryCtaLabel: "Подобрать вещь",
   secondaryCtaUrl: "#final",
   sortOrder: 4,
@@ -559,7 +559,7 @@ const defaultHeroSection: PageSection = {
   primaryCtaLabel: "Войти в круг",
   primaryCtaUrl: "#final",
   secondaryCtaLabel: "Смотреть Store",
-  secondaryCtaUrl: "/catalog/index.html",
+  secondaryCtaUrl: "/catalog",
   sortOrder: 1,
   isActive: true,
   content: {
@@ -594,9 +594,9 @@ function renderHeroSection(section: PageSection): string {
   const passport = heroPassportContent(section.content.passport);
   const imageSrc = section.image || visual.imageSrc;
   const primaryLabel = section.primaryCtaLabel || "Войти в круг";
-  const primaryUrl = section.primaryCtaUrl || "#final";
+  const primaryUrl = normalizeSiteUrl(section.primaryCtaUrl || "#final");
   const secondaryLabel = section.secondaryCtaLabel || "Смотреть Store";
-  const secondaryUrl = section.secondaryCtaUrl || "/catalog/index.html";
+  const secondaryUrl = normalizeSiteUrl(section.secondaryCtaUrl || "/catalog");
   const assuranceItems =
     assurance.length > 0 ? assurance : ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"];
 
@@ -718,7 +718,7 @@ function renderCatalogPreviewSection(section: PageSection): string {
       ? `<div class="btn-row reveal" style="margin-top:32px;">
       ${
         section.primaryCtaLabel
-          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/catalog/index.html")}">${escapeHtml(
+          ? `<a class="btn btn--filled" href="${escapeHtml(normalizeSiteUrl(section.primaryCtaUrl || "/catalog"))}">${escapeHtml(
               section.primaryCtaLabel,
             )}</a>`
           : ""
@@ -839,14 +839,14 @@ function renderPassportSection(section: PageSection): string {
         <div class="btn-row" style="margin-top:32px;">
           ${
             section.primaryCtaLabel
-              ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/passport/index.html")}">${escapeHtml(
+              ? `<a class="btn btn--filled" href="${escapeHtml(normalizeSiteUrl(section.primaryCtaUrl || "/passport"))}">${escapeHtml(
                   section.primaryCtaLabel,
                 )}</a>`
               : ""
           }
           ${
             section.secondaryCtaLabel
-              ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/catalog/index.html")}">${escapeHtml(
+              ? `<a class="btn btn--outlined" href="${escapeHtml(normalizeSiteUrl(section.secondaryCtaUrl || "/catalog"))}">${escapeHtml(
                   section.secondaryCtaLabel,
                 )}</a>`
               : ""
@@ -943,14 +943,14 @@ function renderStorePreviewSection(section: PageSection): string {
     <div class="btn-row center reveal" style="margin-top:40px;">
       ${
         section.primaryCtaLabel
-          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/store/index.html")}">${escapeHtml(
+          ? `<a class="btn btn--filled" href="${escapeHtml(normalizeSiteUrl(section.primaryCtaUrl || "/store"))}">${escapeHtml(
               section.primaryCtaLabel,
             )}</a>`
           : ""
       }
       ${
         section.secondaryCtaLabel
-          ? `<a class="btn btn--outlined" href="${escapeHtml(section.secondaryCtaUrl || "/catalog/index.html")}">${escapeHtml(
+          ? `<a class="btn btn--outlined" href="${escapeHtml(normalizeSiteUrl(section.secondaryCtaUrl || "/catalog"))}">${escapeHtml(
               section.secondaryCtaLabel,
             )}</a>`
           : ""
@@ -1027,7 +1027,7 @@ function renderTradePreviewSection(section: PageSection): string {
     <div class="btn-row center reveal" style="margin-top:40px;">
       ${
         section.primaryCtaLabel
-          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/trade/index.html")}">${escapeHtml(
+          ? `<a class="btn btn--filled" href="${escapeHtml(normalizeSiteUrl(section.primaryCtaUrl || "/trade"))}">${escapeHtml(
               section.primaryCtaLabel,
             )}</a>`
           : ""
@@ -1114,7 +1114,7 @@ function renderClubPreviewSection(section: PageSection): string {
     <div class="btn-row center reveal" style="margin-top:40px;">
       ${
         section.primaryCtaLabel
-          ? `<a class="btn btn--filled" href="${escapeHtml(section.primaryCtaUrl || "/club/index.html")}">${escapeHtml(
+          ? `<a class="btn btn--filled" href="${escapeHtml(normalizeSiteUrl(section.primaryCtaUrl || "/club"))}">${escapeHtml(
               section.primaryCtaLabel,
             )}</a>`
           : ""

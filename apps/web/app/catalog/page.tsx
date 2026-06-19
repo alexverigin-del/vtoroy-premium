@@ -7,8 +7,9 @@ export const metadata = {
     "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу ISVOI.",
 };
 
-// Re-render at most every 5 minutes (ISR) when backed by Directus.
-export const revalidate = 300;
+// Keep Directus catalog edits visible immediately while inventory is being filled.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function CatalogPage() {
   const devices = await getPublishedDevices();

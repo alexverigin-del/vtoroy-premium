@@ -31,6 +31,8 @@ const PUBLIC_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? "";
 export const directusConfig = {
   /** Server-preferred base URL (falls back to the public one). */
   url: (SERVER_URL || PUBLIC_URL).replace(/\/+$/, ""),
+  /** Browser-safe base URL for file assets rendered into HTML. */
+  assetUrl: (PUBLIC_URL || SERVER_URL).replace(/\/+$/, ""),
   /** Whether a live Directus backend is configured. */
   get enabled(): boolean {
     return this.url.length > 0;
@@ -40,6 +42,23 @@ export const directusConfig = {
 
 /** Cache window for ISR-style revalidation (seconds). */
 const REVALIDATE = 300;
+
+type AssetTransform = {
+  width?: number;
+  height?: number;
+  quality?: number;
+  fit?: "cover" | "contain" | "inside" | "outside";
+  format?: "auto" | "jpg" | "png" | "webp" | "tiff";
+  withoutEnlargement?: boolean;
+};
+
+const ASSET_TRANSFORMS = {
+  card: { width: 720, height: 540, quality: 82, fit: "cover", format: "auto", withoutEnlargement: true },
+  gallery: { width: 1200, height: 900, quality: 86, fit: "cover", format: "auto", withoutEnlargement: true },
+  passport: { width: 900, height: 675, quality: 84, fit: "cover", format: "auto", withoutEnlargement: true },
+} satisfies Record<string, AssetTransform>;
+
+type MediaVariant = keyof typeof ASSET_TRANSFORMS;
 
 type DirectusGetOptions = {
   cache?: "revalidate" | "no-store";
@@ -67,8 +86,17 @@ async function directusGet<T>(path: string, options: DirectusGetOptions = {}): P
 }
 
 /** Build an absolute URL to a Directus-stored asset (image) by file id. */
-export function directusAssetUrl(fileId: string): string {
-  return directusConfig.url ? `${directusConfig.url}/assets/${fileId}` : "";
+export function directusAssetUrl(fileId: string, transform?: AssetTransform): string {
+  if (!directusConfig.assetUrl) return "";
+  const params = new URLSearchParams();
+  if (transform?.width) params.set("width", String(transform.width));
+  if (transform?.height) params.set("height", String(transform.height));
+  if (transform?.quality) params.set("quality", String(transform.quality));
+  if (transform?.fit) params.set("fit", transform.fit);
+  if (transform?.format) params.set("format", transform.format);
+  if (transform?.withoutEnlargement) params.set("withoutEnlargement", "true");
+  const query = params.toString();
+  return `${directusConfig.assetUrl}/assets/${fileId}${query ? `?${query}` : ""}`;
 }
 
 function isExternalOrLocalAsset(value: string): boolean {
@@ -86,11 +114,11 @@ function directusFileId(value: unknown): string {
   return str(record.id);
 }
 
-function mediaUrl(value: unknown): string {
+function mediaUrl(value: unknown, variant: MediaVariant = "gallery"): string {
   const idOrPath = directusFileId(value);
   if (!idOrPath) return "";
   if (isExternalOrLocalAsset(idOrPath)) return idOrPath;
-  return isUuid(idOrPath) ? directusAssetUrl(idOrPath) : idOrPath;
+  return isUuid(idOrPath) ? directusAssetUrl(idOrPath, ASSET_TRANSFORMS[variant]) : idOrPath;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,7 +172,7 @@ function mapGalleryFromDirectus(value: unknown): GalleryImage[] {
 
   return gallery.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
-    const src = mediaUrl(item.src ?? item.file ?? item.file_id ?? item.image);
+    const src = mediaUrl(item.src ?? item.file ?? item.file_id ?? item.image, "gallery");
     const label = str(item.label);
     const alt = str(item.alt);
     return src ? [{ src, label, alt }] : [];
@@ -154,7 +182,7 @@ function mapGalleryFromDirectus(value: unknown): GalleryImage[] {
 function mapPassportFromDirectus(value: unknown): DevicePassport {
   const passport = json<DevicePassport>(value, EMPTY_PASSPORT);
   const defectPhoto = passport.condition?.defectPhoto
-    ? mediaUrl(passport.condition.defectPhoto)
+    ? mediaUrl(passport.condition.defectPhoto, "passport")
     : "";
 
   return {
@@ -166,7 +194,46 @@ function mapPassportFromDirectus(value: unknown): DevicePassport {
   };
 }
 
-export function mapDeviceFromDirectus(row: Record<string, unknown>): Device {
+type DeviceImageRow = Record<string, unknown>;
+
+function mapDeviceImagesFromDirectus(rows: DeviceImageRow[] = []): GalleryImage[] {
+  return rows.flatMap((row) => {
+    const src = mediaUrl(row.image, "gallery");
+    if (!src) return [];
+    return [{
+      src,
+      label: str(row.label) || str(row.role),
+      alt: str(row.alt),
+      role: str(row.role),
+    }];
+  });
+}
+
+function deviceImagesByDevice(rows: DeviceImageRow[] | null): Map<string, DeviceImageRow[]> {
+  const grouped = new Map<string, DeviceImageRow[]>();
+  for (const row of rows ?? []) {
+    const device = row.device;
+    const deviceId = typeof device === "string"
+      ? device
+      : device && typeof device === "object"
+        ? str((device as Record<string, unknown>).id)
+        : "";
+    if (!deviceId) continue;
+    const list = grouped.get(deviceId) ?? [];
+    list.push(row);
+    grouped.set(deviceId, list);
+  }
+  return grouped;
+}
+
+function cardImageFromDeviceImages(rows: DeviceImageRow[] = []): string {
+  const preferred = rows.find((row) => ["card", "listing", "main"].includes(str(row.role).toLowerCase())) ?? rows[0];
+  return preferred ? mediaUrl(preferred.image, "card") : "";
+}
+
+export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: DeviceImageRow[] = []): Device {
+  const directusGallery = mapDeviceImagesFromDirectus(imageRows);
+  const detailGallery = directusGallery.filter((image) => !["card", "listing"].includes((image.role ?? "").toLowerCase()));
   return {
     id: str(row.id),
     tags: json<string[]>(row.tags, []),
@@ -190,13 +257,13 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>): Device {
     availability: str(row.availability),
     shortDescription: str(row.short_description),
     headline: str(row.headline),
-    listingImage: mediaUrl(row.listing_file) || mediaUrl(row.listing_image),
+    listingImage: cardImageFromDeviceImages(imageRows) || mediaUrl(row.listing_file, "card") || mediaUrl(row.listing_image),
     listingAlt: str(row.listing_alt),
     ctaLabel: str(row.cta_label),
     hasDetailPage: bool(row.has_detail_page),
     detailHref: str(row.detail_href),
     visualClass: str(row.visual_class),
-    gallery: mapGalleryFromDirectus(row.gallery),
+    gallery: detailGallery.length > 0 ? detailGallery : mapGalleryFromDirectus(row.gallery),
     passport: mapPassportFromDirectus(row.passport),
     trade: json<TradeInfo>(row.trade, { options: [] }),
   };
@@ -215,10 +282,20 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>): Device {
  *   GET /items/devices?filter[status][_eq]=published&fields=*&sort=sort
  */
 export async function getPublishedDevices(): Promise<Device[]> {
-  const data = await directusGet<Record<string, unknown>[]>(
+  const [data, imageRows] = await Promise.all([
+    directusGet<Record<string, unknown>[]>(
     "/items/devices?filter[status][_eq]=published&fields=*&sort=sort",
-  );
-  if (data && data.length > 0) return data.map(mapDeviceFromDirectus);
+      { cache: "no-store" },
+    ),
+    directusGet<DeviceImageRow[]>(
+      "/items/device_images?filter[status][_eq]=published&fields=*,image.*&sort=device,sort",
+      { cache: "no-store" },
+    ),
+  ]);
+  if (data && data.length > 0) {
+    const images = deviceImagesByDevice(imageRows);
+    return data.map((row) => mapDeviceFromDirectus(row, images.get(str(row.id)) ?? []));
+  }
   return fallbackDevices;
 }
 
@@ -228,10 +305,17 @@ export async function getPublishedDevices(): Promise<Device[]> {
  *   GET /items/devices?filter[id][_eq]={slug}&fields=*&limit=1
  */
 export async function getDeviceBySlug(slug: string): Promise<Device | null> {
-  const data = await directusGet<Record<string, unknown>[]>(
+  const [data, imageRows] = await Promise.all([
+    directusGet<Record<string, unknown>[]>(
     `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=*&limit=1`,
-  );
-  if (data && data.length > 0) return mapDeviceFromDirectus(data[0]);
+      { cache: "no-store" },
+    ),
+    directusGet<DeviceImageRow[]>(
+      `/items/device_images?filter[device][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*,image.*&sort=sort`,
+      { cache: "no-store" },
+    ),
+  ]);
+  if (data && data.length > 0) return mapDeviceFromDirectus(data[0], imageRows ?? []);
   return fallbackDevices.find((d) => d.id === slug) ?? null;
 }
 

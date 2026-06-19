@@ -20,6 +20,7 @@ export interface GalleryImage {
   src: string;
   label: string;
   alt: string;
+  role?: string;
 }
 
 export interface PassportSummaryRow {

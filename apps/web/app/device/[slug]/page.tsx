@@ -7,7 +7,9 @@ import {
 import { PassportSummary } from "@/components/PassportSummary";
 import { CTAButton } from "@/components/CTAButton";
 
-export const revalidate = 300;
+// Keep Directus device edits visible immediately while inventory is being filled.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Pre-render known device pages at build time; others render on demand.
 export async function generateStaticParams() {

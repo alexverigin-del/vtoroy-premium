@@ -41,6 +41,7 @@ except ImportError:  # pragma: no cover - dotenv is optional
 
 
 COLLECTION = "devices"
+DEVICE_IMAGES_COLLECTION = "device_images"
 
 # camelCase (data/devices.json) -> snake_case (Directus column) for scalar fields.
 SCALAR_MAP: dict[str, str] = {
@@ -126,6 +127,41 @@ FIELD_SPECS: list[dict[str, Any]] = [
     {"field": "trade", "type": "json", "schema": {}, "meta": {"interface": "input-code", "options": {"language": "json"}}},
 ]
 
+DEVICE_IMAGE_FIELD_SPECS: list[dict[str, Any]] = [
+    {"field": "status", "type": "string",
+     "schema": {"default_value": "published"},
+     "meta": {"interface": "select-dropdown", "options": {"choices": [
+         {"text": "Draft", "value": "draft"},
+         {"text": "Published", "value": "published"},
+         {"text": "Archived", "value": "archived"},
+     ]}}},
+    {"field": "sort", "type": "integer", "schema": {}, "meta": {"interface": "input"}},
+    {"field": "device", "type": "string", "schema": {}, "meta": {
+        "interface": "select-dropdown-m2o",
+        "special": "m2o",
+        "width": "half",
+    }},
+    {"field": "role", "type": "string", "schema": {"default_value": "main"}, "meta": {
+        "interface": "select-dropdown",
+        "width": "half",
+        "options": {"choices": [
+            {"text": "Card", "value": "card"},
+            {"text": "Main", "value": "main"},
+            {"text": "Screen", "value": "screen"},
+            {"text": "Body", "value": "body"},
+            {"text": "Defect", "value": "defect"},
+            {"text": "Other", "value": "other"},
+        ]},
+    }},
+    {"field": "image", "type": "uuid", "schema": {}, "meta": {
+        "interface": "file-image",
+        "special": "m2o",
+        "width": "full",
+    }},
+    {"field": "label", "type": "string", "schema": {}, "meta": {"interface": "input", "width": "half"}},
+    {"field": "alt", "type": "text", "schema": {}, "meta": {"interface": "input-multiline", "width": "full"}},
+]
+
 
 def parse_args() -> argparse.Namespace:
     default_file = os.path.join(os.path.dirname(__file__), "..", "data", "devices.json")
@@ -158,65 +194,120 @@ def ensure_schema(cfg: dict[str, str], dry_run: bool) -> None:
         for spec in FIELD_SPECS:
             print(f"[dry-run] ensure field {COLLECTION}.{spec['field']} ({spec['type']})")
         print(f"[dry-run] ensure relation {COLLECTION}.listing_file -> directus_files")
+        print(f"[dry-run] ensure collection {DEVICE_IMAGES_COLLECTION}")
+        for spec in DEVICE_IMAGE_FIELD_SPECS:
+            print(f"[dry-run] ensure field {DEVICE_IMAGES_COLLECTION}.{spec['field']} ({spec['type']})")
+        print(f"[dry-run] ensure relation {DEVICE_IMAGES_COLLECTION}.device -> {COLLECTION}")
+        print(f"[dry-run] ensure relation {DEVICE_IMAGES_COLLECTION}.image -> directus_files")
         return
 
     headers = _headers(cfg)
-    res = requests.get(f"{base}/collections/{COLLECTION}", headers=headers, timeout=30)
+    ensure_collection(
+        cfg,
+        collection=COLLECTION,
+        icon="devices",
+        pk_type="string",
+        pk_meta={"interface": "input", "readonly": False},
+        pk_schema={"is_primary_key": True, "has_auto_increment": False},
+    )
+
+    ensure_fields(cfg, COLLECTION, FIELD_SPECS)
+    ensure_relation(cfg, COLLECTION, "listing_file", "directus_files")
+
+    ensure_collection(
+        cfg,
+        collection=DEVICE_IMAGES_COLLECTION,
+        icon="image",
+        pk_type="uuid",
+        pk_meta={"hidden": True, "readonly": True, "interface": "input"},
+        pk_schema={"is_primary_key": True, "has_auto_increment": False},
+    )
+    ensure_fields(cfg, DEVICE_IMAGES_COLLECTION, DEVICE_IMAGE_FIELD_SPECS)
+    ensure_relation(cfg, DEVICE_IMAGES_COLLECTION, "device", COLLECTION, one_deselect_action="delete")
+    ensure_relation(cfg, DEVICE_IMAGES_COLLECTION, "image", "directus_files")
+
+
+def ensure_collection(
+    cfg: dict[str, str],
+    *,
+    collection: str,
+    icon: str,
+    pk_type: str,
+    pk_meta: dict[str, Any],
+    pk_schema: dict[str, Any],
+) -> None:
+    base = cfg["url"]
+    headers = _headers(cfg)
+    res = requests.get(f"{base}/collections/{collection}", headers=headers, timeout=30)
     if res.status_code == 200:
-        print(f"[skip] collection '{COLLECTION}' already exists")
-    else:
-        payload = {
-            "collection": COLLECTION,
-            "meta": {"sort_field": "sort", "icon": "devices"},
-            "schema": {},
-            "fields": [{
-                "field": "id",
-                "type": "string",
-                "meta": {"interface": "input", "readonly": False},
-                "schema": {"is_primary_key": True, "has_auto_increment": False},
-            }],
-        }
-        r = requests.post(f"{base}/collections", headers=headers, json=payload, timeout=30)
-        r.raise_for_status()
-        print(f"[create] collection '{COLLECTION}'")
+        print(f"[skip] collection '{collection}' already exists")
+        return
+    payload = {
+        "collection": collection,
+        "meta": {"sort_field": "sort", "icon": icon},
+        "schema": {},
+        "fields": [{
+            "field": "id",
+            "type": pk_type,
+            "meta": pk_meta,
+            "schema": pk_schema,
+        }],
+    }
+    r = requests.post(f"{base}/collections", headers=headers, json=payload, timeout=30)
+    r.raise_for_status()
+    print(f"[create] collection '{collection}'")
 
-    for spec in FIELD_SPECS:
+
+def ensure_fields(cfg: dict[str, str], collection: str, specs: list[dict[str, Any]]) -> None:
+    base = cfg["url"]
+    headers = _headers(cfg)
+    for spec in specs:
         field = spec["field"]
-        fr = requests.get(f"{base}/fields/{COLLECTION}/{field}", headers=headers, timeout=30)
+        fr = requests.get(f"{base}/fields/{collection}/{field}", headers=headers, timeout=30)
         if fr.status_code == 200:
-            print(f"[skip] field {COLLECTION}.{field}")
+            print(f"[skip] field {collection}.{field}")
             continue
-        r = requests.post(f"{base}/fields/{COLLECTION}", headers=headers, json=spec, timeout=30)
+        r = requests.post(f"{base}/fields/{collection}", headers=headers, json=spec, timeout=30)
         r.raise_for_status()
-        print(f"[create] field {COLLECTION}.{field} ({spec['type']})")
-
-    ensure_listing_file_relation(cfg)
+        print(f"[create] field {collection}.{field} ({spec['type']})")
 
 
-def ensure_listing_file_relation(cfg: dict[str, str]) -> None:
-    """Ensure the catalog thumbnail field is a Directus Files M2O relation."""
+def ensure_relation(
+    cfg: dict[str, str],
+    many_collection: str,
+    many_field: str,
+    one_collection: str,
+    *,
+    one_deselect_action: str = "nullify",
+) -> None:
     base = cfg["url"]
     headers = _headers(cfg)
     params = {
-        "filter[many_collection][_eq]": COLLECTION,
-        "filter[many_field][_eq]": "listing_file",
+        "filter[many_collection][_eq]": many_collection,
+        "filter[many_field][_eq]": many_field,
         "fields": "many_collection,many_field,one_collection",
         "limit": "1",
     }
     existing = requests.get(f"{base}/relations", headers=headers, params=params, timeout=30)
     existing.raise_for_status()
     if existing.json().get("data"):
-        print(f"[skip] relation {COLLECTION}.listing_file -> directus_files")
+        print(f"[skip] relation {many_collection}.{many_field} -> {one_collection}")
         return
 
     payload = {
-        "collection_many": COLLECTION,
-        "field_many": "listing_file",
-        "collection_one": "directus_files",
+        "collection_many": many_collection,
+        "field_many": many_field,
+        "collection_one": one_collection,
+        "meta": {"one_deselect_action": one_deselect_action},
     }
     created = requests.post(f"{base}/relations", headers=headers, json=payload, timeout=30)
     created.raise_for_status()
-    print(f"[create] relation {COLLECTION}.listing_file -> directus_files")
+    print(f"[create] relation {many_collection}.{many_field} -> {one_collection}")
+
+
+def ensure_listing_file_relation(cfg: dict[str, str]) -> None:
+    """Backward-compatible wrapper for old callers/imports."""
+    ensure_relation(cfg, COLLECTION, "listing_file", "directus_files")
 
 
 def to_row(device: dict[str, Any], index: int) -> dict[str, Any]:

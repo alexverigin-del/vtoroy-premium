@@ -149,7 +149,25 @@ relation to `directus_files`.
 Keep `devices.listing_image` as a legacy fallback for repo-hosted paths such as
 `assets/catalog-iphone-13-pro.webp`.
 
-For `devices.gallery` JSON during the MVP phase, each item may point to a file
-with any of these keys: `src`, `file`, `file_id`, or `image`. The Next.js
-mapper resolves Directus file ids to `/assets/{id}` URLs and leaves existing
-relative/absolute paths intact.
+Use `device_images` for managed per-device media:
+
+| Field    | Type                 | Notes                                      |
+| -------- | -------------------- | ------------------------------------------ |
+| `id`     | uuid (PK)            |                                            |
+| `status` | string               | `draft` / `published` / `archived`.         |
+| `sort`   | integer              | Manual order inside the device gallery.    |
+| `device` | M2O -> `devices`     | Parent device.                             |
+| `role`   | string               | `card`, `main`, `screen`, `body`, `defect`, `other`. |
+| `image`  | M2O -> directus_files | Actual uploaded image.                     |
+| `label`  | string               | Caption shown under gallery image.         |
+| `alt`    | text                 | Image alt text.                            |
+
+The site reads `device_images` first. If no rows are published for a device, it
+falls back to the legacy `devices.gallery` JSON field. Each legacy JSON item may
+point to a file with any of these keys: `src`, `file`, `file_id`, or `image`.
+
+Directus file ids are served through the `/assets/{id}` endpoint with transform
+query parameters. Catalog cards use a 720x540 cover transform, detail gallery
+images use 1200x900 cover, and passport defect photos use 900x675 cover. The
+`format=auto` option lets Directus negotiate WebP/AVIF-capable output where the
+client supports it, while preserving the legacy repo-hosted paths unchanged.

@@ -107,16 +107,21 @@ function localAssetPath(assetsRoot, value) {
 }
 
 async function ensureFolder(cfg, name, dryRun) {
-  const encoded = encodeURIComponent(name);
-  const existing = await findOne(cfg, `/folders?filter[name][_eq]=${encoded}&fields=id,name&limit=1`);
-  if (existing?.id) return existing.id;
-  if (dryRun) {
-    console.log(`[dry-run] create folder ${name}`);
+  try {
+    const encoded = encodeURIComponent(name);
+    const existing = await findOne(cfg, `/folders?filter[name][_eq]=${encoded}&fields=id,name&limit=1`);
+    if (existing?.id) return existing.id;
+    if (dryRun) {
+      console.log(`[dry-run] create folder ${name}`);
+      return null;
+    }
+    const created = await requestJson(cfg, "POST", "/folders", { name });
+    console.log(`[create] folder ${name}`);
+    return created.id;
+  } catch (error) {
+    console.log(`[info] folder lookup skipped (${error.message}); Directus default folder will be used`);
     return null;
   }
-  const created = await requestJson(cfg, "POST", "/folders", { name });
-  console.log(`[create] folder ${name}`);
-  return created.id;
 }
 
 async function ensureFile(cfg, { filePath, title, folder, description, dryRun }) {
@@ -140,7 +145,7 @@ async function ensureFile(cfg, { filePath, title, folder, description, dryRun })
   const ext = path.extname(filePath).toLowerCase();
   const bytes = await readFile(filePath);
   const form = new FormData();
-  form.append("folder", folder || "");
+  if (folder) form.append("folder", folder);
   form.append("title", title);
   form.append("description", description || "");
   form.append(

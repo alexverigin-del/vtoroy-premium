@@ -6,6 +6,7 @@ import {
 } from "@/lib/directus";
 import { PassportSummary } from "@/components/PassportSummary";
 import { CTAButton } from "@/components/CTAButton";
+import { DeviceGallery } from "@/components/DeviceGallery";
 
 // Keep Directus device edits visible immediately while inventory is being filled.
 export const dynamic = "force-dynamic";
@@ -28,12 +29,6 @@ export async function generateMetadata({
     title: `${device.title} — ISVOI`,
     description: device.shortDescription,
   };
-}
-
-function imageSrc(path: string): string {
-  if (!path) return "";
-  if (/^https?:\/\//.test(path) || path.startsWith("/")) return path;
-  return `/${path}`;
 }
 
 export default async function DevicePage({
@@ -75,30 +70,7 @@ export default async function DevicePage({
 
           <p className="mt-6 text-sm text-muted">{device.availability}</p>
 
-          {device.gallery.length > 0 ? (
-            <div className="mt-10 grid gap-3 sm:grid-cols-2">
-              {device.gallery.map((image) => {
-                const src = imageSrc(image.src);
-                if (!src) return null;
-                return (
-                  <figure
-                    key={`${image.src}-${image.label}`}
-                    className="overflow-hidden rounded-card border border-hairline bg-white"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={src}
-                      alt={image.alt}
-                      className="aspect-[4/3] w-full object-cover"
-                    />
-                    <figcaption className="px-3 py-2 text-xs text-muted">
-                      {image.label}
-                    </figcaption>
-                  </figure>
-                );
-              })}
-            </div>
-          ) : null}
+          <DeviceGallery images={device.gallery} />
         </div>
 
         <PassportSummary passport={device.passport} />

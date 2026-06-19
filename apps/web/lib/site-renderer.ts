@@ -809,6 +809,37 @@ function renderCatalogPreviewSection(section: PageSection, devices: Device[] = [
 `;
 }
 
+function renderStoreCatalogSection(devices: Device[] = []): string {
+  return renderCatalogPreviewSection(
+    {
+      id: "store-live-catalog",
+      sectionKey: "store_live_catalog",
+      variant: "catalog.grid",
+      eyebrow: "В наличии в Store",
+      headline: "Живые карточки устройств.",
+      subheadline: "Фильтры Store",
+      body:
+        "Эти карточки подтягиваются из Directus: фото, грейд, цена, Passport и цена выхода обновляются в каталоге без правки кода.",
+      primaryCtaLabel: "Открыть полный каталог",
+      primaryCtaUrl: "/catalog",
+      secondaryCtaLabel: "Подобрать под задачу",
+      secondaryCtaUrl: "/#final",
+      sortOrder: 5.5,
+      isActive: true,
+      content: {
+        filters: [
+          { label: "Все", value: "all" },
+          { label: "iPhone", value: "iphone" },
+          { label: "MacBook", value: "macbook" },
+          { label: "iPad", value: "ipad" },
+          { label: "Для Club", value: "club" },
+        ],
+      },
+    },
+    devices,
+  );
+}
+
 function renderPassportSection(section: PageSection): string {
   const features = featureList(section.content.features);
   const card = section.content.passport && typeof section.content.passport === "object" ? section.content.passport : {};
@@ -1574,8 +1605,18 @@ export function renderMarketingPageMarkup(
   slug: MarketingSlug,
   page: SitePage | null,
   chrome: SiteChrome = siteChrome(null, []),
+  devices: Device[] = [],
 ): string {
-  const renderedSections = marketingSections(slug, page?.sections).map(renderMarketingSection).filter(Boolean).join("\n");
+  const renderedSections = marketingSections(slug, page?.sections)
+    .flatMap((section) => {
+      const rendered = renderMarketingSection(section);
+      if (slug === "store" && section.sectionKey === "final_cta") {
+        return [renderStoreCatalogSection(devices), rendered];
+      }
+      return [rendered];
+    })
+    .filter(Boolean)
+    .join("\n");
   return `${renderHeaderChrome(chrome)}<main id="top">
 
 ${renderedSections}</main>

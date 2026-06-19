@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { notFound } from "next/navigation";
-import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
+import { getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
 import {
   getFallbackMarketingPage,
   isMarketingSlug,
@@ -39,10 +39,11 @@ export async function generateMetadata({ params }: MarketingPageProps): Promise<
 export default async function MarketingPage({ params }: MarketingPageProps) {
   if (!isMarketingSlug(params.slug)) notFound();
 
-  const [page, settings, navigation] = await Promise.all([
+  const [page, settings, navigation, devices] = await Promise.all([
     getSitePage(params.slug),
     getSiteSettings(),
     getNavigationItems(),
+    params.slug === "store" ? getPublishedDevices() : Promise.resolve([]),
   ]);
 
   return (
@@ -50,7 +51,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
       <link rel="stylesheet" href="/styles.css?v=20260616a" />
       <div
         dangerouslySetInnerHTML={{
-          __html: renderMarketingPageMarkup(params.slug, page, siteChrome(settings, navigation)),
+          __html: renderMarketingPageMarkup(params.slug, page, siteChrome(settings, navigation), devices),
         }}
       />
       <Script src="/interactions.js?v=20260619catalog" strategy="afterInteractive" />

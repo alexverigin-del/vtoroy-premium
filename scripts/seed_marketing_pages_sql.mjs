@@ -6,6 +6,9 @@
  *   node scripts/seed_marketing_pages_sql.mjs \
  *     | docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE"
  *
+ * Through npm, use --silent before piping:
+ *   npm run --silent directus:seed:marketing-pages | ...
+ *
  * Source of truth: apps/web/data/marketing-pages.json
  */
 

@@ -11,6 +11,7 @@
  *     node scripts/import_site_assets.mjs --dry-run
  *
  * Add --replace to patch page_sections.image/content even when already set.
+ * Add --upload-only to only upload missing files and skip page_sections patches.
  */
 
 import { existsSync, readdirSync } from "node:fs";
@@ -67,11 +68,13 @@ function parseArgs(argv) {
     folder: "ISVOI Site Images",
     dryRun: false,
     replace: false,
+    uploadOnly: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--replace") args.replace = true;
+    else if (arg === "--upload-only") args.uploadOnly = true;
     else if (arg === "--assets-root") args.assetsRoot = argv[++i];
     else if (arg === "--folder") args.folder = argv[++i];
     else throw new Error(`Unknown argument: ${arg}`);
@@ -266,6 +269,7 @@ async function main() {
   const existingFiles = await filesByTitle(cfg);
   const assets = discoverAssets(assetsRoot);
   console.log(`${args.dryRun ? "[dry-run] " : ""}Syncing ${assets.length} site asset(s)`);
+  if (args.uploadOnly) console.log("[upload-only] page_sections patches are disabled");
 
   for (const asset of assets) {
     const fileId = await ensureFile(cfg, existingFiles, {
@@ -274,7 +278,9 @@ async function main() {
       folder: folderId,
       dryRun: args.dryRun,
     });
-    await patchSectionImage(cfg, asset, fileId, args);
+    if (!args.uploadOnly) {
+      await patchSectionImage(cfg, asset, fileId, args);
+    }
   }
   console.log("Done.");
 }

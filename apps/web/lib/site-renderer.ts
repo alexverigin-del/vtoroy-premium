@@ -1,4 +1,4 @@
-import type { NavigationItem, PageSection, SitePage, SiteSettings } from "@vtoroy/shared";
+import type { Device, NavigationItem, PageSection, SitePage, SiteSettings } from "@vtoroy/shared";
 import marketingPagesData from "@/data/marketing-pages.json";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +101,56 @@ function normalizeSiteUrl(url: string, fallback = "#top"): string {
     .replace(/^\/trade\/index\.html/, "/trade")
     .replace(/^\/club\/index\.html/, "/club");
   return normalized === "/index.html" ? "/" : normalized;
+}
+
+function normalizeAssetUrl(url: string): string {
+  if (!url) return "";
+  if (/^https?:\/\//.test(url) || url.startsWith("/")) return url;
+  return `/${url}`;
+}
+
+function deviceHref(device: Device): string {
+  if (device.detailHref) return normalizeSiteUrl(device.detailHref);
+  return `/device/${encodeURIComponent(device.id)}`;
+}
+
+function renderDevicePreviewCard(device: Device): string {
+  const tags = [device.category, ...device.tags].filter(Boolean).join(" ");
+  const image = normalizeAssetUrl(device.listingImage);
+  const subtitle = [device.specs, device.color].filter(Boolean).join(" · ");
+  const meta = [
+    device.metaBattery || device.batteryText,
+    device.warrantyText || (device.warranty ? `Гарантия ${device.warranty}` : ""),
+    device.exitText || (device.exit ? `Выход ${device.exit}` : ""),
+  ].filter(Boolean);
+
+  return `<article class="device-card" data-device="${escapeHtml(device.id)}" data-type="${escapeHtml(tags)}">
+      <div class="device-card__media device-card__media--photo">
+        ${
+          image
+            ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(device.listingAlt || device.title)}" loading="lazy" />`
+            : `<span>${escapeHtml(device.title)}</span>`
+        }
+      </div>
+      <div class="device-card__body">
+        <div class="device-card__top">
+          <div>
+            <h3>${escapeHtml(device.title)}</h3>
+            ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ""}
+          </div>
+          ${device.grade ? `<span class="grade-mini">${escapeHtml(device.grade)}</span>` : ""}
+        </div>
+        ${
+          meta.length
+            ? `<div class="device-card__meta">${meta.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>`
+            : ""
+        }
+        ${device.priceText ? `<div class="device-card__price">${escapeHtml(device.priceText)}</div>` : ""}
+        <a class="btn btn--outlined device-card__cta" href="${escapeHtml(deviceHref(device))}">${escapeHtml(
+          device.ctaLabel || "Смотреть паспорт",
+        )}</a>
+      </div>
+    </article>`;
 }
 
 function renderHeaderChrome(chrome: SiteChrome): string {
@@ -701,7 +751,7 @@ function renderPathRouterSection(section: PageSection): string {
 `;
 }
 
-function renderCatalogPreviewSection(section: PageSection): string {
+function renderCatalogPreviewSection(section: PageSection, devices: Device[] = []): string {
   const filters = filterList(section.content.filters);
   const chips =
     filters.length > 0
@@ -732,6 +782,8 @@ function renderCatalogPreviewSection(section: PageSection): string {
       }
     </div>`
       : "";
+  const cards = devices.map(renderDevicePreviewCard).join("\n      ");
+  const emptyState = `<p class="lead text-wrap">Каталог пока пуст. Добавьте опубликованные устройства в Directus.</p>`;
 
   return `<!-- ============== CATALOG ============== -->
 <section class="section catalog-section" id="catalog">
@@ -753,9 +805,8 @@ function renderCatalogPreviewSection(section: PageSection): string {
         .join("\n      ")}
     </div>
 
-    <div class="catalog-grid reveal" id="catalogGrid" aria-busy="true"></div>
+    <div class="catalog-grid reveal" id="catalogGrid">${cards || emptyState}</div>
     ${actions}
-    <noscript><p class="lead">Каталог загружается через JavaScript. Включите JavaScript, чтобы увидеть проверенные устройства.</p></noscript>
   </div>
 </section>
 
@@ -1537,7 +1588,7 @@ ${renderFooterChrome(chrome)}
 `;
 }
 
-function renderHomeSection(section: PageSection): string {
+function renderHomeSection(section: PageSection, devices: Device[] = []): string {
   switch (section.sectionKey) {
     case "hero":
       return renderHeroSection(section);
@@ -1546,7 +1597,7 @@ function renderHomeSection(section: PageSection): string {
     case "path_router":
       return renderPathRouterSection(section);
     case "catalog_preview":
-      return renderCatalogPreviewSection(section);
+      return renderCatalogPreviewSection(section, devices);
     case "passport_preview":
       return renderPassportSection(section);
     case "store_preview":
@@ -1578,8 +1629,15 @@ function homeSections(sections: PageSection[] = []): PageSection[] {
   return [...byKey.values()].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export function renderHomeMarkup(sections: PageSection[] = [], chrome: SiteChrome = siteChrome(null, [])): string {
-  const renderedSections = homeSections(sections).map(renderHomeSection).filter(Boolean).join("\n");
+export function renderHomeMarkup(
+  sections: PageSection[] = [],
+  chrome: SiteChrome = siteChrome(null, []),
+  devices: Device[] = [],
+): string {
+  const renderedSections = homeSections(sections)
+    .map((section) => renderHomeSection(section, devices))
+    .filter(Boolean)
+    .join("\n");
 
   return `${renderHeaderChrome(chrome)}<main id="top">
 

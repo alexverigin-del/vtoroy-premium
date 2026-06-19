@@ -53,7 +53,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
           __html: renderMarketingPageMarkup(params.slug, page, siteChrome(settings, navigation)),
         }}
       />
-      <Script src="/script.js?v=20260617intake" strategy="afterInteractive" />
+      <Script src="/interactions.js?v=20260619catalog" strategy="afterInteractive" />
     </>
   );
 }

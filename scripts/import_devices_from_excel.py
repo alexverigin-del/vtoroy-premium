@@ -23,8 +23,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import mimetypes
 import os
 import sys
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -33,6 +35,8 @@ from openpyxl import load_workbook
 
 
 COLLECTION = "devices"
+IMAGES_COLLECTION = "device_images"
+MEDIA_ROLES = ("card", "main", "screen", "body", "defect", "other")
 
 HEADER_MAP = {
     "priceText": "price_text",
@@ -52,12 +56,20 @@ HEADER_MAP = {
 JSON_FIELDS = {"tags", "gallery", "passport", "trade"}
 INTEGER_FIELDS = {"price", "sort"}
 BOOLEAN_FIELDS = {"has_detail_page"}
+MEDIA_FIELDS = {
+    *(f"image_{role}" for role in MEDIA_ROLES),
+    *(f"image_{role}_label" for role in MEDIA_ROLES),
+    *(f"image_{role}_alt" for role in MEDIA_ROLES),
+}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Import devices from Excel into Directus.")
     parser.add_argument("--file", required=True, help="Path to the .xlsx workbook.")
     parser.add_argument("--sheet", help="Worksheet name. Defaults to the active sheet.")
+    parser.add_argument("--assets-root", default=".", help="Base folder for relative image paths in image_* columns.")
+    parser.add_argument("--skip-media", action="store_true", help="Import device rows only; ignore image_* columns.")
+    parser.add_argument("--replace-media", action="store_true", help="Overwrite existing device_images/listing_file links.")
     parser.add_argument("--dry-run", action="store_true", help="Parse and validate only; do not write.")
     return parser.parse_args()
 
@@ -74,6 +86,10 @@ def load_config(require_token: bool = True) -> dict[str, str]:
 
 def headers(cfg: dict[str, str]) -> dict[str, str]:
     return {"Authorization": f"Bearer {cfg['token']}", "Content-Type": "application/json"}
+
+
+def auth_headers(cfg: dict[str, str]) -> dict[str, str]:
+    return {"Authorization": f"Bearer {cfg['token']}"}
 
 
 def normalize_header(value: Any) -> str:
@@ -108,6 +124,8 @@ def parse_json_field(field: str, value: Any) -> Any:
 def coerce(field: str, value: Any) -> Any:
     if empty(value):
         return None
+    if field in MEDIA_FIELDS:
+        return str(value).strip()
     if field in JSON_FIELDS:
         return parse_json_field(field, value)
     if field in INTEGER_FIELDS:
@@ -142,6 +160,52 @@ def read_rows(path: str, sheet_name: str | None = None) -> list[dict[str, Any]]:
     return devices
 
 
+def split_media_fields(row: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Separate Directus device fields from image_* import helper columns."""
+    device = {key: value for key, value in row.items() if key not in MEDIA_FIELDS}
+    media: list[dict[str, Any]] = []
+    for index, role in enumerate(MEDIA_ROLES):
+        image_path = row.get(f"image_{role}")
+        if not image_path:
+            continue
+        media.append({
+            "role": role,
+            "path": image_path,
+            "label": row.get(f"image_{role}_label") or ("Card" if role == "card" else role.title()),
+            "alt": row.get(f"image_{role}_alt") or row.get("listing_alt") or row.get("title") or row["id"],
+            "sort": 0 if role == "card" else 10 + index,
+        })
+    return device, media
+
+
+def request_json(cfg: dict[str, str], method: str, endpoint: str, payload: dict[str, Any] | None = None) -> Any:
+    res = requests.request(
+        method,
+        f"{cfg['url']}{endpoint}",
+        headers=headers(cfg),
+        json=payload,
+        timeout=60,
+    )
+    res.raise_for_status()
+    body = res.json() if res.text else {}
+    return body.get("data")
+
+
+def get_all(cfg: dict[str, str], endpoint: str) -> list[dict[str, Any]]:
+    data = request_json(cfg, "GET", endpoint)
+    return data if isinstance(data, list) else []
+
+
+def build_indexes(cfg: dict[str, str]) -> dict[str, dict[str, dict[str, Any]]]:
+    """Load existing media rows once; faster and safer for large imports."""
+    files = get_all(cfg, "/files?fields=id,title,filename_download&limit=-1")
+    images = get_all(cfg, "/items/device_images?fields=id,device,role,image&limit=-1")
+    return {
+        "files": {str(row.get("title")): row for row in files if row.get("title")},
+        "images": {f"{row.get('device')}:{row.get('role')}": row for row in images if row.get("device") and row.get("role")},
+    }
+
+
 def upsert_device(cfg: dict[str, str], device: dict[str, Any], dry_run: bool) -> None:
     """Create or update one device in Directus."""
     slug = str(device["id"])
@@ -161,6 +225,129 @@ def upsert_device(cfg: dict[str, str], device: dict[str, Any], dry_run: bool) ->
     print(f"[create] devices/{slug}")
 
 
+def directus_file_title(device_id: str, role: str) -> str:
+    return f"isvoi:{device_id}:{role}:xlsx"
+
+
+def resolve_image_path(assets_root: Path, value: str) -> Path:
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    return assets_root / path
+
+
+def upload_file(
+    cfg: dict[str, str],
+    indexes: dict[str, dict[str, dict[str, Any]]],
+    *,
+    device_id: str,
+    role: str,
+    image_path: Path,
+    dry_run: bool,
+) -> str | None:
+    title = directus_file_title(device_id, role)
+    existing = indexes["files"].get(title)
+    if existing:
+        print(f"[skip] file {title} -> {existing['id']}")
+        return str(existing["id"])
+
+    if not image_path.exists():
+        raise FileNotFoundError(f"Missing image for {device_id}/{role}: {image_path}")
+    if dry_run:
+        print(f"[dry-run] upload {image_path} as {title}")
+        return None
+
+    mime = mimetypes.guess_type(image_path.name)[0] or "application/octet-stream"
+    with image_path.open("rb") as fh:
+        res = requests.post(
+            f"{cfg['url']}/files",
+            headers=auth_headers(cfg),
+            data={"title": title, "description": f"{device_id} {role}"},
+            files={"file": (image_path.name, fh, mime)},
+            timeout=120,
+        )
+    res.raise_for_status()
+    data = res.json()["data"]
+    indexes["files"][title] = data
+    print(f"[upload] file {title} -> {data['id']}")
+    return str(data["id"])
+
+
+def sync_device_image(
+    cfg: dict[str, str],
+    indexes: dict[str, dict[str, dict[str, Any]]],
+    *,
+    device_id: str,
+    media: dict[str, Any],
+    file_id: str | None,
+    dry_run: bool,
+    replace: bool,
+) -> None:
+    role = str(media["role"])
+    key = f"{device_id}:{role}"
+    existing = indexes["images"].get(key)
+    payload = {
+        "status": "published",
+        "sort": media["sort"],
+        "device": device_id,
+        "role": role,
+        "image": file_id,
+        "label": media["label"],
+        "alt": media["alt"],
+    }
+
+    if existing and not replace:
+        print(f"[skip] device_images {device_id}/{role}")
+        return
+    if dry_run:
+        print(f"[dry-run] {'patch' if existing else 'create'} device_images {device_id}/{role}")
+        return
+    if existing:
+        data = request_json(cfg, "PATCH", f"/items/{IMAGES_COLLECTION}/{existing['id']}", payload)
+        indexes["images"][key] = data
+        print(f"[patch] device_images {device_id}/{role}")
+        return
+    data = request_json(cfg, "POST", f"/items/{IMAGES_COLLECTION}", payload)
+    indexes["images"][key] = data
+    print(f"[create] device_images {device_id}/{role}")
+
+
+def sync_listing_file(cfg: dict[str, str], device_id: str, file_id: str | None, dry_run: bool, replace: bool) -> None:
+    if not file_id:
+        if dry_run:
+            print(f"[dry-run] patch devices/{device_id}.listing_file after upload")
+        return
+    if dry_run:
+        print(f"[dry-run] patch devices/{device_id}.listing_file = {file_id}")
+        return
+    existing = request_json(cfg, "GET", f"/items/{COLLECTION}/{device_id}?fields=id,listing_file")
+    if existing.get("listing_file") and not replace:
+        print(f"[skip] devices/{device_id}.listing_file already set")
+        return
+    request_json(cfg, "PATCH", f"/items/{COLLECTION}/{device_id}", {"listing_file": file_id})
+    print(f"[patch] devices/{device_id}.listing_file")
+
+
+def sync_media(
+    cfg: dict[str, str],
+    indexes: dict[str, dict[str, dict[str, Any]]],
+    *,
+    device: dict[str, Any],
+    media_rows: list[dict[str, Any]],
+    assets_root: Path,
+    dry_run: bool,
+    replace: bool,
+) -> None:
+    device_id = str(device["id"])
+    for media in media_rows:
+        role = str(media["role"])
+        image_path = resolve_image_path(assets_root, str(media["path"]))
+        file_id = upload_file(cfg, indexes, device_id=device_id, role=role, image_path=image_path, dry_run=dry_run)
+        sync_device_image(cfg, indexes, device_id=device_id, media=media, file_id=file_id, dry_run=dry_run, replace=replace)
+        if role == "card":
+            sync_listing_file(cfg, device_id, file_id, dry_run, replace)
+
+
 def main() -> None:
     args = parse_args()
     cfg = load_config(require_token=not args.dry_run)
@@ -168,13 +355,30 @@ def main() -> None:
     if not rows:
         raise SystemExit(f"No device rows found in {args.file}")
     print(f"{'[dry-run] ' if args.dry_run else ''}Importing {len(rows)} device(s)")
-    for device in rows:
+    assets_root = Path(args.assets_root).resolve()
+    parsed = [split_media_fields(row) for row in rows]
+    indexes = None
+    if not args.skip_media and any(media for _, media in parsed):
+        indexes = build_indexes(cfg)
+    for device, media_rows in parsed:
         upsert_device(cfg, device, dry_run=args.dry_run)
+        if not args.skip_media and media_rows:
+            if indexes is None:
+                indexes = build_indexes(cfg)
+            sync_media(
+                cfg,
+                indexes,
+                device=device,
+                media_rows=media_rows,
+                assets_root=assets_root,
+                dry_run=args.dry_run,
+                replace=args.replace_media,
+            )
 
 
 if __name__ == "__main__":
     try:
         main()
-    except (requests.HTTPError, ValueError, json.JSONDecodeError) as exc:
+    except (requests.HTTPError, ValueError, FileNotFoundError, json.JSONDecodeError) as exc:
         print(f"Import error: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc

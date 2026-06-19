@@ -44,7 +44,7 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
       </figure>
 
       {normalizedImages.length > 1 ? (
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-3 flex flex-wrap gap-2">
           {normalizedImages.map((image, index) => {
             const isActive = index === activeIndex;
             return (
@@ -54,21 +54,13 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
                 onClick={() => setActiveIndex(index)}
                 aria-pressed={isActive}
                 className={[
-                  "overflow-hidden rounded-card border bg-white text-left transition",
+                  "rounded-pill border px-4 py-2 text-sm font-medium transition",
                   isActive
-                    ? "border-accent shadow-product"
-                    : "border-hairline hover:border-accent/50",
+                    ? "border-accent bg-accent text-white"
+                    : "border-hairline bg-white text-muted hover:border-accent/50 hover:text-accent",
                 ].join(" ")}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={image.src}
-                  alt=""
-                  className="aspect-[4/3] w-full object-cover"
-                />
-                <span className="block truncate px-3 py-2 text-xs font-medium text-muted">
-                  {image.label}
-                </span>
+                {image.label}
               </button>
             );
           })}

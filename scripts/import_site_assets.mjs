@@ -235,7 +235,7 @@ async function patchSectionImage(cfg, asset, fileId, { dryRun, replace }) {
     console.log(`[dry-run] patch page_sections ${asset.section} -> ${fileId}`);
     return;
   }
-  await requestJson(cfg, "PATCH", `/items/page_sections/${section.id}`, payload);
+  await requestJson(cfg, "PATCH", `/items/page_sections/${section.id}?fields=id`, payload);
   console.log(`[patch] page_sections ${asset.section}`);
 }
 

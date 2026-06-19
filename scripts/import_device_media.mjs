@@ -38,6 +38,11 @@ const MIME_BY_EXT = new Map([
   [".avif", "image/avif"],
 ]);
 
+const state = {
+  filesByTitle: null,
+  deviceImagesByKey: null,
+};
+
 function parseArgs(argv) {
   const args = {
     file: "data/devices.json",
@@ -91,6 +96,26 @@ async function findOne(cfg, endpoint) {
   return Array.isArray(data) ? data[0] : data;
 }
 
+async function existingFilesByTitle(cfg) {
+  if (state.filesByTitle) return state.filesByTitle;
+  const rows = await requestJson(cfg, "GET", "/files?fields=id,title,filename_download&limit=-1");
+  state.filesByTitle = new Map();
+  for (const row of rows ?? []) {
+    if (row.title) state.filesByTitle.set(row.title, row);
+  }
+  return state.filesByTitle;
+}
+
+async function existingDeviceImagesByKey(cfg) {
+  if (state.deviceImagesByKey) return state.deviceImagesByKey;
+  const rows = await requestJson(cfg, "GET", "/items/device_images?fields=id,device,role,image&limit=-1");
+  state.deviceImagesByKey = new Map();
+  for (const row of rows ?? []) {
+    if (row.device && row.role) state.deviceImagesByKey.set(`${row.device}:${row.role}`, row);
+  }
+  return state.deviceImagesByKey;
+}
+
 function titleFor(deviceId, role, index) {
   return `isvoi:${deviceId}:${role}:${index}`;
 }
@@ -125,10 +150,8 @@ async function ensureFolder(cfg, name, dryRun) {
 }
 
 async function ensureFile(cfg, { filePath, title, folder, description, dryRun }) {
-  const existing = await findOne(
-    cfg,
-    `/files?filter[title][_eq]=${encodeURIComponent(title)}&fields=id,title,filename_download&limit=1`,
-  );
+  const files = await existingFilesByTitle(cfg);
+  const existing = files.get(title);
   if (existing?.id) {
     console.log(`[skip] file ${title} -> ${existing.id}`);
     return existing.id;
@@ -165,6 +188,7 @@ async function ensureFile(cfg, { filePath, title, folder, description, dryRun })
     throw new Error(`POST /files failed: ${res.status} ${text}`);
   }
   console.log(`[upload] ${title} -> ${json.data.id}`);
+  files.set(title, json.data);
   return json.data.id;
 }
 
@@ -183,7 +207,7 @@ async function patchDeviceListing(cfg, id, fileId, { replace, dryRun }) {
     return;
   }
   if (dryRun) {
-    console.log(`[dry-run] patch devices/${id}.listing_file = ${fileId}`);
+    console.log(`[dry-run] patch devices/${id}.listing_file = ${fileId ?? "(new file)"}`);
     return;
   }
   await requestJson(cfg, "PATCH", `/items/devices/${encodeURIComponent(id)}`, { listing_file: fileId });
@@ -191,10 +215,9 @@ async function patchDeviceListing(cfg, id, fileId, { replace, dryRun }) {
 }
 
 async function upsertDeviceImage(cfg, payload, { replace, dryRun }) {
-  const existing = await findOne(
-    cfg,
-    `/items/device_images?filter[device][_eq]=${encodeURIComponent(payload.device)}&filter[role][_eq]=${encodeURIComponent(payload.role)}&fields=id,image&limit=1`,
-  );
+  const images = await existingDeviceImagesByKey(cfg);
+  const key = `${payload.device}:${payload.role}`;
+  const existing = images.get(key);
   if (existing?.id && !replace) {
     console.log(`[skip] device_images ${payload.device}/${payload.role}`);
     return existing.id;
@@ -204,11 +227,13 @@ async function upsertDeviceImage(cfg, payload, { replace, dryRun }) {
     return existing?.id ?? null;
   }
   if (existing?.id) {
-    await requestJson(cfg, "PATCH", `/items/device_images/${existing.id}`, payload);
+    const patched = await requestJson(cfg, "PATCH", `/items/device_images/${existing.id}`, payload);
+    images.set(key, patched);
     console.log(`[patch] device_images ${payload.device}/${payload.role}`);
     return existing.id;
   }
   const created = await requestJson(cfg, "POST", "/items/device_images", payload);
+  images.set(key, created);
   console.log(`[create] device_images ${payload.device}/${payload.role}`);
   return created.id;
 }

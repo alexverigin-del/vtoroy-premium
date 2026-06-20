@@ -93,13 +93,35 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
   if (!directusUrl || !token) return false;
 
   try {
+    const directusLead: Omit<StoredLead, "created_at"> = {
+      kind: lead.kind,
+      status: lead.status,
+      priority: lead.priority,
+      name: lead.name,
+      contact: lead.contact,
+      device: lead.device,
+      device_id: lead.device_id,
+      scenario: lead.scenario,
+      message: lead.message,
+      source: lead.source,
+      source_path: lead.source_path,
+      source_url: lead.source_url,
+      page_title: lead.page_title,
+      referrer: lead.referrer,
+      utm_source: lead.utm_source,
+      utm_medium: lead.utm_medium,
+      utm_campaign: lead.utm_campaign,
+      utm_content: lead.utm_content,
+      utm_term: lead.utm_term,
+      user_agent: lead.user_agent,
+    };
     const response = await fetch(`${directusUrl}/items/leads`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(lead),
+      body: JSON.stringify(directusLead),
       cache: "no-store",
     });
 

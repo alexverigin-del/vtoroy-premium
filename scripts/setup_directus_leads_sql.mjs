@@ -55,7 +55,10 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_term varchar(128);
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS user_agent text;
 
 UPDATE leads SET source_path = source WHERE source_path IS NULL AND source IS NOT NULL;
-UPDATE leads SET scenario = split_part(message, E'\n', 1) WHERE scenario IS NULL AND message LIKE 'Сценарий:%';
+UPDATE leads
+SET scenario = trim(replace(split_part(message, E'\n', 1), 'Сценарий:', ''))
+WHERE scenario IS NULL
+  AND message LIKE 'Сценарий:%';
 
 CREATE OR REPLACE FUNCTION isvoi_touch_updated_at()
 RETURNS trigger
@@ -190,11 +193,9 @@ WHERE NOT EXISTS (
 );
 
 UPDATE directus_permissions
-SET fields = '*'
+SET fields = 'kind,status,priority,name,contact,device,device_id,scenario,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent'
 WHERE collection = 'leads'
-  AND action = 'create'
-  AND fields IS NOT NULL
-  AND fields <> '*';
+  AND action = 'create';
 
 COMMIT;
 

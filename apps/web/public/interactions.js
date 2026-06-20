@@ -10,6 +10,21 @@
     return value == null ? "" : String(value);
   }
 
+  function trackingPayload() {
+    var params = new URLSearchParams(window.location.search || "");
+    return {
+      source_path: window.location.pathname || "/",
+      source_url: window.location.href || "",
+      page_title: document.title || "",
+      referrer: document.referrer || "",
+      utm_source: params.get("utm_source") || "",
+      utm_medium: params.get("utm_medium") || "",
+      utm_campaign: params.get("utm_campaign") || "",
+      utm_content: params.get("utm_content") || "",
+      utm_term: params.get("utm_term") || ""
+    };
+  }
+
   function wireMobileNav() {
     var toggle = byId("navToggle");
     var links = byId("navLinks");
@@ -61,12 +76,17 @@
       var previousText = submit ? submit.textContent : "";
       var formData = new FormData(leadForm);
       var payload = {
+        kind: text(formData.get("kind")),
         scenario: text(formData.get("scenario")),
         device: text(formData.get("device")),
+        device_id: text(formData.get("device_id")),
+        name: text(formData.get("name")),
         contact: text(formData.get("contact")),
+        message: text(formData.get("message")),
         source: window.location.pathname || "/",
         website: text(formData.get("website"))
       };
+      Object.assign(payload, trackingPayload());
 
       if (!payload.contact) {
         formNote.textContent = "Оставьте контакт, чтобы мы могли ответить.";

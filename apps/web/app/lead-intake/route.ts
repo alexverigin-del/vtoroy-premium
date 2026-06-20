@@ -6,34 +6,65 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type LeadRequest = {
+  kind?: unknown;
   scenario?: unknown;
-  device?: unknown;
+  name?: unknown;
   contact?: unknown;
+  device?: unknown;
+  device_id?: unknown;
+  message?: unknown;
   source?: unknown;
+  source_path?: unknown;
+  source_url?: unknown;
+  page_title?: unknown;
+  referrer?: unknown;
+  utm_source?: unknown;
+  utm_medium?: unknown;
+  utm_campaign?: unknown;
+  utm_content?: unknown;
+  utm_term?: unknown;
   website?: unknown;
 };
 
 type StoredLead = {
   created_at: string;
   kind: string;
+  status: "new";
+  priority: "normal";
+  name: string;
   contact: string;
   device: string;
+  device_id: string;
+  scenario: string;
   message: string;
   source: string;
-  status: "new";
+  source_path: string;
+  source_url: string;
+  page_title: string;
+  referrer: string;
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_content: string;
+  utm_term: string;
+  user_agent: string;
 };
 
 function text(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
-function inferKind(scenario: string): string {
-  const value = scenario.toLowerCase();
-  if (value.includes("trade") || value.includes("оцен") || value.includes("передать")) {
-    return "trade";
+function inferKind(kind: string, scenario: string): string {
+  const explicit = kind.toLowerCase();
+  if (["purchase", "selection", "trade", "club", "upgrade", "support"].includes(explicit)) {
+    return explicit;
   }
+
+  const value = scenario.toLowerCase();
+  if (value.includes("trade") || value.includes("оцен") || value.includes("передать")) return "trade";
   if (value.includes("club")) return "club";
   if (value.includes("обнов")) return "upgrade";
+  if (value.includes("забронировать") || value.includes("купить")) return "purchase";
   return "selection";
 }
 
@@ -58,21 +89,13 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
   if (!directusUrl || !token) return false;
 
   try {
-    const directusLead = {
-      kind: lead.kind,
-      contact: lead.contact,
-      device: lead.device,
-      message: lead.message,
-      source: lead.source,
-      status: lead.status,
-    };
     const response = await fetch(`${directusUrl}/items/leads`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(directusLead),
+      body: JSON.stringify(lead),
       cache: "no-store",
     });
 
@@ -96,10 +119,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true }, { status: 202 });
   }
 
-  const scenario = text(body.scenario, 120);
-  const device = text(body.device, 240);
-  const contact = text(body.contact, 160);
-  const source = text(body.source, 160) || text(request.headers.get("referer"), 160) || "site";
+  const scenario = text(body.scenario, 160);
+  const contact = text(body.contact, 180);
+  const sourcePath = text(body.source_path, 255) || text(body.source, 255) || "site";
+  const sourceUrl = text(body.source_url, 800) || text(request.headers.get("referer"), 800);
 
   if (!contact) {
     return NextResponse.json(
@@ -110,15 +133,26 @@ export async function POST(request: NextRequest) {
 
   const lead: StoredLead = {
     created_at: new Date().toISOString(),
-    kind: inferKind(scenario),
-    contact,
-    device,
-    message: [
-      scenario ? `Сценарий: ${scenario}` : "",
-      device ? `Интерес: ${device}` : "",
-    ].filter(Boolean).join("\n"),
-    source,
+    kind: inferKind(text(body.kind, 64), scenario),
     status: "new",
+    priority: "normal",
+    name: text(body.name, 160),
+    contact,
+    device: text(body.device, 255),
+    device_id: text(body.device_id, 255),
+    scenario,
+    message: text(body.message, 2000),
+    source: sourcePath,
+    source_path: sourcePath,
+    source_url: sourceUrl,
+    page_title: text(body.page_title, 255),
+    referrer: text(body.referrer, 800),
+    utm_source: text(body.utm_source, 128),
+    utm_medium: text(body.utm_medium, 128),
+    utm_campaign: text(body.utm_campaign, 128),
+    utm_content: text(body.utm_content, 128),
+    utm_term: text(body.utm_term, 128),
+    user_agent: text(request.headers.get("user-agent"), 800),
   };
 
   const savedToDirectus = await postToDirectus(lead);

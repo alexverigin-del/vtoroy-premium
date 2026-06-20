@@ -106,21 +106,35 @@ One row per device.
 | `label`    | string           | e.g. `iPhone 12 · 26 000 ₽`.     |
 | `sort`     | integer          |                                  |
 
-## `leads` (form submissions — new, not in static prototype)
+## `leads` (site lead workflow)
 
-Captures "Получить подборку" / "Оценить устройство" / trade requests.
+Captures product reservations, selection requests, Trade, Upgrade and Club
+leads. The public site writes through the Next.js `/lead-intake` route using a
+create-only Directus token; Public must not have write access.
 
-| Field        | Type            | Notes                                  |
-| ------------ | --------------- | -------------------------------------- |
-| `id`         | uuid (PK)       |                                        |
-| `created_at` | timestamp       | Auto.                                  |
-| `kind`       | string (enum)   | `selection` / `trade` / `club` / …     |
-| `name`       | string          |                                        |
-| `contact`    | string          | Phone / Telegram / email.              |
-| `message`    | text            |                                        |
-| `device`     | M2O → `devices` | Optional, if lead is about one device. |
-| `source`     | string          | Page / campaign.                       |
-| `status`     | string (enum)   | `new` / `in_progress` / `closed`.      |
+| Field          | Type             | Notes                                                       |
+| -------------- | ---------------- | ----------------------------------------------------------- |
+| `id`           | uuid (PK)        |                                                             |
+| `created_at`   | timestamp        | Auto.                                                       |
+| `updated_at`   | timestamp        | Auto via trigger.                                           |
+| `status`       | string enum      | `new`, `in_progress`, `contacted`, `won`, `lost`, `archived`. |
+| `priority`     | string enum      | `normal`, `high`.                                           |
+| `kind`         | string enum      | `selection`, `purchase`, `trade`, `upgrade`, `club`, `support`. |
+| `scenario`     | string           | Selected user scenario / CTA intent.                        |
+| `name`         | string           | Optional.                                                   |
+| `contact`      | string           | Phone / Telegram / email. Required.                         |
+| `device`       | string           | Human-readable device title.                                |
+| `device_id`    | M2O → `devices`  | Optional product-card relation.                             |
+| `message`      | text             | User comment.                                               |
+| `source_path`  | string           | Page path where the lead was created.                       |
+| `source_url`   | text             | Full URL, including query.                                  |
+| `page_title`   | string           | Browser page title.                                         |
+| `referrer`     | text             | Browser referrer.                                           |
+| `utm_*`        | string           | UTM source/medium/campaign/content/term.                    |
+| `user_agent`   | text             | Request user-agent for debugging, not for public display.   |
+
+Run `npm run directus:setup:leads` and pipe it into the production Postgres
+container to create/update this schema and Directus Studio metadata.
 
 ---
 

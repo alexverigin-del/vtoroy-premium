@@ -8,6 +8,7 @@ import { PassportSummary } from "@/components/PassportSummary";
 import { CTAButton } from "@/components/CTAButton";
 import { DeviceGallery } from "@/components/DeviceGallery";
 import { DeviceCard } from "@/components/DeviceCard";
+import { ProductLeadForm } from "@/components/ProductLeadForm";
 
 // Keep Directus device edits visible immediately while inventory is being filled.
 export const dynamic = "force-dynamic";
@@ -117,8 +118,9 @@ export default async function DevicePage({
               ))}
             </div>
 
-            <div className="mt-8 grid gap-3">
-              <CTAButton href="/#final" label="Забронировать или уточнить" />
+            <ProductLeadForm deviceId={device.id} deviceTitle={device.title} />
+
+            <div className="mt-3">
               <CTAButton href="/trade" label="Рассчитать Trade" variant="secondary" />
             </div>
 

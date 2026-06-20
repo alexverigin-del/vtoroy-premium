@@ -27,7 +27,7 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
   if (!active) return null;
 
   return (
-    <section className="mt-10" aria-label="Фотографии устройства">
+    <section aria-label="Фотографии устройства">
       <figure className="overflow-hidden rounded-card border border-hairline bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

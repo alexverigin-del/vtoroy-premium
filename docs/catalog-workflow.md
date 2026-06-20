@@ -115,20 +115,46 @@ Use `--skip-media` when only device text/specs should change. Use
 
 ## Import order
 
-For every catalog batch:
+For every production catalog batch:
 
-1. Prepare or update the source spreadsheet.
-2. Optimize source photos into WebP.
-3. Run the unified Excel dry-run.
-4. Run the unified Excel import.
-5. Check `/catalog` and 2-3 device pages.
+1. Create a batch folder outside the repo, for example `/opt/isvoi/imports/2026-06-stock`.
+2. Put the source workbook in that folder.
+3. Put raw photos in `incoming/`.
+4. Optimize source photos into `optimized/`.
+5. Run the batch runner without `--apply`.
+6. Fix workbook/photo issues until dry-run is clean.
+7. Run the same command with `--apply`.
+8. Check `/catalog` and 2-3 device pages.
 
 Commands:
 
 ```bash
-npm run directus:import:xlsx -- --file stock.xlsx --assets-root ./optimized --dry-run
-npm run directus:import:xlsx -- --file stock.xlsx --assets-root ./optimized
+cd /opt/isvoi
+. .venv/bin/activate
+python scripts/optimize_images.py \
+  --src /opt/isvoi/imports/2026-06-stock/incoming \
+  --out /opt/isvoi/imports/2026-06-stock/optimized \
+  --max 2400 \
+  --quality 88
+
+bash scripts/run_catalog_import_batch.sh \
+  --file /opt/isvoi/imports/2026-06-stock/stock.xlsx \
+  --assets-root /opt/isvoi/imports/2026-06-stock/optimized \
+  --batch 2026-06-stock
+
+bash scripts/run_catalog_import_batch.sh \
+  --file /opt/isvoi/imports/2026-06-stock/stock.xlsx \
+  --assets-root /opt/isvoi/imports/2026-06-stock/optimized \
+  --batch 2026-06-stock \
+  --apply
 ```
+
+The batch runner always performs a dry-run first. In apply mode it then imports
+the workbook, uploads product files to `ISVOI Device Photos`, links
+`device_images`, and runs image/catalog audits.
+
+Use `--default-status published` only for rows that have already passed content
+and photo QA. The safer default is `draft`.
 
 The older JSON media importer remains available for maintenance scripts:
 
@@ -202,13 +228,34 @@ For manual edits:
 
 Avoid editing `devices.gallery` for new content. It is legacy fallback only.
 
+## Production QA gates
+
+Treat these audit checks as blockers before publishing a batch:
+
+- `devices.visible.missing_required_copy` must be `0`.
+- `devices.visible.not_ready` must be `0` for devices intended to be live.
+- `devices.visible.no_listing_file` must be `0`.
+- `devices.visible.no_card_image` must be `0`.
+- `devices.visible.no_gallery_image` should be `0` for commercial product pages.
+- `device_images.without_file` must be `0`.
+- `device_images.orphan_device` must be `0`.
+- image legacy checks from `directus:audit-images` must all be `0`.
+
+Run catalog audit manually when needed:
+
+```bash
+node scripts/audit_directus_catalog_sql.mjs \
+  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+```
+
 ## Pre-fill checklist
 
 Before adding hundreds of rows:
 
 - `device_images` exists and is visible in Directus Studio.
 - Public read policy can read published `device_images` and `directus_files`.
+- `ISVOI Device Photos`, `ISVOI Site Assets` and `ISVOI Editorial` folders exist.
 - `/catalog` shows Directus URLs for filled card images.
 - `/device/{slug}` shows Directus URLs for filled gallery rows.
 - Legacy `.html` routes redirect to live Next routes.
-- `npm run directus:import:xlsx -- --file stock.xlsx --assets-root ./optimized --dry-run` completes cleanly for the batch.
+- `bash scripts/run_catalog_import_batch.sh --file stock.xlsx --assets-root ./optimized --batch test` completes cleanly for the batch.

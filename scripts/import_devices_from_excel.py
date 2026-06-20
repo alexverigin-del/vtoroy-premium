@@ -148,6 +148,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--file", required=True, help="Path to the .xlsx workbook.")
     parser.add_argument("--sheet", help="Worksheet name. Defaults to the active sheet.")
     parser.add_argument("--assets-root", default=".", help="Base folder for relative image paths in image_* columns.")
+    parser.add_argument("--media-folder", default="ISVOI Device Photos", help="Directus Files folder for uploaded product photos.")
     parser.add_argument("--skip-media", action="store_true", help="Import device rows only; ignore image_* columns.")
     parser.add_argument("--replace-media", action="store_true", help="Overwrite existing device_images/listing_file links.")
     parser.add_argument("--source-system", default="xlsx", help="Default devices.source_system for imported rows.")
@@ -364,6 +365,19 @@ def build_indexes(cfg: dict[str, str]) -> dict[str, dict[str, dict[str, Any]]]:
     }
 
 
+def ensure_folder(cfg: dict[str, str], name: str, dry_run: bool) -> str | None:
+    endpoint = f"/folders?filter[name][_eq]={quote(name, safe='')}&fields=id,name&limit=1"
+    rows = get_all(cfg, endpoint)
+    if rows:
+        return str(rows[0]["id"])
+    if dry_run:
+        print(f"[dry-run] create folder {name}")
+        return None
+    created = request_json(cfg, "POST", "/folders", {"name": name})
+    print(f"[create] folder {name}")
+    return str(created["id"])
+
+
 def find_device_by_source(cfg: dict[str, str], device: dict[str, Any]) -> dict[str, Any] | None:
     source_system = str(device.get("source_system") or "").strip()
     source_id = str(device.get("source_id") or "").strip()
@@ -443,6 +457,7 @@ def upload_file(
     role: str,
     ordinal: int,
     image_path: Path,
+    folder_id: str | None,
     dry_run: bool,
 ) -> str | None:
     title = directus_file_title(device_id, role, ordinal)
@@ -458,11 +473,14 @@ def upload_file(
         return None
 
     mime = mimetypes.guess_type(image_path.name)[0] or "application/octet-stream"
+    data = {"title": title, "description": f"{device_id} {role}"}
+    if folder_id:
+        data["folder"] = folder_id
     with image_path.open("rb") as fh:
         res = requests.post(
             f"{cfg['url']}/files",
             headers=auth_headers(cfg),
-            data={"title": title, "description": f"{device_id} {role}"},
+            data=data,
             files={"file": (image_path.name, fh, mime)},
             timeout=120,
         )
@@ -539,6 +557,7 @@ def sync_media(
     device: dict[str, Any],
     media_rows: list[dict[str, Any]],
     assets_root: Path,
+    folder_id: str | None,
     dry_run: bool,
     replace: bool,
 ) -> None:
@@ -553,6 +572,7 @@ def sync_media(
             role=role,
             ordinal=int(media.get("ordinal") or 1),
             image_path=image_path,
+            folder_id=folder_id,
             dry_run=dry_run,
         )
         sync_device_image(cfg, indexes, device_id=device_id, media=media, file_id=file_id, dry_run=dry_run, replace=replace)
@@ -581,10 +601,12 @@ def main() -> None:
             for device, media_rows in parsed
         ]
     indexes = None
+    folder_id = None
     if args.dry_run:
         indexes = {"files": {}, "images": {}}
     elif not args.skip_media and any(media for _, media in parsed):
         indexes = build_indexes(cfg)
+        folder_id = ensure_folder(cfg, args.media_folder, dry_run=False)
     for device, media_rows in parsed:
         device_id = upsert_device(cfg, device, dry_run=args.dry_run)
         if not args.skip_media and media_rows:
@@ -596,6 +618,7 @@ def main() -> None:
                 device={**device, "id": device_id or device.get("id")},
                 media_rows=media_rows,
                 assets_root=assets_root,
+                folder_id=folder_id,
                 dry_run=args.dry_run,
                 replace=args.replace_media,
             )

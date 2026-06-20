@@ -39,6 +39,17 @@ Public storefront rule:
 - Related-device blocks prefer `available` / `reserved` rows and use sold rows
   only as a fallback when no live alternatives exist.
 
+Product lead rule:
+
+- `available`: product form creates a `purchase` lead with scenario
+  `Забронировать устройство`.
+- `reserved`: product form creates a `purchase` lead with scenario
+  `Встать в лист ожидания по брони`.
+- `sold`: product form creates a `selection` lead with scenario
+  `Подобрать похожее устройство`.
+- The current stock status is copied into the lead message so managers can see
+  what the user saw at submit time.
+
 ## Import keys
 
 For large batches, every imported row should carry:

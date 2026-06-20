@@ -64,7 +64,13 @@ function inferKind(kind: string, scenario: string): string {
   if (value.includes("trade") || value.includes("оцен") || value.includes("передать")) return "trade";
   if (value.includes("club")) return "club";
   if (value.includes("обнов")) return "upgrade";
-  if (value.includes("забронировать") || value.includes("купить")) return "purchase";
+  if (
+    value.includes("забронировать")
+    || value.includes("купить")
+    || value.includes("брон")
+    || value.includes("лист ожидания")
+  ) return "purchase";
+  if (value.includes("похож") || value.includes("альтернатив")) return "selection";
   return "selection";
 }
 

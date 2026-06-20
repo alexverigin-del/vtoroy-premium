@@ -4,6 +4,19 @@ import { FormEvent, useState } from "react";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
 
+type ProductLeadMode = {
+  kind: "purchase" | "selection";
+  scenario: string;
+  title: string;
+  contactPlaceholder: string;
+  messagePlaceholder: string;
+  submitLabel: string;
+  submittingLabel: string;
+  idleNote: string;
+  successNote: string;
+  statusNote: string;
+};
+
 function trackingPayload() {
   const params = new URLSearchParams(window.location.search);
   return {
@@ -19,16 +32,74 @@ function trackingPayload() {
   };
 }
 
+function normalizeStockStatus(value: string): string {
+  const status = value.trim().toLowerCase();
+  if (!status || status === "in_stock") return "available";
+  if (status === "service") return "hidden";
+  return status;
+}
+
+function leadMode(stockStatus: string): ProductLeadMode {
+  if (stockStatus === "reserved") {
+    return {
+      kind: "purchase",
+      scenario: "Встать в лист ожидания по брони",
+      title: "Встать в лист ожидания",
+      contactPlaceholder: "Телефон или Telegram",
+      messagePlaceholder: "Например, если бронь освободится, готов посмотреть сегодня",
+      submitLabel: "Встать в лист ожидания",
+      submittingLabel: "Отправляем...",
+      idleNote: "Заявка попадёт в Directus как обращение по забронированной карточке.",
+      successNote: "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
+      statusNote: "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
+    };
+  }
+
+  if (stockStatus === "sold") {
+    return {
+      kind: "selection",
+      scenario: "Подобрать похожее устройство",
+      title: "Подобрать похожее устройство",
+      contactPlaceholder: "Телефон или Telegram",
+      messagePlaceholder: "Например, хочу похожий iPhone с таким же объёмом памяти",
+      submitLabel: "Подобрать альтернативу",
+      submittingLabel: "Отправляем...",
+      idleNote: "Заявка попадёт в Directus как подбор альтернативы по проданной карточке.",
+      successNote: "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
+      statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
+    };
+  }
+
+  return {
+    kind: "purchase",
+    scenario: "Забронировать устройство",
+    title: "Забронировать или уточнить",
+    contactPlaceholder: "Телефон или Telegram",
+    messagePlaceholder: "Например, хочу посмотреть сегодня после 18:00",
+    submitLabel: "Отправить заявку",
+    submittingLabel: "Отправляем...",
+    idleNote: "Заявка попадёт в Directus с привязкой к этой карточке.",
+    successNote: "Заявка принята. Мы свяжемся и подтвердим наличие.",
+    statusNote: "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
+  };
+}
+
 export function ProductLeadForm({
   deviceId,
   deviceTitle,
+  stockStatus = "available",
+  stockStatusLabel = "В наличии",
 }: {
   deviceId: string;
   deviceTitle: string;
+  stockStatus?: string;
+  stockStatusLabel?: string;
 }) {
   const [state, setState] = useState<SubmitState>("idle");
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
+  const normalizedStockStatus = normalizeStockStatus(stockStatus);
+  const mode = leadMode(normalizedStockStatus);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,17 +108,22 @@ export function ProductLeadForm({
       return;
     }
 
+    const leadMessage = [
+      `Статус карточки на момент заявки: ${stockStatusLabel} (${normalizedStockStatus}).`,
+      message.trim(),
+    ].filter(Boolean).join("\n\n");
+
     setState("submitting");
     const response = await fetch("/lead-intake", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        kind: "purchase",
-        scenario: "Забронировать устройство",
+        kind: mode.kind,
+        scenario: mode.scenario,
         device: deviceTitle,
         device_id: deviceId,
         contact,
-        message,
+        message: leadMessage,
         ...trackingPayload(),
       }),
     }).catch(() => null);
@@ -64,7 +140,8 @@ export function ProductLeadForm({
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 rounded-card bg-surface p-4">
-      <p className="text-sm font-semibold">Забронировать или уточнить</p>
+      <p className="text-sm font-semibold">{mode.title}</p>
+      <p className="mt-1 text-xs leading-relaxed text-muted">{mode.statusNote}</p>
       <label className="mt-3 block text-sm">
         <span className="text-muted">Контакт</span>
         <input
@@ -72,7 +149,7 @@ export function ProductLeadForm({
           onChange={(event) => setContact(event.target.value)}
           type="text"
           name="contact"
-          placeholder="Телефон или Telegram"
+          placeholder={mode.contactPlaceholder}
           className="mt-1 w-full rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
         />
       </label>
@@ -83,7 +160,7 @@ export function ProductLeadForm({
           onChange={(event) => setMessage(event.target.value)}
           name="message"
           rows={3}
-          placeholder="Например, хочу посмотреть сегодня после 18:00"
+          placeholder={mode.messagePlaceholder}
           className="mt-1 w-full resize-none rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
         />
       </label>
@@ -92,7 +169,7 @@ export function ProductLeadForm({
         disabled={state === "submitting"}
         className="mt-4 inline-flex w-full items-center justify-center rounded-pill bg-accent px-7 py-3 font-medium text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-70"
       >
-        {state === "submitting" ? "Отправляем..." : "Отправить заявку"}
+        {state === "submitting" ? mode.submittingLabel : mode.submitLabel}
       </button>
       <p
         className={[
@@ -102,10 +179,10 @@ export function ProductLeadForm({
         ].join(" ")}
       >
         {state === "success"
-          ? "Заявка принята. Мы свяжемся и подтвердим наличие."
+          ? mode.successNote
           : state === "error"
-            ? "Оставьте контакт или попробуйте отправить еще раз."
-            : "Заявка попадет в Directus с привязкой к этой карточке."}
+            ? "Оставьте контакт или попробуйте отправить ещё раз."
+            : mode.idleNote}
       </p>
     </form>
   );

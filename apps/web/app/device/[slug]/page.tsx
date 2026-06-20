@@ -171,7 +171,12 @@ export default async function DevicePage({
               ))}
             </div>
 
-            <ProductLeadForm deviceId={device.id} deviceTitle={device.title} />
+            <ProductLeadForm
+              deviceId={device.id}
+              deviceTitle={device.title}
+              stockStatus={device.stockStatus}
+              stockStatusLabel={stockStatusLabel(device)}
+            />
 
             <div className="mt-3">
               <CTAButton href="/trade" label="Рассчитать Trade" variant="secondary" />

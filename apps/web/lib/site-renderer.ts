@@ -157,7 +157,7 @@ function renderHeaderChrome(chrome: SiteChrome): string {
   return `<!-- ============== NAV ============== -->
 <header class="nav">
   <div class="wrap nav__inner">
-    <a class="nav__brand" href="/" aria-label="${escapeHtml(chrome.settings.brandName)} � �� �������">
+    <a class="nav__brand" href="/" aria-label="${escapeHtml(chrome.settings.brandName)} на главную">
       ${logoSvg()}
       <span class="brandname">${escapeHtml(chrome.settings.brandName)}</span>
     </a>
@@ -1523,7 +1523,7 @@ function renderMarketingLevelsSection(section: PageSection): string {
         <ul class="level__features">
           ${level.features.map((feature) => `<li>${renderCheckIcon()}${escapeHtml(feature)}</li>`).join("\n          ")}
         </ul>
-        <a class="level__cta${level.featured ? " level__cta--primary" : ""}" href="/#final">������� ${escapeHtml(level.name)}</a>
+        <a class="level__cta${level.featured ? " level__cta--primary" : ""}" href="/#final">Выбрать ${escapeHtml(level.name)}</a>
       </div>`,
         )
         .join("\n      ")}

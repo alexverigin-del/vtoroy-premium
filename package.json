@@ -11,6 +11,7 @@
     "web:dev": "npm run dev --workspace @vtoroy/web",
     "web:build": "npm run build --workspace @vtoroy/web",
     "web:start": "npm run start --workspace @vtoroy/web",
+    "text:audit": "python scripts/audit_text_encoding.py",
     "directus:seed": "python scripts/seed_directus.py",
     "directus:import:xlsx": "python scripts/import_devices_from_excel.py",
     "directus:catalog:template": "python scripts/create_catalog_import_template.py",

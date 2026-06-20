@@ -138,7 +138,7 @@ or replacing product/site media:
 ```bash
 npm run directus:media
 npm run directus:site-assets -- --replace
-npm run directus:normalize-device-images-sql \
+node scripts/normalize_directus_device_image_refs_sql.mjs \
   | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
 npm run directus:normalize-images -- --dry-run
 ```
@@ -146,7 +146,7 @@ npm run directus:normalize-images -- --dry-run
 Then audit the database:
 
 ```bash
-npm run directus:audit-images \
+node scripts/audit_directus_image_refs_sql.mjs \
   | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
 ```
 

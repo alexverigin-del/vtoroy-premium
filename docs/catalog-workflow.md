@@ -11,6 +11,14 @@ Use these Directus collections for product inventory:
 - `device_images` stores all product media rows.
 - `directus_files` stores uploaded files and metadata.
 
+Directus Files folders:
+
+| Folder | Use |
+| --- | --- |
+| `ISVOI Device Photos` | Product photos used by `device_images` and `devices.listing_file`. |
+| `ISVOI Site Assets` | Non-product site images for hero, store, diagnostics and page sections. |
+| `ISVOI Editorial` | Future editorial/blog/guide images. |
+
 `devices.listing_file` remains the preferred catalog card image. It is also
 mirrored as a `device_images` row with `role = card`. The storefront reads
 `device_images` first and falls back to legacy `devices.gallery` JSON only when
@@ -136,6 +144,8 @@ Production images should resolve through Directus Files, not bundled
 or replacing product/site media:
 
 ```bash
+node scripts/setup_directus_file_folders_sql.mjs \
+  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
 npm run directus:media
 npm run directus:site-assets -- --replace
 node scripts/normalize_directus_device_image_refs_sql.mjs \

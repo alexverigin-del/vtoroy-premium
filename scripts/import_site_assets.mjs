@@ -65,7 +65,7 @@ const EXTRA_SITE_FILES = new Set([
 function parseArgs(argv) {
   const args = {
     assetsRoot: "apps/web/public/assets",
-    folder: "ISVOI Site Images",
+    folder: "ISVOI Site Assets",
     dryRun: false,
     replace: false,
     uploadOnly: false,

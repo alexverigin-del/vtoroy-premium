@@ -28,6 +28,9 @@ fi
 
 echo "Using catalog-import service token (${#DIRECTUS_TOKEN} chars)."
 
+node scripts/setup_directus_file_folders_sql.mjs \
+  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database \
+      psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1
 npm run directus:media
 npm run directus:site-assets -- --replace
 node scripts/normalize_directus_device_image_refs_sql.mjs \

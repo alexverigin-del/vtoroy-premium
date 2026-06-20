@@ -165,6 +165,13 @@ For non-developers, use the operator wrapper instead of raw SSH commands:
 
 See `docs/catalog-operator-guide.md`.
 
+The preferred Studio-first workflow is `catalog_import_batches`: create a batch
+record, attach `stock.xlsx` and a ZIP with photos, then use the Directus Manual
+Flow buttons:
+
+- `ISVOI: проверить партию каталога`
+- `ISVOI: импортировать партию каталога`
+
 The older JSON media importer remains available for maintenance scripts:
 
 ```bash

@@ -157,8 +157,11 @@ async function config() {
 type CatalogImportConfig = Awaited<ReturnType<typeof config>>;
 
 function authorized(request: NextRequest, secret: string): boolean {
-  return request.headers.get("x-isvoi-import-secret") === secret
-    || request.headers.get("authorization") === `Bearer ${secret}`;
+  const expected = secret.trim();
+  const headerSecret = (request.headers.get("x-isvoi-import-secret") || "").trim();
+  const bearerSecret = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const querySecret = (request.nextUrl.searchParams.get("secret") || "").trim();
+  return headerSecret === expected || bearerSecret === expected || querySecret === expected;
 }
 
 async function directusRequest<T>(

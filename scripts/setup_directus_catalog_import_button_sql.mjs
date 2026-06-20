@@ -35,7 +35,7 @@ function flowOptions(collection) {
 }
 
 function requestOptions(apply) {
-  const url = `${webhookUrl}?batch_id={{$trigger.key}}&apply=${apply ? "true" : "false"}`;
+  const url = `${webhookUrl}?batch_id={{$trigger.key}}&apply=${apply ? "true" : "false"}&secret=${encodeURIComponent(secret)}`;
   return JSON.stringify({
     url,
     method: "POST",

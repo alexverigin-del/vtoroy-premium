@@ -142,14 +142,23 @@ container to create/update this schema and Directus Studio metadata.
 
 ## Roles & permissions
 
-- **Administrator** — full access (staff using Directus Studio).
-- **Editor** — CRUD on `devices`, `device_gallery`, `device_passports`,
-  `trade_options`; read/update on `leads`. No user/role management.
+- **Administrator** — full access for schema, users, roles, policies and
+  system settings. Keep this for maintenance, not for frontend/server tokens.
+- **ISVOI Editor** — manual catalog/photo/lead work in Studio. Can create and
+  update `devices`, manage `device_images`, upload/update file metadata, and
+  read/update `leads`. Cannot delete `devices` or manage roles/policies.
+- **ISVOI Importer** — dedicated role for import scripts and batch media sync.
+  Can create/update imported `devices`, manage imported `device_images`, and
+  upload/update files. Use it for service users, not day-to-day human editing.
 - **Public (read token)** — read-only on `devices` (and related) **where
   `status = published`** only. Used by the Next.js site. Create a dedicated
   static token or a least-privilege service account; never expose the admin token.
 - **Lead intake (create-only)** — a narrow role/token allowing `create` on
   `leads` from the public site form, with no read access.
+
+Run `npm run directus:setup:editor` after catalog/leads setup to apply Studio
+field groups, required flags, hints, display templates and the
+`ISVOI Editor` / `ISVOI Importer` role policies.
 
 ## Keeping types in sync
 

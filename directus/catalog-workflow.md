@@ -91,8 +91,51 @@ npm run directus:setup:catalog \
 
 Then restart Directus or flush cache so Studio/API sees new schema metadata.
 
+Run the editor setup after `directus:setup:catalog` and
+`directus:setup:leads`:
+
+```bash
+npm run directus:setup:editor \
+  | docker compose exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+```
+
+This organizes Directus Studio for day-to-day catalog work:
+
+- `devices` is split into editor-facing groups: publication, identity, price,
+  media, copy, structured JSON and import/audit.
+- Key fields are marked required in Studio: slug, public status, stock status,
+  content status, category, title, price and price text.
+- Field notes explain what is public, what is legacy fallback, and what should
+  normally be changed only by imports.
+- Collection display templates make relations readable in Studio lists:
+  `devices` shows title, price and stock status; `device_images` shows parent
+  device, role and label; `leads` shows kind, contact and processing status.
+- The existing `Administrator` role remains the admin role. `ISVOI Editor` is
+  for manual catalog/photo/lead work. `ISVOI Importer` is for batch imports and
+  media sync.
+
 On Beget, Python dependencies are installed in `/opt/isvoi/.venv`; either
 activate that venv or run scripts as `.venv/bin/python scripts/...`.
+
+## Studio roles
+
+Use three operating roles:
+
+- `Administrator`: full Directus administration, schema changes, users, roles
+  and server settings.
+- `ISVOI Editor`: manual catalog editing. Can create/update `devices` without
+  deleting them, manage `device_images`, upload/update files, and process
+  `leads`.
+- `ISVOI Importer`: import automation. Can create/update imported device rows,
+  replace imported media rows and upload files, but should not be used for
+  normal manual editing or user management.
+
+Recommended account split:
+
+- Human editors get `ISVOI Editor`.
+- Import scripts use a dedicated service user with `ISVOI Importer`.
+- Admin accounts are kept for maintenance only and should not be used in
+  frontend/server tokens.
 
 ## Import workflow
 

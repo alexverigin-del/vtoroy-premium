@@ -28,7 +28,7 @@ fi
 
 echo "Using catalog-import service token (${#DIRECTUS_TOKEN} chars)."
 
-npm run directus:media -- --replace
+npm run directus:media
 npm run directus:site-assets -- --replace
 npm run directus:normalize-images -- --dry-run
 npm run directus:normalize-images

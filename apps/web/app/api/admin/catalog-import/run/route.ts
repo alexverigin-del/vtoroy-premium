@@ -113,15 +113,45 @@ async function resolveRepoRoot(): Promise<string> {
   return process.cwd();
 }
 
-function config() {
-  const directusUrl = (process.env.DIRECTUS_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || "").replace(/\/+$/, "");
-  const directusToken = process.env.CATALOG_IMPORT_DIRECTUS_TOKEN || process.env.DIRECTUS_TOKEN || "";
-  const secret = process.env.CATALOG_IMPORT_WEBHOOK_SECRET || "";
-  const workRoot = process.env.CATALOG_IMPORT_WORKDIR || "/opt/isvoi/imports/studio";
+async function readEnvFile(repoRoot: string): Promise<Record<string, string>> {
+  const candidates = [
+    path.join(repoRoot, "apps", "web", ".env.local"),
+    path.join(process.cwd(), ".env.local"),
+  ];
+  for (const candidate of candidates) {
+    try {
+      const content = await fs.readFile(candidate, "utf8");
+      const values: Record<string, string> = {};
+      for (const line of content.split(/\r?\n/)) {
+        if (!line || line.trimStart().startsWith("#") || !line.includes("=")) continue;
+        const [key, ...parts] = line.split("=");
+        values[key.trim()] = parts.join("=").trim();
+      }
+      return values;
+    } catch {
+      // Try next candidate.
+    }
+  }
+  return {};
+}
+
+async function config() {
+  const repoRoot = await resolveRepoRoot();
+  const fileEnv = await readEnvFile(repoRoot);
+  const directusUrl = (
+    process.env.DIRECTUS_URL
+    || fileEnv.DIRECTUS_URL
+    || process.env.NEXT_PUBLIC_DIRECTUS_URL
+    || fileEnv.NEXT_PUBLIC_DIRECTUS_URL
+    || ""
+  ).replace(/\/+$/, "");
+  const directusToken = process.env.CATALOG_IMPORT_DIRECTUS_TOKEN || fileEnv.CATALOG_IMPORT_DIRECTUS_TOKEN || process.env.DIRECTUS_TOKEN || "";
+  const secret = process.env.CATALOG_IMPORT_WEBHOOK_SECRET || fileEnv.CATALOG_IMPORT_WEBHOOK_SECRET || "";
+  const workRoot = process.env.CATALOG_IMPORT_WORKDIR || fileEnv.CATALOG_IMPORT_WORKDIR || "/opt/isvoi/imports/studio";
 
   if (!directusUrl || !directusToken) throw new Error("Directus URL/token is not configured.");
   if (!secret) throw new Error("Catalog import webhook secret is not configured.");
-  return { directusUrl, directusToken, secret, workRoot };
+  return { directusUrl, directusToken, secret, workRoot, repoRoot };
 }
 
 function authorized(request: NextRequest, secret: string): boolean {
@@ -178,7 +208,7 @@ async function runCommand(command: string, cwd: string, env: NodeJS.ProcessEnv):
 export async function POST(request: NextRequest) {
   let cfg: ReturnType<typeof config>;
   try {
-    cfg = config();
+    cfg = await config();
   } catch (error) {
     return NextResponse.json({ ok: false, error: (error as Error).message }, { status: 500 });
   }
@@ -230,10 +260,9 @@ export async function POST(request: NextRequest) {
     await downloadDirectusFile(cfg, archiveId, archivePath);
     await fs.mkdir(incomingPath, { recursive: true });
 
-    const repoRoot = await resolveRepoRoot();
     const unzipLog = await runCommand(
       `unzip -q -o ${shellQuote(archivePath)} -d ${shellQuote(incomingPath)}`,
-      repoRoot,
+      cfg.repoRoot,
       process.env,
     );
     const command = [
@@ -250,7 +279,7 @@ export async function POST(request: NextRequest) {
       ].filter(Boolean).join(" "),
     ].join(" && ");
 
-    const output = await runCommand(command, repoRoot, {
+    const output = await runCommand(command, cfg.repoRoot, {
       ...process.env,
       DIRECTUS_URL: cfg.directusUrl,
       DIRECTUS_TOKEN: cfg.directusToken,

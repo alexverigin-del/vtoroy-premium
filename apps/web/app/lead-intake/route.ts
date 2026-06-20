@@ -72,7 +72,11 @@ async function parseLeadRequest(request: NextRequest): Promise<LeadRequest> {
   const contentType = request.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json")) {
-    return (await request.json()) as LeadRequest;
+    try {
+      return (await request.json()) as LeadRequest;
+    } catch {
+      return {};
+    }
   }
 
   if (contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded")) {

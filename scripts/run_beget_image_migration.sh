@@ -30,8 +30,10 @@ echo "Using catalog-import service token (${#DIRECTUS_TOKEN} chars)."
 
 npm run directus:media
 npm run directus:site-assets -- --replace
+npm run directus:normalize-device-images-sql \
+  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database \
+      psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1
 npm run directus:normalize-images -- --dry-run
-npm run directus:normalize-images
 npm run directus:audit-images \
   | docker compose -f infra/directus-beget/docker-compose.yml exec -T database \
       psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1

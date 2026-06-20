@@ -8,22 +8,56 @@
  */
 
 process.stdout.write(String.raw`
+CREATE OR REPLACE FUNCTION pg_temp.isvoi_is_local_asset(p_value text)
+RETURNS boolean
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT coalesce(p_value, '') LIKE 'assets/%'
+      OR coalesce(p_value, '') LIKE '/assets/%';
+$$;
+
+CREATE OR REPLACE FUNCTION pg_temp.isvoi_json_has_local_asset(p_value jsonb)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+  WITH RECURSIVE walk(value) AS (
+    SELECT p_value
+    UNION ALL
+    SELECT child.value
+    FROM walk
+    CROSS JOIN LATERAL (
+      SELECT e.value
+      FROM jsonb_each(CASE WHEN jsonb_typeof(walk.value) = 'object' THEN walk.value ELSE '{}'::jsonb END) AS e
+      UNION ALL
+      SELECT a.value
+      FROM jsonb_array_elements(CASE WHEN jsonb_typeof(walk.value) = 'array' THEN walk.value ELSE '[]'::jsonb END) AS a
+    ) AS child
+  )
+  SELECT EXISTS (
+    SELECT 1
+    FROM walk
+    WHERE jsonb_typeof(value) = 'string'
+      AND pg_temp.isvoi_is_local_asset(value #>> '{}')
+  );
+$$;
+
 SELECT 'devices.listing_image.local' AS check_name, count(*)::text AS value
 FROM devices
-WHERE coalesce(listing_image, '') LIKE 'assets/%'
-   OR coalesce(listing_image, '') LIKE '/assets/%'
+WHERE pg_temp.isvoi_is_local_asset(listing_image)
 UNION ALL
 SELECT 'devices.gallery.local', count(*)::text
 FROM devices
-WHERE gallery::text LIKE '%assets/%'
+WHERE pg_temp.isvoi_json_has_local_asset(gallery::jsonb)
 UNION ALL
 SELECT 'devices.passport.local', count(*)::text
 FROM devices
-WHERE passport::text LIKE '%assets/%'
+WHERE pg_temp.isvoi_json_has_local_asset(passport::jsonb)
 UNION ALL
 SELECT 'page_sections.content.local', count(*)::text
 FROM page_sections
-WHERE content::text LIKE '%assets/%'
+WHERE pg_temp.isvoi_json_has_local_asset(content::jsonb)
 UNION ALL
 SELECT 'devices.with_listing_file', count(*)::text
 FROM devices

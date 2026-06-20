@@ -136,10 +136,11 @@ Production images should resolve through Directus Files, not bundled
 or replacing product/site media:
 
 ```bash
-npm run directus:media -- --replace
+npm run directus:media
 npm run directus:site-assets -- --replace
+npm run directus:normalize-device-images-sql \
+  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
 npm run directus:normalize-images -- --dry-run
-npm run directus:normalize-images
 ```
 
 Then audit the database:

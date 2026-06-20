@@ -31,6 +31,7 @@ type StoredLead = {
   kind: string;
   status: "new";
   priority: "normal";
+  contact_channel: string;
   name: string;
   contact: string;
   device: string;
@@ -72,6 +73,15 @@ function inferKind(kind: string, scenario: string): string {
   ) return "purchase";
   if (value.includes("похож") || value.includes("альтернатив")) return "selection";
   return "selection";
+}
+
+function inferContactChannel(contact: string): string {
+  const value = contact.toLowerCase();
+  if (value.includes("@") && !value.includes("t.me/") && !value.includes("telegram")) return "email";
+  if (value.includes("telegram") || value.includes("t.me/") || value.startsWith("@")) return "telegram";
+  if (value.includes("whatsapp") || value.includes("wa.me/")) return "whatsapp";
+  if (/[0-9][0-9\s()+-]{5,}/.test(value)) return "phone";
+  return "unknown";
 }
 
 async function parseLeadRequest(request: NextRequest): Promise<LeadRequest> {
@@ -119,6 +129,7 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       kind: lead.kind,
       status: lead.status,
       priority: lead.priority,
+      contact_channel: lead.contact_channel,
       name: lead.name,
       contact: lead.contact,
       device: lead.device,
@@ -201,6 +212,7 @@ export async function POST(request: NextRequest) {
     kind: inferKind(text(body.kind, 64), scenario),
     status: "new",
     priority: "normal",
+    contact_channel: inferContactChannel(contact),
     name: text(body.name, 160),
     contact,
     device: text(body.device, 255),

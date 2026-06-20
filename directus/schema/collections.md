@@ -119,8 +119,13 @@ create-only Directus token; Public must not have write access.
 | `id`           | uuid (PK)        |                                                             |
 | `created_at`   | timestamp        | Auto.                                                       |
 | `updated_at`   | timestamp        | Auto via trigger.                                           |
-| `status`       | string enum      | `new`, `in_progress`, `contacted`, `won`, `lost`, `archived`. |
+| `status`       | string enum      | `new`, `in_progress`, `waiting_client`, `contacted`, `won`, `lost`, `archived`. |
 | `priority`     | string enum      | `normal`, `high`.                                           |
+| `assigned_to`  | M2O → `directus_users` | Responsible manager.                                  |
+| `contact_channel` | string enum   | `unknown`, `phone`, `telegram`, `whatsapp`, `email`.         |
+| `next_action_at` | timestamp      | When the manager should return to the lead.                  |
+| `last_contacted_at` | timestamp   | Last contact attempt / conversation.                         |
+| `manager_note` | text             | Current short internal note.                                 |
 | `kind`         | string enum      | `selection`, `purchase`, `trade`, `upgrade`, `club`, `support`. |
 | `scenario`     | string           | Selected user scenario / CTA intent.                        |
 | `name`         | string           | Optional.                                                   |
@@ -135,8 +140,26 @@ create-only Directus token; Public must not have write access.
 | `utm_*`        | string           | UTM source/medium/campaign/content/term.                    |
 | `user_agent`   | text             | Request user-agent for debugging, not for public display.   |
 
+## `lead_comments` (lead processing history)
+
+One lead can have many manager comments. Use this for call notes, agreements,
+follow-up reminders and issues. Keep the mutable `leads.manager_note` short;
+put history here.
+
+| Field            | Type                  | Notes                                      |
+| ---------------- | --------------------- | ------------------------------------------ |
+| `id`             | uuid (PK)             |                                            |
+| `lead`           | M2O → `leads`          | Required parent lead.                      |
+| `created_at`     | timestamp             | Auto.                                      |
+| `updated_at`     | timestamp             | Auto via trigger.                          |
+| `created_by`     | M2O → `directus_users` | Optional author reference.                 |
+| `comment`        | text                  | Required working note.                     |
+| `outcome`        | string enum           | `call`, `message`, `agreement`, `follow_up`, `issue`. |
+| `next_action_at` | timestamp             | Follow-up date from this comment.          |
+
 Run `npm run directus:setup:leads` and pipe it into the production Postgres
-container to create/update this schema and Directus Studio metadata.
+container to create/update this schema, Directus Studio metadata and the
+`Обработка заявок` table preset for the `ISVOI Editor` role.
 
 ---
 

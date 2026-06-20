@@ -261,7 +261,31 @@ SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'read', 'id,fil
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'create', 'title,description,folder,file,tags', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'update', 'title,description,folder,tags,focal_point_x,focal_point_y', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'leads', 'read', '*', NULL);
-SELECT isvoi_upsert_permission('ISVOI Editor', 'leads', 'update', 'status,priority,kind,scenario,name,contact,device,device_id,message', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'leads',
+  'update',
+  'status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term',
+  NULL,
+  '{"status":{"_in":["new","in_progress","waiting_client","contacted","won","lost","archived"]},"priority":{"_in":["normal","high"]}}'::json
+);
+SELECT isvoi_upsert_permission('ISVOI Editor', 'lead_comments', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'lead_comments',
+  'create',
+  'lead,created_by,comment,outcome,next_action_at',
+  NULL,
+  '{"lead":{"_nnull":true},"comment":{"_nnull":true}}'::json
+);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'lead_comments',
+  'update',
+  'created_by,comment,outcome,next_action_at',
+  NULL,
+  '{"comment":{"_nnull":true}}'::json
+);
 
 -- Importer: automation/import work. Can delete media rows to replace import batches, but not leads.
 SELECT isvoi_upsert_permission('ISVOI Importer', 'devices', 'read', '*', NULL);

@@ -137,6 +137,26 @@ Recommended account split:
 - Admin accounts are kept for maintenance only and should not be used in
   frontend/server tokens.
 
+## Lead processing
+
+Use the `leads` collection as the working queue until Telegram automation is
+enabled.
+
+Recommended flow:
+
+1. Open the `Обработка заявок` preset in `leads`.
+2. Assign `assigned_to`, check `kind`, `device_id`, `source_path` and UTM.
+3. Move `status` from `new` to `in_progress`.
+4. Set `contact_channel`, `last_contacted_at` and, if needed,
+   `next_action_at`.
+5. Keep the current short context in `manager_note`.
+6. Add durable call/message history in `lead_comments`.
+7. Finish with `won`, `lost` or `archived`; use `waiting_client` when the next
+   move is on the client side.
+
+The public site can only create lead rows through the lead-intake policy. Manual
+processing stays in the `ISVOI Editor` role.
+
 ## Import workflow
 
 1. Generate the import template:

@@ -72,6 +72,9 @@ npm run directus:setup:catalog \
 
 Then restart Directus or flush cache so Studio/API sees new schema metadata.
 
+On Beget, Python dependencies are installed in `/opt/isvoi/.venv`; either
+activate that venv or run scripts as `.venv/bin/python scripts/...`.
+
 ## Import workflow
 
 1. Generate the import template:

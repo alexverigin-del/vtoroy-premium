@@ -14,9 +14,9 @@ export default async function HomePage() {
 
   return (
     <>
-      <link rel="stylesheet" href="/styles.css?v=20260616a" />
+      <link rel="stylesheet" href="/styles.css?v=20260620catalogcore" />
       <div dangerouslySetInnerHTML={{ __html: renderHomeMarkup(page?.sections, siteChrome(settings, navigation), devices) }} />
-      <Script src="/interactions.js?v=20260619catalog" strategy="afterInteractive" />
+      <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />
     </>
   );
 }

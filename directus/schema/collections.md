@@ -27,7 +27,7 @@ Field types use Directus terminology. `M2O` = many-to-one, `O2M` = one-to-many,
 | ----------------- | --------------- | -------------------------------------------------- |
 | `id`              | string (PK)     | Slug, e.g. `iphone-13-pro`. Used in URLs.          |
 | `status`          | string (enum)   | `draft` / `published` / `archived`. Gate public.   |
-| `stock_status`    | string (enum)   | `in_stock`, `reserved`, `sold`, `service`, `hidden`. |
+| `stock_status`    | string (enum)   | `available`, `reserved`, `sold`, `hidden`. Legacy `in_stock` is normalized to `available`. |
 | `content_status`  | string (enum)   | `needs_content`, `needs_photo`, `review`, `ready`. |
 | `sort`            | integer         | Manual ordering.                                   |
 | `category`        | string (enum)   | `iphone` / `ipad` / `macbook` / …                  |

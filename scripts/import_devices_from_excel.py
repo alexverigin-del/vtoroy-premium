@@ -87,6 +87,15 @@ HEADER_MAP = {
 JSON_FIELDS = {"tags", "gallery", "passport", "trade"}
 INTEGER_FIELDS = {"price", "sort"}
 BOOLEAN_FIELDS = {"has_detail_page"}
+STOCK_STATUS_ALIASES = {
+    "": "available",
+    "in_stock": "available",
+    "available": "available",
+    "reserved": "reserved",
+    "sold": "sold",
+    "service": "hidden",
+    "hidden": "hidden",
+}
 DEVICE_FIELDS = {
     "id",
     "status",
@@ -144,7 +153,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source-system", default="xlsx", help="Default devices.source_system for imported rows.")
     parser.add_argument("--import-batch", help="Default devices.import_batch and device_images.import_batch.")
     parser.add_argument("--default-status", default="draft", choices=("draft", "published", "archived"), help="Default devices.status for new/imported rows.")
-    parser.add_argument("--default-stock-status", default="in_stock", help="Default devices.stock_status.")
+    parser.add_argument("--default-stock-status", default="available", choices=("available", "reserved", "sold", "hidden", "in_stock"), help="Default devices.stock_status.")
     parser.add_argument("--allow-extra-fields", action="store_true", help="Allow columns that are not known Directus device fields.")
     parser.add_argument("--dry-run", action="store_true", help="Parse and validate only; do not write.")
     return parser.parse_args()
@@ -199,6 +208,13 @@ def parse_bool(value: Any) -> bool:
     return text in {"1", "true", "yes", "y", "да", "истина"}
 
 
+def parse_stock_status(value: Any) -> str:
+    key = str(value or "").strip().lower()
+    if key not in STOCK_STATUS_ALIASES:
+        raise ValueError(f"Unknown stock_status `{value}`. Use available, reserved, sold or hidden.")
+    return STOCK_STATUS_ALIASES[key]
+
+
 def parse_json_field(field: str, value: Any) -> Any:
     if empty(value):
         return [] if field in {"tags", "gallery"} else {}
@@ -225,6 +241,8 @@ def coerce(field: str, value: Any) -> Any:
         return int(value)
     if field in BOOLEAN_FIELDS:
         return parse_bool(value)
+    if field == "stock_status":
+        return parse_stock_status(value)
     return value
 
 
@@ -272,10 +290,11 @@ def apply_import_defaults(
     default_stock_status: str,
 ) -> list[dict[str, Any]]:
     imported_at = datetime.now(timezone.utc).isoformat()
+    normalized_default_stock_status = parse_stock_status(default_stock_status)
     for row in rows:
         row.setdefault("source_system", source_system)
         row.setdefault("content_status", "review" if any(key.startswith("image_") for key in row) else "needs_photo")
-        row.setdefault("stock_status", default_stock_status)
+        row.setdefault("stock_status", normalized_default_stock_status)
         row.setdefault("status", default_status)
         if import_batch:
             row.setdefault("import_batch", import_batch)

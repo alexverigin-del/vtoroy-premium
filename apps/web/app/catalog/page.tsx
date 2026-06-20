@@ -21,13 +21,13 @@ export default async function CatalogPage() {
 
   return (
     <>
-      <link rel="stylesheet" href="/styles.css?v=20260616a" />
+      <link rel="stylesheet" href="/styles.css?v=20260620catalogcore" />
       <div
         dangerouslySetInnerHTML={{
           __html: renderCatalogPageMarkup(siteChrome(settings, navigation), devices, directusConfig.enabled),
         }}
       />
-      <Script src="/interactions.js?v=20260619catalog" strategy="afterInteractive" />
+      <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />
     </>
   );
 }

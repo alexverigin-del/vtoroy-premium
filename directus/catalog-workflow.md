@@ -17,8 +17,8 @@ into a pile of almost-identical product cards.
 Use three separate concepts instead of overloading one field:
 
 - `status`: public visibility. Use `draft`, `published`, `archived`.
-- `stock_status`: operational state. Use `in_stock`, `reserved`, `sold`,
-  `service`, `hidden`.
+- `stock_status`: operational state. Use `available`, `reserved`, `sold`,
+  `hidden`. Legacy imports with `in_stock` are normalized to `available`.
 - `content_status`: editorial readiness. Use `needs_content`, `needs_photo`,
   `review`, `ready`.
 
@@ -28,8 +28,16 @@ Recommended publishing rule:
 2. Fill required product fields and set `content_status = ready`.
 3. Add at least one `device_images` row with `role = card`,
    `status = published`, `shot_status = approved`.
-4. Set `stock_status = in_stock`.
+4. Set `stock_status = available`.
 5. Publish with `status = published`.
+
+Public storefront rule:
+
+- `available`, `reserved` and `sold` can be shown publicly with a visible
+  status badge.
+- `hidden` is never rendered in the public catalog or product route.
+- Related-device blocks prefer `available` / `reserved` rows and use sold rows
+  only as a fallback when no live alternatives exist.
 
 ## Import keys
 

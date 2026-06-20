@@ -451,12 +451,40 @@ h1, h2, h3, h4, p { margin: 0; }
 
 /* ---------- Catalog prototype ---------- */
 .catalog-section { background: var(--color-white); }
+.catalog-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-16);
+  align-items: start;
+  margin: 0 auto var(--s-40);
+}
 .catalog-controls {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: var(--s-8);
   flex-wrap: wrap;
-  margin: 0 auto var(--s-40);
+  margin: 0;
+}
+.catalog-controls--status {
+  grid-column: 1;
+}
+.catalog-sort {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  gap: 6px;
+  min-width: 210px;
+  color: var(--color-ash);
+  font-size: var(--text-caption);
+}
+.catalog-sort select {
+  min-height: 38px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--r-pill);
+  background: var(--color-white);
+  color: var(--color-graphite);
+  padding: 7px 36px 7px 14px;
+  font: inherit;
 }
 .filter-chip {
   border: 1px solid var(--color-hairline);
@@ -564,6 +592,41 @@ h1, h2, h3, h4, p { margin: 0; }
   padding: 22px;
   flex: 1;
 }
+.device-card__badges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-8);
+  min-height: 24px;
+}
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border-radius: var(--r-pill);
+  padding: 4px 9px;
+  background: var(--color-frost);
+  color: var(--color-graphite);
+  font-size: var(--text-caption);
+  font-weight: var(--w-semibold);
+}
+.stock-badge--available {
+  background: rgba(52,199,89,0.1);
+  color: #237a3b;
+}
+.stock-badge--reserved {
+  background: rgba(255,159,10,0.13);
+  color: #946000;
+}
+.stock-badge--sold {
+  background: rgba(110,110,115,0.12);
+  color: var(--color-ash);
+}
+.device-card__updated {
+  color: var(--color-ash);
+  font-size: var(--text-caption);
+  white-space: nowrap;
+}
 .device-card__top {
   display: flex;
   justify-content: space-between;
@@ -619,6 +682,14 @@ h1, h2, h3, h4, p { margin: 0; }
   font-weight: var(--w-semibold);
 }
 .device-card__cta { width: 100%; font-size: var(--text-body-sm); padding: 10px 14px; }
+@media (max-width: 760px) {
+  .catalog-toolbar { grid-template-columns: 1fr; }
+  .catalog-sort {
+    grid-column: auto;
+    grid-row: auto;
+    min-width: 0;
+  }
+}
 @media (max-width: 1120px) { .catalog-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .catalog-grid { grid-template-columns: 1fr; } }
 

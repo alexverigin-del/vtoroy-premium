@@ -37,10 +37,52 @@ function compact(values: Array<string | undefined | null | false>): string[] {
   return values.filter(Boolean) as string[];
 }
 
+function normalizedStockStatus(device: Device): string {
+  const raw = (device.stockStatus || "available").toLowerCase();
+  if (!raw || raw === "in_stock") return "available";
+  if (raw === "service") return "hidden";
+  return raw;
+}
+
+function isActionableDevice(device: Device): boolean {
+  const status = normalizedStockStatus(device);
+  return status !== "hidden" && status !== "sold";
+}
+
+function stockStatusLabel(device: Device): string {
+  if (device.stockStatusLabel) return device.stockStatusLabel;
+  switch (normalizedStockStatus(device)) {
+    case "reserved":
+      return "Бронь";
+    case "sold":
+      return "Продано";
+    default:
+      return "В наличии";
+  }
+}
+
+function updatedText(device: Device): string {
+  if (device.updatedText) return device.updatedText;
+  if (!device.updatedAt) return "";
+  const date = new Date(device.updatedAt);
+  if (Number.isNaN(date.getTime())) return "";
+  return `Обновлено ${new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date)}`;
+}
+
 function relatedDevices(device: Device, devices: Device[]): Device[] {
-  const sameCategory = devices.filter((item) => item.id !== device.id && item.category === device.category);
-  const fallback = devices.filter((item) => item.id !== device.id);
-  return (sameCategory.length > 0 ? sameCategory : fallback).slice(0, 3);
+  const candidates = devices
+    .filter((item) => item.id !== device.id && normalizedStockStatus(item) !== "hidden")
+    .sort((a, b) => Number(a.sort ?? 0) - Number(b.sort ?? 0));
+  const actionable = candidates.filter(isActionableDevice);
+  const pool = actionable.length > 0 ? actionable : candidates;
+  const sameCategory = pool.filter((item) => item.category === device.category);
+  const sameModel = pool.filter((item) => item.model && item.model === device.model);
+  const fallback = sameModel.length > 0 ? sameModel : sameCategory.length > 0 ? sameCategory : pool;
+  return fallback.slice(0, 3);
 }
 
 function DetailCard({
@@ -79,6 +121,7 @@ export default async function DevicePage({
   const related = relatedDevices(device, devices);
   const conditionNotes = device.passport.condition.notes ?? [];
   const tradeOptions = device.trade.options ?? [];
+  const lastUpdated = updatedText(device);
 
   return (
     <main className="bg-surface">
@@ -108,6 +151,16 @@ export default async function DevicePage({
               </span>
             </div>
             <p className="mt-2 text-sm text-muted">{device.availability}</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted">
+              <span className="rounded-pill bg-surface px-3 py-1 font-medium">
+                {stockStatusLabel(device)}
+              </span>
+              {lastUpdated ? (
+                <span className="rounded-pill bg-surface px-3 py-1">
+                  {lastUpdated}
+                </span>
+              ) : null}
+            </div>
 
             <div className="mt-6 grid gap-2">
               {facts.map((fact) => (

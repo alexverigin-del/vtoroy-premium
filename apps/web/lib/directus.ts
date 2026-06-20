@@ -144,6 +144,28 @@ function bool(value: unknown, fallback = false): boolean {
   return typeof value === "boolean" ? value : fallback;
 }
 
+function normalizeStockStatus(value: unknown): string {
+  const raw = str(value, "available").trim().toLowerCase();
+  if (!raw || raw === "in_stock") return "available";
+  if (raw === "service") return "hidden";
+  return raw;
+}
+
+function stockStatusLabel(status: string): string {
+  switch (status) {
+    case "available":
+      return "В наличии";
+    case "reserved":
+      return "Бронь";
+    case "sold":
+      return "Продано";
+    case "hidden":
+      return "Скрыто";
+    default:
+      return status;
+  }
+}
+
 // JSON columns may arrive already parsed (object/array) or as a string.
 function json<T>(value: unknown, fallback: T): T {
   if (value == null) return fallback;
@@ -235,10 +257,12 @@ function cardImageFromDeviceImages(rows: DeviceImageRow[] = []): string {
 export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: DeviceImageRow[] = []): Device {
   const directusGallery = mapDeviceImagesFromDirectus(imageRows);
   const detailGallery = directusGallery.filter((image) => !["card", "listing"].includes((image.role ?? "").toLowerCase()));
+  const stockStatus = normalizeStockStatus(row.stock_status);
   return {
     id: str(row.id),
     tags: json<string[]>(row.tags, []),
     category: str(row.category),
+    sort: num(row.sort),
     title: str(row.title),
     model: str(row.model),
     specs: str(row.specs),
@@ -256,6 +280,9 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: D
     exit: str(row.exit),
     exitText: str(row.exit_text),
     availability: str(row.availability),
+    stockStatus,
+    stockStatusLabel: stockStatusLabel(stockStatus),
+    updatedAt: str(row.updated_at) || str(row.date_updated),
     shortDescription: str(row.short_description),
     headline: str(row.headline),
     listingImage: cardImageFromDeviceImages(imageRows) || mediaUrl(row.listing_file, "card") || mediaUrl(row.listing_image),
@@ -285,7 +312,7 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: D
 export async function getPublishedDevices(): Promise<Device[]> {
   const [data, imageRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
-    "/items/devices?filter[status][_eq]=published&fields=*&sort=sort",
+    "/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=*&sort=sort,-updated_at",
       { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
@@ -295,9 +322,11 @@ export async function getPublishedDevices(): Promise<Device[]> {
   ]);
   if (data && data.length > 0) {
     const images = deviceImagesByDevice(imageRows);
-    return data.map((row) => mapDeviceFromDirectus(row, images.get(str(row.id)) ?? []));
+    return data
+      .map((row) => mapDeviceFromDirectus(row, images.get(str(row.id)) ?? []))
+      .filter((device) => device.stockStatus !== "hidden");
   }
-  return fallbackDevices;
+  return fallbackDevices.filter((device) => device.stockStatus !== "hidden");
 }
 
 /**
@@ -316,8 +345,11 @@ export async function getDeviceBySlug(slug: string): Promise<Device | null> {
       { cache: "no-store" },
     ),
   ]);
-  if (data && data.length > 0) return mapDeviceFromDirectus(data[0], imageRows ?? []);
-  return fallbackDevices.find((d) => d.id === slug) ?? null;
+  if (data && data.length > 0) {
+    const device = mapDeviceFromDirectus(data[0], imageRows ?? []);
+    return device.stockStatus === "hidden" ? null : device;
+  }
+  return fallbackDevices.find((d) => d.id === slug && d.stockStatus !== "hidden") ?? null;
 }
 
 // ---------------------------------------------------------------------------

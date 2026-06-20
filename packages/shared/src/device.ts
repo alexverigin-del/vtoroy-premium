@@ -9,6 +9,7 @@
 // codegen. Until then, treat this file as the single source of truth.
 
 export type DeviceCategory = "iphone" | "ipad" | "macbook" | string;
+export type DeviceStockStatus = "available" | "reserved" | "sold" | "hidden" | string;
 
 /** Grade buckets used in the catalog/passport. Free-form to allow "A−", "B+", etc. */
 export type DeviceGrade = string;
@@ -105,6 +106,11 @@ export interface Device {
   exit: string;
   exitText: string;
   availability: string;
+  stockStatus?: DeviceStockStatus;
+  stockStatusLabel?: string;
+  sort?: number;
+  updatedAt?: string;
+  updatedText?: string;
   shortDescription: string;
   headline: string;
   listingImage: string;

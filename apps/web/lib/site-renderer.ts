@@ -110,17 +110,64 @@ function deviceHref(device: Device): string {
   return `/device/${encodeURIComponent(device.id)}`;
 }
 
+function normalizeDeviceStockStatus(device: Device): string {
+  const raw = (device.stockStatus || "available").trim().toLowerCase();
+  if (!raw || raw === "in_stock") return "available";
+  if (raw === "service") return "hidden";
+  return raw;
+}
+
+function deviceStockLabel(status: string): string {
+  switch (status) {
+    case "available":
+      return "В наличии";
+    case "reserved":
+      return "Бронь";
+    case "sold":
+      return "Продано";
+    default:
+      return status;
+  }
+}
+
+function deviceStatusOrder(status: string): number {
+  switch (status) {
+    case "available":
+      return 1;
+    case "reserved":
+      return 2;
+    case "sold":
+      return 3;
+    default:
+      return 9;
+  }
+}
+
+function deviceUpdatedText(device: Device): string {
+  if (device.updatedText) return device.updatedText;
+  if (!device.updatedAt) return "";
+  const date = new Date(device.updatedAt);
+  if (Number.isNaN(date.getTime())) return "";
+  return `Обновлено ${new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date)}`;
+}
+
 function renderDevicePreviewCard(device: Device): string {
+  const stockStatus = normalizeDeviceStockStatus(device);
   const tags = [device.category, ...device.tags].filter(Boolean).join(" ");
   const image = normalizeAssetUrl(device.listingImage);
   const subtitle = [device.specs, device.color].filter(Boolean).join(" · ");
+  const updatedText = deviceUpdatedText(device);
   const meta = [
     device.metaBattery || device.batteryText,
     device.warrantyText || (device.warranty ? `Гарантия ${device.warranty}` : ""),
     device.exitText || (device.exit ? `Выход ${device.exit}` : ""),
   ].filter(Boolean);
 
-  return `<article class="device-card" data-device="${escapeHtml(device.id)}" data-type="${escapeHtml(tags)}">
+  return `<article class="device-card" data-device="${escapeHtml(device.id)}" data-type="${escapeHtml(tags)}" data-category="${escapeHtml(device.category)}" data-status="${escapeHtml(stockStatus)}" data-status-order="${deviceStatusOrder(stockStatus)}" data-price="${Number(device.price || 0)}" data-sort="${Number(device.sort ?? 0)}" data-updated="${escapeHtml(device.updatedAt || "")}">
       <div class="device-card__media device-card__media--photo">
         ${
           image
@@ -129,6 +176,10 @@ function renderDevicePreviewCard(device: Device): string {
         }
       </div>
       <div class="device-card__body">
+        <div class="device-card__badges">
+          <span class="stock-badge stock-badge--${escapeHtml(stockStatus)}">${escapeHtml(device.stockStatusLabel || deviceStockLabel(stockStatus))}</span>
+          ${updatedText ? `<span class="device-card__updated">${escapeHtml(updatedText)}</span>` : ""}
+        </div>
         <div class="device-card__top">
           <div>
             <h3>${escapeHtml(device.title)}</h3>
@@ -749,6 +800,7 @@ function renderPathRouterSection(section: PageSection): string {
 
 function renderCatalogPreviewSection(section: PageSection, devices: Device[] = []): string {
   const filters = filterList(section.content.filters);
+  const statusFilters = filterList(section.content.statusFilters);
   const headlineTag = section.content.headingTag === "h1" ? "h1" : "h2";
   const chips =
     filters.length > 0
@@ -759,6 +811,15 @@ function renderCatalogPreviewSection(section: PageSection, devices: Device[] = [
           { label: "MacBook", value: "macbook" },
           { label: "iPad", value: "ipad" },
           { label: "Для Club", value: "club" },
+        ];
+  const statusChips =
+    statusFilters.length > 0
+      ? statusFilters
+      : [
+          { label: "Все статусы", value: "all" },
+          { label: "В наличии", value: "available" },
+          { label: "Бронь", value: "reserved" },
+          { label: "Продано", value: "sold" },
         ];
   const actions =
     section.primaryCtaLabel || section.secondaryCtaLabel
@@ -779,7 +840,8 @@ function renderCatalogPreviewSection(section: PageSection, devices: Device[] = [
       }
     </div>`
       : "";
-  const cards = devices.map(renderDevicePreviewCard).join("\n      ");
+  const visibleDevices = devices.filter((device) => normalizeDeviceStockStatus(device) !== "hidden");
+  const cards = visibleDevices.map(renderDevicePreviewCard).join("\n      ");
   const emptyState = `<p class="lead text-wrap">Каталог пока пуст. Добавьте опубликованные устройства в Directus.</p>`;
 
   return `<!-- ============== CATALOG ============== -->
@@ -791,15 +853,37 @@ function renderCatalogPreviewSection(section: PageSection, devices: Device[] = [
       ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
     </div>
 
-    <div class="catalog-controls reveal" aria-label="${escapeHtml(section.subheadline || "Фильтры каталога")}">
-      ${chips
-        .map(
-          (filter, index) =>
-            `<button class="filter-chip${index === 0 ? " is-active" : ""}" type="button" data-filter="${escapeHtml(
-              filter.value,
-            )}">${escapeHtml(filter.label)}</button>`,
-        )
-        .join("\n      ")}
+    <div class="catalog-toolbar reveal">
+      <div class="catalog-controls" data-filter-group="category" aria-label="${escapeHtml(section.subheadline || "Фильтры каталога")}">
+        ${chips
+          .map(
+            (filter, index) =>
+              `<button class="filter-chip${index === 0 ? " is-active" : ""}" type="button" data-filter-field="category" data-filter="${escapeHtml(
+                filter.value,
+              )}">${escapeHtml(filter.label)}</button>`,
+          )
+          .join("\n        ")}
+      </div>
+      <div class="catalog-controls catalog-controls--status" data-filter-group="status" aria-label="Статус устройства">
+        ${statusChips
+          .map(
+            (filter, index) =>
+              `<button class="filter-chip${index === 0 ? " is-active" : ""}" type="button" data-filter-field="status" data-filter="${escapeHtml(
+                filter.value,
+              )}">${escapeHtml(filter.label)}</button>`,
+          )
+          .join("\n        ")}
+      </div>
+      <label class="catalog-sort">
+        <span>Сортировка</span>
+        <select data-catalog-sort aria-label="Сортировка каталога">
+          <option value="default">По умолчанию</option>
+          <option value="price-asc">Цена: ниже</option>
+          <option value="price-desc">Цена: выше</option>
+          <option value="updated-desc">Сначала обновленные</option>
+          <option value="status">По статусу</option>
+        </select>
+      </label>
     </div>
 
     <div class="catalog-grid reveal" id="catalogGrid">${cards || emptyState}</div>

@@ -44,23 +44,78 @@
   }
 
   function wireCatalogFilters() {
-    var grid = byId("catalogGrid");
-    if (!grid) return;
+    document.querySelectorAll(".catalog-section").forEach(function (section) {
+      var grid = section.querySelector(".catalog-grid");
+      if (!grid) return;
 
-    document.querySelectorAll(".filter-chip").forEach(function (chip) {
-      chip.addEventListener("click", function () {
-        var filter = chip.getAttribute("data-filter") || "all";
+      var state = { category: "all", status: "all" };
+      var originalCards = Array.prototype.slice.call(grid.querySelectorAll(".device-card"));
+      var sortControl = section.querySelector("[data-catalog-sort]");
 
-        document.querySelectorAll(".filter-chip").forEach(function (item) {
-          item.classList.remove("is-active");
+      function numberAttr(card, name) {
+        var value = Number(card.getAttribute(name) || 0);
+        return Number.isFinite(value) ? value : 0;
+      }
+
+      function updatedTime(card) {
+        var value = Date.parse(card.getAttribute("data-updated") || "");
+        return Number.isFinite(value) ? value : 0;
+      }
+
+      function cardMatches(card) {
+        var type = card.getAttribute("data-type") || "";
+        var category = card.getAttribute("data-category") || "";
+        var status = card.getAttribute("data-status") || "available";
+        var categoryOk = state.category === "all" || category === state.category || type.indexOf(state.category) !== -1;
+        var statusOk = state.status === "all" || status === state.status;
+        return categoryOk && statusOk;
+      }
+
+      function sortedCards() {
+        var value = sortControl ? sortControl.value : "default";
+        var cards = originalCards.slice();
+        if (value === "price-asc") {
+          cards.sort(function (a, b) { return numberAttr(a, "data-price") - numberAttr(b, "data-price"); });
+        } else if (value === "price-desc") {
+          cards.sort(function (a, b) { return numberAttr(b, "data-price") - numberAttr(a, "data-price"); });
+        } else if (value === "updated-desc") {
+          cards.sort(function (a, b) { return updatedTime(b) - updatedTime(a); });
+        } else if (value === "status") {
+          cards.sort(function (a, b) {
+            return numberAttr(a, "data-status-order") - numberAttr(b, "data-status-order")
+              || numberAttr(a, "data-sort") - numberAttr(b, "data-sort");
+          });
+        } else {
+          cards.sort(function (a, b) { return numberAttr(a, "data-sort") - numberAttr(b, "data-sort"); });
+        }
+        return cards;
+      }
+
+      function applyCatalogState() {
+        sortedCards().forEach(function (card) {
+          card.hidden = !cardMatches(card);
+          grid.appendChild(card);
         });
-        chip.classList.add("is-active");
+      }
 
-        grid.querySelectorAll(".device-card").forEach(function (card) {
-          var type = card.getAttribute("data-type") || "";
-          card.hidden = filter !== "all" && type.indexOf(filter) === -1;
+      section.querySelectorAll(".filter-chip").forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          var field = chip.getAttribute("data-filter-field") || "category";
+          state[field] = chip.getAttribute("data-filter") || "all";
+
+          section.querySelectorAll('.filter-chip[data-filter-field="' + field + '"]').forEach(function (item) {
+            item.classList.remove("is-active");
+          });
+          chip.classList.add("is-active");
+          applyCatalogState();
         });
       });
+
+      if (sortControl) {
+        sortControl.addEventListener("change", applyCatalogState);
+      }
+
+      applyCatalogState();
     });
   }
 

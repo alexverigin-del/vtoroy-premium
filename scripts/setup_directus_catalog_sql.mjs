@@ -15,7 +15,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
-ALTER TABLE devices ADD COLUMN IF NOT EXISTS stock_status varchar(32) NOT NULL DEFAULT 'in_stock';
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS stock_status varchar(32) NOT NULL DEFAULT 'available';
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_status varchar(32) NOT NULL DEFAULT 'ready';
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS source_system varchar(64) NOT NULL DEFAULT 'manual';
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS source_id varchar(160);
@@ -29,7 +29,10 @@ ALTER TABLE device_images ADD COLUMN IF NOT EXISTS shot_status varchar(32) NOT N
 ALTER TABLE device_images ADD COLUMN IF NOT EXISTS source_path text;
 ALTER TABLE device_images ADD COLUMN IF NOT EXISTS import_batch varchar(160);
 
-UPDATE devices SET stock_status = 'in_stock' WHERE stock_status IS NULL OR stock_status = '';
+ALTER TABLE devices ALTER COLUMN stock_status SET DEFAULT 'available';
+
+UPDATE devices SET stock_status = 'available' WHERE stock_status IS NULL OR stock_status = '' OR stock_status = 'in_stock';
+UPDATE devices SET stock_status = 'hidden' WHERE stock_status = 'service';
 UPDATE devices SET content_status = 'ready' WHERE content_status IS NULL OR content_status = '';
 UPDATE devices SET source_system = 'manual' WHERE source_system IS NULL OR source_system = '';
 UPDATE device_images SET shot_status = 'approved' WHERE shot_status IS NULL OR shot_status = '';
@@ -88,6 +91,7 @@ END;
 $$;
 
 CREATE INDEX IF NOT EXISTS devices_public_catalog_idx ON devices (status, category, sort, id);
+CREATE INDEX IF NOT EXISTS devices_public_stock_idx ON devices (status, stock_status, category, sort, id);
 CREATE INDEX IF NOT EXISTS devices_stock_status_idx ON devices (stock_status);
 CREATE INDEX IF NOT EXISTS devices_content_status_idx ON devices (content_status);
 CREATE INDEX IF NOT EXISTS devices_price_idx ON devices (price);
@@ -192,7 +196,7 @@ $$;
 
 SELECT isvoi_upsert_directus_field('devices', 'id', 'input', NULL, NULL, 'half', 1, 'Публичный slug и primary key. Используется в URL /device/{id}.', false);
 SELECT isvoi_upsert_directus_field('devices', 'status', 'select-dropdown', 'labels', '{"choices":[{"text":"Черновик","value":"draft","color":"#6b7280"},{"text":"Опубликовано","value":"published","color":"#10b981"},{"text":"Архив","value":"archived","color":"#6b7280"}]}'::json, 'half', 2, 'Публичная видимость. Сайт показывает только published.');
-SELECT isvoi_upsert_directus_field('devices', 'stock_status', 'select-dropdown', 'labels', '{"choices":[{"text":"В наличии","value":"in_stock","color":"#10b981"},{"text":"Бронь","value":"reserved","color":"#f59e0b"},{"text":"Продано","value":"sold","color":"#6b7280"},{"text":"Сервис","value":"service","color":"#ef4444"},{"text":"Скрыть","value":"hidden","color":"#111827"}]}'::json, 'half', 3, 'Операционный статус склада. Не заменяет status публикации.');
+SELECT isvoi_upsert_directus_field('devices', 'stock_status', 'select-dropdown', 'labels', '{"choices":[{"text":"В наличии","value":"available","color":"#10b981"},{"text":"Бронь","value":"reserved","color":"#f59e0b"},{"text":"Продано","value":"sold","color":"#6b7280"},{"text":"Скрыть","value":"hidden","color":"#111827"}]}'::json, 'half', 3, 'Операционный статус склада. Hidden полностью убирает карточку с публичной витрины.');
 SELECT isvoi_upsert_directus_field('devices', 'content_status', 'select-dropdown', 'labels', '{"choices":[{"text":"Нужны данные","value":"needs_content","color":"#ef4444"},{"text":"Нужны фото","value":"needs_photo","color":"#f59e0b"},{"text":"На проверке","value":"review","color":"#3b82f6"},{"text":"Готово","value":"ready","color":"#10b981"}]}'::json, 'half', 4, 'Редакционный статус карточки перед публикацией.');
 SELECT isvoi_upsert_directus_field('devices', 'sort', 'input', NULL, NULL, 'half', 5, 'Порядок в каталоге.');
 SELECT isvoi_upsert_directus_field('devices', 'category', 'select-dropdown', 'labels', '{"choices":[{"text":"iPhone","value":"iphone"},{"text":"iPad","value":"ipad"},{"text":"MacBook","value":"macbook"},{"text":"Watch","value":"watch"},{"text":"AirPods","value":"airpods"},{"text":"Другое","value":"other"}]}'::json, 'half', 6, 'Категория для фильтров витрины.');

@@ -79,7 +79,7 @@ SAMPLE = {
     "source_system": "xlsx",
     "import_batch": "2026-06-stock",
     "status": "draft",
-    "stock_status": "in_stock",
+    "stock_status": "available",
     "content_status": "review",
     "sort": 100,
     "category": "iphone",
@@ -123,7 +123,7 @@ SAMPLE = {
 
 LISTS = {
     "status": ["draft", "published", "archived"],
-    "stock_status": ["in_stock", "reserved", "sold", "service", "hidden"],
+    "stock_status": ["available", "reserved", "sold", "hidden"],
     "content_status": ["needs_content", "needs_photo", "review", "ready"],
     "category": ["iphone", "ipad", "macbook", "watch", "airpods", "other"],
     "has_detail_page": ["TRUE", "FALSE"],

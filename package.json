@@ -13,6 +13,7 @@
     "web:start": "npm run start --workspace @vtoroy/web",
     "directus:seed": "python scripts/seed_directus.py",
     "directus:import:xlsx": "python scripts/import_devices_from_excel.py",
+    "directus:catalog:template": "python scripts/create_catalog_import_template.py",
     "directus:media": "node scripts/import_device_media.mjs",
     "directus:site-assets": "node scripts/import_site_assets.mjs",
     "directus:setup:catalog": "node scripts/setup_directus_catalog_sql.mjs",

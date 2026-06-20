@@ -74,22 +74,50 @@ Then restart Directus or flush cache so Studio/API sees new schema metadata.
 
 ## Import workflow
 
-1. Prepare an `.xlsx` file with one row per device.
-2. Include stable `id`; optionally include `source_system`, `source_id`,
+1. Generate the import template:
+
+```bash
+npm run directus:catalog:template -- --out catalog_import_template.xlsx
+```
+
+2. Prepare an `.xlsx` file with one row per device.
+3. Include stable `id`; optionally include `source_system`, `source_id`,
    `import_batch`, `stock_status`, `content_status`.
-3. Use `image_card`, `image_main`, `image_screen`, `image_body`,
+4. Use `image_card`, `image_main`, `image_screen`, `image_body`,
    `image_defect`, `image_other` columns for local image paths.
-4. Dry-run first:
+   For multiple photos with the same role, use numbered columns such as
+   `image_main_2`, `image_main_2_label`, `image_main_2_alt`.
+5. Dry-run first:
 
 ```bash
-python scripts/import_devices_from_excel.py --file stock.xlsx --assets-root ./photos --dry-run
+python scripts/import_devices_from_excel.py \
+  --file stock.xlsx \
+  --assets-root ./photos \
+  --import-batch 2026-06-stock \
+  --dry-run
 ```
 
-5. Import:
+6. Import:
 
 ```bash
-python scripts/import_devices_from_excel.py --file stock.xlsx --assets-root ./photos
+python scripts/import_devices_from_excel.py \
+  --file stock.xlsx \
+  --assets-root ./photos \
+  --import-batch 2026-06-stock
 ```
 
-6. In Studio, filter `content_status != ready` or `shot_status != approved`
+7. In Studio, filter `content_status != ready` or `shot_status != approved`
    to finish editorial/photo QA before publishing.
+
+By default, imported device rows are created as `status = draft`. This is
+intentional: publish only after checking the card text, price, Passport and
+photo roles in Studio. Use `--default-status published` only for trusted,
+already-reviewed batches.
+
+Repeated imports are idempotent:
+
+- if `id` exists, the row is updated by `id`;
+- otherwise, if `source_system + source_id` matches an existing row, that row is
+  updated;
+- if neither can identify an existing row, `id` is required to create a new
+  public slug.

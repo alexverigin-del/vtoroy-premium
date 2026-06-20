@@ -92,6 +92,22 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
   const token = process.env.DIRECTUS_LEADS_TOKEN ?? "";
   if (!directusUrl || !token) return false;
 
+  async function postPayload(payload: Record<string, unknown>): Promise<Response | null> {
+    try {
+      return await fetch(`${directusUrl}/items/leads`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+    } catch {
+      return null;
+    }
+  }
+
   try {
     const directusLead: Omit<StoredLead, "created_at"> = {
       kind: lead.kind,
@@ -115,17 +131,34 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       utm_term: lead.utm_term,
       user_agent: lead.user_agent,
     };
-    const response = await fetch(`${directusUrl}/items/leads`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(directusLead),
-      cache: "no-store",
+    const response = await postPayload(directusLead);
+    if (response?.ok) return true;
+
+    const fallbackMessage = [
+      lead.scenario ? `Сценарий: ${lead.scenario}` : "",
+      lead.message ? `Комментарий: ${lead.message}` : "",
+      lead.device_id ? `Device ID: ${lead.device_id}` : "",
+      lead.source_url ? `URL: ${lead.source_url}` : "",
+      lead.page_title ? `Page title: ${lead.page_title}` : "",
+      lead.referrer ? `Referrer: ${lead.referrer}` : "",
+      lead.utm_source ? `UTM source: ${lead.utm_source}` : "",
+      lead.utm_medium ? `UTM medium: ${lead.utm_medium}` : "",
+      lead.utm_campaign ? `UTM campaign: ${lead.utm_campaign}` : "",
+      lead.utm_content ? `UTM content: ${lead.utm_content}` : "",
+      lead.utm_term ? `UTM term: ${lead.utm_term}` : "",
+    ].filter(Boolean).join("\n");
+
+    const legacyResponse = await postPayload({
+      kind: lead.kind,
+      status: lead.status,
+      name: lead.name,
+      contact: lead.contact,
+      device: lead.device,
+      message: fallbackMessage || lead.message,
+      source: lead.source_path || lead.source,
     });
 
-    return response.ok;
+    return Boolean(legacyResponse?.ok);
   } catch {
     return false;
   }

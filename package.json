@@ -2,7 +2,7 @@
   "name": "vtoroy-premium",
   "version": "0.1.0",
   "private": true,
-  "description": "ISVOI — monorepo. The published site today is the static HTML/CSS/JS at the repository root; the workspaces below are the future Next.js + Directus architecture and are NOT yet wired into production.",
+  "description": "ISVOI — Next.js + Directus public site and catalog operations toolkit.",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -12,6 +12,7 @@
     "web:build": "npm run build --workspace @vtoroy/web",
     "web:start": "npm run start --workspace @vtoroy/web",
     "text:audit": "python scripts/audit_text_encoding.py",
+    "legacy:audit": "python scripts/audit_legacy_html.py",
     "directus:seed": "python scripts/seed_directus.py",
     "directus:import:xlsx": "python scripts/import_devices_from_excel.py",
     "directus:catalog:template": "python scripts/create_catalog_import_template.py",

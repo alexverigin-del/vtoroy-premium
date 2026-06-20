@@ -1,89 +1,87 @@
 # ISVOI
 
-ISVOI — клуб разумного владения. Хорошие вещи проходят через своих — Store / Passport / Trade / Club, Северодвинск.
+ISVOI is a Next.js + Directus storefront for a curated device catalog: Store,
+Passport, Trade and Club.
 
-This repository currently contains **two things side by side**:
+The production site is the Next.js app in `apps/web`, served behind nginx and
+PM2. Directus is the editor-facing data platform for pages, devices, files and
+leads. The old root-level static HTML pages have been retired; legacy `.html`
+URLs are kept only as Next.js redirects.
 
-1. **The live static site** — plain HTML/CSS/JS at the repository root. This is what
-   is published today (e.g. to the pplx.app preview). It has **no build step** and
-   **no dependencies**; you can open `index.html` directly or serve it statically.
-2. **A future-ready architecture foundation** — scaffolding for a Next.js public
-   site backed by Directus + PostgreSQL, plus Python jobs. None of this is wired
-   into production yet; it exists so development can start without disrupting the
-   live site.
+## Public Routes
 
-> **Important:** the static root site does **not** depend on the Node workspaces.
-> Running `npm install` or building `apps/web` will never change what the static
-> site serves. Migration to Next.js is a deliberate, later step (see the migration
-> plan in `docs/`).
+Current Next routes:
 
----
+- `/`
+- `/catalog`
+- `/store`
+- `/passport`
+- `/trade`
+- `/club`
+- `/device/[slug]`
+- `/lead-intake` (POST only)
 
-## Current static site
+Compatibility redirects live in `apps/web/next.config.mjs`:
 
-No tooling required. To preview locally:
+- `/index.html` -> `/`
+- `/catalog/index.html` -> `/catalog`
+- `/store/index.html` -> `/store`
+- `/passport/index.html` -> `/passport`
+- `/trade/index.html` -> `/trade`
+- `/club/index.html` -> `/club`
+- `/device/:slug/index.html` -> `/device/:slug`
 
-```bash
-python3 -m http.server 8137
-# open http://localhost:8137/index.html
-```
+## Repository Layout
 
-Content model for the prototype lives in `data/devices.json` (and the mirrored
-`data/devices.js`), consumed by `script.js`.
+| Path | Purpose |
+| --- | --- |
+| `apps/web/` | Next.js public site and renderer |
+| `apps/web/public/` | Static assets served by Next |
+| `directus/` | Directus schema and workflow docs |
+| `docs/` | Architecture, launch and catalog runbooks |
+| `infra/directus-beget/` | Docker Compose and nginx examples for Beget |
+| `packages/shared/` | Shared TypeScript contracts |
+| `scripts/` | Directus setup, imports, media, audits and ops helpers |
+| `data/` | Legacy/reference seed data for fallback and migration scripts |
+| `assets/` | Legacy/reference media used during the migration to Directus Files |
 
-Pages: `index.html`, `catalog/`, `store/`, `passport/`, `trade/`, `club/`,
-`device/<slug>/`.
-
----
-
-## Future architecture (foundation only)
-
-```
-Public Site (Next.js)  ──>  Directus API  ──>  PostgreSQL
-Admin                  ──>  Directus Studio
-Python jobs            <──> Directus API / PostgreSQL <──> Storage <──> Telegram / Excel / Reports
-```
-
-See **[docs/architecture-directus-next-python.md](docs/architecture-directus-next-python.md)**
-for the full picture, deployment flow, and the static → Next migration plan.
-
-### Repository layout
-
-| Path                     | Purpose                                                              | Status        |
-| ------------------------ | -------------------------------------------------------------------- | ------------- |
-| `index.html`, `*/`       | Live static site (published today)                                   | **Production**|
-| `data/`, `assets/`       | Static-site content + images                                         | Production    |
-| `apps/web/`              | Future Next.js + TypeScript + Tailwind public site                   | Scaffold      |
-| `packages/shared/`       | Shared TS types/helpers for devices & passports                      | Scaffold      |
-| `infra/directus-beget/`  | Docker Compose + nginx for Directus + Postgres on a Beget VPS        | Scaffold      |
-| `directus/schema/`       | Directus collections / roles / permissions specs                     | Docs          |
-| `scripts/`               | Python jobs (Excel import, image optimization, Telegram notify)      | Skeleton      |
-| `docs/`                  | Architecture, deployment, migration plan                             | Docs          |
-
-### Admin
-
-The real admin is **Directus Studio** (served by the Directus container). There is
-no custom admin app in this repo by design — we avoid overbuilding. A thin Next.js
-dashboard wrapper can be added later only if it adds value.
-
----
-
-## Common commands
+## Common Commands
 
 ```bash
-# Install workspace dependencies (does NOT affect the static root site)
 npm install
-
-# Run the future Next.js site in dev (placeholder app for now)
 npm run web:dev
-
-# Build / start the Next.js site
 npm run web:build
 npm run web:start
-
-# Bring up Directus + Postgres locally (see infra README first)
-cd infra/directus-beget && cp .env.example .env && docker compose up -d
 ```
 
-Secrets are never committed. Each `.env.example` documents the required variables;
-copy it to `.env` and fill in real values locally / on the server.
+Quality checks:
+
+```bash
+npm run text:audit
+npm run legacy:audit
+```
+
+Directus setup scripts print idempotent SQL. On the server, pipe them into the
+Postgres container, for example:
+
+```bash
+npm run directus:setup:catalog \
+  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+```
+
+## Production
+
+Production is deployed from the git checkout at `/opt/isvoi` on the Beget VPS.
+The public nginx vhost proxies to `next start`; Directus runs in Docker Compose
+behind `api.isvoi.ru`.
+
+Typical deploy:
+
+```bash
+git pull --ff-only
+npm run web:build
+pm2 restart isvoi-web
+```
+
+Run Directus setup scripts only when schema/metadata changes are intentional.
+Secrets stay in local/server `.env` files and are never committed.

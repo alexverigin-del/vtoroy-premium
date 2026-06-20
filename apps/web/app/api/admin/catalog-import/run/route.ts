@@ -154,13 +154,15 @@ async function config() {
   return { directusUrl, directusToken, secret, workRoot, repoRoot };
 }
 
+type CatalogImportConfig = Awaited<ReturnType<typeof config>>;
+
 function authorized(request: NextRequest, secret: string): boolean {
   return request.headers.get("x-isvoi-import-secret") === secret
     || request.headers.get("authorization") === `Bearer ${secret}`;
 }
 
 async function directusRequest<T>(
-  cfg: ReturnType<typeof config>,
+  cfg: CatalogImportConfig,
   method: string,
   endpoint: string,
   payload?: Record<string, unknown>,
@@ -181,11 +183,11 @@ async function directusRequest<T>(
   return json.data as T;
 }
 
-async function patchBatch(cfg: ReturnType<typeof config>, id: string, payload: Record<string, unknown>): Promise<void> {
+async function patchBatch(cfg: CatalogImportConfig, id: string, payload: Record<string, unknown>): Promise<void> {
   await directusRequest(cfg, "PATCH", `/items/catalog_import_batches/${encodeURIComponent(id)}`, payload);
 }
 
-async function downloadDirectusFile(cfg: ReturnType<typeof config>, id: string, target: string): Promise<void> {
+async function downloadDirectusFile(cfg: CatalogImportConfig, id: string, target: string): Promise<void> {
   const res = await fetch(`${cfg.directusUrl}/assets/${encodeURIComponent(id)}`, {
     headers: { Authorization: `Bearer ${cfg.directusToken}` },
     cache: "no-store",
@@ -206,7 +208,7 @@ async function runCommand(command: string, cwd: string, env: NodeJS.ProcessEnv):
 }
 
 export async function POST(request: NextRequest) {
-  let cfg: ReturnType<typeof config>;
+  let cfg: CatalogImportConfig;
   try {
     cfg = await config();
   } catch (error) {

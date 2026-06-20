@@ -129,6 +129,36 @@ npm run directus:media -- --dry-run
 npm run directus:media -- --replace
 ```
 
+## Finish image migration
+
+Production images should resolve through Directus Files, not bundled
+`assets/...` paths stored in Directus content. Use this sequence after uploading
+or replacing product/site media:
+
+```bash
+npm run directus:media -- --replace
+npm run directus:site-assets -- --replace
+npm run directus:normalize-images -- --dry-run
+npm run directus:normalize-images
+```
+
+Then audit the database:
+
+```bash
+npm run directus:audit-images \
+  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+```
+
+Expected result for migrated content:
+
+- `devices.listing_image.local = 0`
+- `devices.gallery.local = 0`
+- `devices.passport.local = 0`
+- `page_sections.content.local = 0`
+- `devices.with_listing_file` matches the number of product rows with a card
+  image
+- `device_images.with_file` matches the number of approved product image rows
+
 ## File naming convention
 
 For bulk import, keep source image paths stable and predictable:

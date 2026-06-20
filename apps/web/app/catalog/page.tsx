@@ -1,5 +1,6 @@
-import { getPublishedDevices, directusConfig } from "@/lib/directus";
-import { DeviceCard } from "@/components/DeviceCard";
+import Script from "next/script";
+import { directusConfig, getNavigationItems, getPublishedDevices, getSiteSettings } from "@/lib/directus";
+import { renderCatalogPageMarkup, siteChrome } from "@/lib/site-renderer";
 
 export const metadata = {
   title: "ISVOI Store — вещи в кругу",
@@ -12,35 +13,21 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function CatalogPage() {
-  const devices = await getPublishedDevices();
+  const [settings, navigation, devices] = await Promise.all([
+    getSiteSettings(),
+    getNavigationItems(),
+    getPublishedDevices(),
+  ]);
 
   return (
-    <main className="mx-auto max-w-content px-6 py-16">
-      <p className="text-sm font-medium uppercase tracking-wide text-muted">
-        Store
-      </p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight md:text-5xl">
-        Вещи в кругу — сейчас в наличии.
-      </h1>
-      <p className="mt-4 max-w-2xl text-muted">
-        {directusConfig.enabled
-          ? "Данные витрины загружаются из Directus."
-          : "Directus не настроен — показаны демо-данные из data/devices.json."}
-      </p>
-
-      {devices.length === 0 ? (
-        <div className="card mt-10 p-8 text-muted">
-          Витрина пуста. Добавьте вещи в Directus или проверьте данные.
-        </div>
-      ) : (
-        <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {devices.map((device) => (
-            <li key={device.id}>
-              <DeviceCard device={device} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+    <>
+      <link rel="stylesheet" href="/styles.css?v=20260616a" />
+      <div
+        dangerouslySetInnerHTML={{
+          __html: renderCatalogPageMarkup(siteChrome(settings, navigation), devices, directusConfig.enabled),
+        }}
+      />
+      <Script src="/interactions.js?v=20260619catalog" strategy="afterInteractive" />
+    </>
   );
 }

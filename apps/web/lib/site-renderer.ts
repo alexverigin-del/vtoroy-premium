@@ -749,6 +749,7 @@ function renderPathRouterSection(section: PageSection): string {
 
 function renderCatalogPreviewSection(section: PageSection, devices: Device[] = []): string {
   const filters = filterList(section.content.filters);
+  const headlineTag = section.content.headingTag === "h1" ? "h1" : "h2";
   const chips =
     filters.length > 0
       ? filters
@@ -786,7 +787,7 @@ function renderCatalogPreviewSection(section: PageSection, devices: Device[] = [
   <div class="wrap">
     <div class="sec-head reveal">
       ${section.eyebrow ? `<div class="eyebrow">${escapeHtml(section.eyebrow)}</div>` : ""}
-      ${section.headline ? `<h2 class="h2">${escapeHtml(section.headline)}</h2>` : ""}
+      ${section.headline ? `<${headlineTag} class="h2">${escapeHtml(section.headline)}</${headlineTag}>` : ""}
       ${section.body ? `<p class="lead text-wrap" style="margin-top:16px;">${escapeHtml(section.body)}</p>` : ""}
     </div>
 
@@ -838,6 +839,47 @@ function renderStoreCatalogSection(devices: Device[] = []): string {
     },
     devices,
   );
+}
+
+export function renderCatalogPageMarkup(
+  chrome: SiteChrome = siteChrome(null, []),
+  devices: Device[] = [],
+  directusEnabled = false,
+): string {
+  const catalogSection: PageSection = {
+    id: "catalog-page-live",
+    sectionKey: "catalog_page_live",
+    variant: "catalog.grid",
+    eyebrow: "Store",
+    headline: "Вещи в кругу — сейчас в наличии.",
+    subheadline: "Фильтры каталога",
+    body: directusEnabled
+      ? "Карточки загружаются из Directus: фото, грейд, цена, Passport и цена выхода обновляются без правки кода."
+      : "Directus не настроен — показаны демо-данные из data/devices.json.",
+    primaryCtaLabel: "Подобрать под задачу",
+    primaryCtaUrl: "/#final",
+    secondaryCtaLabel: "Как устроен Store",
+    secondaryCtaUrl: "/store",
+    sortOrder: 1,
+    isActive: true,
+    content: {
+      headingTag: "h1",
+      filters: [
+        { label: "Все", value: "all" },
+        { label: "iPhone", value: "iphone" },
+        { label: "MacBook", value: "macbook" },
+        { label: "iPad", value: "ipad" },
+        { label: "Для Club", value: "club" },
+      ],
+    },
+  };
+
+  return `${renderHeaderChrome(chrome)}<main id="top">
+
+${renderCatalogPreviewSection(catalogSection, devices)}</main>
+
+${renderFooterChrome(chrome)}
+`;
 }
 
 function renderPassportSection(section: PageSection): string {

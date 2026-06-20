@@ -27,6 +27,8 @@ Field types use Directus terminology. `M2O` = many-to-one, `O2M` = one-to-many,
 | ----------------- | --------------- | -------------------------------------------------- |
 | `id`              | string (PK)     | Slug, e.g. `iphone-13-pro`. Used in URLs.          |
 | `status`          | string (enum)   | `draft` / `published` / `archived`. Gate public.   |
+| `stock_status`    | string (enum)   | `in_stock`, `reserved`, `sold`, `service`, `hidden`. |
+| `content_status`  | string (enum)   | `needs_content`, `needs_photo`, `review`, `ready`. |
 | `sort`            | integer         | Manual ordering.                                   |
 | `category`        | string (enum)   | `iphone` / `ipad` / `macbook` / …                  |
 | `tags`            | JSON / M2M tags | e.g. `["iphone","club"]`.                          |
@@ -172,9 +174,14 @@ Use `device_images` for managed per-device media:
 | `sort`   | integer              | Manual order inside the device gallery.    |
 | `device` | M2O -> `devices`     | Parent device.                             |
 | `role`   | string               | `card`, `main`, `screen`, `body`, `defect`, `other`. |
+| `shot_status` | string          | `needs_review`, `approved`, `rejected`.    |
 | `image`  | M2O -> directus_files | Actual uploaded image.                     |
 | `label`  | string               | Caption shown under gallery image.         |
 | `alt`    | text                 | Image alt text.                            |
+| `source_path` | text            | Original import path/name.                 |
+| `import_batch` | string         | Batch label for media import.              |
+| `created_at` | timestamp        | Auto.                                      |
+| `updated_at` | timestamp        | Auto via trigger.                          |
 
 The site reads `device_images` first. If no rows are published for a device, it
 falls back to the legacy `devices.gallery` JSON field. Each legacy JSON item may
@@ -185,3 +192,19 @@ query parameters. Catalog cards use a 720x540 cover transform, detail gallery
 images use 1200x900 cover, and passport defect photos use 900x675 cover. The
 `format=auto` option lets Directus negotiate WebP/AVIF-capable output where the
 client supports it, while preserving the legacy repo-hosted paths unchanged.
+
+## Large catalog setup
+
+Run `npm run directus:setup:catalog` and pipe it into the production Postgres
+container to add the large-catalog operational layer:
+
+- editor-facing Studio notes, display templates and enum choices;
+- `stock_status` separate from public `status`;
+- `content_status` for editorial/photo QA;
+- `source_system`, `source_id`, `import_batch`, `imported_at` for idempotent imports;
+- indexes for public catalog reads, inventory filtering and batch review;
+- FK-backed relations for `devices.listing_file`, `device_images.device`,
+  and `device_images.image`.
+
+The day-to-day process is documented in
+[`directus/catalog-workflow.md`](../catalog-workflow.md).

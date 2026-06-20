@@ -22,6 +22,7 @@ Environment:
 from __future__ import annotations
 
 import argparse
+from datetime import date, datetime, timezone
 import json
 import mimetypes
 import os
@@ -51,6 +52,13 @@ HEADER_MAP = {
     "hasDetailPage": "has_detail_page",
     "detailHref": "detail_href",
     "visualClass": "visual_class",
+    "stockStatus": "stock_status",
+    "contentStatus": "content_status",
+    "sourceSystem": "source_system",
+    "sourceId": "source_id",
+    "importBatch": "import_batch",
+    "importedAt": "imported_at",
+    "adminNote": "admin_note",
 }
 
 JSON_FIELDS = {"tags", "gallery", "passport", "trade"}
@@ -70,6 +78,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--assets-root", default=".", help="Base folder for relative image paths in image_* columns.")
     parser.add_argument("--skip-media", action="store_true", help="Import device rows only; ignore image_* columns.")
     parser.add_argument("--replace-media", action="store_true", help="Overwrite existing device_images/listing_file links.")
+    parser.add_argument("--source-system", default="xlsx", help="Default devices.source_system for imported rows.")
+    parser.add_argument("--import-batch", help="Default devices.import_batch and device_images.import_batch.")
     parser.add_argument("--dry-run", action="store_true", help="Parse and validate only; do not write.")
     return parser.parse_args()
 
@@ -124,6 +134,10 @@ def parse_json_field(field: str, value: Any) -> Any:
 def coerce(field: str, value: Any) -> Any:
     if empty(value):
         return None
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, date):
+        return datetime(value.year, value.month, value.day, tzinfo=timezone.utc).isoformat()
     if field in MEDIA_FIELDS:
         return str(value).strip()
     if field in JSON_FIELDS:
@@ -158,6 +172,23 @@ def read_rows(path: str, sheet_name: str | None = None) -> list[dict[str, Any]]:
         payload.setdefault("status", "published")
         devices.append(payload)
     return devices
+
+
+def apply_import_defaults(
+    rows: list[dict[str, Any]],
+    *,
+    source_system: str,
+    import_batch: str | None,
+) -> list[dict[str, Any]]:
+    imported_at = datetime.now(timezone.utc).isoformat()
+    for row in rows:
+        row.setdefault("source_system", source_system)
+        row.setdefault("content_status", "needs_photo" if any(key.startswith("image_") for key in row) else "needs_content")
+        row.setdefault("stock_status", "in_stock")
+        if import_batch:
+            row.setdefault("import_batch", import_batch)
+        row["imported_at"] = imported_at
+    return rows
 
 
 def split_media_fields(row: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -294,7 +325,11 @@ def sync_device_image(
         "image": file_id,
         "label": media["label"],
         "alt": media["alt"],
+        "shot_status": "approved",
+        "source_path": str(media.get("path") or ""),
     }
+    if media.get("import_batch"):
+        payload["import_batch"] = media["import_batch"]
 
     if existing and not replace:
         print(f"[skip] device_images {device_id}/{role}")
@@ -351,12 +386,21 @@ def sync_media(
 def main() -> None:
     args = parse_args()
     cfg = load_config(require_token=not args.dry_run)
-    rows = read_rows(args.file, args.sheet)
+    rows = apply_import_defaults(
+        read_rows(args.file, args.sheet),
+        source_system=args.source_system,
+        import_batch=args.import_batch,
+    )
     if not rows:
         raise SystemExit(f"No device rows found in {args.file}")
     print(f"{'[dry-run] ' if args.dry_run else ''}Importing {len(rows)} device(s)")
     assets_root = Path(args.assets_root).resolve()
     parsed = [split_media_fields(row) for row in rows]
+    if args.import_batch:
+        parsed = [
+            (device, [{**media, "import_batch": args.import_batch} for media in media_rows])
+            for device, media_rows in parsed
+        ]
     indexes = None
     if not args.skip_media and any(media for _, media in parsed):
         indexes = build_indexes(cfg)

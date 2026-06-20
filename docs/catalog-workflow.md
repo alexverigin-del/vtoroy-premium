@@ -156,6 +156,15 @@ the workbook, uploads product files to `ISVOI Device Photos`, links
 Use `--default-status published` only for rows that have already passed content
 and photo QA. The safer default is `draft`.
 
+For non-developers, use the operator wrapper instead of raw SSH commands:
+
+```powershell
+.\scripts\operator_catalog_import.ps1 -BatchFolder "C:\Imports\2026-06-stock"
+.\scripts\operator_catalog_import.ps1 -BatchFolder "C:\Imports\2026-06-stock" -Apply
+```
+
+See `docs/catalog-operator-guide.md`.
+
 The older JSON media importer remains available for maintenance scripts:
 
 ```bash

@@ -16,6 +16,7 @@
     "directus:seed": "python scripts/seed_directus.py",
     "directus:import:xlsx": "python scripts/import_devices_from_excel.py",
     "directus:catalog:batch": "bash scripts/run_catalog_import_batch.sh",
+    "directus:catalog:operator": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/operator_catalog_import.ps1",
     "directus:catalog:template": "python scripts/create_catalog_import_template.py",
     "directus:media": "node scripts/import_device_media.mjs",
     "directus:site-assets": "node scripts/import_site_assets.mjs",

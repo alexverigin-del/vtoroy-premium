@@ -11,6 +11,7 @@
     "web:dev": "npm run dev --workspace @vtoroy/web",
     "web:build": "npm run build --workspace @vtoroy/web",
     "web:start": "npm run start --workspace @vtoroy/web",
+    "smoke:prod": "node scripts/smoke_playwright.mjs",
     "text:audit": "python scripts/audit_text_encoding.py",
     "legacy:audit": "python scripts/audit_legacy_html.py",
     "directus:seed": "python scripts/seed_directus.py",
@@ -48,5 +49,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.0"
   }
 }

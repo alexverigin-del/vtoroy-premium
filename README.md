@@ -59,6 +59,15 @@ Quality checks:
 ```bash
 npm run text:audit
 npm run legacy:audit
+npm run smoke:prod
+```
+
+`smoke:prod` opens `/catalog`, `/store` and one device page with Playwright. It
+checks HTTP status, Directus image rendering, the Passport block and lead forms.
+Override the target when needed:
+
+```bash
+SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/device/iphone-13-pro npm run smoke:prod
 ```
 
 Directus setup scripts print idempotent SQL. On the server, write the SQL to a

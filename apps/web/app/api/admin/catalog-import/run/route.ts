@@ -230,11 +230,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const batch = await directusRequest<ImportBatch>(
+    const batchResult = await directusRequest<{ data: ImportBatch[] }>(
       cfg,
       "GET",
-      `/items/catalog_import_batches/${encodeURIComponent(batchId)}?fields=*,workbook.*,photos_archive.*`,
+      `/items/catalog_import_batches?filter[id][_eq]=${encodeURIComponent(batchId)}&limit=1&fields=*,workbook.*,photos_archive.*`,
     );
+    const batch = batchResult.data[0];
+    if (!batch) {
+      return NextResponse.json({ ok: false, batch_id: batchId, error: "batch_not_found" }, { status: 404 });
+    }
 
     const workbookId = fileId(batch.workbook);
     const archiveId = fileId(batch.photos_archive);

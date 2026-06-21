@@ -230,6 +230,18 @@ BEGIN
 END;
 $$;
 
+UPDATE directus_users
+SET role = (
+  SELECT id FROM directus_roles WHERE name = 'ISVOI Importer' LIMIT 1
+)
+WHERE email = 'catalog-import@isvoi.local'
+  AND role IS NULL
+  AND EXISTS (SELECT 1 FROM directus_roles WHERE name = 'ISVOI Importer');
+
+SELECT isvoi_upsert_permission('Administrator', 'catalog_import_batches', 'read', '*', NULL);
+SELECT isvoi_upsert_permission('Administrator', 'catalog_import_batches', 'create', '*', NULL);
+SELECT isvoi_upsert_permission('Administrator', 'catalog_import_batches', 'update', '*', NULL);
+SELECT isvoi_upsert_permission('Administrator', 'catalog_import_batches', 'delete', '*', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'catalog_import_batches', 'read', '*', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',

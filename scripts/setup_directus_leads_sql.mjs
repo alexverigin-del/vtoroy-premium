@@ -11,6 +11,8 @@
 process.stdout.write(String.raw`
 BEGIN;
 
+SET client_encoding = 'UTF8';
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS leads (
@@ -502,6 +504,303 @@ $$;
 SELECT isvoi_upsert_leads_preset();
 DROP FUNCTION isvoi_upsert_leads_preset();
 DROP FUNCTION isvoi_upsert_collection_metadata(varchar, varchar, text, varchar, varchar, varchar, varchar, integer, varchar);
+
+-- Simplified lead workflow for non-technical operators.
+-- Keep the underlying data model, but reduce the daily Studio workflow to:
+-- new -> in_progress -> waiting -> won/closed.
+UPDATE leads SET status = 'waiting' WHERE status = 'waiting_client';
+UPDATE leads SET status = 'in_progress' WHERE status = 'contacted';
+UPDATE leads SET status = 'closed' WHERE status IN ('lost', 'archived');
+
+UPDATE directus_collections
+SET icon = 'support_agent',
+  note = 'Заявки с сайта. Ежедневный сценарий: открыть новую заявку, назначить ответственного, оставить короткую заметку/комментарий, поставить следующий шаг и перевести статус.',
+  display_template = '{{status}} · {{contact}} · {{kind}}',
+  archive_field = 'status',
+  archive_value = 'closed',
+  unarchive_value = 'new',
+  sort = 30,
+  color = '#16a34a',
+  translations = json_build_array(json_build_object('language', 'ru-RU', 'translation', 'Заявки'))::json
+WHERE collection = 'leads';
+
+UPDATE directus_collections
+SET icon = 'mode_comment',
+  note = 'Короткая история обработки заявки: звонок, сообщение, договоренность или следующий шаг.',
+  display_template = '{{outcome}} · {{comment}}',
+  sort = 31,
+  color = '#6366f1',
+  translations = json_build_array(json_build_object('language', 'ru-RU', 'translation', 'Комментарии к заявкам'))::json
+WHERE collection = 'lead_comments';
+
+CREATE OR REPLACE FUNCTION isvoi_set_field_label(
+  p_collection varchar,
+  p_field varchar,
+  p_translation text
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE directus_fields
+  SET translations = json_build_array(json_build_object('language', 'ru-RU', 'translation', p_translation))::json
+  WHERE collection = p_collection AND field = p_field;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION isvoi_set_lead_field(
+  p_field varchar,
+  p_group varchar,
+  p_sort integer,
+  p_width varchar,
+  p_note text,
+  p_hidden boolean DEFAULT false,
+  p_options json DEFAULT NULL
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE directus_fields
+  SET "group" = p_group,
+    sort = p_sort,
+    width = p_width,
+    note = p_note,
+    hidden = p_hidden,
+    options = COALESCE(p_options, options)
+  WHERE collection = 'leads' AND field = p_field;
+END;
+$$;
+
+SELECT isvoi_set_lead_field('group_processing', NULL, 1, 'full', 'Короткий рабочий блок менеджера: статус, срочность, ответственный, следующий шаг и заметка.', false, '{"headerIcon":"fact_check","start":"open"}'::json);
+SELECT isvoi_set_field_label('leads', 'group_processing', 'Обработка');
+SELECT isvoi_set_lead_field('status', 'group_processing', 2, 'half', 'Текущий этап. Для ежедневной работы достаточно пяти статусов.', false, '{"choices":[{"text":"Новая","value":"new","color":"#0071e3"},{"text":"В работе","value":"in_progress","color":"#f59e0b"},{"text":"Ждем ответа","value":"waiting","color":"#8b5cf6"},{"text":"Успешная","value":"won","color":"#16a34a"},{"text":"Закрыта","value":"closed","color":"#6b7280"}]}'::json);
+SELECT isvoi_set_field_label('leads', 'status', 'Статус');
+SELECT isvoi_set_lead_field('priority', 'group_processing', 3, 'half', 'Срочность: обычная или срочная.', false, '{"choices":[{"text":"Обычная","value":"normal","color":"#6b7280"},{"text":"Срочная","value":"high","color":"#ef4444"}]}'::json);
+SELECT isvoi_set_field_label('leads', 'priority', 'Срочность');
+SELECT isvoi_set_lead_field('assigned_to', 'group_processing', 4, 'half', 'Кто отвечает за обработку заявки.', false);
+SELECT isvoi_set_field_label('leads', 'assigned_to', 'Ответственный');
+SELECT isvoi_set_lead_field('next_action_at', 'group_processing', 5, 'half', 'Дата/время следующего контакта или решения.', false);
+SELECT isvoi_set_field_label('leads', 'next_action_at', 'Следующий шаг');
+SELECT isvoi_set_lead_field('manager_note', 'group_processing', 6, 'full', 'Одна короткая текущая заметка. Подробную историю ведите в комментариях ниже.', false);
+SELECT isvoi_set_field_label('leads', 'manager_note', 'Заметка менеджера');
+SELECT isvoi_set_lead_field('comments', 'group_processing', 7, 'full', 'Рабочая история по заявке: звонки, сообщения, договоренности.', false, '{"template":"{{outcome}} · {{comment}}","enableCreate":true,"enableSelect":false,"layout":"table","fields":["created_at","outcome","comment","next_action_at"]}'::json);
+SELECT isvoi_set_field_label('leads', 'comments', 'История обработки');
+
+SELECT isvoi_set_lead_field('group_contact', NULL, 20, 'full', 'Что хотел клиент и как с ним связаться.', false, '{"headerIcon":"contact_phone","start":"open"}'::json);
+SELECT isvoi_set_field_label('leads', 'group_contact', 'Заявка клиента');
+SELECT isvoi_set_lead_field('contact', 'group_contact', 21, 'full', 'Телефон, Telegram, WhatsApp или email. Главное поле для ответа.', false);
+SELECT isvoi_set_field_label('leads', 'contact', 'Контакт');
+SELECT isvoi_set_lead_field('kind', 'group_contact', 22, 'half', 'Тип обращения. Нужен для сортировки заявок.', false, '{"choices":[{"text":"Подбор","value":"selection","color":"#0071e3"},{"text":"Покупка/бронь","value":"purchase","color":"#16a34a"},{"text":"Trade","value":"trade","color":"#8b5cf6"},{"text":"Upgrade","value":"upgrade","color":"#f59e0b"},{"text":"Club","value":"club","color":"#111827"},{"text":"Поддержка","value":"support","color":"#6b7280"}]}'::json);
+SELECT isvoi_set_field_label('leads', 'kind', 'Тип заявки');
+SELECT isvoi_set_lead_field('contact_channel', 'group_contact', 23, 'half', 'Канал связи, если его удалось определить.', false);
+SELECT isvoi_set_field_label('leads', 'contact_channel', 'Канал связи');
+SELECT isvoi_set_lead_field('name', 'group_contact', 24, 'half', 'Имя клиента, если указано.', false);
+SELECT isvoi_set_field_label('leads', 'name', 'Имя');
+SELECT isvoi_set_lead_field('scenario', 'group_contact', 25, 'half', 'Выбранный сценарий формы или кнопки.', false);
+SELECT isvoi_set_field_label('leads', 'scenario', 'Сценарий');
+SELECT isvoi_set_lead_field('message', 'group_contact', 26, 'full', 'Комментарий клиента и детали формы.', false);
+SELECT isvoi_set_field_label('leads', 'message', 'Комментарий клиента');
+SELECT isvoi_set_lead_field('device_id', 'group_contact', 27, 'half', 'Связанная карточка устройства, если заявка пришла из товара.', false);
+SELECT isvoi_set_field_label('leads', 'device_id', 'Устройство из каталога');
+SELECT isvoi_set_lead_field('device', 'group_contact', 28, 'half', 'Текстовое название устройства на момент отправки формы.', false);
+SELECT isvoi_set_field_label('leads', 'device', 'Устройство текстом');
+
+UPDATE directus_fields
+SET hidden = true
+WHERE collection = 'leads' AND field = 'group_device';
+
+SELECT isvoi_set_lead_field('group_source', NULL, 70, 'full', 'Технический контекст: страница, referrer и UTM. Обычно нужен только для аналитики.', false, '{"headerIcon":"travel_explore","start":"closed"}'::json);
+SELECT isvoi_set_field_label('leads', 'group_source', 'Источник и UTM');
+SELECT isvoi_set_lead_field('source_path', 'group_source', 71, 'half', 'Путь страницы, где создана заявка.', false);
+SELECT isvoi_set_field_label('leads', 'source_path', 'Страница');
+SELECT isvoi_set_lead_field('source_url', 'group_source', 72, 'full', 'Полный URL страницы.', false);
+SELECT isvoi_set_field_label('leads', 'source_url', 'URL страницы');
+SELECT isvoi_set_lead_field('page_title', 'group_source', 73, 'half', 'Title страницы.', false);
+SELECT isvoi_set_field_label('leads', 'page_title', 'Title страницы');
+SELECT isvoi_set_lead_field('referrer', 'group_source', 74, 'half', 'Откуда пришел пользователь.', false);
+SELECT isvoi_set_field_label('leads', 'referrer', 'Referrer');
+SELECT isvoi_set_lead_field('utm_source', 'group_source', 75, 'half', 'UTM source.', false);
+SELECT isvoi_set_lead_field('utm_medium', 'group_source', 76, 'half', 'UTM medium.', false);
+SELECT isvoi_set_lead_field('utm_campaign', 'group_source', 77, 'half', 'UTM campaign.', false);
+SELECT isvoi_set_lead_field('utm_content', 'group_source', 78, 'half', 'UTM content.', false);
+SELECT isvoi_set_lead_field('utm_term', 'group_source', 79, 'half', 'UTM term.', false);
+SELECT isvoi_set_lead_field('source', 'group_source', 80, 'half', 'Legacy source alias. Новые формы пишут source_path/source_url.', true);
+
+SELECT isvoi_set_lead_field('group_system', NULL, 100, 'full', 'Системные поля. Обычно не нужны менеджеру при обработке.', false, '{"headerIcon":"settings","start":"closed"}'::json);
+SELECT isvoi_set_field_label('leads', 'group_system', 'Системное');
+SELECT isvoi_set_lead_field('id', 'group_system', 101, 'half', 'ID заявки.', true);
+SELECT isvoi_set_lead_field('created_at', 'group_system', 102, 'half', 'Когда заявка создана.', false);
+SELECT isvoi_set_field_label('leads', 'created_at', 'Создана');
+SELECT isvoi_set_lead_field('updated_at', 'group_system', 103, 'half', 'Когда заявка обновлена.', true);
+SELECT isvoi_set_lead_field('last_contacted_at', 'group_system', 104, 'half', 'Legacy поле последнего контакта. Используйте комментарии и следующий шаг.', true);
+SELECT isvoi_set_lead_field('user_agent', 'group_system', 105, 'full', 'User-Agent запроса.', true);
+
+DROP FUNCTION isvoi_set_lead_field(varchar, varchar, integer, varchar, text, boolean, json);
+DROP FUNCTION isvoi_set_field_label(varchar, varchar, text);
+
+UPDATE directus_fields
+SET sort = CASE field
+    WHEN 'comment' THEN 1
+    WHEN 'outcome' THEN 2
+    WHEN 'next_action_at' THEN 3
+    WHEN 'lead' THEN 4
+    WHEN 'created_at' THEN 5
+    WHEN 'created_by' THEN 6
+    WHEN 'updated_at' THEN 7
+    WHEN 'id' THEN 8
+    ELSE sort
+  END,
+  width = CASE field
+    WHEN 'comment' THEN 'full'
+    WHEN 'outcome' THEN 'half'
+    WHEN 'next_action_at' THEN 'half'
+    ELSE width
+  END,
+  hidden = CASE field
+    WHEN 'created_by' THEN true
+    WHEN 'updated_at' THEN true
+    WHEN 'id' THEN true
+    ELSE hidden
+  END
+WHERE collection = 'lead_comments';
+
+UPDATE directus_fields
+SET options = '{"choices":[{"text":"Заметка","value":"note","color":"#6b7280"},{"text":"Связались","value":"contacted","color":"#10b981"},{"text":"Не ответил","value":"no_answer","color":"#f59e0b"},{"text":"Следующий шаг","value":"follow_up","color":"#0071e3"},{"text":"Результат","value":"result","color":"#16a34a"}]}'::json,
+  note = 'Тип события в истории обработки.'
+WHERE collection = 'lead_comments' AND field = 'outcome';
+
+UPDATE directus_fields
+SET translations = json_build_array(json_build_object('language', 'ru-RU', 'translation',
+  CASE field
+    WHEN 'comment' THEN 'Комментарий'
+    WHEN 'outcome' THEN 'Событие'
+    WHEN 'next_action_at' THEN 'Следующий шаг'
+    WHEN 'lead' THEN 'Заявка'
+    WHEN 'created_at' THEN 'Создан'
+    ELSE field
+  END
+))::json
+WHERE collection = 'lead_comments'
+  AND field IN ('comment', 'outcome', 'next_action_at', 'lead', 'created_at');
+
+CREATE OR REPLACE FUNCTION isvoi_upsert_simple_lead_preset(
+  p_bookmark varchar,
+  p_icon varchar,
+  p_color varchar,
+  p_filter json,
+  p_fields json
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_role uuid;
+BEGIN
+  SELECT id INTO v_role FROM directus_roles WHERE name = 'ISVOI Editor' LIMIT 1;
+  IF v_role IS NULL THEN
+    RETURN;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM directus_presets
+    WHERE role = v_role AND collection = 'leads' AND bookmark = p_bookmark AND "user" IS NULL
+  ) THEN
+    UPDATE directus_presets
+    SET layout = 'tabular',
+      layout_query = json_build_object('tabular', json_build_object('fields', p_fields, 'sort', json_build_array('-created_at')))::json,
+      layout_options = '{"tabular":{"spacing":"comfortable","widths":{"created_at":170,"status":150,"priority":120,"contact":230,"kind":140,"device_id":220,"assigned_to":190,"next_action_at":170,"source_path":220}}}'::json,
+      filter = p_filter,
+      icon = p_icon,
+      color = p_color,
+      refresh_interval = 60
+    WHERE role = v_role AND collection = 'leads' AND bookmark = p_bookmark AND "user" IS NULL;
+  ELSE
+    INSERT INTO directus_presets (
+      bookmark, role, collection, layout, layout_query, layout_options,
+      filter, icon, color, refresh_interval
+    ) VALUES (
+      p_bookmark,
+      v_role,
+      'leads',
+      'tabular',
+      json_build_object('tabular', json_build_object('fields', p_fields, 'sort', json_build_array('-created_at')))::json,
+      '{"tabular":{"spacing":"comfortable","widths":{"created_at":170,"status":150,"priority":120,"contact":230,"kind":140,"device_id":220,"assigned_to":190,"next_action_at":170,"source_path":220}}}'::json,
+      p_filter,
+      p_icon,
+      p_color,
+      60
+    );
+  END IF;
+END;
+$$;
+
+DO $$
+DECLARE
+  v_role uuid;
+BEGIN
+  SELECT id INTO v_role FROM directus_roles WHERE name = 'ISVOI Editor' LIMIT 1;
+  IF v_role IS NOT NULL THEN
+    DELETE FROM directus_presets
+    WHERE role = v_role
+      AND collection = 'leads'
+      AND "user" IS NULL
+      AND bookmark IS NOT NULL
+      AND bookmark NOT IN ('Обработка заявок', 'Новые заявки', 'В работе', 'Закрытые заявки');
+  END IF;
+END;
+$$;
+
+SELECT isvoi_upsert_simple_lead_preset(
+  'Обработка заявок',
+  'fact_check',
+  '#0071e3',
+  '{"status":{"_nin":["closed"]}}'::json,
+  '["created_at","status","priority","contact","kind","device_id","assigned_to","next_action_at","source_path"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'Новые заявки',
+  'mark_email_unread',
+  '#10b981',
+  '{"status":{"_eq":"new"}}'::json,
+  '["created_at","contact","kind","device_id","source_path"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'В работе',
+  'support_agent',
+  '#f59e0b',
+  '{"status":{"_in":["in_progress","waiting"]}}'::json,
+  '["created_at","status","priority","contact","kind","assigned_to","next_action_at","manager_note"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'Закрытые заявки',
+  'inventory_2',
+  '#6b7280',
+  '{"status":{"_eq":"closed"}}'::json,
+  '["created_at","status","contact","kind","device_id","assigned_to","manager_note"]'::json
+);
+
+DROP FUNCTION isvoi_upsert_simple_lead_preset(varchar, varchar, varchar, json, json);
+
+UPDATE directus_permissions
+SET validation = '{"contact":{"_nnull":true},"status":{"_eq":"new"},"priority":{"_in":["normal","high"]},"kind":{"_in":["selection","purchase","trade","upgrade","club","support"]},"contact_channel":{"_in":["unknown","phone","telegram","whatsapp","email"]}}'::json,
+  presets = '{"status":"new","priority":"normal"}'::json
+WHERE collection = 'leads'
+  AND action = 'create'
+  AND policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Lead Intake');
+
+UPDATE directus_permissions
+SET fields = 'status,priority,assigned_to,contact_channel,next_action_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term',
+  validation = '{"status":{"_in":["new","in_progress","waiting","won","closed"]},"priority":{"_in":["normal","high"]}}'::json
+WHERE collection = 'leads'
+  AND action = 'update'
+  AND policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Editor');
+
+UPDATE directus_permissions
+SET validation = CASE action
+    WHEN 'create' THEN '{"lead":{"_nnull":true},"comment":{"_nnull":true}}'::json
+    ELSE '{"comment":{"_nnull":true}}'::json
+  END
+WHERE collection = 'lead_comments'
+  AND action IN ('create', 'update')
+  AND policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Editor');
 
 COMMIT;
 

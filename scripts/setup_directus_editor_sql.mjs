@@ -173,9 +173,9 @@ SELECT isvoi_upsert_collection_metadata(
 );
 SELECT isvoi_upsert_collection_metadata(
   'leads',
-  'contact_mail',
-  'Заявки с сайта. Редактор/менеджер видит и меняет статус обработки, но публичный сайт только создает заявки через отдельную политику.',
-  '{{kind}} · {{contact}} · {{status}}',
+  'support_agent',
+  'Заявки с сайта. Ежедневный цикл: новая, в работе, ждем ответа, успешная или закрыта.',
+  '{{status}} · {{contact}} · {{kind}}',
   NULL,
   '#16a34a'
 );
@@ -265,9 +265,9 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'leads',
   'update',
-  'status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term',
+  'status,priority,assigned_to,contact_channel,next_action_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term',
   NULL,
-  '{"status":{"_in":["new","in_progress","waiting_client","contacted","won","lost","archived"]},"priority":{"_in":["normal","high"]}}'::json
+  '{"status":{"_in":["new","in_progress","waiting","won","closed"]},"priority":{"_in":["normal","high"]}}'::json
 );
 SELECT isvoi_upsert_permission('ISVOI Editor', 'lead_comments', 'read', '*', NULL);
 SELECT isvoi_upsert_permission(

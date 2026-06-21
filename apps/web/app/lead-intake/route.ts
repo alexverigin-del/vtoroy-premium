@@ -55,6 +55,10 @@ function text(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
+function optionalText(value: string): string | null {
+  return value || null;
+}
+
 function inferKind(kind: string, scenario: string): string {
   const explicit = kind.toLowerCase();
   if (["purchase", "selection", "trade", "club", "upgrade", "support"].includes(explicit)) {
@@ -125,28 +129,28 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
   }
 
   try {
-    const directusLead: Omit<StoredLead, "created_at"> = {
+    const directusLead = {
       kind: lead.kind,
       status: lead.status,
       priority: lead.priority,
       contact_channel: lead.contact_channel,
-      name: lead.name,
+      name: optionalText(lead.name),
       contact: lead.contact,
-      device: lead.device,
-      device_id: lead.device_id,
-      scenario: lead.scenario,
-      message: lead.message,
+      device: optionalText(lead.device),
+      device_id: optionalText(lead.device_id),
+      scenario: optionalText(lead.scenario),
+      message: optionalText(lead.message),
       source: lead.source,
       source_path: lead.source_path,
-      source_url: lead.source_url,
-      page_title: lead.page_title,
-      referrer: lead.referrer,
-      utm_source: lead.utm_source,
-      utm_medium: lead.utm_medium,
-      utm_campaign: lead.utm_campaign,
-      utm_content: lead.utm_content,
-      utm_term: lead.utm_term,
-      user_agent: lead.user_agent,
+      source_url: optionalText(lead.source_url),
+      page_title: optionalText(lead.page_title),
+      referrer: optionalText(lead.referrer),
+      utm_source: optionalText(lead.utm_source),
+      utm_medium: optionalText(lead.utm_medium),
+      utm_campaign: optionalText(lead.utm_campaign),
+      utm_content: optionalText(lead.utm_content),
+      utm_term: optionalText(lead.utm_term),
+      user_agent: optionalText(lead.user_agent),
     };
     const response = await postPayload(directusLead);
     if (response?.ok) return true;
@@ -173,6 +177,14 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       device: lead.device,
       message: fallbackMessage || lead.message,
       source: lead.source_path || lead.source,
+      source_path: lead.source_path,
+      source_url: optionalText(lead.source_url),
+      referrer: optionalText(lead.referrer),
+      utm_source: optionalText(lead.utm_source),
+      utm_medium: optionalText(lead.utm_medium),
+      utm_campaign: optionalText(lead.utm_campaign),
+      utm_content: optionalText(lead.utm_content),
+      utm_term: optionalText(lead.utm_term),
     });
 
     return Boolean(legacyResponse?.ok);

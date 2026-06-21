@@ -148,7 +148,12 @@ WHERE NOT EXISTS (
     FROM directus_fields df
     WHERE df.collection = ef.table_name
       AND df.field = ef.field_name
-      AND coalesce(df.special, '') LIKE '%alias%'
+      AND (
+        coalesce(df.special, '') LIKE '%alias%'
+        OR coalesce(df.special, '') LIKE '%o2m%'
+        OR coalesce(df.special, '') LIKE '%m2m%'
+        OR coalesce(df.special, '') LIKE '%m2a%'
+      )
   )
 UNION ALL
 SELECT 'schema.directus_field_metadata.missing', count(*)::text

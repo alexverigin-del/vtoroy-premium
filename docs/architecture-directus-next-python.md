@@ -82,8 +82,15 @@ When Directus schema or Studio metadata changes, run the relevant setup script
 and pipe it into the Postgres container:
 
 ```bash
-npm run directus:setup:catalog \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+npm run directus:setup:catalog > /tmp/isvoi_directus_setup.sql
+
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_directus_setup.sql
 ```
 
 Use the same pattern for `directus:setup:leads`, `directus:setup:editor` and

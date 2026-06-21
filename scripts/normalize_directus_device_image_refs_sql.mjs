@@ -6,8 +6,10 @@
  *
  * Usage:
  *   NEXT_PUBLIC_DIRECTUS_URL=https://api.isvoi.ru \
- *     node scripts/normalize_directus_device_image_refs_sql.mjs \
- *       | docker compose exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+ *     node scripts/normalize_directus_device_image_refs_sql.mjs > /tmp/isvoi_normalize_directus_device_image_refs_sql.sql
+ *   cd infra/directus-beget
+ *   set -a && . ./.env && set +a
+ *   docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 < /tmp/isvoi_normalize_directus_device_image_refs_sql.sql
  */
 
 const publicUrl = (process.env.NEXT_PUBLIC_DIRECTUS_URL || process.env.DIRECTUS_URL || "https://api.isvoi.ru")

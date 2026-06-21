@@ -61,12 +61,20 @@ npm run text:audit
 npm run legacy:audit
 ```
 
-Directus setup scripts print idempotent SQL. On the server, pipe them into the
-Postgres container, for example:
+Directus setup scripts print idempotent SQL. On the server, write the SQL to a
+temporary file and apply it through the Beget compose env:
 
 ```bash
-npm run directus:setup:catalog \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+cd /opt/isvoi
+npm run directus:setup:catalog > /tmp/isvoi_directus_setup.sql
+
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_directus_setup.sql
 ```
 
 ## Production

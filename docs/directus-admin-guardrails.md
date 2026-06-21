@@ -10,8 +10,16 @@ npm run directus:setup:admin-guardrails
 Production:
 
 ```bash
-npm run directus:setup:admin-guardrails \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1'
+cd /opt/isvoi
+npm run directus:setup:admin-guardrails > /tmp/isvoi_admin_guardrails.sql
+
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_admin_guardrails.sql
 ```
 
 ## What It Enforces

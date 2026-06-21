@@ -201,20 +201,46 @@ Production images should resolve through Directus Files, not bundled
 or replacing product/site media:
 
 ```bash
-node scripts/setup_directus_file_folders_sql.mjs \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+cd /opt/isvoi
+node scripts/setup_directus_file_folders_sql.mjs > /tmp/isvoi_file_folders.sql
+
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_file_folders.sql
+
+cd /opt/isvoi
 npm run directus:media
 npm run directus:site-assets -- --replace
-node scripts/normalize_directus_device_image_refs_sql.mjs \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+node scripts/normalize_directus_device_image_refs_sql.mjs > /tmp/isvoi_device_image_refs.sql
+
+cd infra/directus-beget
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_device_image_refs.sql
+
+cd /opt/isvoi
 npm run directus:normalize-images -- --dry-run
 ```
 
 Then audit the database:
 
 ```bash
-node scripts/audit_directus_image_refs_sql.mjs \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+cd /opt/isvoi
+node scripts/audit_directus_image_refs_sql.mjs > /tmp/isvoi_image_refs_audit.sql
+
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_image_refs_audit.sql
 ```
 
 Expected result for migrated content:
@@ -278,8 +304,16 @@ Treat these audit checks as blockers before publishing a batch:
 Run catalog audit manually when needed:
 
 ```bash
-node scripts/audit_directus_catalog_sql.mjs \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+cd /opt/isvoi
+node scripts/audit_directus_catalog_sql.mjs > /tmp/isvoi_catalog_audit.sql
+
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_catalog_audit.sql
 ```
 
 ## Pre-fill checklist

@@ -8,8 +8,10 @@
  * allowlists.
  *
  * Usage:
- *   node scripts/setup_directus_public_permissions_sql.mjs \
- *     | docker compose exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+ *   node scripts/setup_directus_public_permissions_sql.mjs > /tmp/isvoi_setup_directus_public_permissions_sql.sql
+ *   cd infra/directus-beget
+ *   set -a && . ./.env && set +a
+ *   docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 < /tmp/isvoi_setup_directus_public_permissions_sql.sql
  */
 
 process.stdout.write(String.raw`

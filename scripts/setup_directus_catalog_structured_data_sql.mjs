@@ -8,8 +8,10 @@
  * `device_passports` and `trade_options` first.
  *
  * Usage:
- *   node scripts/setup_directus_catalog_structured_data_sql.mjs \
- *     | docker compose exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+ *   node scripts/setup_directus_catalog_structured_data_sql.mjs > /tmp/isvoi_setup_directus_catalog_structured_data_sql.sql
+ *   cd infra/directus-beget
+ *   set -a && . ./.env && set +a
+ *   docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 < /tmp/isvoi_setup_directus_catalog_structured_data_sql.sql
  */
 
 process.stdout.write(String.raw`

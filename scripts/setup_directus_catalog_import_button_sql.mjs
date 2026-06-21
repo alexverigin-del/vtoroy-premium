@@ -10,8 +10,10 @@
  *   CATALOG_IMPORT_WEBHOOK_URL=https://isvoi.ru/api/admin/catalog-import/run
  *
  * Usage:
- *   CATALOG_IMPORT_WEBHOOK_SECRET=... node scripts/setup_directus_catalog_import_button_sql.mjs \
- *     | docker compose exec -T database sh -lc 'psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1'
+ *   CATALOG_IMPORT_WEBHOOK_SECRET=... node scripts/setup_directus_catalog_import_button_sql.mjs > /tmp/isvoi_setup_directus_catalog_import_button_sql.sql
+ *   cd infra/directus-beget
+ *   set -a && . ./.env && set +a
+ *   docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 < /tmp/isvoi_setup_directus_catalog_import_button_sql.sql
  */
 
 const secret = process.env.CATALOG_IMPORT_WEBHOOK_SECRET || "";

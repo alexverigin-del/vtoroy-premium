@@ -14,8 +14,16 @@ npm run directus:setup:public-permissions
 На production SQL применяется через PostgreSQL контейнер Directus:
 
 ```bash
-npm run directus:setup:public-permissions \
-  | docker compose -f infra/directus-beget/docker-compose.yml exec -T database sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1'
+cd /opt/isvoi
+npm run directus:setup:public-permissions > /tmp/isvoi_public_permissions.sql
+
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_public_permissions.sql
 ```
 
 ## Что открыто без токена

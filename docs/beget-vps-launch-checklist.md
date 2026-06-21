@@ -486,8 +486,9 @@ Automate both with a daily cron entry and copy the archives off the VPS
 (e.g. to Beget storage or S3). Test a restore at least once:
 
 ```bash
+set -a && . ./.env && set +a
 gunzip -c isvoi-db-YYYY-MM-DD.sql.gz \
-  | docker compose exec -T database psql -U <DB_USER> <DB_DATABASE>
+  | docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE"
 ```
 
 ---

@@ -27,6 +27,7 @@
     "directus:setup:file-folders": "node scripts/setup_directus_file_folders_sql.mjs",
     "directus:setup:files-cleanup": "node scripts/setup_directus_files_cleanup_sql.mjs",
     "directus:setup:site-content": "node scripts/setup_directus_site_content_sql.mjs",
+    "directus:setup:site-pages-workflow": "node scripts/setup_directus_site_pages_workflow_sql.mjs",
     "directus:setup:catalog-studio": "node scripts/setup_directus_catalog_studio_sql.mjs",
     "directus:setup:global-content": "node scripts/setup_directus_global_content_sql.mjs",
     "directus:setup:public-permissions": "node scripts/setup_directus_public_permissions_sql.mjs",

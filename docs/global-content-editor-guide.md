@@ -41,10 +41,26 @@ Open `FAQ`.
 
 Use bookmarks:
 
-- `Активные FAQ`
+- `Все активные FAQ`
+- `Общие FAQ`
+- `Каталог FAQ`
+- `Store FAQ`
+- `Trade FAQ`
+- `Passport FAQ`
+- `Club FAQ`
 - `Скрытые FAQ`
 
 Each FAQ item needs a stable `Ключ`, question, answer, category and order.
+Most day-to-day work happens in two groups:
+
+- `Вопрос и ответ`: public question and answer text.
+- `Показ на сайте`: page, category, order and visibility.
+
+The `Служебное` group is intentionally closed. Change `Ключ` only when you
+understand which page section uses that key in `faqKeys` / `faq_keys`.
+
+Editors can create and update FAQ, but should hide old questions with
+`Показывать на сайте` instead of deleting them.
 
 The baseline FAQ set is seeded from the repository:
 
@@ -73,4 +89,5 @@ Apply Studio metadata with:
 
 ```bash
 npm run directus:setup:global-content
+npm run directus:setup:faq-editor
 ```

@@ -7,6 +7,8 @@
  * - clear bookmarks for each managed page;
  * - compact section tables;
  * - technical renderer fields moved to a closed advanced group.
+ * - editor permissions that allow safe content edits without creating or
+ *   reshaping renderer sections.
  *
  * Usage:
  *   node scripts/setup_directus_site_pages_workflow_sql.mjs \
@@ -101,11 +103,11 @@ SELECT isvoi_upsert_directus_field(
   'sections',
   'list-o2m',
   NULL,
-  '{"layout":"table","enableCreate":true,"enableSelect":true,"fields":["sort_order","is_active","headline","image","section_key"]}'::json,
+  '{"layout":"table","enableCreate":false,"enableSelect":false,"fields":["sort_order","is_active","headline","image","section_key"]}'::json,
   NULL,
   'full',
   41,
-  'Основное место редактирования блоков страницы. Порядок задаётся числом sort_order; выключенный блок не показывается на сайте.',
+  'Основное место редактирования существующих блоков страницы. Новые секции добавляет разработчик или администратор, чтобы не сломать renderer.',
   false,
   false,
   false,
@@ -155,7 +157,7 @@ SELECT isvoi_upsert_directus_field('page_sections', 'sort_order', 'input', NULL,
 SELECT isvoi_upsert_directus_field('page_sections', 'is_active', 'boolean', 'boolean', NULL, NULL, 'half', 5, 'Выключите, чтобы временно скрыть блок без удаления.', false, false, false, NULL, 'group_placement', 'Показывать на сайте');
 SELECT isvoi_upsert_directus_field('page_sections', 'section_key', 'input', NULL, NULL, NULL, 'half', 91, 'Стабильный ключ блока для кода и импорта. Не менять без разработчика.', true, false, true, NULL, 'group_advanced', 'Ключ блока');
 SELECT isvoi_upsert_directus_field('page_sections', 'variant', 'select-dropdown', 'labels', '{"choices":[{"text":"Hero страницы","value":"page.hero","color":"#0f766e"},{"text":"Hero главной","value":"hero.static","color":"#0f766e"},{"text":"Полоса доверия","value":"trust.strip","color":"#10b981"},{"text":"Карточки 3","value":"cards.three","color":"#2563eb"},{"text":"Сетка карточек","value":"cards.grid","color":"#2563eb"},{"text":"Каталог","value":"catalog.grid","color":"#111827"},{"text":"Шаги","value":"steps","color":"#7c3aed"},{"text":"Store steps","value":"store.steps","color":"#7c3aed"},{"text":"Сравнение","value":"compare","color":"#dc2626"},{"text":"Диагностика","value":"diagnostics.compare","color":"#dc2626"},{"text":"Визуальная полоса","value":"visual.band","color":"#0891b2"},{"text":"FAQ","value":"faq","color":"#ca8a04"},{"text":"CTA","value":"page.cta","color":"#f97316"},{"text":"Форма","value":"final.form","color":"#f97316"},{"text":"Passport split","value":"passport.split","color":"#be123c"},{"text":"Trade choices","value":"trade.choices","color":"#7c3aed"},{"text":"Club levels","value":"club.levels","color":"#ca8a04"},{"text":"Levels","value":"levels","color":"#ca8a04"}]}'::json, NULL, 'half', 92, 'Тип блока, который выбирает Next renderer. Менять только вместе с проверкой сайта.', true, false, false, NULL, 'group_advanced', 'Тип блока');
-SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 93, 'JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Для обычного текста и картинки используйте поля выше.', false, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
+SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 93, 'JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Редактор видит это поле только для диагностики; правки JSON проходят через setup/import.', true, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
 
 DROP FUNCTION isvoi_upsert_directus_field(varchar, varchar, varchar, varchar, json, json, varchar, integer, text, boolean, boolean, boolean, varchar, varchar, text);
 
@@ -216,6 +218,81 @@ SELECT isvoi_upsert_preset('ISVOI Editor', 'page_sections', 'Скрытые се
 
 DROP FUNCTION isvoi_upsert_preset(text, varchar, varchar, varchar, varchar, json, json);
 
+CREATE OR REPLACE FUNCTION isvoi_upsert_permission(
+  p_policy_name text,
+  p_collection varchar,
+  p_action varchar,
+  p_fields text,
+  p_permissions json DEFAULT NULL,
+  p_validation json DEFAULT NULL,
+  p_presets json DEFAULT NULL
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_policy uuid;
+BEGIN
+  SELECT id INTO v_policy FROM directus_policies WHERE name = p_policy_name LIMIT 1;
+  IF v_policy IS NULL THEN
+    RETURN;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM directus_permissions
+    WHERE policy = v_policy AND collection = p_collection AND action = p_action
+  ) THEN
+    UPDATE directus_permissions
+    SET fields = p_fields,
+      permissions = p_permissions,
+      validation = p_validation,
+      presets = p_presets
+    WHERE policy = v_policy AND collection = p_collection AND action = p_action;
+  ELSE
+    INSERT INTO directus_permissions (
+      policy, collection, action, fields, permissions, validation, presets
+    ) VALUES (
+      v_policy, p_collection, p_action, p_fields, p_permissions, p_validation, p_presets
+    );
+  END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION isvoi_delete_permission(
+  p_policy_name text,
+  p_collection varchar,
+  p_action varchar
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_policy uuid;
+BEGIN
+  SELECT id INTO v_policy FROM directus_policies WHERE name = p_policy_name LIMIT 1;
+  IF v_policy IS NULL THEN
+    RETURN;
+  END IF;
+
+  DELETE FROM directus_permissions
+  WHERE policy = v_policy
+    AND collection = p_collection
+    AND action = p_action;
+END;
+$$;
+
+SELECT isvoi_upsert_permission('ISVOI Editor', 'page_sections', 'read', '*', NULL);
+SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
+SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'delete');
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'page_sections',
+  'update',
+  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
+  NULL
+);
+
+DROP FUNCTION isvoi_upsert_permission(text, varchar, varchar, text, json, json, json);
+DROP FUNCTION isvoi_delete_permission(text, varchar, varchar);
+
 SELECT 'site_pages_workflow.presets' AS check_name, count(*)::text AS value
 FROM directus_presets
 WHERE collection IN ('site_pages', 'page_sections')
@@ -227,12 +304,26 @@ FROM directus_fields
 WHERE collection = 'page_sections'
   AND field IN ('section_key', 'variant', 'content')
   AND "group" = 'group_advanced'
+  AND readonly = true
 UNION ALL
 SELECT 'site_pages_workflow.sections_table', count(*)::text
 FROM directus_fields
 WHERE collection = 'site_pages'
   AND field = 'sections'
-  AND options::text LIKE '%headline%';
+  AND options::text LIKE '%"enableCreate":false%'
+UNION ALL
+SELECT 'site_pages_workflow.editor_no_create', count(*)::text
+FROM directus_permissions
+WHERE collection = 'page_sections'
+  AND action = 'create'
+  AND policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Editor')
+UNION ALL
+SELECT 'site_pages_workflow.editor_update_fields', count(*)::text
+FROM directus_permissions
+WHERE collection = 'page_sections'
+  AND action = 'update'
+  AND fields = 'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image'
+  AND policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Editor');
 
 COMMIT;
 `);

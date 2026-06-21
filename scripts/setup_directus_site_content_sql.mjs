@@ -189,7 +189,7 @@ SELECT isvoi_upsert_directus_field('page_sections', 'primary_cta_url', 'input', 
 SELECT isvoi_upsert_directus_field('page_sections', 'secondary_cta_label', 'input', NULL, NULL, NULL, 'half', 53, 'Текст второй кнопки.', false, false, false, NULL, 'group_actions', 'Вторая кнопка');
 SELECT isvoi_upsert_directus_field('page_sections', 'secondary_cta_url', 'input', NULL, NULL, NULL, 'half', 54, 'Ссылка второй кнопки.', false, false, false, NULL, 'group_actions', 'Ссылка второй кнопки');
 SELECT isvoi_upsert_directus_field('page_sections', 'image', 'file-image', 'file', '{"folder":"ISVOI Site Assets"}'::json, NULL, 'full', 71, 'Главное нетоварное изображение блока. Загружайте и выбирайте файлы из папки ISVOI Site Assets. Сайт отдаёт его через Directus assets с resize/WebP/AVIF.', false, false, false, 'm2o', 'group_media', 'Главное изображение блока');
-SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 91, 'JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Вложенные image_src должны быть Directus asset URL, а не /assets/... .', false, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
+SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 91, 'JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Вложенные image_src должны быть Directus asset URL, а не /assets/... .', true, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
 
 DROP FUNCTION isvoi_upsert_directus_field(varchar, varchar, varchar, varchar, json, json, varchar, integer, text, boolean, boolean, boolean, varchar, varchar, text);
 
@@ -267,6 +267,28 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION isvoi_delete_permission(
+  p_policy_name text,
+  p_collection varchar,
+  p_action varchar
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_policy uuid;
+BEGIN
+  SELECT id INTO v_policy FROM directus_policies WHERE name = p_policy_name LIMIT 1;
+  IF v_policy IS NULL THEN
+    RETURN;
+  END IF;
+
+  DELETE FROM directus_permissions
+  WHERE policy = v_policy
+    AND collection = p_collection
+    AND action = p_action;
+END;
+$$;
+
 SELECT isvoi_upsert_permission('ISVOI Editor', 'site_pages', 'read', '*', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
@@ -277,24 +299,18 @@ SELECT isvoi_upsert_permission(
   '{"status":{"_in":["draft","published","archived"]}}'::json
 );
 SELECT isvoi_upsert_permission('ISVOI Editor', 'page_sections', 'read', '*', NULL);
-SELECT isvoi_upsert_permission(
-  'ISVOI Editor',
-  'page_sections',
-  'create',
-  'page,sort_order,is_active,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
-  NULL,
-  '{"page":{"_nnull":true},"section_key":{"_nnull":true},"sort_order":{"_nnull":true}}'::json,
-  '{"is_active":true,"sort_order":100,"content":{}}'::json
-);
+SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
+SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'delete');
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'update',
-  'page,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
+  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
   NULL
 );
 
 DROP FUNCTION isvoi_upsert_permission(text, varchar, varchar, text, json, json, json);
+DROP FUNCTION isvoi_delete_permission(text, varchar, varchar);
 
 SELECT 'site_content.collections' AS check_name, count(*)::text AS value
 FROM directus_collections

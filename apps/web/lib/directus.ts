@@ -43,6 +43,69 @@ export const directusConfig = {
 /** Cache window for ISR-style revalidation (seconds). */
 const REVALIDATE = 300;
 
+const FILE_FIELDS = [
+  "id",
+  "filename_download",
+  "type",
+  "width",
+  "height",
+  "focal_point_x",
+  "focal_point_y",
+].join(",");
+
+const DEVICE_FIELDS = [
+  "id",
+  "status",
+  "sort",
+  "tags",
+  "category",
+  "title",
+  "model",
+  "specs",
+  "storage",
+  "color",
+  "serial",
+  "price",
+  "price_text",
+  "grade",
+  "battery",
+  "battery_text",
+  "meta_battery",
+  "warranty",
+  "warranty_text",
+  "exit",
+  "exit_text",
+  "availability",
+  "short_description",
+  "headline",
+  "listing_image",
+  "listing_alt",
+  "cta_label",
+  "has_detail_page",
+  "detail_href",
+  "visual_class",
+  "gallery",
+  "passport",
+  "trade",
+  "listing_file",
+  "updated_at",
+  "stock_status",
+  "content_status",
+].join(",");
+
+const DEVICE_IMAGE_FIELDS = [
+  "id",
+  "status",
+  "sort",
+  "device",
+  "role",
+  "label",
+  "alt",
+  "updated_at",
+  "shot_status",
+  ...FILE_FIELDS.split(",").map((field) => `image.${field}`),
+].join(",");
+
 type AssetTransform = {
   width?: number;
   height?: number;
@@ -312,11 +375,11 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: D
 export async function getPublishedDevices(): Promise<Device[]> {
   const [data, imageRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
-    "/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=*&sort=sort,-updated_at",
+    `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_FIELDS}&sort=sort,-updated_at`,
       { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
-      "/items/device_images?filter[status][_eq]=published&fields=*,image.*&sort=device,sort",
+      `/items/device_images?filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=device,sort`,
       { cache: "no-store" },
     ),
   ]);
@@ -337,11 +400,11 @@ export async function getPublishedDevices(): Promise<Device[]> {
 export async function getDeviceBySlug(slug: string): Promise<Device | null> {
   const [data, imageRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
-    `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=*&limit=1`,
+    `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_FIELDS}&limit=1`,
       { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
-      `/items/device_images?filter[device][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*,image.*&sort=sort`,
+      `/items/device_images?filter[device][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=sort`,
       { cache: "no-store" },
     ),
   ]);

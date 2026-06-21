@@ -6,7 +6,7 @@
  * - creates an internal review folder;
  * - keeps files referenced by site/catalog records in production folders;
  * - moves unreferenced ISVOI site assets to the review folder;
- * - adds editor bookmarks for common Files views.
+ * - adds editor bookmarks and Studio notes for common Files views.
  *
  * It does not delete physical files.
  *
@@ -55,7 +55,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   v_role uuid;
-  v_fields json := '["filename_download","title","folder","type","filesize","width","height","uploaded_on"]'::json;
+  v_fields json := '["filename_download","title","folder","description","tags","type","filesize","width","height","uploaded_on"]'::json;
 BEGIN
   SELECT id INTO v_role FROM directus_roles WHERE name = p_role_name LIMIT 1;
   IF v_role IS NULL THEN
@@ -75,7 +75,7 @@ BEGIN
       filter = p_filter,
       layout = 'tabular',
       layout_query = json_build_object('tabular', json_build_object('fields', v_fields, 'sort', p_sort, 'page', 1))::json,
-      layout_options = '{"tabular":{"spacing":"comfortable","widths":{"filename_download":240,"title":260,"folder":190,"type":140,"filesize":110,"width":90,"height":90,"uploaded_on":180}}}'::json,
+      layout_options = '{"tabular":{"spacing":"comfortable","widths":{"filename_download":240,"title":260,"folder":190,"description":320,"tags":180,"type":140,"filesize":110,"width":90,"height":90,"uploaded_on":180}}}'::json,
       refresh_interval = NULL,
       search = NULL
     WHERE role = v_role
@@ -94,11 +94,43 @@ BEGIN
       NULL,
       'tabular',
       json_build_object('tabular', json_build_object('fields', v_fields, 'sort', p_sort, 'page', 1))::json,
-      '{"tabular":{"spacing":"comfortable","widths":{"filename_download":240,"title":260,"folder":190,"type":140,"filesize":110,"width":90,"height":90,"uploaded_on":180}}}'::json,
+      '{"tabular":{"spacing":"comfortable","widths":{"filename_download":240,"title":260,"folder":190,"description":320,"tags":180,"type":140,"filesize":110,"width":90,"height":90,"uploaded_on":180}}}'::json,
       NULL,
       p_filter,
       p_icon,
       p_color
+    );
+  END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION isvoi_set_file_field_note(
+  p_field varchar,
+  p_note text,
+  p_translation text,
+  p_sort integer,
+  p_width varchar DEFAULT NULL
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_translations json := json_build_array(json_build_object('language', 'ru-RU', 'translation', p_translation))::json;
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM directus_fields
+    WHERE collection = 'directus_files' AND field = p_field
+  ) THEN
+    UPDATE directus_fields
+    SET note = p_note,
+      translations = v_translations,
+      sort = p_sort,
+      width = COALESCE(p_width, width)
+    WHERE collection = 'directus_files' AND field = p_field;
+  ELSE
+    INSERT INTO directus_fields (
+      collection, field, note, translations, sort, width
+    ) VALUES (
+      'directus_files', p_field, p_note, v_translations, p_sort, p_width
     );
   END IF;
 END;
@@ -115,6 +147,12 @@ BEGIN
   v_site_folder := isvoi_file_folder_id('ISVOI Site Assets');
   v_editorial_folder := isvoi_file_folder_id('ISVOI Editorial');
   v_review_folder := isvoi_file_folder_id('ISVOI File Review');
+
+  UPDATE directus_collections
+  SET note = 'Памятка ISVOI Files: товарные фото хранятся в ISVOI Device Photos и связываются через device_images/listing_file; изображения страниц — в ISVOI Site Assets; редакционные материалы — в ISVOI Editorial; спорные и неиспользуемые файлы — в ISVOI File Review. Не удаляйте файл, пока не проверили его связи с каталогом или страницами.',
+    display_template = '{{title}} · {{filename_download}}',
+    icon = 'perm_media'
+  WHERE collection = 'directus_files';
 
   -- Canonical folders for files currently used by the live site/catalog.
   UPDATE directus_files
@@ -207,7 +245,86 @@ BEGIN
   );
 END $$;
 
+SELECT isvoi_set_file_field_note(
+  'folder',
+  'Выберите рабочую папку. ISVOI Device Photos — товарные фото; ISVOI Site Assets — изображения страниц и секций; ISVOI Editorial — редакционные материалы; ISVOI File Review — спорные или неиспользуемые файлы. Не оставляйте новые файлы без папки.',
+  'Папка ISVOI',
+  10,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'title',
+  'Рабочее название/ключ. Для импорта товаров используйте устойчивый формат вроде isvoi:{device_id}:{role}:xlsx; для изображений сайта — isvoi:site:{section}; для редакционных — isvoi:editorial:{topic}. Это помогает не плодить дубли.',
+  'Рабочее название',
+  20,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'description',
+  'Коротко опишите, что на изображении и где оно используется. Для Review-файлов добавьте причину: не привязан, дубль, плохое качество, требует проверки.',
+  'Описание и использование',
+  30,
+  'full'
+);
+SELECT isvoi_set_file_field_note(
+  'tags',
+  'Служебные метки через запятую. Примеры: isvoi,device,used; isvoi,site,used; isvoi,editorial; isvoi,review,unused. Теги помогают быстро фильтровать и чистить медиатеку.',
+  'Теги для фильтрации',
+  40,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'filename_download',
+  'Исходное имя файла. Его можно узнавать при скачивании, но не используйте его как главный ключ связки: для связок важнее title, folder и relations.',
+  'Имя файла',
+  50,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'type',
+  'Тип файла. Для изображений сайта и каталога используйте image/*; документы импорта держите в отдельных import batch-полях, не смешивайте с публичными медиа.',
+  'Тип',
+  60,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'filesize',
+  'Размер файла. Если изображение слишком тяжелое, оптимизируйте исходник перед загрузкой; сайт всё равно отдаёт resized/WebP/AVIF через Directus assets.',
+  'Размер',
+  70,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'width',
+  'Ширина исходника. Для товарных и hero-изображений лучше загружать качественный исходник, а не уже пережатую миниатюру.',
+  'Ширина',
+  80,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'height',
+  'Высота исходника. Проверяйте, что важные детали не будут обрезаны в карточках и галереях.',
+  'Высота',
+  90,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'focal_point_x',
+  'Фокусная точка помогает Directus корректнее кадрировать изображение при cover-resize. Ставьте её на устройство, лицо или важную деталь.',
+  'Фокус X',
+  100,
+  'half'
+);
+SELECT isvoi_set_file_field_note(
+  'focal_point_y',
+  'Фокусная точка помогает Directus корректнее кадрировать изображение при cover-resize. Ставьте её на устройство, лицо или важную деталь.',
+  'Фокус Y',
+  110,
+  'half'
+);
+
 DROP FUNCTION isvoi_upsert_files_preset(text, varchar, varchar, varchar, json, json);
+DROP FUNCTION isvoi_set_file_field_note(varchar, text, text, integer, varchar);
 DROP FUNCTION isvoi_file_folder_id(text);
 
 SELECT 'files.folders' AS check_name, count(*)::text AS value
@@ -233,7 +350,25 @@ WHERE collection = 'directus_files'
     'Files: Review Unused',
     'Files: Unsorted'
   )
-  AND role IN (SELECT id FROM directus_roles WHERE name = 'ISVOI Editor');
+  AND role IN (SELECT id FROM directus_roles WHERE name = 'ISVOI Editor')
+UNION ALL
+SELECT 'files.studio_notes', count(*)::text
+FROM directus_fields
+WHERE collection = 'directus_files'
+  AND field IN (
+    'folder',
+    'title',
+    'description',
+    'tags',
+    'filename_download',
+    'type',
+    'filesize',
+    'width',
+    'height',
+    'focal_point_x',
+    'focal_point_y'
+  )
+  AND note IS NOT NULL;
 
 COMMIT;
 `);

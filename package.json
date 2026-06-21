@@ -22,6 +22,8 @@
     "directus:site-assets": "node scripts/import_site_assets.mjs",
     "directus:normalize-images": "node scripts/normalize_directus_image_refs.mjs",
     "directus:normalize-device-images-sql": "node scripts/normalize_directus_device_image_refs_sql.mjs",
+    "directus:schema:snapshot": "node scripts/export_directus_schema_snapshot.mjs",
+    "directus:audit-schema": "node scripts/audit_directus_schema_sql.mjs",
     "directus:audit-images": "node scripts/audit_directus_image_refs_sql.mjs",
     "directus:audit-catalog": "node scripts/audit_directus_catalog_sql.mjs",
     "directus:setup:file-folders": "node scripts/setup_directus_file_folders_sql.mjs",

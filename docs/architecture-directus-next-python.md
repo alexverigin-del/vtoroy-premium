@@ -89,6 +89,16 @@ npm run directus:setup:catalog \
 Use the same pattern for `directus:setup:leads`, `directus:setup:editor` and
 other SQL-printing setup scripts.
 
+After schema, Studio, role or Flow changes, export and audit the running
+Directus contract:
+
+```bash
+npm run directus:schema:snapshot
+npm run directus:audit-schema
+```
+
+See `docs/directus-schema-snapshot-audit.md`.
+
 ## Decommissioning Legacy
 
 Completed:

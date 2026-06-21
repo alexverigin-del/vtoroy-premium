@@ -49,6 +49,8 @@ REQUESTS_HTTP_ERROR = requests.HTTPError if requests is not None else RuntimeErr
 
 COLLECTION = "devices"
 IMAGES_COLLECTION = "device_images"
+PASSPORTS_COLLECTION = "device_passports"
+TRADE_OPTIONS_COLLECTION = "trade_options"
 MEDIA_ROLES = ("card", "main", "screen", "body", "defect", "other")
 ROLE_DEFAULT_SORT = {
     "card": 0,
@@ -550,6 +552,137 @@ def sync_listing_file(cfg: dict[str, str], device_id: str, file_id: str | None, 
     print(f"[patch] devices/{device_id}.listing_file")
 
 
+def passport_payload(passport: Any) -> dict[str, Any]:
+    if not isinstance(passport, dict) or not passport:
+        return {}
+    diagnostics = passport.get("diagnostics") if isinstance(passport.get("diagnostics"), dict) else {}
+    condition = passport.get("condition") if isinstance(passport.get("condition"), dict) else {}
+    warranty = passport.get("warranty") if isinstance(passport.get("warranty"), dict) else {}
+    exit_price = passport.get("exitPrice") if isinstance(passport.get("exitPrice"), dict) else {}
+    payload = {
+        "repair": passport.get("repair"),
+        "water": passport.get("water"),
+        "summary_rows": passport.get("summaryRows"),
+        "diagnostics_status": diagnostics.get("status"),
+        "diagnostics_checklist": diagnostics.get("checklist"),
+        "condition_grade_text": condition.get("gradeText"),
+        "condition_note": condition.get("note"),
+        "condition_notes": condition.get("notes"),
+        "defect_photo_alt": condition.get("defectPhotoAlt"),
+        "warranty_duration": warranty.get("duration"),
+        "warranty_covered": warranty.get("covered"),
+        "warranty_not_covered": warranty.get("notCovered"),
+        "exit_headline": exit_price.get("headline"),
+        "exit_buy_today": exit_price.get("buyToday"),
+        "exit_trade_in_estimate": exit_price.get("tradeInEstimate"),
+        "exit_condition": exit_price.get("condition"),
+        "exit_note": exit_price.get("note"),
+    }
+    return {key: value for key, value in payload.items() if value is not None}
+
+
+def sync_passport(cfg: dict[str, str], device_id: str, passport: Any, dry_run: bool) -> None:
+    payload = passport_payload(passport)
+    if not payload:
+        return
+    payload["device"] = device_id
+    if dry_run:
+        print(f"[dry-run] upsert device_passports/{device_id} -> {json.dumps(payload, ensure_ascii=False)[:180]}")
+        return
+    rows = get_all(
+        cfg,
+        f"/items/{PASSPORTS_COLLECTION}?filter[device][_eq]={quote(device_id, safe='')}&fields=id&limit=1",
+    )
+    if rows:
+        request_json(cfg, "PATCH", f"/items/{PASSPORTS_COLLECTION}/{rows[0]['id']}", payload)
+        print(f"[patch] device_passports/{device_id}")
+        return
+    request_json(cfg, "POST", f"/items/{PASSPORTS_COLLECTION}", payload)
+    print(f"[create] device_passports/{device_id}")
+
+
+def sync_passport_defect_photo(cfg: dict[str, str], device_id: str, file_id: str | None, dry_run: bool) -> None:
+    if not file_id:
+        return
+    if dry_run:
+        print(f"[dry-run] patch device_passports/{device_id}.defect_photo = {file_id}")
+        return
+    rows = get_all(
+        cfg,
+        f"/items/{PASSPORTS_COLLECTION}?filter[device][_eq]={quote(device_id, safe='')}&fields=id,defect_photo&limit=1",
+    )
+    if not rows:
+        request_json(cfg, "POST", f"/items/{PASSPORTS_COLLECTION}", {"device": device_id, "defect_photo": file_id})
+        print(f"[create] device_passports/{device_id}.defect_photo")
+        return
+    if rows[0].get("defect_photo"):
+        print(f"[skip] device_passports/{device_id}.defect_photo already set")
+        return
+    request_json(cfg, "PATCH", f"/items/{PASSPORTS_COLLECTION}/{rows[0]['id']}", {"defect_photo": file_id})
+    print(f"[patch] device_passports/{device_id}.defect_photo")
+
+
+def trade_option_payloads(trade: Any) -> list[dict[str, Any]]:
+    if not isinstance(trade, dict):
+        return []
+    options = trade.get("options")
+    if not isinstance(options, list):
+        return []
+    payloads: list[dict[str, Any]] = []
+    for index, option in enumerate(options, start=1):
+        if not isinstance(option, dict):
+            continue
+        label = str(option.get("label") or "").strip()
+        value = option.get("value")
+        if not label and empty(value):
+            continue
+        payloads.append({
+            "sort": index * 10,
+            "label": label,
+            "value": int(value or 0),
+            "is_active": True,
+        })
+    return payloads
+
+
+def sync_trade_options(cfg: dict[str, str], device_id: str, trade: Any, dry_run: bool) -> None:
+    payloads = trade_option_payloads(trade)
+    if not payloads:
+        return
+    if dry_run:
+        print(f"[dry-run] sync {len(payloads)} trade_options for {device_id}")
+        return
+    existing = get_all(
+        cfg,
+        f"/items/{TRADE_OPTIONS_COLLECTION}?filter[device][_eq]={quote(device_id, safe='')}&fields=id,sort&limit=-1",
+    )
+    by_sort = {int(row.get("sort") or 0): row for row in existing}
+    active_sorts: set[int] = set()
+    for payload in payloads:
+        payload["device"] = device_id
+        sort = int(payload["sort"])
+        active_sorts.add(sort)
+        row = by_sort.get(sort)
+        if row:
+            request_json(cfg, "PATCH", f"/items/{TRADE_OPTIONS_COLLECTION}/{row['id']}", payload)
+            print(f"[patch] trade_options/{device_id} sort={sort}")
+        else:
+            request_json(cfg, "POST", f"/items/{TRADE_OPTIONS_COLLECTION}", payload)
+            print(f"[create] trade_options/{device_id} sort={sort}")
+    for row in existing:
+        sort = int(row.get("sort") or 0)
+        if sort not in active_sorts:
+            request_json(cfg, "PATCH", f"/items/{TRADE_OPTIONS_COLLECTION}/{row['id']}", {"is_active": False})
+            print(f"[archive] trade_options/{device_id} sort={sort}")
+
+
+def sync_structured_catalog_data(cfg: dict[str, str], device_id: str, device: dict[str, Any], dry_run: bool) -> None:
+    if not device_id:
+        return
+    sync_passport(cfg, device_id, device.get("passport"), dry_run)
+    sync_trade_options(cfg, device_id, device.get("trade"), dry_run)
+
+
 def sync_media(
     cfg: dict[str, str],
     indexes: dict[str, dict[str, dict[str, Any]]],
@@ -578,6 +711,8 @@ def sync_media(
         sync_device_image(cfg, indexes, device_id=device_id, media=media, file_id=file_id, dry_run=dry_run, replace=replace)
         if role == "card":
             sync_listing_file(cfg, device_id, file_id, dry_run, replace)
+        if role == "defect":
+            sync_passport_defect_photo(cfg, device_id, file_id, dry_run)
 
 
 def main() -> None:
@@ -609,6 +744,7 @@ def main() -> None:
         folder_id = ensure_folder(cfg, args.media_folder, dry_run=False)
     for device, media_rows in parsed:
         device_id = upsert_device(cfg, device, dry_run=args.dry_run)
+        sync_structured_catalog_data(cfg, device_id, device, args.dry_run)
         if not args.skip_media and media_rows:
             if indexes is None:
                 indexes = build_indexes(cfg)

@@ -9,15 +9,13 @@ a snapshot/migration. The shared TypeScript contract lives in
 Field types use Directus terminology. `M2O` = many-to-one, `O2M` = one-to-many,
 `M2M` = many-to-many.
 
-> **MVP divergence (current implementation).** The seed script
-> `scripts/seed_directus.py` and the Next.js fetcher (`apps/web/lib/directus.ts`)
-> currently use a **single `devices` collection**: scalar fields as snake_case
-> columns, and `tags` / `gallery` / `passport` / `trade` as **JSON columns**.
-> `listing_image` is a plain string path (no file relation) so the MVP needs no
-> binary uploads. The relational sub-collections below (`device_gallery`,
-> `device_passports`, `trade_options`) remain the documented future target for
-> richer per-row admin editing; promote the JSON fields to them when that UX is
-> needed.
+> **Current implementation.** The catalog still keeps legacy JSON fields in
+> `devices` for fallback compatibility, but commercial editing is moving to
+> structured Directus collections. Product photos are read from `device_images`,
+> the product Passport is read from `device_passports`, and Trade/Upgrade offers
+> are read from `trade_options`. The Next.js renderer reads structured rows
+> first and falls back to `devices.gallery`, `devices.passport` and
+> `devices.trade` only when the structured rows are missing.
 
 ---
 
@@ -52,9 +50,11 @@ Field types use Directus terminology. `M2O` = many-to-one, `O2M` = one-to-many,
 | `listing_image`   | string          | Legacy catalog thumbnail path fallback.        |
 | `listing_alt`     | string          | Alt text.                                           |
 | `cta_label`       | string          | e.g. `Смотреть паспорт`.                            |
-| `gallery`         | O2M → `device_gallery` | Ordered images.                             |
-| `passport`        | O2M (1) → `device_passports` | One passport per device.              |
-| `trade_options`   | O2M → `trade_options` | Trade-in estimates.                          |
+| `gallery`         | JSON legacy fallback | New product media lives in `device_images`. |
+| `passport_record` | O2M (1) -> `device_passports` | Structured Passport editor.          |
+| `passport`        | JSON legacy fallback | Read-only in Studio; kept during migration. |
+| `trade`           | JSON legacy fallback | Read-only in Studio; kept during migration. |
+| `trade_options`   | O2M -> `trade_options` | Trade-in estimates.                          |
 
 ## `device_gallery`
 

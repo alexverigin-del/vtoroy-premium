@@ -9,6 +9,8 @@ Use these Directus collections for product inventory:
 
 - `devices` stores the device card/passport/trade data.
 - `device_images` stores all product media rows.
+- `device_passports` stores the structured ISVOI Passport for each device.
+- `trade_options` stores structured Trade/Upgrade offers for each device.
 - `directus_files` stores uploaded files and metadata.
 
 Directus Files folders:
@@ -23,6 +25,10 @@ Directus Files folders:
 mirrored as a `device_images` row with `role = card`. The storefront reads
 `device_images` first and falls back to legacy `devices.gallery` JSON only when
 no published gallery rows exist.
+
+`devices.passport` and `devices.trade` are legacy JSON fallback fields. For new
+catalog work, edit the embedded `passport_record` and `trade_options` blocks on
+the device page in Studio.
 
 Image roles:
 
@@ -250,8 +256,11 @@ For manual edits:
 3. Create or update rows for the device and role.
 4. Set `status = published`.
 5. Fill `label` and `alt`.
+6. Open the device and fill `passport_record` instead of `devices.passport`.
+7. Fill `trade_options` instead of `devices.trade`.
 
-Avoid editing `devices.gallery` for new content. It is legacy fallback only.
+Avoid editing `devices.gallery`, `devices.passport` and `devices.trade` for new
+content. They are legacy fallback only.
 
 ## Production QA gates
 

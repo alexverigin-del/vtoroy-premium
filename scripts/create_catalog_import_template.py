@@ -8,6 +8,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -50,6 +51,8 @@ HEADERS = [
     "has_detail_page",
     "detail_href",
     "tags",
+    "passport",
+    "trade",
     "admin_note",
     "image_card",
     "image_card_alt",
@@ -107,6 +110,45 @@ SAMPLE = {
     "has_detail_page": True,
     "detail_href": "/device/iphone-15-pro-256-blue-001",
     "tags": "iphone,club",
+    "passport": json.dumps({
+        "summaryRows": [
+            {"label": "Repair", "value": "not opened", "state": "ok"},
+            {"label": "Moisture", "value": "no traces", "state": "ok"},
+        ],
+        "repair": "not opened",
+        "water": "no traces",
+        "diagnostics": {
+            "status": "passed",
+            "checklist": [
+                {"text": "Face ID works", "state": "ok"},
+                {"text": "Battery checked", "state": "ok"},
+            ],
+        },
+        "condition": {
+            "gradeText": "grade A",
+            "note": "Minor signs of use.",
+            "notes": ["Screen without cracks", "Body without dents"],
+            "defectPhotoAlt": "Small cosmetic mark close-up",
+        },
+        "warranty": {
+            "duration": "90 days",
+            "covered": "Functional faults under Store terms.",
+            "notCovered": "Mechanical damage after purchase.",
+        },
+        "exitPrice": {
+            "headline": "up to 68 000 RUB",
+            "buyToday": "68 000 RUB",
+            "tradeInEstimate": "up to 68 000 RUB",
+            "condition": "after inspection",
+            "note": "Final amount depends on condition.",
+        },
+    }, ensure_ascii=False),
+    "trade": json.dumps({
+        "options": [
+            {"value": 42000, "label": "iPhone 13 Pro - 42 000 RUB"},
+            {"value": 26000, "label": "iPhone 12 - 26 000 RUB"},
+        ],
+    }, ensure_ascii=False),
     "admin_note": "Проверить комплект перед публикацией.",
     "image_card": "iphone-15-pro/card.webp",
     "image_card_alt": "iPhone 15 Pro на белом фоне",
@@ -134,6 +176,8 @@ NOTES = [
     ("source_id", "Stable external ID. Lets repeated imports update the same row."),
     ("status", "Keep draft until content/photo QA is complete."),
     ("content_status", "Use review after import, ready before publishing."),
+    ("passport", "Optional JSON. Importer also writes it to device_passports."),
+    ("trade", "Optional JSON with options[]. Importer also writes it to trade_options."),
     ("image_main_2", "Use numbered columns for multiple images with the same role."),
 ]
 

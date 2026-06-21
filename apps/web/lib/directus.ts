@@ -106,6 +106,40 @@ const DEVICE_IMAGE_FIELDS = [
   ...FILE_FIELDS.split(",").map((field) => `image.${field}`),
 ].join(",");
 
+const DEVICE_PASSPORT_FIELDS = [
+  "id",
+  "device",
+  "repair",
+  "water",
+  "summary_rows",
+  "diagnostics_status",
+  "diagnostics_checklist",
+  "condition_grade_text",
+  "condition_note",
+  "condition_notes",
+  "defect_photo_alt",
+  "warranty_duration",
+  "warranty_covered",
+  "warranty_not_covered",
+  "exit_headline",
+  "exit_buy_today",
+  "exit_trade_in_estimate",
+  "exit_condition",
+  "exit_note",
+  "updated_at",
+  ...FILE_FIELDS.split(",").map((field) => `defect_photo.${field}`),
+].join(",");
+
+const TRADE_OPTION_FIELDS = [
+  "id",
+  "device",
+  "value",
+  "label",
+  "sort",
+  "is_active",
+  "updated_at",
+].join(",");
+
 type AssetTransform = {
   width?: number;
   height?: number;
@@ -189,10 +223,10 @@ function mediaUrl(value: unknown, variant: MediaVariant = "gallery"): string {
 // Directus row -> app Device mapping
 // ---------------------------------------------------------------------------
 //
-// The MVP stores devices in a single `devices` collection (see
-// scripts/seed_directus.py): scalars as snake_case columns, and tags/gallery/
-// passport/trade as JSON columns. Directus returns those raw, so map them into
-// the camelCase `Device` contract used across the app.
+// The catalog started with a single `devices` collection and JSON columns for
+// gallery/passport/trade. Newer Directus setups keep images, passport and trade
+// rows in related collections. The mapper reads structured rows first and keeps
+// JSON as migration fallback.
 
 function str(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : value == null ? fallback : String(value);
@@ -281,6 +315,109 @@ function mapPassportFromDirectus(value: unknown): DevicePassport {
 }
 
 type DeviceImageRow = Record<string, unknown>;
+type DevicePassportRow = Record<string, unknown>;
+type TradeOptionRow = Record<string, unknown>;
+
+function deviceIdFromRelation(value: unknown): string {
+  return typeof value === "string"
+    ? value
+    : value && typeof value === "object"
+      ? str((value as Record<string, unknown>).id)
+      : "";
+}
+
+function passportRowsFromJson(value: unknown): DevicePassport["summaryRows"] {
+  const rows = json<DevicePassport["summaryRows"]>(value, []);
+  return Array.isArray(rows) ? rows : [];
+}
+
+function diagnosticsChecklistFromJson(value: unknown): DevicePassport["diagnostics"]["checklist"] {
+  const checklist = json<DevicePassport["diagnostics"]["checklist"]>(value, []);
+  return Array.isArray(checklist) ? checklist : [];
+}
+
+function stringArrayFromJson(value: unknown): string[] {
+  const list = json<unknown[]>(value, []);
+  if (!Array.isArray(list)) return [];
+  return list.flatMap((item) => {
+    const text = str(item).trim();
+    return text ? [text] : [];
+  });
+}
+
+function mapStructuredPassportFromDirectus(row: DevicePassportRow, legacyValue: unknown): DevicePassport {
+  const legacy = mapPassportFromDirectus(legacyValue);
+  const defectPhoto = mediaUrl(row.defect_photo, "passport");
+
+  return {
+    summaryRows: passportRowsFromJson(row.summary_rows).length > 0
+      ? passportRowsFromJson(row.summary_rows)
+      : legacy.summaryRows,
+    repair: str(row.repair) || legacy.repair,
+    water: str(row.water) || legacy.water,
+    diagnostics: {
+      status: str(row.diagnostics_status) || legacy.diagnostics.status,
+      checklist: diagnosticsChecklistFromJson(row.diagnostics_checklist).length > 0
+        ? diagnosticsChecklistFromJson(row.diagnostics_checklist)
+        : legacy.diagnostics.checklist,
+    },
+    condition: {
+      gradeText: str(row.condition_grade_text) || legacy.condition.gradeText,
+      note: str(row.condition_note) || legacy.condition.note,
+      notes: stringArrayFromJson(row.condition_notes).length > 0
+        ? stringArrayFromJson(row.condition_notes)
+        : legacy.condition.notes,
+      defectPhoto: defectPhoto || legacy.condition.defectPhoto,
+      defectPhotoAlt: str(row.defect_photo_alt) || legacy.condition.defectPhotoAlt,
+    },
+    warranty: {
+      duration: str(row.warranty_duration) || legacy.warranty.duration,
+      covered: str(row.warranty_covered) || legacy.warranty.covered,
+      notCovered: str(row.warranty_not_covered) || legacy.warranty.notCovered,
+    },
+    exitPrice: {
+      headline: str(row.exit_headline) || legacy.exitPrice.headline,
+      buyToday: str(row.exit_buy_today) || legacy.exitPrice.buyToday,
+      tradeInEstimate: str(row.exit_trade_in_estimate) || legacy.exitPrice.tradeInEstimate,
+      condition: str(row.exit_condition) || legacy.exitPrice.condition,
+      note: str(row.exit_note) || legacy.exitPrice.note,
+    },
+  };
+}
+
+function passportsByDevice(rows: DevicePassportRow[] | null): Map<string, DevicePassportRow> {
+  const grouped = new Map<string, DevicePassportRow>();
+  for (const row of rows ?? []) {
+    const deviceId = deviceIdFromRelation(row.device);
+    if (deviceId) grouped.set(deviceId, row);
+  }
+  return grouped;
+}
+
+function mapTradeOptionsFromDirectus(rows: TradeOptionRow[] = []): TradeInfo {
+  return {
+    options: rows
+      .filter((row) => bool(row.is_active, true))
+      .sort((a, b) => num(a.sort) - num(b.sort))
+      .map((row) => ({
+        value: num(row.value),
+        label: str(row.label),
+      }))
+      .filter((option) => option.label || option.value > 0),
+  };
+}
+
+function tradeOptionsByDevice(rows: TradeOptionRow[] | null): Map<string, TradeOptionRow[]> {
+  const grouped = new Map<string, TradeOptionRow[]>();
+  for (const row of rows ?? []) {
+    const deviceId = deviceIdFromRelation(row.device);
+    if (!deviceId) continue;
+    const list = grouped.get(deviceId) ?? [];
+    list.push(row);
+    grouped.set(deviceId, list);
+  }
+  return grouped;
+}
 
 function mapDeviceImagesFromDirectus(rows: DeviceImageRow[] = []): GalleryImage[] {
   return rows.flatMap((row) => {
@@ -298,12 +435,7 @@ function mapDeviceImagesFromDirectus(rows: DeviceImageRow[] = []): GalleryImage[
 function deviceImagesByDevice(rows: DeviceImageRow[] | null): Map<string, DeviceImageRow[]> {
   const grouped = new Map<string, DeviceImageRow[]>();
   for (const row of rows ?? []) {
-    const device = row.device;
-    const deviceId = typeof device === "string"
-      ? device
-      : device && typeof device === "object"
-        ? str((device as Record<string, unknown>).id)
-        : "";
+    const deviceId = deviceIdFromRelation(row.device);
     if (!deviceId) continue;
     const list = grouped.get(deviceId) ?? [];
     list.push(row);
@@ -317,10 +449,16 @@ function cardImageFromDeviceImages(rows: DeviceImageRow[] = []): string {
   return preferred ? mediaUrl(preferred.image, "card") : "";
 }
 
-export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: DeviceImageRow[] = []): Device {
+export function mapDeviceFromDirectus(
+  row: Record<string, unknown>,
+  imageRows: DeviceImageRow[] = [],
+  passportRow?: DevicePassportRow,
+  tradeRows: TradeOptionRow[] = [],
+): Device {
   const directusGallery = mapDeviceImagesFromDirectus(imageRows);
   const detailGallery = directusGallery.filter((image) => !["card", "listing"].includes((image.role ?? "").toLowerCase()));
   const stockStatus = normalizeStockStatus(row.stock_status);
+  const structuredTrade = mapTradeOptionsFromDirectus(tradeRows);
   return {
     id: str(row.id),
     tags: json<string[]>(row.tags, []),
@@ -355,8 +493,12 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: D
     detailHref: str(row.detail_href),
     visualClass: str(row.visual_class),
     gallery: detailGallery.length > 0 ? detailGallery : mapGalleryFromDirectus(row.gallery),
-    passport: mapPassportFromDirectus(row.passport),
-    trade: json<TradeInfo>(row.trade, { options: [] }),
+    passport: passportRow
+      ? mapStructuredPassportFromDirectus(passportRow, row.passport)
+      : mapPassportFromDirectus(row.passport),
+    trade: structuredTrade.options.length > 0
+      ? structuredTrade
+      : json<TradeInfo>(row.trade, { options: [] }),
   };
 }
 
@@ -368,12 +510,11 @@ export function mapDeviceFromDirectus(row: Record<string, unknown>, imageRows: D
  * Published devices for the catalog. Falls back to bundled data when Directus
  * is not configured or unreachable.
  *
- * The MVP `devices` collection stores everything in columns + JSON fields, so a
- * flat `fields=*` is enough; rows are mapped to the app `Device` shape.
- *   GET /items/devices?filter[status][_eq]=published&fields=*&sort=sort
+ * Structured related collections are read first; legacy JSON fields remain as
+ * fallback until all rows are migrated.
  */
 export async function getPublishedDevices(): Promise<Device[]> {
-  const [data, imageRows] = await Promise.all([
+  const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
     `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_FIELDS}&sort=sort,-updated_at`,
       { cache: "no-store" },
@@ -382,11 +523,26 @@ export async function getPublishedDevices(): Promise<Device[]> {
       `/items/device_images?filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=device,sort`,
       { cache: "no-store" },
     ),
+    directusGet<DevicePassportRow[]>(
+      `/items/device_passports?fields=${DEVICE_PASSPORT_FIELDS}&sort=device`,
+      { cache: "no-store" },
+    ),
+    directusGet<TradeOptionRow[]>(
+      `/items/trade_options?filter[is_active][_eq]=true&fields=${TRADE_OPTION_FIELDS}&sort=device,sort`,
+      { cache: "no-store" },
+    ),
   ]);
   if (data && data.length > 0) {
     const images = deviceImagesByDevice(imageRows);
+    const passports = passportsByDevice(passportRows);
+    const trades = tradeOptionsByDevice(tradeRows);
     return data
-      .map((row) => mapDeviceFromDirectus(row, images.get(str(row.id)) ?? []))
+      .map((row) => mapDeviceFromDirectus(
+        row,
+        images.get(str(row.id)) ?? [],
+        passports.get(str(row.id)),
+        trades.get(str(row.id)) ?? [],
+      ))
       .filter((device) => device.stockStatus !== "hidden");
   }
   return fallbackDevices.filter((device) => device.stockStatus !== "hidden");
@@ -398,7 +554,7 @@ export async function getPublishedDevices(): Promise<Device[]> {
  *   GET /items/devices?filter[id][_eq]={slug}&fields=*&limit=1
  */
 export async function getDeviceBySlug(slug: string): Promise<Device | null> {
-  const [data, imageRows] = await Promise.all([
+  const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
     `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_FIELDS}&limit=1`,
       { cache: "no-store" },
@@ -407,9 +563,17 @@ export async function getDeviceBySlug(slug: string): Promise<Device | null> {
       `/items/device_images?filter[device][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=sort`,
       { cache: "no-store" },
     ),
+    directusGet<DevicePassportRow[]>(
+      `/items/device_passports?filter[device][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_PASSPORT_FIELDS}&limit=1`,
+      { cache: "no-store" },
+    ),
+    directusGet<TradeOptionRow[]>(
+      `/items/trade_options?filter[device][_eq]=${encodeURIComponent(slug)}&filter[is_active][_eq]=true&fields=${TRADE_OPTION_FIELDS}&sort=sort`,
+      { cache: "no-store" },
+    ),
   ]);
   if (data && data.length > 0) {
-    const device = mapDeviceFromDirectus(data[0], imageRows ?? []);
+    const device = mapDeviceFromDirectus(data[0], imageRows ?? [], passportRows?.[0], tradeRows ?? []);
     return device.stockStatus === "hidden" ? null : device;
   }
   return fallbackDevices.find((d) => d.id === slug && d.stockStatus !== "hidden") ?? null;

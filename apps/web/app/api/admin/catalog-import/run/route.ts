@@ -230,12 +230,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const batchResult = await directusRequest<{ data: ImportBatch[] }>(
+    const batches = await directusRequest<ImportBatch[]>(
       cfg,
       "GET",
       `/items/catalog_import_batches?filter[id][_eq]=${encodeURIComponent(batchId)}&limit=1&fields=*,workbook.*,photos_archive.*`,
     );
-    const batch = batchResult.data[0];
+    const batch = batches[0];
     if (!batch) {
       return NextResponse.json({ ok: false, batch_id: batchId, error: "batch_not_found" }, { status: 404 });
     }

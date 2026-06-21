@@ -64,3 +64,17 @@ This keeps `Administrator` unrestricted, but replaces `fields='*'` for
 allowlists. Run it last after `directus:setup:editor`,
 `directus:setup:catalog-import-*`, `directus:setup:file-folders` and similar
 setup scripts that may recreate wider permissions.
+
+## Admin Guardrails
+
+After public permissions and technical field allowlists, run the final admin
+guardrail pass:
+
+```bash
+npm run directus:setup:admin-guardrails
+```
+
+It keeps only `Administrator` as an admin policy, keeps service policies
+headless, requires TFA for Studio policies, removes accidental non-admin access
+to high-risk Directus system collections, and keeps lead intake create-only.
+See `docs/directus-admin-guardrails.md`.

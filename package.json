@@ -37,6 +37,7 @@
     "directus:setup:catalog-structured-data": "node scripts/setup_directus_catalog_structured_data_sql.mjs",
     "directus:setup:faq-editor": "node scripts/setup_directus_faq_editor_sql.mjs",
     "directus:setup:technical-permissions": "node scripts/setup_directus_technical_permissions_sql.mjs",
+    "directus:setup:admin-guardrails": "node scripts/setup_directus_admin_guardrails_sql.mjs",
     "directus:seed:marketing-pages": "node scripts/seed_marketing_pages_sql.mjs",
     "directus:seed:faq": "node scripts/seed_directus_faq_sql.mjs",
     "directus:normalize-urls": "node scripts/normalize_directus_site_urls_sql.mjs",

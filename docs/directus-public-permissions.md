@@ -50,3 +50,17 @@ Anonymous Public не должен читать `devices`, `device_images`, `sit
 3. Проверить Directus Studio: `https://api.isvoi.ru/admin/`.
 4. Проверить, что anonymous `/items/devices` возвращает `403`.
 5. Проверить, что anonymous `/assets/{file-id}?width=32&height=32&fit=cover&format=auto` возвращает изображение.
+
+## Technical Role Field Allowlists
+
+After broad Studio setup scripts, run:
+
+```bash
+npm run directus:setup:technical-permissions
+```
+
+This keeps `Administrator` unrestricted, but replaces `fields='*'` for
+`ISVOI Editor`, `ISVOI Importer` and `ISVOI Catalog Import` with explicit field
+allowlists. Run it last after `directus:setup:editor`,
+`directus:setup:catalog-import-*`, `directus:setup:file-folders` and similar
+setup scripts that may recreate wider permissions.

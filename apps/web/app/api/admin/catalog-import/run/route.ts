@@ -24,6 +24,18 @@ type ImportBatch = {
   default_status?: string | null;
 };
 
+const IMPORT_BATCH_FIELDS = [
+  "id",
+  "batch_name",
+  "default_status",
+  "workbook.id",
+  "workbook.filename_download",
+  "workbook.title",
+  "photos_archive.id",
+  "photos_archive.filename_download",
+  "photos_archive.title",
+].join(",");
+
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
@@ -233,7 +245,7 @@ export async function POST(request: NextRequest) {
     const batches = await directusRequest<ImportBatch[]>(
       cfg,
       "GET",
-      `/items/catalog_import_batches?filter[id][_eq]=${encodeURIComponent(batchId)}&limit=1&fields=*,workbook.*,photos_archive.*`,
+      `/items/catalog_import_batches?filter[id][_eq]=${encodeURIComponent(batchId)}&limit=1&fields=${IMPORT_BATCH_FIELDS}`,
     );
     const batch = batches[0];
     if (!batch) {

@@ -196,6 +196,7 @@ export interface FaqItem {
   question: string;
   answer: string;
   category: "passport" | "trade" | "club" | "general" | string;
+  page?: string | null;
   sort: number;
   isActive: boolean;
 }

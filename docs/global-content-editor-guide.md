@@ -45,6 +45,17 @@ Use bookmarks:
 - `Скрытые FAQ`
 
 Each FAQ item needs a stable `Ключ`, question, answer, category and order.
+
+The baseline FAQ set is seeded from the repository:
+
+```bash
+npm run directus:seed:faq
+```
+
+The seed is idempotent: it updates known keys and inserts missing ones, but does
+not delete editor-created questions. Page FAQ sections can either list explicit
+`faqKeys`/`faq_keys` in `page_sections.content` or automatically use active FAQ
+items attached to the same page/category.
 Categories used by the site:
 
 - `general`

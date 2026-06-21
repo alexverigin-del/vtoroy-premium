@@ -453,15 +453,100 @@ function mapSitePageFromDirectus(row: Record<string, unknown>): SitePage {
 }
 
 function mapFaqItemFromDirectus(row: Record<string, unknown>): FaqItem {
+  const page = row.page;
   return {
     id: str(row.id),
     key: str(row.key),
     question: str(row.question),
     answer: str(row.answer),
     category: str(row.category),
+    page: typeof page === "string" ? page : page && typeof page === "object" ? str((page as Record<string, unknown>).id) : null,
     sort: num(row.sort),
     isActive: bool(row.is_active, true),
   };
+}
+
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    const text = str(item).trim();
+    return text ? [text] : [];
+  });
+}
+
+function textFromRichText(value: string): string {
+  return value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function faqSectionKeys(section: PageSection): string[] {
+  return [
+    ...stringList(section.content.faqKeys),
+    ...stringList(section.content.faq_keys),
+  ];
+}
+
+function faqSectionItems(items: FaqItem[]): { title: string; text: string; badge: string }[] {
+  return items.map((item, index) => ({
+    title: item.question,
+    text: textFromRichText(item.answer),
+    badge: String(index + 1).padStart(2, "0"),
+  }));
+}
+
+function faqItemsForSection(pageId: string, slug: string, section: PageSection, items: FaqItem[]): FaqItem[] {
+  const keys = faqSectionKeys(section);
+  if (keys.length > 0) {
+    const byKey = new Map(items.map((item) => [item.key, item]));
+    return keys.flatMap((key) => {
+      const item = byKey.get(key);
+      return item?.isActive ? [item] : [];
+    });
+  }
+
+  return items
+    .filter((item) => item.isActive && (item.page === pageId || item.category === slug))
+    .sort((a, b) => a.sort - b.sort);
+}
+
+async function getActiveFaqItems(): Promise<FaqItem[]> {
+  const data = await directusGet<Record<string, unknown>[]>(
+    "/items/faq_items?filter[is_active][_eq]=true&fields=*&sort=category,sort",
+    { cache: "no-store" },
+  );
+  return data?.map(mapFaqItemFromDirectus) ?? [];
+}
+
+async function enrichFaqSections(pageId: string, slug: string, sections: PageSection[]): Promise<PageSection[]> {
+  if (!sections.some((section) => section.isActive && (section.variant === "faq" || section.sectionKey === "faq"))) {
+    return sections;
+  }
+
+  const faqItems = await getActiveFaqItems();
+  if (faqItems.length === 0) return sections;
+
+  return sections.map((section) => {
+    if (!(section.variant === "faq" || section.sectionKey === "faq")) return section;
+    const items = faqItemsForSection(pageId, slug, section, faqItems);
+    if (items.length === 0) return section;
+    return {
+      ...section,
+      content: {
+        ...section.content,
+        items: faqSectionItems(items),
+      },
+    };
+  });
 }
 
 function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings {
@@ -513,9 +598,10 @@ export async function getSitePage(slug: string): Promise<SitePage | null> {
       `/items/page_sections?filter[page][_eq]=${encodeURIComponent(str(data[0].id))}&filter[is_active][_eq]=true&fields=*&sort=sort_order`,
       { cache: "no-store" },
     );
+    const mappedSections = sections?.map(mapPageSectionFromDirectus) ?? [];
     return {
       ...page,
-      sections: sections?.map(mapPageSectionFromDirectus) ?? [],
+      sections: await enrichFaqSections(str(data[0].id), page.slug, mappedSections),
     };
   }
   return null;

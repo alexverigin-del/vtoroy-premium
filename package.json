@@ -25,6 +25,7 @@
     "directus:audit-images": "node scripts/audit_directus_image_refs_sql.mjs",
     "directus:audit-catalog": "node scripts/audit_directus_catalog_sql.mjs",
     "directus:setup:file-folders": "node scripts/setup_directus_file_folders_sql.mjs",
+    "directus:setup:files-cleanup": "node scripts/setup_directus_files_cleanup_sql.mjs",
     "directus:setup:site-content": "node scripts/setup_directus_site_content_sql.mjs",
     "directus:setup:catalog-studio": "node scripts/setup_directus_catalog_studio_sql.mjs",
     "directus:setup:global-content": "node scripts/setup_directus_global_content_sql.mjs",

@@ -93,10 +93,12 @@ DECLARE
   v_device_folder uuid;
   v_site_folder uuid;
   v_editorial_folder uuid;
+  v_review_folder uuid;
 BEGIN
   v_device_folder := isvoi_file_folder_id('ISVOI Device Photos');
   v_site_folder := isvoi_file_folder_id('ISVOI Site Assets', 'ISVOI Site Images');
   v_editorial_folder := isvoi_file_folder_id('ISVOI Editorial');
+  v_review_folder := isvoi_file_folder_id('ISVOI File Review');
 
   UPDATE directus_files
   SET folder = v_device_folder
@@ -106,7 +108,8 @@ BEGIN
 
   UPDATE directus_files
   SET folder = v_site_folder
-  WHERE title LIKE 'isvoi:site:%';
+  WHERE title LIKE 'isvoi:site:%'
+    AND (folder IS NULL OR folder <> v_review_folder);
 
   UPDATE directus_files
   SET folder = v_editorial_folder
@@ -153,7 +156,7 @@ COMMIT;
 
 SELECT 'file_folders' AS check_name, count(*)::text AS value
 FROM directus_folders
-WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial')
+WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI File Review')
 UNION ALL
 SELECT 'device_files_in_folder', count(*)::text
 FROM directus_files f

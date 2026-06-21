@@ -172,6 +172,15 @@ Flow buttons:
 - `ISVOI: проверить партию каталога`
 - `ISVOI: импортировать партию каталога`
 
+The Studio operator screen is configured separately from the webhook buttons:
+
+```bash
+npm run directus:setup:catalog-import-operator-screen
+```
+
+It adds the `ISVOI Catalog Imports` files folder, operator bookmarks, and safe
+editor permissions so status/log fields are written only by automation.
+
 The older JSON media importer remains available for maintenance scripts:
 
 ```bash

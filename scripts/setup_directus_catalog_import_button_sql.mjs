@@ -162,11 +162,11 @@ $$;
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'group_batch', 'group-detail', NULL, '{"headerIcon":"upload_file","start":"open"}'::json, 'full', 1, 'Файлы партии и безопасный статус новых товаров.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'group_result', 'group-detail', NULL, '{"headerIcon":"fact_check","start":"open"}'::json, 'full', 50, 'Результат последней проверки или импорта.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'id', 'input', NULL, NULL, 'half', 2, 'ID партии.', true, 'uuid', 'group_batch');
-SELECT isvoi_upsert_directus_field('catalog_import_batches', 'status', 'select-dropdown', 'labels', '{"choices":[{"text":"Черновик","value":"draft","color":"#6b7280"},{"text":"Проверяется","value":"running","color":"#3b82f6"},{"text":"Проверено","value":"checked","color":"#10b981"},{"text":"Импортировано","value":"imported","color":"#7c3aed"},{"text":"Ошибка","value":"failed","color":"#ef4444"},{"text":"Архив","value":"archived","color":"#6b7280"}]}'::json, 'half', 3, 'Статус партии. Меняется автоматически после кнопок.', false, NULL, 'group_batch', true);
+SELECT isvoi_upsert_directus_field('catalog_import_batches', 'status', 'select-dropdown', 'labels', '{"choices":[{"text":"Черновик","value":"draft","color":"#6b7280"},{"text":"Проверяется","value":"running","color":"#3b82f6"},{"text":"Проверено","value":"checked","color":"#10b981"},{"text":"Импортировано","value":"imported","color":"#7c3aed"},{"text":"Ошибка","value":"failed","color":"#ef4444"},{"text":"Архив","value":"archived","color":"#6b7280"}]}'::json, 'half', 3, 'Статус партии. Меняется автоматически после кнопок.', true, NULL, 'group_batch', true);
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'batch_name', 'input', NULL, NULL, 'half', 4, 'Короткое имя партии латиницей, например 2026-06-stock.', false, NULL, 'group_batch', true);
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'default_status', 'select-dropdown', 'labels', '{"choices":[{"text":"Черновик","value":"draft","color":"#6b7280"},{"text":"Опубликовано","value":"published","color":"#10b981"}]}'::json, 'half', 5, 'Безопасный вариант — draft. Published используйте только для проверенной партии.', false, NULL, 'group_batch', true);
-SELECT isvoi_upsert_directus_field('catalog_import_batches', 'workbook', 'file', 'file', NULL, 'full', 6, 'Excel stock.xlsx с товарами.', false, 'm2o', 'group_batch', true);
-SELECT isvoi_upsert_directus_field('catalog_import_batches', 'photos_archive', 'file', 'file', NULL, 'full', 7, 'ZIP-архив с папкой/файлами фотографий.', false, 'm2o', 'group_batch', true);
+SELECT isvoi_upsert_directus_field('catalog_import_batches', 'workbook', 'file', 'file', '{"folder":"ISVOI Catalog Imports"}'::json, 'full', 6, 'Excel stock.xlsx с товарами.', false, 'm2o', 'group_batch', true);
+SELECT isvoi_upsert_directus_field('catalog_import_batches', 'photos_archive', 'file', 'file', '{"folder":"ISVOI Catalog Imports"}'::json, 'full', 7, 'ZIP-архив с папкой/файлами фотографий.', false, 'm2o', 'group_batch', true);
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'note', 'input-multiline', NULL, NULL, 'full', 8, 'Комментарий оператора.', false, NULL, 'group_batch');
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'last_run_mode', 'input', NULL, NULL, 'half', 51, 'Последний режим: dry_run или apply.', true, NULL, 'group_result');
 SELECT isvoi_upsert_directus_field('catalog_import_batches', 'last_run_status', 'input', NULL, NULL, 'half', 52, 'Последний результат: running, success или failed.', true, NULL, 'group_result');
@@ -247,7 +247,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'catalog_import_batches',
   'create',
-  'status,batch_name,workbook,photos_archive,default_status,note',
+  'batch_name,workbook,photos_archive,default_status,note',
   NULL,
   '{"batch_name":{"_nnull":true},"workbook":{"_nnull":true},"photos_archive":{"_nnull":true},"default_status":{"_in":["draft","published"]}}'::json,
   '{"status":"draft","default_status":"draft"}'::json
@@ -256,7 +256,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'catalog_import_batches',
   'update',
-  'status,batch_name,workbook,photos_archive,default_status,note,last_run_mode,last_run_status,last_run_log,last_run_at',
+  'batch_name,workbook,photos_archive,default_status,note',
   NULL,
   '{"default_status":{"_in":["draft","published"]}}'::json
 );

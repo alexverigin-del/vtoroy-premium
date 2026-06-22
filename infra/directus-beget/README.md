@@ -66,6 +66,8 @@ Current production values for ISVOI are documented in
 - Directus API: `https://api.isvoi.ru/`
 - Directus Studio: `https://api.isvoi.ru/admin/`
 - Directus is proxied through nginx from `127.0.0.1:8055`.
+- Redis cache is enabled with `CACHE_TTL=5m`, `CACHE_AUTO_PURGE=true`, and
+  `CACHE_NAMESPACE=isvoi-directus-`.
 - The nginx API vhost should keep gzip, proxy buffering, and the
   `/admin -> /admin/` redirect enabled.
 

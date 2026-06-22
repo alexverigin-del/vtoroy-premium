@@ -61,6 +61,10 @@ Current production env expectations:
 # /opt/isvoi/infra/directus-beget/.env
 PUBLIC_URL=https://api.isvoi.ru
 CORS_ORIGIN=https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru,http://isvoi.ru,http://api.isvoi.ru
+CACHE_ENABLED=true
+CACHE_TTL=5m
+CACHE_AUTO_PURGE=true
+CACHE_NAMESPACE=isvoi-directus-
 
 # /opt/isvoi/apps/web/.env.local
 DIRECTUS_URL=http://127.0.0.1:8055

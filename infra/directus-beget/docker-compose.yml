@@ -66,6 +66,9 @@ services:
       # Optional Redis cache (remove if the cache service is removed).
       CACHE_ENABLED: ${CACHE_ENABLED}
       CACHE_STORE: redis
+      CACHE_TTL: ${CACHE_TTL}
+      CACHE_AUTO_PURGE: ${CACHE_AUTO_PURGE}
+      CACHE_NAMESPACE: ${CACHE_NAMESPACE}
       REDIS: redis://cache:6379
 
       # CORS so the Next.js site can call the API from the browser.

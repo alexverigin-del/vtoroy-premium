@@ -38,6 +38,7 @@ sync when changing the live infrastructure.
 | Next.js process | PM2 app `isvoi-web` |
 | Directus stack | `/opt/isvoi/infra/directus-beget` |
 | Directus container | `directus-beget-directus-1` |
+| Directus image | `directus/directus:11.17.4` |
 | PostgreSQL container | `directus-beget-database-1` |
 | Nginx site config | `/etc/nginx/sites-available/isvoi` |
 | Certbot certificate | `/etc/letsencrypt/live/isvoi.ru/fullchain.pem` |

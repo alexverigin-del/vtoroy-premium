@@ -12,7 +12,7 @@ and API surface.
 ## What this provides
 
 - **PostgreSQL 16** — the database.
-- **Directus 11** — headless CMS + REST/GraphQL API + Studio admin UI.
+- **Directus 11.17.4** — headless CMS + REST/GraphQL API + Studio admin UI.
 - **Redis 7** (optional) — caching / rate limiting.
 - **nginx** vhost examples for the public site and the api/admin subdomain.
 
@@ -66,6 +66,8 @@ Current production values for ISVOI are documented in
 - Directus API: `https://api.isvoi.ru/`
 - Directus Studio: `https://api.isvoi.ru/admin/`
 - Directus is proxied through nginx from `127.0.0.1:8055`.
+- Directus Docker image is pinned to `directus/directus:11.17.4`; upgrade it
+  intentionally after reading the release notes and running smoke tests.
 - Redis cache is enabled with `CACHE_TTL=5m`, `CACHE_AUTO_PURGE=true`, and
   `CACHE_NAMESPACE=isvoi-directus-`.
 - The nginx API vhost should keep gzip, proxy buffering, and the

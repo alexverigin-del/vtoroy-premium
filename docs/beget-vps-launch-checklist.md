@@ -61,7 +61,7 @@ Current production env expectations:
 ```bash
 # /opt/isvoi/infra/directus-beget/.env
 PUBLIC_URL=https://api.isvoi.ru
-CORS_ORIGIN=https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru,http://isvoi.ru,http://api.isvoi.ru
+CORS_ORIGIN=https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru
 CACHE_ENABLED=true
 CACHE_TTL=5m
 CACHE_AUTO_PURGE=true

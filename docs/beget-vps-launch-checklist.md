@@ -35,6 +35,7 @@ sync when changing the live infrastructure.
 | Public site | `https://isvoi.ru/` and `https://www.isvoi.ru/` |
 | Directus API | `https://api.isvoi.ru/` |
 | Directus Studio | `https://api.isvoi.ru/admin/` |
+| Directus project branding | `ISVOI`, color `#1d1d1f`, favicon `isvoi:site:favicon` |
 | Next.js process | PM2 app `isvoi-web` |
 | Directus stack | `/opt/isvoi/infra/directus-beget` |
 | Directus container | `directus-beget-directus-1` |
@@ -317,6 +318,18 @@ pip install -r scripts/requirements.txt
    want a token — put it in `apps/web/.env.local` as `DIRECTUS_TOKEN`.
 
 See `directus/schema/collections.md` for the full roles/permissions spec.
+
+Apply the ISVOI Studio/project branding after the `isvoi:site:favicon` file is
+present in Directus Files:
+
+```bash
+node scripts/setup_directus_project_branding_sql.mjs > /tmp/isvoi_project_branding.sql
+cd infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database \
+  psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_project_branding.sql
+```
 
 ---
 

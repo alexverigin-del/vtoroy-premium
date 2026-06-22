@@ -70,9 +70,9 @@ async function smokeStore(page, baseUrl) {
   await page.waitForSelector("img[src*='api.isvoi.ru/assets/']", { timeout: 10_000 });
   await assertDirectusImages(page, "store", 1);
 
-  const hasLeadForm = await page.locator("form#leadForm, form:has(input[name='contact'])").count();
-  assert(hasLeadForm > 0, "store: expected lead form");
-  return { route: "/store", directusImages: await countLoadedDirectusImages(page), leadForms: hasLeadForm };
+  const passportSignals = await page.locator("text=Passport, text=ISVOI Passport, .passport").count();
+  assert(passportSignals > 0, "store: expected Passport content");
+  return { route: "/store", directusImages: await countLoadedDirectusImages(page), passportSignals };
 }
 
 async function smokeDevice(page, baseUrl, devicePath) {

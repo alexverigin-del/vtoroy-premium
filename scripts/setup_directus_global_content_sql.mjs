@@ -277,7 +277,13 @@ BEGIN
 END;
 $$;
 
-SELECT isvoi_upsert_permission('ISVOI Editor', 'site_settings', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'site_settings',
+  'read',
+  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+  NULL
+);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
@@ -286,7 +292,13 @@ SELECT isvoi_upsert_permission(
   NULL
 );
 
-SELECT isvoi_upsert_permission('ISVOI Editor', 'navigation_items', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'navigation_items',
+  'read',
+  'id,label,label_short,aria_label,link_type,page,section_anchor,custom_url,url,location,parent,children,sort,is_active,open_in_new,item_role,icon',
+  NULL
+);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'navigation_items',

@@ -23,6 +23,12 @@ Global, site-wide values. Configure as a **singleton** in Directus.
 | `brand_name`         | string               | `ISVOI`.                               |
 | `tagline`            | string               | `Хорошие вещи проходят через своих.`   |
 | `city`               | string               | `Северодвинск`.                        |
+| `logo_file`          | M2O → directus_files | Header/footer logo from `ISVOI Site Assets`. |
+| `logo_alt`           | string               | Accessible alt text for the logo.      |
+| `logo_href`          | string               | Usually `/`.                           |
+| `show_brand_name`    | boolean              | Show text next to the logo.            |
+| `header_cta_label`   | string               | Right-side header CTA label.           |
+| `header_cta_url`     | string               | Right-side header CTA URL.             |
 | `phone`              | string               |                                        |
 | `telegram`           | string               | `@handle` or URL.                      |
 | `email`              | string               |                                        |
@@ -38,16 +44,29 @@ Global, site-wide values. Configure as a **singleton** in Directus.
 
 Header / footer links. Self-referencing for optional dropdowns.
 
-| Field        | Type                    | Notes                                       |
-| ------------ | ----------------------- | ------------------------------------------- |
-| `id`         | uuid (PK)               |                                             |
-| `label`      | string                  | `Каталог`, `Store`, …                       |
-| `url`        | string                  | Internal path (`/catalog`) or absolute URL. |
-| `location`   | string (enum)           | `header` / `footer` / `mobile`.             |
-| `parent`     | M2O → `navigation_items`| For nested menus (optional).                |
-| `sort`       | integer                 | Order within `location`.                    |
-| `is_active`  | boolean                 | Hide without deleting.                      |
-| `open_in_new`| boolean                 | `target="_blank"`.                          |
+| Field            | Type                    | Notes                                       |
+| ---------------- | ----------------------- | ------------------------------------------- |
+| `id`             | uuid (PK)               |                                             |
+| `label`          | string                  | `Каталог`, `Store`, …                       |
+| `label_short`    | string                  | Optional compact/mobile label.              |
+| `aria_label`     | string                  | Optional accessibility label.               |
+| `link_type`      | enum                    | `page` / `section` / `external` / `custom`. |
+| `page`           | M2O → `site_pages`      | Preferred for managed pages.                |
+| `section_anchor` | string                  | Anchor without `#`, e.g. `final`.           |
+| `custom_url`     | string                  | Manual URL, e.g. `/catalog` or `/store#diagnostics`. |
+| `url`            | string                  | Legacy fallback URL.                        |
+| `location`       | string (enum)           | `header` / `footer` / `mobile` / `utility`. |
+| `item_role`      | enum                    | `link` / `cta` / `group`.                   |
+| `icon`           | string                  | Optional future UI icon key.                |
+| `parent`         | M2O → `navigation_items`| For nested menus (optional).                |
+| `sort`           | integer                 | Order within `location`.                    |
+| `is_active`      | boolean                 | Hide without deleting.                      |
+| `open_in_new`    | boolean                 | `target="_blank"`.                          |
+
+Recommended header: `Каталог` → `/catalog`, `Store` → `/store`,
+`Passport` → `/passport`, `Trade` → `/trade`, `Club` → `/club`, with the CTA
+controlled by `site_settings.header_cta_*`. Footer URLs should be absolute
+(`/store#diagnostics`, `/#final`) rather than route-local anchors (`#final`).
 
 ## `site_pages`
 

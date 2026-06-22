@@ -714,10 +714,17 @@ async function enrichFaqSections(pageId: string, slug: string, sections: PageSec
 }
 
 function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings {
+  const logoFile = directusFileId(row.logo_file);
   return {
     brandName: str(row.brand_name, "ISVOI"),
     tagline: str(row.tagline),
     city: str(row.city),
+    logoFile: logoFile ? directusAssetUrl(logoFile) : "",
+    logoAlt: str(row.logo_alt),
+    logoHref: str(row.logo_href, "/"),
+    showBrandName: bool(row.show_brand_name, true),
+    headerCtaLabel: str(row.header_cta_label),
+    headerCtaUrl: str(row.header_cta_url),
     phone: str(row.phone),
     telegram: str(row.telegram),
     email: str(row.email),
@@ -730,12 +737,33 @@ function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings
   };
 }
 
+function navPageSlug(value: unknown): string {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value !== "object") return "";
+  const record = value as Record<string, unknown>;
+  return str(record.slug) || str(record.id);
+}
+
 function mapNavigationItemFromDirectus(row: Record<string, unknown>): NavigationItem {
   const parent = row.parent;
+  const linkType = str(row.link_type, "custom") as NavigationItem["linkType"];
+  const page = navPageSlug(row.page);
+  const customUrl = str(row.custom_url);
+  const pageUrl = page ? (page === "home" ? "/" : `/${page}`) : "";
+  const url = customUrl || str(row.url) || pageUrl || "#";
   return {
     id: str(row.id),
     label: str(row.label),
-    url: str(row.url, "#"),
+    url,
+    linkType,
+    page,
+    sectionAnchor: str(row.section_anchor),
+    customUrl,
+    labelShort: str(row.label_short),
+    ariaLabel: str(row.aria_label),
+    itemRole: str(row.item_role, "link") as NavigationItem["itemRole"],
+    icon: str(row.icon),
     location: str(row.location, "header") as NavigationItem["location"],
     parent: typeof parent === "string" ? parent : parent && typeof parent === "object" ? str((parent as Record<string, unknown>).id) : null,
     sort: num(row.sort),
@@ -793,7 +821,7 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
 /** Active navigation links for header/footer/mobile chrome. */
 export async function getNavigationItems(): Promise<NavigationItem[]> {
   const data = await directusGet<Record<string, unknown>[]>(
-    "/items/navigation_items?filter[is_active][_eq]=true&fields=*&sort=location,sort",
+    "/items/navigation_items?filter[is_active][_eq]=true&fields=*,page.slug&sort=location,sort",
     { cache: "no-store" },
   );
   return data?.map(mapNavigationItemFromDirectus).filter((item) => item.label && item.url) ?? [];

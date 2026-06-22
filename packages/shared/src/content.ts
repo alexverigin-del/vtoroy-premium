@@ -19,6 +19,12 @@ export interface SiteSettings {
   brandName: string;
   tagline: string;
   city: string;
+  logoFile?: string;
+  logoAlt?: string;
+  logoHref?: string;
+  showBrandName?: boolean;
+  headerCtaLabel?: string;
+  headerCtaUrl?: string;
   phone?: string;
   telegram?: string;
   email?: string;
@@ -30,12 +36,22 @@ export interface SiteSettings {
   maintenanceMode?: boolean;
 }
 
-export type NavLocation = "header" | "footer" | "mobile";
+export type NavLocation = "header" | "footer" | "mobile" | "utility";
+export type NavLinkType = "page" | "section" | "external" | "custom";
+export type NavItemRole = "link" | "cta" | "group";
 
 export interface NavigationItem {
   id: string;
   label: string;
   url: string;
+  linkType?: NavLinkType;
+  page?: string | null;
+  sectionAnchor?: string;
+  customUrl?: string;
+  labelShort?: string;
+  ariaLabel?: string;
+  itemRole?: NavItemRole;
+  icon?: string;
   location: NavLocation;
   parent?: string | null;
   sort: number;

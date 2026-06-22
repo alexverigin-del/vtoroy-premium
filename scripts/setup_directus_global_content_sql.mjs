@@ -282,7 +282,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'update',
-  'brand_name,tagline,city,phone,telegram,email,address,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
+  'brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
   NULL
 );
 
@@ -291,18 +291,18 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'navigation_items',
   'create',
-  'label,url,location,parent,sort,is_active,open_in_new',
+  'label,label_short,aria_label,link_type,page,section_anchor,custom_url,url,location,parent,sort,is_active,open_in_new,item_role,icon',
   NULL,
-  '{"label":{"_nnull":true},"url":{"_nnull":true},"location":{"_in":["header","footer"]}}'::json,
-  '{"location":"footer","is_active":true,"open_in_new":false}'::json
+  '{"label":{"_nnull":true},"link_type":{"_in":["page","section","external","custom"]},"location":{"_in":["header","footer","mobile","utility"]},"item_role":{"_in":["link","cta","group"]}}'::json,
+  '{"location":"footer","link_type":"custom","item_role":"link","is_active":true,"open_in_new":false}'::json
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'navigation_items',
   'update',
-  'label,url,location,parent,sort,is_active,open_in_new',
+  'label,label_short,aria_label,link_type,page,section_anchor,custom_url,url,location,parent,sort,is_active,open_in_new,item_role,icon',
   NULL,
-  '{"location":{"_in":["header","footer"]}}'::json
+  '{"link_type":{"_in":["page","section","external","custom"]},"location":{"_in":["header","footer","mobile","utility"]},"item_role":{"_in":["link","cta","group"]}}'::json
 );
 
 SELECT isvoi_upsert_permission('ISVOI Editor', 'faq_items', 'read', '*', NULL);

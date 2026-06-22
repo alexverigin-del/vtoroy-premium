@@ -32,6 +32,10 @@ const defaultSiteSettings: SiteSettings = {
   brandName: "ISVOI",
   tagline: "Хорошие вещи проходят через своих.",
   city: "Северодвинск",
+  logoHref: "/",
+  showBrandName: true,
+  headerCtaLabel: "Войти в круг",
+  headerCtaUrl: "/#final",
   footerNote:
     "Прототип лендинга. ISVOI — концепт клуба разумного владения: проверенные вещи проходят дальше через своих. Указанные модели устройств, цены, грейды и сроки гарантии приведены как пример и не являются публичной офертой. Названия и товарные знаки принадлежат их правообладателям; устройства показаны схематично.",
   footerBrandText: "Клуб разумного владения. Хорошие вещи проходят через своих. Северодвинск.",
@@ -40,24 +44,23 @@ const defaultSiteSettings: SiteSettings = {
 };
 
 const defaultNavigationItems: NavigationItem[] = [
-  { id: "header-store", label: "Store", url: "/catalog", location: "header", sort: 1, isActive: true },
-  { id: "header-club-local", label: "Клуб", url: "/store", location: "header", sort: 2, isActive: true },
+  { id: "header-catalog", label: "Каталог", url: "/catalog", location: "header", sort: 1, isActive: true },
+  { id: "header-store", label: "Store", url: "/store", location: "header", sort: 2, isActive: true },
   { id: "header-passport", label: "Passport", url: "/passport", location: "header", sort: 3, isActive: true },
   { id: "header-trade", label: "Trade", url: "/trade", location: "header", sort: 4, isActive: true },
   { id: "header-club", label: "Club", url: "/club", location: "header", sort: 5, isActive: true },
-  { id: "header-diagnostics", label: "Проверка", url: "#diagnostics", location: "header", sort: 6, isActive: true },
   { id: "footer-club", label: "Клуб", url: "#top", location: "footer", sort: 1, isActive: true },
-  { id: "footer-club-store", label: "Store", url: "#store", location: "footer", parent: "footer-club", sort: 1, isActive: true },
-  { id: "footer-club-passport", label: "ISVOI Passport", url: "#passport", location: "footer", parent: "footer-club", sort: 2, isActive: true },
-  { id: "footer-club-diagnostics", label: "Открытая проверка", url: "#diagnostics", location: "footer", parent: "footer-club", sort: 3, isActive: true },
+  { id: "footer-club-catalog", label: "Каталог", url: "/catalog", location: "footer", parent: "footer-club", sort: 1, isActive: true },
+  { id: "footer-club-store", label: "Store", url: "/store", location: "footer", parent: "footer-club", sort: 2, isActive: true },
+  { id: "footer-club-passport", label: "ISVOI Passport", url: "/passport", location: "footer", parent: "footer-club", sort: 3, isActive: true },
   { id: "footer-services", label: "Сервисы", url: "#top", location: "footer", sort: 2, isActive: true },
-  { id: "footer-services-trade", label: "Trade", url: "#trade", location: "footer", parent: "footer-services", sort: 1, isActive: true },
-  { id: "footer-services-club", label: "Club", url: "#club", location: "footer", parent: "footer-services", sort: 2, isActive: true },
-  { id: "footer-services-final", label: "Найти вещь в кругу", url: "#final", location: "footer", parent: "footer-services", sort: 3, isActive: true },
+  { id: "footer-services-trade", label: "Trade", url: "/trade", location: "footer", parent: "footer-services", sort: 1, isActive: true },
+  { id: "footer-services-club", label: "Club", url: "/club", location: "footer", parent: "footer-services", sort: 2, isActive: true },
+  { id: "footer-services-check", label: "Открытая проверка", url: "/store#diagnostics", location: "footer", parent: "footer-services", sort: 3, isActive: true },
   { id: "footer-contacts", label: "Контакты", url: "#top", location: "footer", sort: 3, isActive: true },
-  { id: "footer-contacts-city", label: "Северодвинск", url: "#top", location: "footer", parent: "footer-contacts", sort: 1, isActive: true },
-  { id: "footer-contacts-check", label: "Записаться на проверку", url: "#final", location: "footer", parent: "footer-contacts", sort: 2, isActive: true },
-  { id: "footer-contacts-sell", label: "Передать вещь дальше", url: "#final", location: "footer", parent: "footer-contacts", sort: 3, isActive: true },
+  { id: "footer-contacts-city", label: "Северодвинск", url: "/#top", location: "footer", parent: "footer-contacts", sort: 1, isActive: true },
+  { id: "footer-contacts-check", label: "Записаться на проверку", url: "/#final", location: "footer", parent: "footer-contacts", sort: 2, isActive: true },
+  { id: "footer-contacts-sell", label: "Передать вещь дальше", url: "/#final", location: "footer", parent: "footer-contacts", sort: 3, isActive: true },
 ];
 
 function siteChrome(settings: SiteSettings | null, navigation: NavigationItem[]): SiteChrome {
@@ -69,6 +72,12 @@ function siteChrome(settings: SiteSettings | null, navigation: NavigationItem[])
       brandName: text(settings?.brandName, defaultSiteSettings.brandName),
       tagline: text(settings?.tagline, defaultSiteSettings.tagline),
       city: text(settings?.city, defaultSiteSettings.city),
+      logoFile: settings?.logoFile,
+      logoAlt: text(settings?.logoAlt, settings?.brandName ? `${settings.brandName} logo` : `${defaultSiteSettings.brandName} logo`),
+      logoHref: text(settings?.logoHref, defaultSiteSettings.logoHref ?? "/"),
+      showBrandName: settings?.showBrandName ?? defaultSiteSettings.showBrandName,
+      headerCtaLabel: text(settings?.headerCtaLabel, defaultSiteSettings.headerCtaLabel ?? "Войти в круг"),
+      headerCtaUrl: text(settings?.headerCtaUrl, defaultSiteSettings.headerCtaUrl ?? "/#final"),
       footerNote: text(settings?.footerNote, defaultSiteSettings.footerNote ?? ""),
       footerBrandText: text(settings?.footerBrandText, defaultSiteSettings.footerBrandText ?? ""),
       footerLegal: text(settings?.footerLegal, defaultSiteSettings.footerLegal ?? ""),
@@ -97,6 +106,37 @@ function normalizeSiteUrl(url: string, fallback = "#top"): string {
   return path
     .replace(/^\/(catalog|store|passport|trade|club)\/index\.html$/, "/$1")
     .replace(/^\/device\/([^/]+)\/index\.html$/, "/device/$1");
+}
+
+function pageSlugToPath(slug: string): string {
+  const value = slug.trim();
+  if (!value || value === "home") return "/";
+  return `/${value.replace(/^\/+/, "")}`;
+}
+
+function normalizeAnchor(anchor: string): string {
+  return anchor.trim().replace(/^#+/, "");
+}
+
+function navigationHref(item: NavigationItem, fallback = "#top"): string {
+  const type = item.linkType || "custom";
+  const anchor = normalizeAnchor(item.sectionAnchor || "");
+  if (type === "page" && item.page) {
+    const path = pageSlugToPath(item.page);
+    return normalizeSiteUrl(anchor ? `${path === "/" ? "" : path}#${anchor}` : path, fallback);
+  }
+  if (type === "section" && anchor) return normalizeSiteUrl(`/#${anchor}`, fallback);
+  if (type === "external") return normalizeSiteUrl(item.customUrl || item.url, fallback);
+  return normalizeSiteUrl(item.customUrl || item.url, fallback);
+}
+
+function renderLogo(settings: SiteSettings): string {
+  if (!settings.logoFile) return logoSvg();
+  return `<img class="logo logo--image" src="${escapeHtml(settings.logoFile)}" alt="${escapeHtml(settings.logoAlt || settings.brandName)}" loading="eager" decoding="async">`;
+}
+
+function renderBrandName(settings: SiteSettings): string {
+  return settings.showBrandName === false ? "" : `<span class="brandname">${escapeHtml(settings.brandName)}</span>`;
 }
 
 function normalizeAssetUrl(url: string): string {
@@ -202,23 +242,36 @@ function renderDevicePreviewCard(device: Device): string {
 
 function renderHeaderChrome(chrome: SiteChrome): string {
   const headerItems = sortNavigation(
-    chrome.navigation.filter((item) => item.location === "header" && !item.parent),
+    chrome.navigation.filter((item) => item.location === "header" && !item.parent && item.itemRole !== "cta"),
   );
+  const headerCta =
+    sortNavigation(chrome.navigation.filter((item) => item.location === "header" && !item.parent && item.itemRole === "cta"))[0] ??
+    (chrome.settings.headerCtaLabel
+      ? {
+          id: "header-cta",
+          label: chrome.settings.headerCtaLabel,
+          url: chrome.settings.headerCtaUrl || "/#final",
+          location: "header" as const,
+          sort: 999,
+          isActive: true,
+          itemRole: "cta" as const,
+        }
+      : null);
 
   return `<!-- ============== NAV ============== -->
 <header class="nav">
   <div class="wrap nav__inner">
-    <a class="nav__brand" href="/" aria-label="${escapeHtml(chrome.settings.brandName)} на главную">
-      ${logoSvg()}
-      <span class="brandname">${escapeHtml(chrome.settings.brandName)}</span>
+    <a class="nav__brand" href="${escapeHtml(normalizeSiteUrl(chrome.settings.logoHref || "/"))}" aria-label="${escapeHtml(chrome.settings.brandName)} на главную">
+      ${renderLogo(chrome.settings)}
+      ${renderBrandName(chrome.settings)}
     </a>
     <nav class="nav__links" id="navLinks" aria-label="Основная навигация">
       ${headerItems
-        .map((item) => `<a href="${escapeHtml(normalizeSiteUrl(item.url))}"${linkTargetAttrs(item)}>${escapeHtml(item.label)}</a>`)
+        .map((item) => `<a href="${escapeHtml(navigationHref(item))}"${linkTargetAttrs(item)}${item.ariaLabel ? ` aria-label="${escapeHtml(item.ariaLabel)}"` : ""}>${escapeHtml(item.labelShort || item.label)}</a>`)
         .join("\n      ")}
     </nav>
     <div class="nav__cta">
-      <a href="#final" class="btn btn--filled btn--sm">Войти в круг</a>
+      ${headerCta ? `<a href="${escapeHtml(navigationHref(headerCta, "/#final"))}" class="btn btn--filled btn--sm"${linkTargetAttrs(headerCta)}>${escapeHtml(headerCta.label)}</a>` : ""}
       <button class="nav__toggle" id="navToggle" aria-label="Открыть меню" aria-expanded="false">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
@@ -242,7 +295,7 @@ function renderFooterChrome(chrome: SiteChrome): string {
     <p class="footer__note">${escapeHtml(chrome.settings.footerNote ?? "")}</p>
     <div class="footer__cols">
       <div class="footer__brand">
-        ${logoSvg()}
+        ${renderLogo(chrome.settings)}
         <p>${escapeHtml(chrome.settings.footerBrandText ?? chrome.settings.tagline)}</p>
       </div>
       ${columns
@@ -251,7 +304,7 @@ function renderFooterChrome(chrome: SiteChrome): string {
           return `<div>
         <h4>${escapeHtml(column.label)}</h4>
         ${links
-          .map((item) => `<a href="${escapeHtml(normalizeSiteUrl(item.url))}"${linkTargetAttrs(item)}>${escapeHtml(item.label)}</a>`)
+          .map((item) => `<a href="${escapeHtml(navigationHref(item))}"${linkTargetAttrs(item)}${item.ariaLabel ? ` aria-label="${escapeHtml(item.ariaLabel)}"` : ""}>${escapeHtml(item.label)}</a>`)
           .join("\n        ")}
       </div>`;
         })

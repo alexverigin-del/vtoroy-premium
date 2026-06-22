@@ -188,6 +188,7 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .nav__brand { display: flex; align-items: center; gap: 10px; color: var(--color-carbon); }
 .nav__brand .logo { height: 22px; width: auto; color: var(--color-carbon); }
+.logo--image { object-fit: contain; }
 .nav__brand .brandname { font-size: var(--text-body-sm); font-weight: var(--w-semibold); letter-spacing: -0.01em; }
 .nav__links { display: flex; gap: 28px; }
 .nav__links a {

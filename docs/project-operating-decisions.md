@@ -121,6 +121,10 @@ npm run lint --workspace @vtoroy/web
 npm run smoke:prod
 ```
 
+The `@vtoroy/web` lint script uses ESLint CLI over source folders
+(`app`, `components`, `lib`, `data`) instead of deprecated `next lint`.
+Do not include generated files such as `next-env.d.ts` in that CLI target.
+
 Known acceptable warnings as of 2026-06-27:
 
 - `npm audit --omit=dev` has no high or critical advisories. Moderate bundled

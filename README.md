@@ -102,3 +102,8 @@ pm2 restart isvoi-web
 
 Run Directus setup scripts only when schema/metadata changes are intentional.
 Secrets stay in local/server `.env` files and are never committed.
+
+## Operating Decisions
+
+Project workflow, production guardrails and current technical decisions are
+recorded in [`docs/project-operating-decisions.md`](docs/project-operating-decisions.md).

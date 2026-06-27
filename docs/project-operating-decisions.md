@@ -6,6 +6,45 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## New Chat Handoff
+
+When starting work in a new Codex chat, read this file first, then use the
+documentation map near the end of this file for deeper context. The minimum
+startup reading order is:
+
+1. `README.md`
+2. `docs/beget-vps-launch-checklist.md`
+3. `docs/architecture-directus-next-python.md`
+4. `directus/schema/content-model.md`
+5. `directus/schema/collections.md`
+6. `docs/catalog-workflow.md`
+7. `docs/catalog-operator-guide.md`
+8. `docs/directus-backup-restore.md`
+
+Before assuming the state of the project, compare local git, GitHub and
+production:
+
+```powershell
+git status --short
+git log -6 --oneline
+git status -sb
+git ls-remote origin master
+ssh -i C:\Users\1\.ssh\isvoi_beget_ed25519 deploy@217.114.14.32 "cd /opt/isvoi && git log -1 --oneline && git status --short"
+```
+
+New chat rules:
+
+- Do not assume local commits are pushed or deployed until GitHub and Beget are
+  checked.
+- Do not assume production is on the same commit as the local workspace.
+- Do not print secrets or full env files. Inspect only explicit safe keys.
+- Prefer the `deploy` user for Beget checks and deploys. Use root only for
+  nginx/system operations that require it.
+- Before live schema, media or deployment changes, confirm there is a recent
+  backup or create one with the documented backup script.
+- Push, deploy and external infrastructure changes still require explicit user
+  wording in the current chat.
+
 ## Working Mode
 
 - Keep the project work in one long-running thread when possible. The thread

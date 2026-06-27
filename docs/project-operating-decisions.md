@@ -61,6 +61,23 @@ New chat rules:
 - Pushes, external deploys and live infrastructure changes require explicit
   wording from the user. Local commits are acceptable for completed repo work.
 
+## Codex Skills
+
+Use relevant local Codex skills deliberately, then record durable project
+decisions in this repo rather than relying on chat memory.
+
+- Use `directus-platform` for Directus architecture, Studio structure, roles,
+  permissions, schema scripts, file handling, cache and production operations.
+- Use `build-web-apps:react-best-practices` for Next.js/App Router changes,
+  React component refactors, data-fetching changes and frontend performance
+  cleanup.
+- Use `playwright` or the existing `scripts/smoke_playwright.mjs` flow for
+  browser smoke checks of `/catalog`, `/store` and device pages.
+- Use `skill-creator` only when maintaining a reusable project/platform skill,
+  not for one-off project notes.
+- If a new skill materially changes how the project is operated, add it here
+  or to the relevant focused document in `docs/`.
+
 ## Shell And Remote Execution
 
 - Use simple local PowerShell commands for local file/git inspection.

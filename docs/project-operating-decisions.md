@@ -36,6 +36,9 @@ memory alone.
 
 - GitHub `master` is the source for deployable code.
 - Production checkout is `/opt/isvoi` on the Beget VPS.
+- Keep local git, GitHub `master` and the Beget checkout synchronized after
+  deploy. A completed deploy should end with clean local and production git
+  status, except ignored runtime directories such as `backups/`.
 - Directus schema, permissions and Studio metadata changes should be captured
   as idempotent scripts in `scripts/` and documented in `directus/` or `docs/`.
 - Runtime data, uploads, backups and secrets stay outside git:
@@ -55,8 +58,14 @@ memory alone.
 - Production checkout: `/opt/isvoi`
 - PM2 app: `isvoi-web`
 - Directus compose stack: `/opt/isvoi/infra/directus-beget`
-- Directus image is pinned in `infra/directus-beget/docker-compose.yml`.
+- Next.js is on the 15.x line (`next@^15.5.19`) with React 18.3.
+- Directus image is pinned to `directus/directus:11.17.4` in
+  `infra/directus-beget/docker-compose.yml`.
+- PostgreSQL is `postgres:16-alpine`; Redis is `redis:7-alpine`.
 - Directus is bound to `127.0.0.1:8055` and exposed through nginx.
+- Certbot uses the project email recorded in
+  `docs/beget-vps-launch-checklist.md`; certificate renewal should stay
+  automated and periodically dry-run checked.
 
 Keep the full production snapshot in
 `docs/beget-vps-launch-checklist.md` current when infrastructure changes.
@@ -72,6 +81,13 @@ npm run typecheck --workspace @vtoroy/web
 npm run lint --workspace @vtoroy/web
 npm run smoke:prod
 ```
+
+Known acceptable warnings as of 2026-06-27:
+
+- `next lint` warns about manual stylesheet links for `/styles.css`. This is
+  tracked as cleanup work, not a deploy blocker.
+- `npm audit --omit=dev` has no high or critical advisories. Moderate bundled
+  dependency advisories should be reviewed during framework upgrades.
 
 Directus/schema changes should also run the relevant SQL audits:
 
@@ -90,6 +106,9 @@ Live deploy checks should include:
 - `https://isvoi.ru/robots.txt`
 - `https://isvoi.ru/sitemap.xml`
 - `https://api.isvoi.ru/server/health`
+- baseline security headers on `https://isvoi.ru/`;
+- Directus env guardrails inside the container;
+- the latest backup archive integrity when backup logic changes.
 
 ## Backup Decision
 
@@ -113,6 +132,13 @@ Live deploy checks should include:
 - Public role should stay minimal: public reads only intentionally public
   content and never writes to system collections or files.
 - Service tokens should be least-privilege and server-only.
+- `Administrator`, `ISVOI Editor` and `ISVOI Importer` are the human/operator
+  Studio roles. Admin users require 2FA.
+- Headless/service policies include public read, lead intake and catalog import
+  policies. They should not have Studio app access.
+- `ISVOI Lead Intake` is create-only on `leads`.
+- `ISVOI Catalog Import` is for batch import automation and should remain
+  scoped to import/media/catalog collections.
 - Studio should be editor-friendly: field groups, notes, display templates,
   presets and safe roles matter as much as table structure.
 - Keep schema/metadata setup scripts idempotent so they can be reapplied.
@@ -130,15 +156,69 @@ Live deploy checks should include:
 - `device_passports` owns structured Passport details.
 - `trade_options` owns structured Trade/Upgrade options.
 - `leads` owns submitted requests and operator workflow.
+- `lead_comments` owns durable processing history for leads.
+- `catalog_import_batches` owns Studio-triggered catalog import batches.
 
 Legacy JSON fields in `devices` may remain as fallback during migration, but
 new commercial content should use structured collections and Directus Files.
+
+## Studio Workflow Decisions
+
+- Global brand/logo/header CTA are edited in `site_settings`, not in code.
+- Header/footer/mobile links are edited in `navigation_items`; header should
+  stay compact, currently five primary links plus CTA.
+- Marketing pages are edited through `site_pages` and owned `page_sections`.
+  Editors should use existing safe sections and documented variants rather than
+  creating arbitrary renderer structures.
+- FAQ is managed through `faq_items`, either linked by `page` or referenced by
+  keys in a FAQ section.
+- Editor-facing collections should keep bookmarks/presets for normal workflows:
+  header menu, footer links, page sections, FAQ, catalog review, leads and
+  import batches.
+
+## Catalog Decisions
+
+- Commercial catalog status uses separate concepts:
+  - Directus row `status` controls publication.
+  - `stock_status` controls `available`, `reserved`, `sold`, `hidden`.
+  - `content_status` controls editorial readiness.
+- Product pages should show stock status, last update date, Passport details,
+  Trade options, related devices and a lead form.
+- Related devices are selected from visible devices, preferring actionable
+  alternatives before sold/hidden items.
+- Large catalog updates should go through the import workflow:
+  template -> media optimization -> dry run -> apply -> Directus QA.
+- Non-developers should use the Studio `catalog_import_batches` operator screen
+  and documented `docs/catalog-operator-guide.md` flow.
+- Import scripts should use a dedicated importer/service token, not an admin
+  token.
+
+## Lead Workflow Decisions
+
+- Public product forms post to `/lead-intake`, not directly to Directus from the
+  browser.
+- Leads record source path, source URL, referrer, UTM fields, user agent,
+  device id and current stock status context.
+- Lead states are processed in Directus Studio; `lead_comments` should hold
+  durable manager notes and follow-up history.
+- Product lead behavior:
+  - `available` creates a purchase/reservation-style lead.
+  - `reserved` creates a waitlist lead.
+  - `sold` creates a similar-device selection lead.
+- Telegram notifications are intentionally deferred; the workflow must remain
+  useful through the Studio table without Telegram.
 
 ## Media Decisions
 
 - Product and editorial images that editors manage belong in Directus Files.
 - New product photos should use `device_images`, with roles such as `card`,
   `main`, `screen`, `body` and `defect`.
+- Directus file folders are part of the operating model:
+  - `ISVOI Device Photos`
+  - `ISVOI Site Assets`
+  - `ISVOI Editorial`
+  - `ISVOI File Review`
+  - `ISVOI Catalog Imports`
 - Directus asset transforms should be used for delivery instead of committing
   multiple generated derivatives.
 - `apps/web/public/assets/` remains only as public fallback/reference media for
@@ -148,6 +228,7 @@ new commercial content should use structured collections and Directus Files.
 
 ## Security Decisions
 
+- Directus API/Studio and the public site must stay behind HTTPS.
 - Directus CORS is restricted to `https://isvoi.ru`,
   `https://www.isvoi.ru` and `https://api.isvoi.ru`.
 - Directus production guardrails should stay enabled:
@@ -161,14 +242,44 @@ new commercial content should use structured collections and Directus Files.
   grows.
 - `npm audit --omit=dev` should have no high or critical vulnerabilities before
   deploy. Moderate advisories should be tracked and reduced when feasible.
+- `next.config.mjs` image optimization remote patterns should stay restricted
+  to `api.isvoi.ru`, not wildcard hosts.
+- Directus system collections remain admin-only unless a narrowly scoped
+  exception is documented and audited.
 
 ## SEO Decisions
 
 - Canonical public URLs are extensionless routes, not legacy `.html` paths.
 - Legacy `.html` URLs stay as permanent redirects in Next config.
+- Current public routes are `/`, `/catalog`, `/store`, `/passport`, `/trade`,
+  `/club`, `/device/[slug]` and POST-only `/lead-intake`.
 - `robots.txt` and `sitemap.xml` are Next metadata routes.
 - Device pages include Product JSON-LD.
 - Page metadata should use canonical URLs and OpenGraph data.
+
+## Documentation Map
+
+- Production launch and server snapshot:
+  `docs/beget-vps-launch-checklist.md`
+- Architecture:
+  `docs/architecture-directus-next-python.md`
+- Directus content model:
+  `directus/schema/content-model.md`
+- Catalog model and workflow:
+  `directus/schema/collections.md`, `directus/catalog-workflow.md`,
+  `docs/catalog-workflow.md`, `docs/catalog-operator-guide.md`
+- Studio editor guides:
+  `docs/site-content-editor-guide.md`, `docs/site-pages-workflow.md`,
+  `docs/catalog-studio-editor-guide.md`,
+  `docs/global-content-editor-guide.md`,
+  `docs/leads-workflow-editor-guide.md`
+- Security and guardrails:
+  `docs/directus-public-permissions.md`,
+  `docs/directus-admin-guardrails.md`
+- Backups:
+  `docs/directus-backup-restore.md`
+- Schema snapshots and audits:
+  `docs/directus-schema-snapshot-audit.md`
 
 ## Current Recommended Roadmap
 

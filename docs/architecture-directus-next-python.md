@@ -122,8 +122,8 @@ Still temporary:
 - `apps/web/public/assets/` remains as fallback/source media for local builds
   and import scripts while product images continue moving to Directus Files.
 - The old root `script.js` and `styles.css` were removed with the static HTML.
-  The production app uses `apps/web/public/interactions.js` and
-  `apps/web/public/styles.css`.
+  The production app uses `apps/web/public/interactions.js`; the site stylesheet
+  is imported globally from `apps/web/app/site.css`.
 
 ## Secrets
 

@@ -123,8 +123,6 @@ npm run smoke:prod
 
 Known acceptable warnings as of 2026-06-27:
 
-- `next lint` warns about manual stylesheet links for `/styles.css`. This is
-  tracked as cleanup work, not a deploy blocker.
 - `npm audit --omit=dev` has no high or critical advisories. Moderate bundled
   dependency advisories should be reviewed during framework upgrades.
 
@@ -322,12 +320,10 @@ new commercial content should use structured collections and Directus Files.
 
 ## Current Recommended Roadmap
 
-1. Remove the remaining stylesheet-link lint warnings by moving global public
-   CSS loading into a more idiomatic Next path or documenting the exception.
-2. Continue growing the catalog through the operator import workflow.
-3. Add stronger lead protection when real traffic starts: nginx rate limit,
+1. Continue growing the catalog through the operator import workflow.
+2. Add stronger lead protection when real traffic starts: nginx rate limit,
    Turnstile or another anti-spam layer.
-4. Add off-server backup copy, for example Beget storage or S3-compatible
+3. Add off-server backup copy, for example Beget storage or S3-compatible
    storage, and periodically test restore rehearsals.
-5. Keep reducing legacy fallback fields after Directus content reaches full
+4. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.

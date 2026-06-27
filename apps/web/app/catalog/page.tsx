@@ -30,7 +30,6 @@ export default async function CatalogPage() {
 
   return (
     <>
-      <link rel="stylesheet" href="/styles.css?v=20260620catalogcore" />
       <div
         dangerouslySetInnerHTML={{
           __html: renderCatalogPageMarkup(siteChrome(settings, navigation), devices, directusConfig.enabled),

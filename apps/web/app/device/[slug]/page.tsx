@@ -23,13 +23,23 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const device = await getDeviceBySlug(params.slug);
+  const { slug } = await params;
+  const device = await getDeviceBySlug(slug);
   if (!device) return { title: "Вещь не найдена — ISVOI" };
   return {
     title: `${device.title} — ISVOI`,
     description: device.shortDescription,
+    alternates: {
+      canonical: `/device/${slug}`,
+    },
+    openGraph: {
+      title: `${device.title} — ISVOI`,
+      description: device.shortDescription,
+      url: `/device/${slug}`,
+      images: device.listingImage ? [{ url: device.listingImage }] : undefined,
+    },
   };
 }
 
@@ -85,6 +95,40 @@ function relatedDevices(device: Device, devices: Device[]): Device[] {
   return fallback.slice(0, 3);
 }
 
+function productJsonLd(device: Device) {
+  const status = normalizedStockStatus(device);
+  const availability = status === "sold"
+    ? "https://schema.org/SoldOut"
+    : status === "reserved"
+      ? "https://schema.org/LimitedAvailability"
+      : "https://schema.org/InStock";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: device.title,
+    description: device.shortDescription || device.headline,
+    sku: device.id,
+    brand: {
+      "@type": "Brand",
+      name: device.model || device.category || "ISVOI",
+    },
+    image: [device.listingImage, ...device.gallery.map((image) => image.src)].filter(Boolean),
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "RUB",
+      price: device.price || undefined,
+      availability,
+      url: `https://isvoi.ru/device/${device.id}`,
+      itemCondition: "https://schema.org/UsedCondition",
+    },
+  };
+}
+
+function jsonLdScript(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 function DetailCard({
   title,
   children,
@@ -103,10 +147,11 @@ function DetailCard({
 export default async function DevicePage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
   const [device, devices] = await Promise.all([
-    getDeviceBySlug(params.slug),
+    getDeviceBySlug(slug),
     getPublishedDevices(),
   ]);
   if (!device) notFound();
@@ -125,6 +170,10 @@ export default async function DevicePage({
 
   return (
     <main className="bg-surface">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(device)) }}
+      />
       <section className="mx-auto max-w-content px-6 py-10 md:py-14">
         <Link href="/catalog" className="text-sm font-medium text-accent hover:underline">
           ← Store

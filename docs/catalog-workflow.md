@@ -258,11 +258,11 @@ Expected result for migrated content:
 For bulk import, keep source image paths stable and predictable:
 
 ```text
-assets/catalog-{slug}.webp
-assets/device-{slug}-main.webp
-assets/device-{slug}-screen.webp
-assets/device-{slug}-body.webp
-assets/device-{slug}-defect.webp
+apps/web/public/assets/catalog-{slug}.webp
+apps/web/public/assets/device-{slug}-main.webp
+apps/web/public/assets/device-{slug}-screen.webp
+apps/web/public/assets/device-{slug}-body.webp
+apps/web/public/assets/device-{slug}-defect.webp
 ```
 
 The importer creates deterministic Directus file titles:

@@ -82,3 +82,21 @@ Current production values for ISVOI are documented in
   `../../directus/schema/collections.md`).
 - Keep `DIRECTUS_TOKEN` server-only in the Next.js environment. Do not expose it
   through `NEXT_PUBLIC_*`.
+
+## Backups
+
+Use the repo script for repeatable PostgreSQL + Directus Files backups:
+
+```bash
+cd /opt/isvoi
+bash scripts/backup_beget_directus.sh
+```
+
+Recommended deploy-user cron:
+
+```cron
+17 2 * * * cd /opt/isvoi && bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
+```
+
+Restore and verification notes live in
+[`docs/directus-backup-restore.md`](../../docs/directus-backup-restore.md).

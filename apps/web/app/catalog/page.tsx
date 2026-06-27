@@ -6,6 +6,15 @@ export const metadata = {
   title: "ISVOI Store — вещи в кругу",
   description:
     "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу ISVOI.",
+  alternates: {
+    canonical: "/catalog",
+  },
+  openGraph: {
+    title: "ISVOI Store — вещи в кругу",
+    description:
+      "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода.",
+    url: "/catalog",
+  },
 };
 
 // Keep Directus catalog edits visible immediately while inventory is being filled.

@@ -45,7 +45,7 @@ Jobs
 | `packages/shared/` | Shared TypeScript contracts |
 | `scripts/` | Setup, import, media, audit and ops helpers |
 | `data/` | Legacy/reference seed data for fallback and migration |
-| `assets/` | Legacy/reference media while Directus Files migration finishes |
+| `apps/web/public/assets/` | Public fallback/reference media while Directus Files migration finishes |
 
 ## Public Routing
 
@@ -119,8 +119,8 @@ Still temporary:
 
 - `data/devices.json` and `apps/web/data/devices.ts` remain as fallback seed
   data until the Directus catalog is fully filled.
-- `assets/` remains as reference/source media while product images continue
-  moving to Directus Files.
+- `apps/web/public/assets/` remains as fallback/source media for local builds
+  and import scripts while product images continue moving to Directus Files.
 - The old root `script.js` and `styles.css` were removed with the static HTML.
   The production app uses `apps/web/public/interactions.js` and
   `apps/web/public/styles.css`.

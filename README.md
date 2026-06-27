@@ -43,7 +43,7 @@ Compatibility redirects live in `apps/web/next.config.mjs`:
 | `packages/shared/` | Shared TypeScript contracts |
 | `scripts/` | Directus setup, imports, media, audits and ops helpers |
 | `data/` | Legacy/reference seed data for fallback and migration scripts |
-| `assets/` | Legacy/reference media used during the migration to Directus Files |
+| `apps/web/public/assets/` | Public fallback/reference media for local builds and migration scripts |
 
 ## Common Commands
 

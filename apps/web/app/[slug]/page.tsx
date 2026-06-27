@@ -12,9 +12,9 @@ import {
 export const dynamic = "force-dynamic";
 
 type MarketingPageProps = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 export function generateStaticParams() {
@@ -22,28 +22,38 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: MarketingPageProps): Promise<Metadata> {
-  if (!isMarketingSlug(params.slug)) return {};
+  const { slug } = await params;
+  if (!isMarketingSlug(slug)) return {};
 
   const [directusPage, fallbackPage] = await Promise.all([
-    getSitePage(params.slug),
-    Promise.resolve(getFallbackMarketingPage(params.slug)),
+    getSitePage(slug),
+    Promise.resolve(getFallbackMarketingPage(slug)),
   ]);
   const page = directusPage ?? fallbackPage;
 
   return {
     title: page.title,
     description: page.metaDescription,
+    alternates: {
+      canonical: `/${slug}`,
+    },
+    openGraph: {
+      title: page.title,
+      description: page.metaDescription,
+      url: `/${slug}`,
+    },
   };
 }
 
 export default async function MarketingPage({ params }: MarketingPageProps) {
-  if (!isMarketingSlug(params.slug)) notFound();
+  const { slug } = await params;
+  if (!isMarketingSlug(slug)) notFound();
 
   const [page, settings, navigation, devices] = await Promise.all([
-    getSitePage(params.slug),
+    getSitePage(slug),
     getSiteSettings(),
     getNavigationItems(),
-    params.slug === "store" ? getPublishedDevices() : Promise.resolve([]),
+    slug === "store" ? getPublishedDevices() : Promise.resolve([]),
   ]);
 
   return (
@@ -51,7 +61,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
       <link rel="stylesheet" href="/styles.css?v=20260620catalogcore" />
       <div
         dangerouslySetInnerHTML={{
-          __html: renderMarketingPageMarkup(params.slug, page, siteChrome(settings, navigation), devices),
+          __html: renderMarketingPageMarkup(slug, page, siteChrome(settings, navigation), devices),
         }}
       />
       <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />

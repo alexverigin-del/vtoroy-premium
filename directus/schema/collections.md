@@ -195,7 +195,7 @@ When the schema changes:
 For device thumbnails, prefer `devices.listing_file` as a Directus Files M2O
 relation to `directus_files`.
 Keep `devices.listing_image` as a legacy fallback for repo-hosted paths such as
-`assets/catalog-iphone-13-pro.webp`.
+`/assets/catalog-iphone-13-pro.webp`.
 
 Use `device_images` for managed per-device media:
 

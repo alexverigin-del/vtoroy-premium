@@ -71,6 +71,12 @@ services:
       CACHE_NAMESPACE: ${CACHE_NAMESPACE}
       REDIS: redis://cache:6379
 
+      # File/import/Marketplace guardrails.
+      MARKETPLACE_TRUST: ${MARKETPLACE_TRUST}
+      FILES_MAX_UPLOAD_SIZE: ${FILES_MAX_UPLOAD_SIZE}
+      FILES_MIME_TYPE_ALLOW_LIST: ${FILES_MIME_TYPE_ALLOW_LIST}
+      IMPORT_IP_DENY_LIST: ${IMPORT_IP_DENY_LIST}
+
       # CORS so the Next.js site can call the API from the browser.
       CORS_ENABLED: "true"
       CORS_ORIGIN: ${CORS_ORIGIN}

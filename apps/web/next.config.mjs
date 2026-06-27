@@ -1,6 +1,35 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {
@@ -25,14 +54,12 @@ const nextConfig = {
       },
     ];
   },
-  // Allow optimized <Image> from the Directus instance once configured.
-  // NEXT_PUBLIC_DIRECTUS_URL is read at build/runtime; this is a placeholder
-  // pattern and should be tightened to the real host before production.
+  // Allow optimized <Image> only from the production Directus asset host.
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "api.isvoi.ru",
         pathname: "/assets/**",
       },
     ],

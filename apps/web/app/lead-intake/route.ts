@@ -51,6 +51,10 @@ type StoredLead = {
   user_agent: string;
 };
 
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_MAX = 8;
+const rateLimitBuckets = new Map<string, number[]>();
+
 function text(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
@@ -86,6 +90,38 @@ function inferContactChannel(contact: string): string {
   if (value.includes("whatsapp") || value.includes("wa.me/")) return "whatsapp";
   if (/[0-9][0-9\s()+-]{5,}/.test(value)) return "phone";
   return "unknown";
+}
+
+function clientIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for") ?? "";
+  const firstForwarded = forwarded.split(",")[0]?.trim();
+  return firstForwarded || request.headers.get("x-real-ip") || "unknown";
+}
+
+function rateLimitKey(request: NextRequest): string {
+  return clientIp(request).slice(0, 80);
+}
+
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  const recent = (rateLimitBuckets.get(key) ?? []).filter((timestamp) => timestamp > cutoff);
+  if (recent.length >= RATE_LIMIT_MAX) {
+    rateLimitBuckets.set(key, recent);
+    return true;
+  }
+  recent.push(now);
+  rateLimitBuckets.set(key, recent);
+
+  if (rateLimitBuckets.size > 1000) {
+    for (const [bucketKey, timestamps] of rateLimitBuckets.entries()) {
+      const active = timestamps.filter((timestamp) => timestamp > cutoff);
+      if (active.length === 0) rateLimitBuckets.delete(bucketKey);
+      else rateLimitBuckets.set(bucketKey, active);
+    }
+  }
+
+  return false;
 }
 
 async function parseLeadRequest(request: NextRequest): Promise<LeadRequest> {
@@ -205,6 +241,13 @@ export async function POST(request: NextRequest) {
   // Honeypot: real users never fill this hidden field.
   if (text(body.website, 200)) {
     return NextResponse.json({ ok: true }, { status: 202 });
+  }
+
+  if (isRateLimited(rateLimitKey(request))) {
+    return NextResponse.json(
+      { ok: false, error: "rate_limited" },
+      { status: 429 },
+    );
   }
 
   const scenario = text(body.scenario, 160);

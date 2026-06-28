@@ -175,7 +175,10 @@ export default async function DevicePage({
         dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(device)) }}
       />
       <section className="mx-auto max-w-content px-6 py-10 md:py-14">
-        <Link href="/catalog" className="text-sm font-medium text-accent hover:underline">
+        <Link
+          href="/catalog"
+          className="inline-flex min-h-[44px] items-center rounded-sm pr-2 text-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+        >
           ← Store
         </Link>
 

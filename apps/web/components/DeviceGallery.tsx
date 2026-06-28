@@ -54,7 +54,7 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
                 onClick={() => setActiveIndex(index)}
                 aria-pressed={isActive}
                 className={[
-                  "rounded-pill border px-4 py-2 text-sm font-medium transition",
+                  "min-h-[44px] rounded-pill border px-4 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                   isActive
                     ? "border-accent bg-accent text-white"
                     : "border-hairline bg-white text-muted hover:border-accent/50 hover:text-accent",

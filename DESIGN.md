@@ -67,21 +67,25 @@ components:
     textColor: "{colors.white}"
     rounded: "{rounded.pill}"
     padding: "12px 22px"
+    height: "44px"
   button-primary-small:
     backgroundColor: "{colors.action-blue}"
     textColor: "{colors.white}"
     rounded: "{rounded.pill}"
     padding: "8px 16px"
+    height: "44px"
   button-outlined:
     backgroundColor: "transparent"
     textColor: "{colors.link-blue}"
     rounded: "{rounded.pill}"
     padding: "12px 22px"
+    height: "44px"
   filter-chip:
     backgroundColor: "transparent"
     textColor: "{colors.graphite}"
     rounded: "{rounded.pill}"
-    padding: "6px 14px"
+    padding: "10px 16px"
+    height: "44px"
   device-card:
     backgroundColor: "{colors.white}"
     textColor: "{colors.carbon}"
@@ -188,12 +192,13 @@ The system is mostly flat and layered by tone. Surfaces are separated by white-o
 - **Secondary / Outlined:** Transparent fill, Link Blue stroke and text; used for secondary exploration.
 - **Ghost:** Link Blue text, no chrome; used only where surrounding layout already makes the action obvious.
 - **Hover / Active:** Primary darkens slightly; outlined gains a faint blue wash; active state scales to `0.98`.
+- **Touch / Keyboard:** Interactive buttons should hold at least a 44px hit area and expose a visible blue focus ring.
 
 ### Chips
 
 - **Style:** Hairline pill with transparent background, Graphite text, and 14px body-small type.
 - **State:** Active chips switch to Link Blue border and text with a faint blue wash.
-- **Caution:** Current chip height is 34px. For mobile-first production work, new chips should target at least 44px touch height unless they are purely informational.
+- **Touch:** Catalog filter chips use a 44px minimum height. Keep that floor for any new interactive chip unless it is purely informational.
 
 ### Cards / Containers
 
@@ -213,7 +218,7 @@ The system is mostly flat and layered by tone. Surfaces are separated by white-o
 
 - **Style:** Sticky frosted header with subtle blur, hairline bottom border, compact 12px desktop links, and a small filled CTA.
 - **Brand:** `brand-logo` supports text lockups, uploaded images, custom width/height, and optional captions. Header captions are intentionally small and must not crowd the nav.
-- **Mobile:** Links collapse into a frosted vertical menu below the header. The menu button is visually compact today; new work should increase the tap area to at least 44px.
+- **Mobile:** Links collapse into a frosted vertical menu below the header. Header links, brand link and menu button keep at least a 44px hit area while preserving the compact visual rhythm.
 
 ### Device Card
 
@@ -242,6 +247,7 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Do** use real product imagery and passport facts before decorative visuals.
 - **Do** keep Directus-managed logo captions short enough to fit inside the header at mobile widths.
 - **Do** verify contrast for all 12-14px labels, badges, and eyebrow text.
+- **Do** keep interactive header links, menu buttons, filter chips, gallery tabs and card CTAs at a 44px minimum hit area.
 - **Do** respect reduced motion; reveal transitions must never hide content by default.
 - **Do** build new React/Next product, catalog, lead, and component UI with Tailwind utilities and shared tokens.
 - **Do** migrate styling out of `site.css` when renderer/legacy sections are moved into React.
@@ -254,6 +260,6 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Don't** add gradient text, decorative glassmorphism cards, or oversized rounded card panels.
 - **Don't** use monospace as a lazy signal of technical competence.
 - **Don't** duplicate a logo descriptor: if the uploaded asset already says "Проверенная техника для своих", leave the live caption empty.
-- **Don't** let mobile controls remain below comfortable touch size when they are primary filters, menu buttons, or gallery tabs.
+- **Don't** let controls remain below comfortable touch size when they are header links, primary filters, menu buttons, gallery tabs, or card CTAs.
 - **Don't** add new large global CSS blocks for normal product/catalog/lead UI.
 - **Don't** treat `site.css` as the permanent home for new React component styling.

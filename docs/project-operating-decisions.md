@@ -250,6 +250,13 @@ Live deploy checks should include:
 - Keep schema/metadata setup scripts idempotent so they can be reapplied.
 - After schema/permission changes, account for Directus/Redis cache. Restart
   Directus or flush cache when API/Studio metadata appears stale.
+- On 2026-06-28, stale Redis permission cache caused Directus API to return
+  `403` for fields that were already present in `directus_permissions`
+  (`site_settings.logo_width`, `site_settings.logo_height`,
+  `site_settings.logo_caption`). The safe recovery was: restart only the
+  Directus container, delete Redis keys matching `permissions:*`,
+  `isvoi-directus-*` and `sets:namespace:isvoi-directus-*`, then restart
+  Directus again and re-check API reads with the production site token.
 
 ## Content Model Decisions
 
@@ -301,6 +308,11 @@ new commercial content should use structured collections and Directus Files.
   primitives and temporary renderer leftovers.
 - New visual decisions should update `DESIGN.md` first when they change shared
   color, type, spacing, elevation, component or motion rules.
+- Completed impeccable hardening point 3 on 2026-06-28: header links, brand
+  link, mobile menu button, catalog filter chips, sort select, card CTAs,
+  gallery tabs and device-page back link now keep at least a 44px hit area and
+  visible focus rings. Renderer/legacy markup was hardened in `site.css`; the
+  React device page and gallery were hardened with Tailwind utilities.
 
 ## Studio Workflow Decisions
 
@@ -319,6 +331,12 @@ new commercial content should use structured collections and Directus Files.
 - Editor-facing collections should keep bookmarks/presets for normal workflows:
   header menu, footer links, page sections, FAQ, catalog review, leads and
   import batches.
+- Completed menu/header work points 1 and 2 before the 2026-06-28 hardening
+  pass: homepage metadata uses Directus-managed content, and logo sizing plus
+  optional logo caption are edited through `site_settings` in Studio. Keep
+  future header/menu changes compatible with `site_settings` and
+  `navigation_items` rather than baking labels, CTA text or logo presentation
+  into code.
 
 ## Catalog Decisions
 

@@ -29,6 +29,34 @@ Each backup contains:
 
 The script verifies gzip, tar and sha256 checksums before it exits.
 
+## Off-Server Copy
+
+Backups should be copied outside the VPS. The backup script supports an optional
+`rclone` remote so the same verified backup can be sent to Beget storage,
+S3-compatible storage or another configured remote.
+
+Install and configure `rclone` for the `deploy` user on the Beget VPS, then keep
+the remote name/path in that user's environment or crontab, not in git:
+
+```bash
+OFFSITE_BACKUP_DEST=isvoi-backups:directus \
+  bash scripts/backup_beget_directus.sh
+```
+
+The script uploads the timestamped backup directory and runs:
+
+```bash
+rclone check "$TARGET_DIR" "$OFFSITE_TARGET" --one-way --size-only
+```
+
+Use a dry run when changing the remote path:
+
+```bash
+OFFSITE_BACKUP_DEST=isvoi-backups:directus \
+OFFSITE_BACKUP_DRY_RUN=1 \
+  bash scripts/backup_beget_directus.sh
+```
+
 ## Cron
 
 Recommended daily cron for the `deploy` user:
@@ -37,8 +65,14 @@ Recommended daily cron for the `deploy` user:
 17 2 * * * cd /opt/isvoi && bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
 ```
 
-Copy backups off the VPS regularly. A local VPS archive is useful for fast
-rollback, but it is not enough for disaster recovery.
+Recommended daily cron after the off-server remote is configured:
+
+```cron
+17 2 * * * cd /opt/isvoi && OFFSITE_BACKUP_DEST=isvoi-backups:directus bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
+```
+
+A local VPS archive is useful for fast rollback, but it is not enough for
+disaster recovery.
 
 ## Verify Backup
 
@@ -73,3 +107,8 @@ docker compose restart directus
 curl -fsS https://api.isvoi.ru/server/health
 cd /opt/isvoi && npm run smoke:prod
 ```
+
+Run a restore rehearsal after backup logic changes and at least quarterly once
+the off-server copy is configured. Record the backup stamp, rehearsal host,
+commands used and result in the project ops notes or the relevant maintenance
+issue.

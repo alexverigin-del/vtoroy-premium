@@ -205,7 +205,12 @@ Live deploy checks should include:
 - Backups are stored under `/opt/isvoi/backups/directus/`.
 - Each backup must contain `postgres.sql.gz`, `uploads.tar.gz`, `SHA256SUMS`
   and `RESTORE.md`.
+- Off-server backup copy is supported through `OFFSITE_BACKUP_DEST` and
+  `rclone`; storage credentials and remote configuration stay in the production
+  deploy user's environment, not in git.
 - Restore rehearsal instructions live in `docs/directus-backup-restore.md`.
+- Restore rehearsals should run after backup logic changes and at least
+  quarterly once off-server storage is configured.
 
 ## Directus Decisions
 
@@ -379,7 +384,7 @@ new commercial content should use structured collections and Directus Files.
 1. Continue growing the catalog through the operator import workflow.
 2. Add stronger lead protection when real traffic starts: nginx rate limit,
    Turnstile or another anti-spam layer.
-3. Add off-server backup copy, for example Beget storage or S3-compatible
-   storage, and periodically test restore rehearsals.
+3. Configure production `OFFSITE_BACKUP_DEST` for Beget/S3-compatible storage
+   and run the first restore rehearsal from the off-server copy.
 4. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.

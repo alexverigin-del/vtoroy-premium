@@ -98,5 +98,12 @@ Recommended deploy-user cron:
 17 2 * * * cd /opt/isvoi && bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
 ```
 
+After configuring an `rclone` remote for off-server storage, set
+`OFFSITE_BACKUP_DEST` for the deploy user or in the cron entry:
+
+```cron
+17 2 * * * cd /opt/isvoi && OFFSITE_BACKUP_DEST=isvoi-backups:directus bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
+```
+
 Restore and verification notes live in
 [`docs/directus-backup-restore.md`](../../docs/directus-backup-restore.md).

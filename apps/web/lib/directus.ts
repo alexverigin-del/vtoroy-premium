@@ -20,13 +20,18 @@ import { fallbackDevices } from "@/data/devices";
 //   - An optional DIRECTUS_TOKEN authenticates a least-privilege read account.
 //
 // Fallback behavior:
-//   - If no URL is configured, or any request fails, catalog reads fall back to
-//     the bundled data/devices.ts (mirror of the repo-root data/devices.json) so
-//     the app builds and runs with NO backend. Content reads return null/[] so
-//     callers can render template defaults.
+//   - Catalog fallback data is for local/demo use only by default.
+//   - Production fails closed unless ALLOW_CATALOG_FALLBACK=true is set
+//     explicitly, so stale bundled stock/prices are not shown when Directus is
+//     unavailable. Content reads return null/[] so callers can render template
+//     defaults.
 
 const SERVER_URL = process.env.DIRECTUS_URL ?? "";
 const PUBLIC_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? "";
+const ALLOW_CATALOG_FALLBACK = ["1", "true", "yes"].includes(
+  (process.env.ALLOW_CATALOG_FALLBACK ?? "").toLowerCase(),
+);
+const catalogFallbackAllowed = ALLOW_CATALOG_FALLBACK || process.env.NODE_ENV !== "production";
 
 export const directusConfig = {
   /** Server-preferred base URL (falls back to the public one). */
@@ -38,6 +43,7 @@ export const directusConfig = {
     return this.url.length > 0;
   },
   token: process.env.DIRECTUS_TOKEN ?? "",
+  catalogFallbackAllowed,
 } as const;
 
 /** Cache window for ISR-style revalidation (seconds). */
@@ -507,8 +513,8 @@ export function mapDeviceFromDirectus(
 // ---------------------------------------------------------------------------
 
 /**
- * Published devices for the catalog. Falls back to bundled data when Directus
- * is not configured or unreachable.
+ * Published devices for the catalog. In production this fails closed unless
+ * ALLOW_CATALOG_FALLBACK=true is set explicitly.
  *
  * Structured related collections are read first; legacy JSON fields remain as
  * fallback until all rows are migrated.
@@ -545,11 +551,14 @@ export async function getPublishedDevices(): Promise<Device[]> {
       ))
       .filter((device) => device.stockStatus !== "hidden");
   }
-  return fallbackDevices.filter((device) => device.stockStatus !== "hidden");
+  return directusConfig.catalogFallbackAllowed
+    ? fallbackDevices.filter((device) => device.stockStatus !== "hidden")
+    : [];
 }
 
 /**
- * A single device by slug (id). Falls back to bundled data.
+ * A single device by slug (id). In production this fails closed unless
+ * ALLOW_CATALOG_FALLBACK=true is set explicitly.
  *
  *   GET /items/devices?filter[id][_eq]={slug}&fields=*&limit=1
  */
@@ -576,7 +585,9 @@ export async function getDeviceBySlug(slug: string): Promise<Device | null> {
     const device = mapDeviceFromDirectus(data[0], imageRows ?? [], passportRows?.[0], tradeRows ?? []);
     return device.stockStatus === "hidden" ? null : device;
   }
-  return fallbackDevices.find((d) => d.id === slug && d.stockStatus !== "hidden") ?? null;
+  return directusConfig.catalogFallbackAllowed
+    ? fallbackDevices.find((d) => d.id === slug && d.stockStatus !== "hidden") ?? null
+    : null;
 }
 
 // ---------------------------------------------------------------------------

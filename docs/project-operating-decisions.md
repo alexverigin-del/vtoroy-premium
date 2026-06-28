@@ -271,6 +271,10 @@ new commercial content should use structured collections and Directus Files.
   Trade options, related devices and a lead form.
 - Related devices are selected from visible devices, preferring actionable
   alternatives before sold/hidden items.
+- Production catalog reads fail closed when Directus is unavailable or
+  misconfigured. Bundled catalog fallback data is allowed by default only in
+  development; in production it requires explicit `ALLOW_CATALOG_FALLBACK=true`
+  and should be treated as an incident-mode exception.
 - Large catalog updates should go through the import workflow:
   template -> media optimization -> dry run -> apply -> Directus QA.
 - Non-developers should use the Studio `catalog_import_batches` operator screen
@@ -327,6 +331,8 @@ new commercial content should use structured collections and Directus Files.
   grows.
 - `/api/admin/catalog-import/run` accepts catalog import authorization only via
   `x-isvoi-import-secret` or bearer auth, never query-string secrets.
+- `ALLOW_CATALOG_FALLBACK` should stay unset in production unless stale bundled
+  catalog data is intentionally accepted during an incident.
 - `npm audit --omit=dev` should have no high or critical vulnerabilities before
   deploy. Moderate advisories should be tracked and reduced when feasible.
 - `next.config.mjs` image optimization remote patterns should stay restricted

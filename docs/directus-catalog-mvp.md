@@ -25,16 +25,20 @@ getPublishedDevices() / getDeviceBySlug(slug)        ── lib/directus.ts
         │     → live data from Directus  GET /items/devices?...
         │
         └─ URL missing OR fetch fails OR empty result
-              → fallbackDevices from apps/web/data/devices.ts
-                (a build-time mirror of repo-root data/devices.json)
+              → development or ALLOW_CATALOG_FALLBACK=true:
+                   fallbackDevices from apps/web/data/devices.ts
+                production default:
+                   fail closed with [] / notFound()
 ```
 
-- **No backend required.** With no env vars, the app builds and renders the four
-  prototype devices from the bundled module — no runtime file reads, no network.
-- **Resilient.** Any network/JSON error falls back to bundled data for catalog
-  reads. Editable-content reads (`getSitePage`, `getPageSections`, `getFaqItems`)
-  return `null`/`[]` so routes can render template defaults (content has no demo
-  seed by design; the static prototype is the reference).
+- **No backend required in development.** With no env vars, `next dev` renders
+  the prototype devices from the bundled module — no runtime file reads, no
+  network.
+- **Production fail-closed.** In production, catalog reads do not fall back to
+  bundled stock/prices unless `ALLOW_CATALOG_FALLBACK=true` is set explicitly.
+  Editable-content reads (`getSitePage`, `getPageSections`, `getFaqItems`)
+  still return `null`/`[]` so routes can render template defaults (content has no
+  demo seed by design; the static prototype is the reference).
 - **URL preference.** Server components prefer `DIRECTUS_URL` (not exposed to the
   browser); `NEXT_PUBLIC_DIRECTUS_URL` is the browser-visible fallback.
 
@@ -52,8 +56,11 @@ assets into the app.
 # from the repo root (installs the workspaces; does NOT affect the static site)
 npm install
 
-# fallback mode (no Directus) — uses bundled demo data
+# dev fallback mode (no Directus) — uses bundled demo data
 npm run web:dev          # http://localhost:3000  → /  /catalog  /device/iphone-13-pro
+
+# production build with intentional fallback, only for local/demo use:
+ALLOW_CATALOG_FALLBACK=true npm run web:build
 
 # live mode — point at a Directus instance
 cd apps/web && cp .env.example .env.local   # set DIRECTUS_URL, then:
@@ -69,8 +76,9 @@ npm run web:dev
    content collections are separate — see `directus/schema/content-model.md`.)
 3. Set `DIRECTUS_URL` (and a `DIRECTUS_TOKEN` if your public role is not
    anonymous-read) in `apps/web/.env.local`.
-4. `getPublishedDevices()` / `getDeviceBySlug()` automatically use live data; the
-   fallback engages only on missing config or error.
+4. `getPublishedDevices()` / `getDeviceBySlug()` automatically use live data.
+   In production, fallback engages only when `ALLOW_CATALOG_FALLBACK=true` is
+   set intentionally.
 
 ### MVP `devices` shape
 

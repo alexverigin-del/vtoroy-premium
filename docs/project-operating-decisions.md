@@ -13,13 +13,15 @@ documentation map near the end of this file for deeper context. The minimum
 startup reading order is:
 
 1. `README.md`
-2. `docs/beget-vps-launch-checklist.md`
-3. `docs/architecture-directus-next-python.md`
-4. `directus/schema/content-model.md`
-5. `directus/schema/collections.md`
-6. `docs/catalog-workflow.md`
-7. `docs/catalog-operator-guide.md`
-8. `docs/directus-backup-restore.md`
+2. `PRODUCT.md`
+3. `DESIGN.md`
+4. `docs/beget-vps-launch-checklist.md`
+5. `docs/architecture-directus-next-python.md`
+6. `directus/schema/content-model.md`
+7. `directus/schema/collections.md`
+8. `docs/catalog-workflow.md`
+9. `docs/catalog-operator-guide.md`
+10. `docs/directus-backup-restore.md`
 
 Before assuming the state of the project, compare local git, GitHub and
 production:
@@ -75,6 +77,9 @@ decisions in this repo rather than relying on chat memory.
   cleanup.
 - Use `playwright` or the existing `scripts/smoke_playwright.mjs` flow for
   browser smoke checks of `/catalog`, `/store` and device pages.
+- Use `impeccable` for frontend design audits, design-system documentation,
+  critique/polish work and UI hardening. Its durable project context is
+  `PRODUCT.md`, `DESIGN.md` and `.impeccable/design.json`.
 - Use `skill-creator` only when maintaining a reusable project/platform skill,
   not for one-off project notes.
 - If a new skill materially changes how the project is operated, add it here
@@ -269,6 +274,14 @@ new commercial content should use structured collections and Directus Files.
 
 ## Styling Decisions
 
+- `PRODUCT.md` is the strategic design context for ISVOI: register, users,
+  product purpose, brand personality, anti-references, design principles and
+  accessibility baseline.
+- `DESIGN.md` is the current visual system reference for agents and future UI
+  work. It follows the `impeccable document` / DESIGN.md format with tokens,
+  typography, elevation, component rules and Do/Don't guardrails.
+- `.impeccable/design.json` is the generated sidecar for the local impeccable
+  live/design panel. Regenerate it when `DESIGN.md` is regenerated.
 - Current frontend styling is intentionally hybrid:
   - `apps/web/app/globals.css` loads Tailwind base/components/utilities and
     owns small global Tailwind-backed primitives such as `body`, `.btn-pill`
@@ -286,6 +299,8 @@ new commercial content should use structured collections and Directus Files.
   Tailwind during that migration and remove obsolete `site.css` rules.
 - Keep only minimal global CSS for Tailwind directives, base tokens, shared
   primitives and temporary renderer leftovers.
+- New visual decisions should update `DESIGN.md` first when they change shared
+  color, type, spacing, elevation, component or motion rules.
 
 ## Studio Workflow Decisions
 
@@ -406,6 +421,8 @@ new commercial content should use structured collections and Directus Files.
 
 ## Documentation Map
 
+- Product and visual design context:
+  `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`
 - Production launch and server snapshot:
   `docs/beget-vps-launch-checklist.md`
 - Architecture:

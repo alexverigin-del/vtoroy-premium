@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-28T17:05:00.000Z",
+  "title": "Design System: ISVOI",
+  "extensions": {
+    "colorMeta": {
+      "action-blue": {
+        "role": "primary",
+        "displayName": "Action Blue",
+        "canonical": "#0071e3",
+        "tonalRamp": ["#002342", "#004b8f", "#0066cc", "#0071e3", "#2997ff", "#7cc2ff", "#cce7ff", "#f0f8ff"]
+      },
+      "link-blue": {
+        "role": "primary",
+        "displayName": "Link Blue",
+        "canonical": "#0066cc",
+        "tonalRamp": ["#001f3d", "#003f7f", "#0059b3", "#0066cc", "#2f8eea", "#82bdff", "#d4eaff", "#f3f9ff"]
+      },
+      "signal-blue": {
+        "role": "primary",
+        "displayName": "Signal Blue",
+        "canonical": "#2997ff",
+        "tonalRamp": ["#00233f", "#004b86", "#0073d1", "#2997ff", "#70bbff", "#addaff", "#dff1ff", "#f6fbff"]
+      },
+      "carbon": {
+        "role": "neutral",
+        "displayName": "Carbon",
+        "canonical": "#1d1d1f",
+        "tonalRamp": ["#000000", "#1d1d1f", "#333333", "#474747", "#707070", "#a6a6a8", "#d2d2d7", "#f5f5f7"]
+      },
+      "frost": {
+        "role": "neutral",
+        "displayName": "Frost",
+        "canonical": "#f5f5f7",
+        "tonalRamp": ["#1d1d1f", "#333333", "#707070", "#a6a6a8", "#d2d2d7", "#e2e2e5", "#f5f5f7", "#ffffff"]
+      },
+      "ice": {
+        "role": "neutral",
+        "displayName": "Ice",
+        "canonical": "#f4f8fb",
+        "tonalRamp": ["#17202a", "#334252", "#708090", "#aebdca", "#d9e5ef", "#f4f8fb", "#fbfdff", "#ffffff"]
+      },
+      "success-green": {
+        "role": "secondary",
+        "displayName": "Success Green",
+        "canonical": "#237a3b",
+        "tonalRamp": ["#082614", "#124326", "#1d6334", "#237a3b", "#34c759", "#7dde94", "#c8f3d3", "#f1fbf4"]
+      },
+      "warning-amber": {
+        "role": "secondary",
+        "displayName": "Warning Amber",
+        "canonical": "#946000",
+        "tonalRamp": ["#2a1900", "#573600", "#7a4f00", "#946000", "#c98200", "#ffb238", "#ffe0a3", "#fff7e8"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headlines and major brand claims only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section introductions and page-level promises."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Cards, module headings, and device titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Main prose, form copy, and explanatory content."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Badges, metadata, compact facts, and footer links."
+      }
+    },
+    "shadows": [
+      {
+        "name": "product-grounding",
+        "value": "rgba(0, 0, 0, 0.18) 0 26px 90px",
+        "purpose": "Grounds major product renders and hero/detail device imagery."
+      },
+      {
+        "name": "soft-product",
+        "value": "rgba(0, 0, 0, 0.08) 0 18px 55px",
+        "purpose": "Subtle support for product objects and rare lifted visual moments."
+      },
+      {
+        "name": "focus-ring",
+        "value": "0 0 0 2px rgba(0,113,227,0.14)",
+        "purpose": "Accessible input focus state paired with an action-blue border."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-standard",
+        "value": "background-color .25s ease, color .25s ease, border-color .25s ease, transform .15s ease",
+        "purpose": "Default button and control state transition."
+      },
+      {
+        "name": "quiet-reveal",
+        "value": "opacity .7s ease, transform .7s ease",
+        "purpose": "Reserved reveal motion that must leave content visible by default."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "@media (prefers-reduced-motion: reduce) { transition: none; scroll-behavior: auto; }",
+        "purpose": "Required reduced-motion fallback."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "nav-mobile",
+        "value": "900px"
+      },
+      {
+        "name": "catalog-tablet",
+        "value": "1120px"
+      },
+      {
+        "name": "catalog-mobile",
+        "value": "560px"
+      },
+      {
+        "name": "footer-mobile",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary forward action for lead entry, catalog paths, and form submission.",
+      "html": "<button class=\"ds-btn-primary\">Войти в круг</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; border-radius: 980px; background: var(--color-apple-blue, #0071e3); color: #fff; padding: 12px 22px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 17px; font-weight: 400; letter-spacing: -0.016em; white-space: nowrap; transition: background-color .25s ease, transform .15s ease; } .ds-btn-primary:hover { background: #0077ed; } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: 2px solid rgba(0,113,227,0.32); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button-outlined",
+      "description": "Secondary exploration action for Store, Passport, Trade, and detail pages.",
+      "html": "<button class=\"ds-btn-outlined\">Смотреть Store</button>",
+      "css": ".ds-btn-outlined { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--color-link-blue, #0066cc); border-radius: 980px; background: transparent; color: var(--color-link-blue, #0066cc); padding: 12px 22px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 17px; font-weight: 400; letter-spacing: -0.016em; white-space: nowrap; transition: background-color .25s ease, transform .15s ease; } .ds-btn-outlined:hover { background: rgba(0,102,204,0.06); } .ds-btn-outlined:active { transform: scale(0.98); } .ds-btn-outlined:focus-visible { outline: 2px solid rgba(0,113,227,0.32); outline-offset: 2px; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Catalog filter pill with a quiet active state.",
+      "html": "<button class=\"ds-filter-chip ds-filter-chip-active\">iPhone</button>",
+      "css": ".ds-filter-chip { border: 1px solid var(--color-hairline, #d2d2d7); border-radius: 980px; background: transparent; color: var(--color-graphite, #474747); min-height: 34px; padding: 6px 14px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; transition: border-color .2s ease, background-color .2s ease, color .2s ease; } .ds-filter-chip:hover, .ds-filter-chip-active { color: var(--color-link-blue, #0066cc); border-color: var(--color-link-blue, #0066cc); background: rgba(0,102,204,0.04); } .ds-filter-chip:focus-visible { outline: 2px solid rgba(0,113,227,0.32); outline-offset: 2px; }"
+    },
+    {
+      "name": "Device Card",
+      "kind": "card",
+      "refersTo": "device-card",
+      "description": "Flat verified device dossier used in the catalog.",
+      "html": "<article class=\"ds-device-card\"><div class=\"ds-device-media\"></div><div class=\"ds-device-body\"><span class=\"ds-stock\">В наличии</span><h3>iPhone 13 Pro</h3><p>256 GB · Graphite</p><div class=\"ds-price\">59 900 ₽</div><button class=\"ds-device-cta\">Смотреть паспорт</button></div></article>",
+      "css": ".ds-device-card { display: flex; flex-direction: column; width: 280px; min-height: 430px; border: 1px solid var(--color-hairline, #d2d2d7); border-radius: 8px; background: #fff; overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-carbon, #1d1d1f); transition: border-color .22s ease, transform .18s ease; } .ds-device-card:hover { border-color: rgba(0,102,204,0.36); transform: translateY(-2px); } .ds-device-media { height: 176px; background: radial-gradient(70% 60% at 50% 35%, rgba(41,151,255,0.12), transparent 62%), var(--color-frost, #f5f5f7); border-bottom: 1px solid var(--color-hairline, #d2d2d7); } .ds-device-body { display: flex; flex-direction: column; gap: 16px; padding: 22px; flex: 1; } .ds-stock { align-self: flex-start; border-radius: 980px; padding: 4px 9px; background: rgba(52,199,89,0.1); color: #237a3b; font-size: 12px; font-weight: 600; } .ds-device-card h3 { margin: 0; font-size: 21px; line-height: 1.18; letter-spacing: -0.01em; font-weight: 600; } .ds-device-card p { margin: -10px 0 0; color: var(--color-ash, #707070); font-size: 14px; } .ds-price { margin-top: auto; font-size: 28px; line-height: 1.1; letter-spacing: -0.015em; font-weight: 600; } .ds-device-cta { border: 1px solid var(--color-link-blue, #0066cc); border-radius: 980px; background: transparent; color: var(--color-link-blue, #0066cc); padding: 10px 14px; font-size: 14px; }"
+    },
+    {
+      "name": "Lead Form Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Quiet frosted input field for final lead intake.",
+      "html": "<label class=\"ds-field\"><span>Контакт</span><input placeholder=\"Телефон или Telegram\" /></label>",
+      "css": ".ds-field { display: grid; gap: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-field span { color: var(--color-ash, #707070); font-size: 12px; } .ds-field input { width: 100%; height: 46px; border: 1px solid var(--color-hairline, #d2d2d7); border-radius: 8px; background: var(--color-frost, #f5f5f7); color: var(--color-carbon, #1d1d1f); padding: 0 14px; font-size: 14px; letter-spacing: -0.01em; outline: none; } .ds-field input:focus { border-color: var(--color-apple-blue, #0071e3); box-shadow: 0 0 0 2px rgba(0,113,227,0.14); }"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Sticky frosted header with compact brand, links, and primary CTA.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-brand\">I СВОИ<span>Проверенная техника для своих</span></a><div class=\"ds-links\"><a>Каталог</a><a>Store</a><a>Passport</a><a>Trade</a><a>Club</a></div><button class=\"ds-nav-cta\">Войти в круг</button></nav>",
+      "css": ".ds-nav { min-height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 6px 32px; background: rgba(245,245,247,0.82); border-bottom: 1px solid var(--color-hairline, #d2d2d7); backdrop-filter: saturate(180%) blur(20px); font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: var(--color-carbon, #1d1d1f); } .ds-brand { display: inline-flex; flex-direction: column; gap: 3px; font-size: 14px; font-weight: 600; line-height: 1; color: inherit; text-decoration: none; } .ds-brand span { font-size: 10px; color: var(--color-graphite, #474747); } .ds-links { display: flex; gap: 28px; } .ds-links a { font-size: 12px; color: inherit; opacity: .85; text-decoration: none; } .ds-links a:hover { opacity: 1; } .ds-nav-cta { border: 0; border-radius: 980px; background: var(--color-apple-blue, #0071e3); color: #fff; padding: 8px 16px; font-size: 14px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Verified Inner-Circle Storefront",
+    "overview": "ISVOI is a restrained premium storefront for verified devices. The system should feel like a precise private retail room: light, quiet, highly legible, and product-first. It earns trust through calm hierarchy, real device detail, visible verification modules, and predictable paths into Store, Passport, Trade, and Club.\n\nThe current visual language is Apple-adjacent by design: near-black ink, cool light surfaces, one confident blue, hairline dividers, pill actions, and carefully cropped product imagery. That restraint is useful, but it must stay attached to ISVOI's own promise: good things move through trusted hands, not through anonymous marketplace noise.\n\nThe system explicitly rejects generic electronics-store clutter, aggressive discount banners, anonymous marketplace noise, heavy casino-like promotions, fake luxury, and purely decorative AI-style visuals when real product information is needed.",
+    "keyCharacteristics": [
+      "Light premium surfaces with near-black text and restrained blue actions.",
+      "Product and passport information first; decoration only supports trust.",
+      "Rounded pills for actions and chips; 8px cards for operational clarity.",
+      "Quiet motion and tactile hover states, never attention-hungry animation.",
+      "Editor-safe layouts that survive variable Directus content and logo lockups.",
+      "Tailwind-first implementation for new React/Next UI; site.css is a transition layer for renderer-generated HTML."
+    ],
+    "rules": [
+      {
+        "name": "The Blue Rarity Rule",
+        "body": "Blue is an action and verification signal, not wallpaper. If more than one thing in a viewport is shouting in blue, reduce the least important one to neutral.",
+        "section": "colors"
+      },
+      {
+        "name": "The Trust Contrast Rule",
+        "body": "Small text must pass WCAG AA. The current signal blue and green statuses are close to the line; when text is 14px or smaller, darken the foreground instead of thinning the message.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Mono Costume Rule",
+        "body": "Do not introduce monospace as shorthand for \"technical\". ISVOI's technical competence comes from precise content and passport structure, not terminal styling.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lockup Discipline Rule",
+        "body": "The logo may carry a second line, but captions must remain clear at header size. If the uploaded logo already includes a descriptor, do not duplicate it with another live caption.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Retail Rule",
+        "body": "Cards are flat at rest. If a card needs emphasis, use hierarchy, product image quality, or a stronger border state before adding a shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Tailwind-First Migration Rule",
+        "body": "Do not grow site.css for normal product/catalog/lead UI. Use Tailwind-first React components unless the change specifically touches renderer-generated markup that still depends on site.css.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do preserve the calm premium Apple-adjacent baseline while making ISVOI's own verification promise more specific.",
+      "Do use Action Blue only for decisive forward actions and Link Blue for secondary exploration.",
+      "Do keep cards at 8px radius unless a component is explicitly a pill, chip, or device render.",
+      "Do use real product imagery and passport facts before decorative visuals.",
+      "Do keep Directus-managed logo captions short enough to fit inside the header at mobile widths.",
+      "Do verify contrast for all 12-14px labels, badges, and eyebrow text.",
+      "Do respect reduced motion; reveal transitions must never hide content by default.",
+      "Do build new React/Next product, catalog, lead, and component UI with Tailwind utilities and shared tokens.",
+      "Do migrate styling out of site.css when renderer/legacy sections are moved into React."
+    ],
+    "donts": [
+      "Don't introduce generic electronics-store clutter, aggressive discount banners, anonymous marketplace noise, heavy casino-like promotions, or fake luxury.",
+      "Don't use purely decorative AI-style visuals where real product information, trust signals, and clear navigation are needed.",
+      "Don't rely on repeated tiny uppercase eyebrows as section scaffolding. One deliberate label is fine; a page full of them becomes template grammar.",
+      "Don't add gradient text, decorative glassmorphism cards, or oversized rounded card panels.",
+      "Don't use monospace as a lazy signal of technical competence.",
+      "Don't duplicate a logo descriptor: if the uploaded asset already says \"Проверенная техника для своих\", leave the live caption empty.",
+      "Don't let mobile controls remain below comfortable touch size when they are primary filters, menu buttons, or gallery tabs.",
+      "Don't add new large global CSS blocks for normal product/catalog/lead UI.",
+      "Don't treat site.css as the permanent home for new React component styling."
+    ]
+  }
+}

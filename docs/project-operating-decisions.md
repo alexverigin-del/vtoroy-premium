@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-06-27.
+Last updated: 2026-06-28.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -34,6 +34,8 @@ ssh -i C:\Users\1\.ssh\isvoi_beget_ed25519 deploy@217.114.14.32 "cd /opt/isvoi &
 
 New chat rules:
 
+- Use `C:\Users\1\Documents\ISVOI` as the primary local workspace. The older
+  Codex export/work path should not be treated as the default working copy.
 - Do not assume local commits are pushed or deployed until GitHub and Beget are
   checked.
 - Do not assume production is on the same commit as the local workspace.
@@ -87,6 +89,27 @@ decisions in this repo rather than relying on chat memory.
 - Use `apply_patch` for text edits. Use shell deletion only for binary files or
   other cases where patch tooling cannot safely read the file, after verifying
   target paths.
+
+## Local Development Baseline
+
+- Primary local workspace: `C:\Users\1\Documents\ISVOI`.
+- Local Node.js was installed through `winget` in user scope.
+- Local Node.js version: `v24.18.0`.
+- Local npm version: `11.16.0`.
+- The project uses the npm/package-lock workflow. Use `npm install`, not pnpm,
+  for normal local setup.
+- Standard local checks:
+
+```powershell
+npm install
+npm run lint --workspace @vtoroy/web
+npm run typecheck --workspace @vtoroy/web
+npm run web:build
+```
+
+- Temporary bundled `pnpm` workarounds were only used before npm was available
+  in PATH. Do not commit `pnpm-lock.yaml` or `pnpm-workspace.yaml` unless the
+  project explicitly migrates package managers.
 
 ## Source Of Truth
 

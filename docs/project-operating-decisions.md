@@ -208,6 +208,9 @@ Live deploy checks should include:
 - Off-server backup copy is supported through `OFFSITE_BACKUP_DEST` and
   `rclone`; storage credentials and remote configuration stay in the production
   deploy user's environment, not in git.
+- On Beget, `rclone` is installed user-local at `/home/deploy/bin/rclone`
+  because `deploy` has no passwordless sudo. Cron entries that use off-server
+  copy should set `PATH=/home/deploy/bin:...` explicitly.
 - Restore rehearsal instructions live in `docs/directus-backup-restore.md`.
 - Restore rehearsals should run after backup logic changes and at least
   quarterly once off-server storage is configured.

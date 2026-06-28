@@ -102,7 +102,7 @@ After configuring an `rclone` remote for off-server storage, set
 `OFFSITE_BACKUP_DEST` for the deploy user or in the cron entry:
 
 ```cron
-17 2 * * * cd /opt/isvoi && OFFSITE_BACKUP_DEST=isvoi-backups:directus bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
+17 2 * * * cd /opt/isvoi && PATH=/home/deploy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin OFFSITE_BACKUP_DEST=isvoi-backups:directus bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
 ```
 
 Restore and verification notes live in

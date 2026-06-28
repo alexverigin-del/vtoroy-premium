@@ -35,8 +35,9 @@ Backups should be copied outside the VPS. The backup script supports an optional
 `rclone` remote so the same verified backup can be sent to Beget storage,
 S3-compatible storage or another configured remote.
 
-Install and configure `rclone` for the `deploy` user on the Beget VPS, then keep
-the remote name/path in that user's environment or crontab, not in git:
+`rclone` is installed for the `deploy` user at `/home/deploy/bin/rclone`.
+Configure the remote for that same user on the Beget VPS, then keep the remote
+name/path in that user's environment or crontab, not in git:
 
 ```bash
 OFFSITE_BACKUP_DEST=isvoi-backups:directus \
@@ -68,7 +69,7 @@ Recommended daily cron for the `deploy` user:
 Recommended daily cron after the off-server remote is configured:
 
 ```cron
-17 2 * * * cd /opt/isvoi && OFFSITE_BACKUP_DEST=isvoi-backups:directus bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
+17 2 * * * cd /opt/isvoi && PATH=/home/deploy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin OFFSITE_BACKUP_DEST=isvoi-backups:directus bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
 ```
 
 A local VPS archive is useful for fast rollback, but it is not enough for

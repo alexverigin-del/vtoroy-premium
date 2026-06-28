@@ -172,8 +172,7 @@ function authorized(request: NextRequest, secret: string): boolean {
   const expected = secret.trim();
   const headerSecret = (request.headers.get("x-isvoi-import-secret") || "").trim();
   const bearerSecret = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
-  const querySecret = (request.nextUrl.searchParams.get("secret") || "").trim();
-  return headerSecret === expected || bearerSecret === expected || querySecret === expected;
+  return headerSecret === expected || bearerSecret === expected;
 }
 
 async function directusRequest<T>(

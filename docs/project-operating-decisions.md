@@ -220,6 +220,10 @@ Live deploy checks should include:
 - `ISVOI Lead Intake` is create-only on `leads`.
 - `ISVOI Catalog Import` is for batch import automation and should remain
   scoped to import/media/catalog collections.
+- Catalog import Manual Flow buttons call the Next.js webhook with
+  `x-isvoi-import-secret` or bearer auth only. Do not put
+  `CATALOG_IMPORT_WEBHOOK_SECRET` in query strings because Flow request URLs can
+  be logged.
 - Studio should be editor-friendly: field groups, notes, display templates,
   presets and safe roles matter as much as table structure.
 - Keep schema/metadata setup scripts idempotent so they can be reapplied.
@@ -321,6 +325,8 @@ new commercial content should use structured collections and Directus Files.
 - `/lead-intake` uses honeypot plus a lightweight in-process rate limit.
   A durable edge/proxy rate limit or Turnstile can be added later if traffic
   grows.
+- `/api/admin/catalog-import/run` accepts catalog import authorization only via
+  `x-isvoi-import-secret` or bearer auth, never query-string secrets.
 - `npm audit --omit=dev` should have no high or critical vulnerabilities before
   deploy. Moderate advisories should be tracked and reduced when feasible.
 - `next.config.mjs` image optimization remote patterns should stay restricted

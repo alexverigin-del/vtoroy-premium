@@ -6,6 +6,8 @@
  * Required env:
  *   CATALOG_IMPORT_WEBHOOK_SECRET
  *
+ * The secret is stored only in request headers, not in the webhook URL.
+ *
  * Optional env:
  *   CATALOG_IMPORT_WEBHOOK_URL=https://isvoi.ru/api/admin/catalog-import/run
  *
@@ -37,7 +39,7 @@ function flowOptions(collection) {
 }
 
 function requestOptions(apply) {
-  const url = `${webhookUrl}?batch_id={{$trigger.key}}&apply=${apply ? "true" : "false"}&secret=${encodeURIComponent(secret)}`;
+  const url = `${webhookUrl}?batch_id={{$trigger.key}}&apply=${apply ? "true" : "false"}`;
   return JSON.stringify({
     url,
     method: "POST",

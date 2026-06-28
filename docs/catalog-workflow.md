@@ -187,6 +187,11 @@ npm run directus:setup:catalog-import-operator-screen
 It adds the `ISVOI Catalog Imports` files folder, operator bookmarks, and safe
 editor permissions so status/log fields are written only by automation.
 
+The webhook buttons are configured by `npm run
+directus:setup:catalog-import-button`. The shared secret must be sent only in
+the `x-isvoi-import-secret` header (or bearer auth), never as a query-string
+parameter, because Flow request URLs can appear in logs and operation history.
+
 The older JSON media importer remains available for maintenance scripts:
 
 ```bash

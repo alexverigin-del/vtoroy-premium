@@ -36,3 +36,16 @@
 npm run directus:setup:leads
 ```
 
+## Защита публичной формы
+
+Публичные формы отправляют заявки только через `/lead-intake`. Сейчас включены:
+
+- honeypot-поле `website`;
+- in-process rate limit в Next.js;
+- optional Cloudflare Turnstile, если заданы `TURNSTILE_SECRET_KEY` и
+  `NEXT_PUBLIC_TURNSTILE_SITE_KEY`;
+- nginx rate limit для `POST /lead-intake` в production-конфиге.
+
+Turnstile не нужен для локальной разработки: если ключи не заданы, форма и
+endpoint работают по прежнему контракту.
+

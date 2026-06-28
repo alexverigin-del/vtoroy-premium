@@ -177,6 +177,7 @@ npm run directus:audit-schema
 npm run directus:audit-navigation
 npm run directus:audit-catalog
 npm run directus:audit-images
+npm run directus:audit-legacy-fallback
 ```
 
 Live deploy checks should include:
@@ -214,6 +215,13 @@ Live deploy checks should include:
 - Restore rehearsal instructions live in `docs/directus-backup-restore.md`.
 - Restore rehearsals should run after backup logic changes and at least
   quarterly once off-server storage is configured.
+- `npm run directus:restore-rehearsal` restores an off-server backup into a
+  disposable `postgres:16-alpine` container and verifies uploads without
+  overwriting production.
+- As of 2026-06-28, the restore rehearsal script is implemented in repo, but
+  live off-server rehearsal is still blocked until real `isvoi-backups` rclone
+  credentials are configured for the `deploy` user. Production cron still runs
+  the local VPS backup until that remote exists.
 
 ## Directus Decisions
 
@@ -289,6 +297,10 @@ new commercial content should use structured collections and Directus Files.
   and documented `docs/catalog-operator-guide.md` flow.
 - Import scripts should use a dedicated importer/service token, not an admin
   token.
+- Production legacy fallback snapshot on 2026-06-28: 4 visible devices,
+  `legacy.any_fallback = 0`, including 0 for `listing_image`, missing card
+  image, `gallery`, `passport` and `trade` fallback classes. Next reduction can
+  start with media fallback removal.
 
 ## Lead Workflow Decisions
 
@@ -335,8 +347,14 @@ new commercial content should use structured collections and Directus Files.
   - `IMPORT_IP_DENY_LIST`
 - The public site sets baseline security headers in `apps/web/next.config.mjs`.
 - `/lead-intake` uses honeypot plus a lightweight in-process rate limit.
-  A durable edge/proxy rate limit or Turnstile can be added later if traffic
-  grows.
+  Nginx rate-limit config and opt-in Cloudflare Turnstile are available for
+  production hardening. Turnstile is enforced only when `TURNSTILE_SECRET_KEY`
+  is set; the browser widget is rendered only when
+  `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set.
+- As of 2026-06-28, Turnstile support is implemented as opt-in code and the
+  nginx rate-limit snippet is documented in repo. Live Turnstile requires real
+  Cloudflare keys in production env; live nginx rate limiting requires applying
+  the snippet to `/etc/nginx` with root/sudo access.
 - `/api/admin/catalog-import/run` accepts catalog import authorization only via
   `x-isvoi-import-secret` or bearer auth, never query-string secrets.
 - `ALLOW_CATALOG_FALLBACK` should stay unset in production unless stale bundled
@@ -384,10 +402,10 @@ new commercial content should use structured collections and Directus Files.
 
 ## Current Recommended Roadmap
 
-1. Continue growing the catalog through the operator import workflow.
-2. Add stronger lead protection when real traffic starts: nginx rate limit,
-   Turnstile or another anti-spam layer.
-3. Configure production `OFFSITE_BACKUP_DEST` for Beget/S3-compatible storage
-   and run the first restore rehearsal from the off-server copy.
+1. Configure real production `isvoi-backups` rclone credentials, run a real
+   off-server backup upload and run `npm run directus:restore-rehearsal`.
+2. Apply the nginx `/lead-intake` rate-limit snippet on Beget and enable
+   Turnstile keys when public traffic requires it.
+3. Continue growing the catalog through the operator import workflow.
 4. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.

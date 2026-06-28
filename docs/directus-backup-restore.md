@@ -58,6 +58,23 @@ OFFSITE_BACKUP_DRY_RUN=1 \
   bash scripts/backup_beget_directus.sh
 ```
 
+After the remote is configured, run the first restore rehearsal from the
+off-server copy:
+
+```bash
+cd /opt/isvoi
+PATH=/home/deploy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+  npm run directus:restore-rehearsal
+```
+
+To rehearse a specific backup stamp:
+
+```bash
+OFFSITE_BACKUP_STAMP=YYYYMMDDTHHMMSSZ \
+PATH=/home/deploy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+  npm run directus:restore-rehearsal
+```
+
 ## Cron
 
 Recommended daily cron for the `deploy` user:
@@ -88,6 +105,11 @@ tar -tzf uploads.tar.gz >/dev/null
 
 Do restore rehearsals on a separate host or temporary stack first. The database
 restore command below overwrites the target database state.
+
+The preferred rehearsal path is `npm run directus:restore-rehearsal`, which
+copies a backup from `OFFSITE_BACKUP_DEST`, verifies `SHA256SUMS`, restores the
+database into a disposable `postgres:16-alpine` container and checks that
+uploads unpack correctly.
 
 ```bash
 cd /opt/isvoi/infra/directus-beget

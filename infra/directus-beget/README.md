@@ -107,3 +107,11 @@ After configuring an `rclone` remote for off-server storage, set
 
 Restore and verification notes live in
 [`docs/directus-backup-restore.md`](../../docs/directus-backup-restore.md).
+
+The off-server restore rehearsal is automated:
+
+```bash
+cd /opt/isvoi
+PATH=/home/deploy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+  npm run directus:restore-rehearsal
+```

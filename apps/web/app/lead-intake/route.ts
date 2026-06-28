@@ -24,6 +24,8 @@ type LeadRequest = {
   utm_content?: unknown;
   utm_term?: unknown;
   website?: unknown;
+  turnstile_token?: unknown;
+  "cf-turnstile-response"?: unknown;
 };
 
 type StoredLead = {
@@ -53,6 +55,7 @@ type StoredLead = {
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const rateLimitBuckets = new Map<string, number[]>();
 
 function text(value: unknown, maxLength: number): string {
@@ -141,6 +144,42 @@ async function parseLeadRequest(request: NextRequest): Promise<LeadRequest> {
   }
 
   return {};
+}
+
+type TurnstileResponse = {
+  success?: boolean;
+  "error-codes"?: string[];
+};
+
+function turnstileToken(body: LeadRequest): string {
+  return text(body.turnstile_token, 2048) || text(body["cf-turnstile-response"], 2048);
+}
+
+async function verifyTurnstile(body: LeadRequest, request: NextRequest): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY ?? "";
+  if (!secret) return true;
+
+  const token = turnstileToken(body);
+  if (!token) return false;
+
+  try {
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret,
+        response: token,
+        remoteip: clientIp(request),
+      }),
+      cache: "no-store",
+    });
+    if (!response.ok) return false;
+
+    const result = (await response.json()) as TurnstileResponse;
+    return result.success === true;
+  } catch {
+    return false;
+  }
 }
 
 async function postToDirectus(lead: StoredLead): Promise<boolean> {
@@ -247,6 +286,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { ok: false, error: "rate_limited" },
       { status: 429 },
+    );
+  }
+
+  if (!(await verifyTurnstile(body, request))) {
+    return NextResponse.json(
+      { ok: false, error: "turnstile_failed" },
+      { status: 400 },
     );
   }
 

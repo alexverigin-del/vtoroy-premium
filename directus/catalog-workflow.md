@@ -206,3 +206,23 @@ Repeated imports are idempotent:
   updated;
 - if neither can identify an existing row, `id` is required to create a new
   public slug.
+
+## Legacy fallback snapshot
+
+Before removing any legacy fallback class from the Next.js renderer, snapshot
+production completeness:
+
+```bash
+npm run directus:audit-legacy-fallback > /tmp/isvoi_audit_legacy_fallback.sql
+
+cd /opt/isvoi/infra/directus-beget
+set -a && . ./.env && set +a
+docker compose exec -T database psql \
+  -U "$DB_USER" \
+  -d "$DB_DATABASE" \
+  -v ON_ERROR_STOP=1 \
+  < /tmp/isvoi_audit_legacy_fallback.sql
+```
+
+Remove one fallback class at a time only after the snapshot shows production
+published devices no longer depend on it.

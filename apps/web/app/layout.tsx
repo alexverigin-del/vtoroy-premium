@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import "./site.css";
 
@@ -38,9 +39,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        {children}
+        {turnstileEnabled ? (
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
+          />
+        ) : null}
+      </body>
     </html>
   );
 }

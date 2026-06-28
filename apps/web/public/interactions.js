@@ -123,6 +123,39 @@
     var leadForm = byId("leadForm");
     var formNote = byId("formNote");
     if (!leadForm || !formNote) return;
+    var turnstileWidgetId = null;
+    var turnstileContainer = leadForm.querySelector("[data-turnstile-widget]");
+    var turnstileInput = leadForm.querySelector('input[name="turnstile_token"]');
+
+    function setTurnstileToken(token) {
+      if (turnstileInput) turnstileInput.value = token || "";
+    }
+
+    function resetTurnstile() {
+      setTurnstileToken("");
+      if (window.turnstile && turnstileWidgetId) window.turnstile.reset(turnstileWidgetId);
+    }
+
+    function renderTurnstile() {
+      if (!turnstileContainer || turnstileWidgetId || !window.turnstile) return;
+      var siteKey = turnstileContainer.getAttribute("data-sitekey") || "";
+      if (!siteKey) return;
+      turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+        sitekey: siteKey,
+        callback: setTurnstileToken,
+        "expired-callback": function () { setTurnstileToken(""); },
+        "error-callback": function () { setTurnstileToken(""); }
+      });
+    }
+
+    if (turnstileContainer) {
+      var attempts = 0;
+      var timer = window.setInterval(function () {
+        attempts += 1;
+        renderTurnstile();
+        if (turnstileWidgetId || attempts >= 40) window.clearInterval(timer);
+      }, 250);
+    }
 
     leadForm.addEventListener("submit", function (event) {
       event.preventDefault();
@@ -138,6 +171,7 @@
         name: text(formData.get("name")),
         contact: text(formData.get("contact")),
         message: text(formData.get("message")),
+        turnstile_token: text(formData.get("turnstile_token")),
         source: window.location.pathname || "/",
         website: text(formData.get("website"))
       };
@@ -145,6 +179,11 @@
 
       if (!payload.contact) {
         formNote.textContent = "Оставьте контакт, чтобы мы могли ответить.";
+        formNote.classList.remove("is-success");
+        return;
+      }
+      if (turnstileContainer && !payload.turnstile_token) {
+        formNote.textContent = "Пройдите проверку и отправьте заявку ещё раз.";
         formNote.classList.remove("is-success");
         return;
       }
@@ -167,10 +206,12 @@
         })
         .then(function () {
           leadForm.reset();
+          resetTurnstile();
           formNote.textContent = "Заявка принята. Мы свяжемся с вами и предложим спокойный следующий шаг.";
           formNote.classList.add("is-success");
         })
         .catch(function () {
+          resetTurnstile();
           formNote.textContent = "Не удалось отправить заявку. Попробуйте еще раз или напишите нам напрямую.";
           formNote.classList.remove("is-success");
         })

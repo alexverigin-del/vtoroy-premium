@@ -1446,6 +1446,10 @@ function renderFinalCtaSection(section: PageSection): string {
       : typeof section.content.footer_note === "string"
         ? section.content.footer_note
         : "Северодвинск. Мы здесь. Нас можно найти. Мы отвечаем за то, что проходит через своих.";
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+  const turnstileWidget = turnstileSiteKey
+    ? `<div class="lead-form__turnstile" data-turnstile-widget data-sitekey="${escapeHtml(turnstileSiteKey)}"></div>`
+    : "";
 
   return `<!-- ============== FINAL CTA ============== -->
 <section class="section section--wash final-cta" id="final">
@@ -1475,6 +1479,8 @@ function renderFinalCtaSection(section: PageSection): string {
           <input name="contact" type="text" placeholder="${escapeHtml(form.contactPlaceholder)}" />
         </label>
         <input name="website" type="text" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;height:1px;width:1px;opacity:0;" />
+        <input name="turnstile_token" type="hidden" value="" />
+        ${turnstileWidget}
         <button class="btn btn--filled lead-form__submit" type="submit">${escapeHtml(form.submitLabel)}</button>
         <p class="lead-form__note" id="formNote">${escapeHtml(form.note)}</p>
       </form>

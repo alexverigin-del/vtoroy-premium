@@ -26,6 +26,9 @@ Global, site-wide values. Configure as a **singleton** in Directus.
 | `logo_file`          | M2O → directus_files | Header/footer logo from `ISVOI Site Assets`. |
 | `logo_alt`           | string               | Accessible alt text for the logo.      |
 | `logo_href`          | string               | Usually `/`.                           |
+| `logo_width`         | integer              | Optional rendered logo width in px. Leave empty to keep image proportions. |
+| `logo_height`        | integer              | Rendered logo height in px. Default header height is `22`. |
+| `logo_caption`       | string               | Optional text shown under the logo image. Leave empty when the uploaded logo already includes the caption. |
 | `show_brand_name`    | boolean              | Show text next to the logo.            |
 | `header_cta_label`   | string               | Right-side header CTA label.           |
 | `header_cta_url`     | string               | Right-side header CTA URL.             |

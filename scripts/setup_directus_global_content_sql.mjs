@@ -281,14 +281,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'read',
-  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'update',
-  'brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
+  'brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
   NULL
 );
 

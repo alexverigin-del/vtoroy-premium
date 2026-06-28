@@ -22,6 +22,9 @@ export interface SiteSettings {
   logoFile?: string;
   logoAlt?: string;
   logoHref?: string;
+  logoWidth?: number;
+  logoHeight?: number;
+  logoCaption?: string;
   showBrandName?: boolean;
   headerCtaLabel?: string;
   headerCtaUrl?: string;

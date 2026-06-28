@@ -33,6 +33,7 @@ const defaultSiteSettings: SiteSettings = {
   tagline: "Хорошие вещи проходят через своих.",
   city: "Северодвинск",
   logoHref: "/",
+  logoHeight: 22,
   showBrandName: true,
   headerCtaLabel: "Войти в круг",
   headerCtaUrl: "/#final",
@@ -75,6 +76,9 @@ function siteChrome(settings: SiteSettings | null, navigation: NavigationItem[])
       logoFile: settings?.logoFile,
       logoAlt: text(settings?.logoAlt, settings?.brandName ? `${settings.brandName} logo` : `${defaultSiteSettings.brandName} logo`),
       logoHref: text(settings?.logoHref, defaultSiteSettings.logoHref ?? "/"),
+      logoWidth: settings?.logoWidth ?? defaultSiteSettings.logoWidth,
+      logoHeight: settings?.logoHeight ?? defaultSiteSettings.logoHeight,
+      logoCaption: settings?.logoCaption?.trim(),
       showBrandName: settings?.showBrandName ?? defaultSiteSettings.showBrandName,
       headerCtaLabel: text(settings?.headerCtaLabel, defaultSiteSettings.headerCtaLabel ?? "Войти в круг"),
       headerCtaUrl: text(settings?.headerCtaUrl, defaultSiteSettings.headerCtaUrl ?? "/#final"),
@@ -130,9 +134,31 @@ function navigationHref(item: NavigationItem, fallback = "#top"): string {
   return normalizeSiteUrl(item.customUrl || item.url, fallback);
 }
 
-function renderLogo(settings: SiteSettings): string {
+function boundedLogoSize(value: number | undefined, min: number, max: number): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return null;
+  return Math.max(min, Math.min(max, Math.round(value)));
+}
+
+function logoStyle(settings: SiteSettings): string {
+  const width = boundedLogoSize(settings.logoWidth, 28, 360);
+  const height = boundedLogoSize(settings.logoHeight, 16, 120);
+  const rules = [
+    width ? `--logo-width:${width}px` : "",
+    height ? `--logo-height:${height}px` : "",
+  ].filter(Boolean);
+  return rules.length ? ` style="${rules.join(";")}"` : "";
+}
+
+function renderLogoGraphic(settings: SiteSettings): string {
   if (!settings.logoFile) return logoSvg();
   return `<img class="logo logo--image" src="${escapeHtml(settings.logoFile)}" alt="${escapeHtml(settings.logoAlt || settings.brandName)}" loading="eager" decoding="async">`;
+}
+
+function renderLogo(settings: SiteSettings): string {
+  return `<span class="brand-logo"${logoStyle(settings)}>
+        ${renderLogoGraphic(settings)}
+        ${settings.logoCaption ? `<span class="brand-logo__caption">${escapeHtml(settings.logoCaption)}</span>` : ""}
+      </span>`;
 }
 
 function renderBrandName(settings: SiteSettings): string {

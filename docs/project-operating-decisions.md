@@ -249,6 +249,10 @@ Live deploy checks should include:
 ## Content Model Decisions
 
 - `site_settings` owns brand, logo, global contacts and header CTA.
+- Header/footer logo presentation is controlled by `site_settings.logo_width`,
+  `site_settings.logo_height` and `site_settings.logo_caption`. The uploaded
+  image may be a complete logo lockup (`I СВОИ` plus descriptor) or just the
+  main mark/name with `logo_caption` providing the second line.
 - `navigation_items` owns header/footer/mobile/utility navigation.
 - `site_pages` and `page_sections` own managed marketing pages.
 - `faq_items` owns reusable FAQ content.
@@ -266,6 +270,10 @@ new commercial content should use structured collections and Directus Files.
 ## Studio Workflow Decisions
 
 - Global brand/logo/header CTA are edited in `site_settings`, not in code.
+- For logo variants, editors should leave `logo_caption` empty when the uploaded
+  file already includes the descriptor, and use `logo_caption` when the uploaded
+  file is only the main `I СВОИ` mark/name. Turn off `show_brand_name` when the
+  image itself contains the brand name.
 - Header/footer/mobile links are edited in `navigation_items`; header should
   stay compact, currently five primary links plus CTA.
 - Marketing pages are edited through `site_pages` and owned `page_sections`.

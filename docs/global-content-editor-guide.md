@@ -10,6 +10,7 @@ Open `Настройки сайта`.
 Use it for:
 
 - brand name and tagline;
+- logo image, rendered logo size, and optional caption under the logo;
 - city and public contacts;
 - address or visit note;
 - footer text and legal note;
@@ -17,6 +18,14 @@ Use it for:
 - emergency maintenance flag.
 
 There should be only one settings row. Do not create additional rows.
+
+Logo workflow:
+
+- Upload the logo image in `Логотип`.
+- Use `Высота логотипа, px` and optionally `Ширина логотипа, px` to tune how it appears in the header.
+- If the uploaded image already contains both lines, for example `I СВОИ` and `Проверенная техника для своих`, leave `Подпись под логотипом` empty.
+- If the uploaded image is only `I СВОИ`, put any second line in `Подпись под логотипом`.
+- Turn off `Показывать название` when the image itself already contains the brand name.
 
 ## Navigation
 

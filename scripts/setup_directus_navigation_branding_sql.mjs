@@ -20,6 +20,9 @@ ALTER TABLE site_settings
   ADD COLUMN IF NOT EXISTS logo_file uuid,
   ADD COLUMN IF NOT EXISTS logo_alt varchar,
   ADD COLUMN IF NOT EXISTS logo_href varchar DEFAULT '/',
+  ADD COLUMN IF NOT EXISTS logo_width integer,
+  ADD COLUMN IF NOT EXISTS logo_height integer DEFAULT 22,
+  ADD COLUMN IF NOT EXISTS logo_caption varchar,
   ADD COLUMN IF NOT EXISTS show_brand_name boolean DEFAULT true,
   ADD COLUMN IF NOT EXISTS header_cta_label varchar DEFAULT 'Войти в круг',
   ADD COLUMN IF NOT EXISTS header_cta_url varchar DEFAULT '/#final';
@@ -123,9 +126,12 @@ SELECT isvoi_upsert_directus_field('site_settings', 'group_header', 'group-detai
 SELECT isvoi_upsert_directus_field('site_settings', 'logo_file', 'file-image', 'file', '{"folder":"ISVOI Site Assets"}'::json, NULL, 'half', 11, 'Logo shown in the site header/footer. Use ISVOI Site Assets.', false, false, false, 'm2o', 'group_header', 'Логотип');
 SELECT isvoi_upsert_directus_field('site_settings', 'logo_alt', 'input', NULL, NULL, NULL, 'half', 12, 'Accessible alt text for the logo image.', false, false, false, NULL, 'group_header', 'Alt логотипа');
 SELECT isvoi_upsert_directus_field('site_settings', 'logo_href', 'input', NULL, NULL, NULL, 'half', 13, 'Logo link, usually /.', false, false, false, NULL, 'group_header', 'Ссылка логотипа');
-SELECT isvoi_upsert_directus_field('site_settings', 'show_brand_name', 'boolean', 'boolean', NULL, NULL, 'half', 14, 'Show text brand name next to the logo.', false, false, false, NULL, 'group_header', 'Показывать название');
-SELECT isvoi_upsert_directus_field('site_settings', 'header_cta_label', 'input', NULL, NULL, NULL, 'half', 15, 'Header CTA button text.', false, false, false, NULL, 'group_header', 'CTA в шапке');
-SELECT isvoi_upsert_directus_field('site_settings', 'header_cta_url', 'input', NULL, NULL, NULL, 'half', 16, 'Header CTA URL, for example /#final.', false, false, false, NULL, 'group_header', 'Ссылка CTA');
+SELECT isvoi_upsert_directus_field('site_settings', 'logo_width', 'input', NULL, '{"min":28,"max":360,"step":1}'::json, NULL, 'half', 14, 'Optional rendered logo width in pixels. Leave empty to preserve image proportions from height.', false, false, false, NULL, 'group_header', 'Ширина логотипа, px');
+SELECT isvoi_upsert_directus_field('site_settings', 'logo_height', 'input', NULL, '{"min":16,"max":120,"step":1}'::json, NULL, 'half', 15, 'Rendered logo height in pixels. Default header height is 22.', false, false, false, NULL, 'group_header', 'Высота логотипа, px');
+SELECT isvoi_upsert_directus_field('site_settings', 'logo_caption', 'input', NULL, NULL, NULL, 'full', 16, 'Optional text shown directly under the logo image. Leave empty when the uploaded logo already includes the caption.', false, false, false, NULL, 'group_header', 'Подпись под логотипом');
+SELECT isvoi_upsert_directus_field('site_settings', 'show_brand_name', 'boolean', 'boolean', NULL, NULL, 'half', 17, 'Show text brand name next to the logo.', false, false, false, NULL, 'group_header', 'Показывать название');
+SELECT isvoi_upsert_directus_field('site_settings', 'header_cta_label', 'input', NULL, NULL, NULL, 'half', 18, 'Header CTA button text.', false, false, false, NULL, 'group_header', 'CTA в шапке');
+SELECT isvoi_upsert_directus_field('site_settings', 'header_cta_url', 'input', NULL, NULL, NULL, 'half', 19, 'Header CTA URL, for example /#final.', false, false, false, NULL, 'group_header', 'Ссылка CTA');
 
 -- Navigation: structured links with legacy URL fallback.
 SELECT isvoi_upsert_directus_field('navigation_items', 'label_short', 'input', NULL, NULL, NULL, 'half', 5, 'Optional shorter label for compact/mobile navigation.', false, false, false, NULL, 'group_link', 'Короткое название');
@@ -218,14 +224,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'read',
-  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'update',
-  'brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
+  'brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
   NULL
 );
 
@@ -258,14 +264,14 @@ SELECT isvoi_upsert_permission(
   '$t:public_label',
   'site_settings',
   'read',
-  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Public Read',
   'site_settings',
   'read',
-  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
   NULL
 );
 SELECT isvoi_upsert_permission(
@@ -353,6 +359,7 @@ SET logo_file = COALESCE(
   ),
   logo_alt = COALESCE(NULLIF(logo_alt, ''), 'ISVOI'),
   logo_href = COALESCE(NULLIF(logo_href, ''), '/'),
+  logo_height = COALESCE(logo_height, 22),
   show_brand_name = COALESCE(show_brand_name, true),
   header_cta_label = COALESCE(NULLIF(header_cta_label, ''), 'Войти в круг'),
   header_cta_url = COALESCE(NULLIF(header_cta_url, ''), '/#final');

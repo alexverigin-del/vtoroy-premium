@@ -6,9 +6,9 @@ import { directusConfig, getNavigationItems, getPublishedDevices, getSitePage, g
 import {
   getFallbackMarketingPage,
   isMarketingSlug,
-  marketingSectionsForRender,
+  marketingSectionsForPage,
   siteChrome,
-} from "@/lib/site-renderer";
+} from "@/lib/site-content";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
     slug === "store" ? getPublishedDevices() : Promise.resolve([]),
   ]);
   const chrome = siteChrome(settings, navigation);
-  const sections = marketingSectionsForRender(slug, page?.sections);
+  const sections = marketingSectionsForPage(slug, page?.sections);
 
   return (
     <SiteShell settings={chrome.settings} navigation={chrome.navigation}>

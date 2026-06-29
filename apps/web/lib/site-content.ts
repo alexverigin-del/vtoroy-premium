@@ -232,10 +232,10 @@ export function getFallbackMarketingPage(slug: MarketingSlug): SitePage {
   };
 }
 
-export function marketingSectionsForRender(slug: MarketingSlug, sections: PageSection[] = []): PageSection[] {
+export function marketingSectionsForPage(slug: MarketingSlug, sections: PageSection[] = []): PageSection[] {
   return marketingSections(slug, sections);
 }
 
-export function homeSectionsForRender(sections: PageSection[] = []): PageSection[] {
+export function homeSectionsForPage(sections: PageSection[] = []): PageSection[] {
   return homeSections(sections);
 }

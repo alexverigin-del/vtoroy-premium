@@ -298,10 +298,6 @@ new commercial content should use structured collections and Directus Files.
   - `apps/web/app/site.css` has been removed from the layout and deleted.
 - Do not add new large global CSS blocks for normal product/catalog/lead UI.
   Build new UI as React components with Tailwind utilities and shared tokens.
-- Do not add new large global CSS blocks for normal product/catalog/lead UI.
-  Build new UI as React components with Tailwind utilities and shared tokens.
-- When a renderer/legacy section is migrated into React, move its styling to
-  Tailwind during that migration and remove obsolete `site.css` rules.
 - Keep only minimal global CSS for Tailwind directives, base tokens and shared
   primitives.
 - New visual decisions should update `DESIGN.md` first when they change shared
@@ -366,13 +362,14 @@ new commercial content should use structured collections and Directus Files.
   - `/[slug]` no longer loads `interactions.js`; standard marketing section
     variants now render through React/Tailwind, and unknown/custom sections
     should be given explicit React mappings before editors use them.
-- `apps/web/lib/site-renderer.ts` is no longer an HTML renderer for homepage or
-  marketing pages. It now only provides Directus/fallback data helpers:
-  `siteChrome`, marketing fallback pages and homepage fallback sections.
+- `apps/web/lib/site-content.ts` provides Directus/fallback data helpers:
+  `siteChrome`, marketing fallback pages and homepage fallback sections. It is
+  intentionally not an HTML renderer.
 - Cleanup completed after standard marketing section migration:
   `MarketingSectionRenderer` no longer imports string-rendered marketing
   fallback markup, and unused full-page/catalog/marketing/homepage HTML helpers
-  were removed from `apps/web/lib/site-renderer.ts`.
+  were removed before the fallback/content helper module was finalized as
+  `apps/web/lib/site-content.ts`.
 - Tailwind-first CSS/JS cleanup completed on 2026-06-29:
   `apps/web/app/layout.tsx` imports only `globals.css`; `apps/web/app/site.css`
   and `apps/web/public/interactions.js` were deleted after `/`, `/catalog`,
@@ -389,7 +386,7 @@ new commercial content should use structured collections and Directus Files.
   stay compact, currently five primary links plus CTA.
 - Marketing pages are edited through `site_pages` and owned `page_sections`.
   Editors should use existing safe sections and documented variants rather than
-  creating arbitrary renderer structures.
+  creating arbitrary component data structures.
 - FAQ is managed through `faq_items`, either linked by `page` or referenced by
   keys in a FAQ section.
 - Editor-facing collections should keep bookmarks/presets for normal workflows:

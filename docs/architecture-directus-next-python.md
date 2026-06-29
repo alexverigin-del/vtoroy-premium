@@ -111,7 +111,7 @@ See `docs/directus-schema-snapshot-audit.md`.
 Completed:
 
 - Next routes cover the old static pages.
-- Directus-backed renderer owns page sections.
+- Directus-backed React page layer owns page sections.
 - Legacy `.html` URLs redirect to canonical routes.
 - Root legacy HTML entrypoints are removed from the repo.
 

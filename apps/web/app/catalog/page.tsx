@@ -1,7 +1,7 @@
 import { CatalogGrid } from "@/components/CatalogGrid";
 import { SiteShell } from "@/components/SiteShell";
 import { directusConfig, getNavigationItems, getPublishedDevices, getSiteSettings } from "@/lib/directus";
-import { siteChrome } from "@/lib/site-renderer";
+import { siteChrome } from "@/lib/site-content";
 
 export const metadata = {
   title: "ISVOI Store — вещи в кругу",

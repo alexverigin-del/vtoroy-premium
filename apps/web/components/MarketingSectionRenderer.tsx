@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Device, PageSection } from "@vtoroy/shared";
 import { CatalogGrid } from "./CatalogGrid";
-import type { MarketingSlug } from "@/lib/site-renderer";
+import type { MarketingSlug } from "@/lib/site-content";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 
 type MarketingSectionRendererProps = {

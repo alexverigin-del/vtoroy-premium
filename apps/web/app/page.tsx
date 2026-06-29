@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HomeSectionRenderer } from "@/components/HomeSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
 import { getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
-import { homeSectionsForRender, siteChrome } from "@/lib/site-renderer";
+import { homeSectionsForPage, siteChrome } from "@/lib/site-content";
 import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from "./site-metadata";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +40,7 @@ export default async function HomePage() {
     getPublishedDevices(),
   ]);
   const chrome = siteChrome(settings, navigation);
-  const sections = homeSectionsForRender(page?.sections);
+  const sections = homeSectionsForPage(page?.sections);
 
   return (
     <>

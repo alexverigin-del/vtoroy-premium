@@ -26,7 +26,7 @@ Use Directus Files for editorial/site images.
 - Future articles/guides: `ISVOI Editorial`.
 
 For page sections, use the field `Главное изображение блока`. It stores a real
-relation to `directus_files`; the Next renderer turns it into an optimized
+relation to `directus_files`; the React page layer turns it into an optimized
 Directus asset URL with resize and `format=auto`.
 
 Avoid adding `/assets/...` paths into JSON. If a complex block still needs a
@@ -46,7 +46,7 @@ For ordinary edits, use regular fields:
 - `Главное изображение блока`
 
 Do not change `Ключ блока` or `Тип блока` without a developer review. Those
-fields are connected to the Next renderer.
+fields are connected to the React page layer.
 
 ## Technical Setup
 

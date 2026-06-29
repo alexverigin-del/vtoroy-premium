@@ -24,7 +24,7 @@ type SiteChrome = {
   navigation: NavigationItem[];
 };
 
-type MarketingSlug = "store" | "trade" | "passport" | "club";
+export type MarketingSlug = "store" | "trade" | "passport" | "club";
 
 const marketingSlugs = new Set<MarketingSlug>(["store", "trade", "passport", "club"]);
 
@@ -1817,6 +1817,14 @@ function marketingSections(slug: MarketingSlug, sections: PageSection[] = []): P
   const active = sections.filter((section) => section.isActive);
   const fallback = getFallbackMarketingPage(slug).sections;
   return (active.length > 0 ? active : fallback).sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export function marketingSectionsForRender(slug: MarketingSlug, sections: PageSection[] = []): PageSection[] {
+  return marketingSections(slug, sections);
+}
+
+export function renderMarketingSectionMarkup(section: PageSection): string {
+  return renderMarketingSection(section);
 }
 
 export function renderMarketingPageMarkup(

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { notFound } from "next/navigation";
+import { MarketingSectionRenderer } from "@/components/MarketingSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
-import { getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
+import { directusConfig, getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
 import {
   getFallbackMarketingPage,
   isMarketingSlug,
-  renderMarketingPageBodyMarkup,
+  marketingSectionsForRender,
   siteChrome,
 } from "@/lib/site-renderer";
 
@@ -57,17 +57,21 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
     slug === "store" ? getPublishedDevices() : Promise.resolve([]),
   ]);
   const chrome = siteChrome(settings, navigation);
+  const sections = marketingSectionsForRender(slug, page?.sections);
 
   return (
-    <>
-      <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: renderMarketingPageBodyMarkup(slug, page, devices),
-          }}
-        />
-      </SiteShell>
-      <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />
-    </>
+    <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
+      <main id="top" className="bg-white">
+        {sections.map((section) => (
+          <MarketingSectionRenderer
+            key={section.id || section.sectionKey}
+            section={section}
+            slug={slug}
+            devices={devices}
+            directusEnabled={directusConfig.enabled}
+          />
+        ))}
+      </main>
+    </SiteShell>
   );
 }

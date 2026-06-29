@@ -348,11 +348,17 @@ new commercial content should use structured collections and Directus Files.
     comparison rows.
   - `/` no longer loads `interactions.js`; homepage mobile nav, catalog
     filters/sort, lead form and sections are React-managed.
-  - Marketing route bodies still use renderer markup and `site.css` as a
-    temporary compatibility layer.
-- Next Tailwind-first migration target: migrate marketing route sections
-  (`/[slug]`) into React/Tailwind mapping, then remove the matching legacy
-  `site.css` and `interactions.js` dependencies when no route still uses them.
+  - Marketing route bodies (`/[slug]`) use `MarketingSectionRenderer`, so pages
+    are composed as React sections with per-section legacy fallback instead of
+    one full-page `dangerouslySetInnerHTML` blob.
+  - Marketing `page.hero` sections render through React/Tailwind, and `/store`
+    uses the shared React/Tailwind `CatalogGrid` for the live catalog insert
+    before `final_cta`.
+  - `/[slug]` no longer loads `interactions.js`; remaining marketing fallback
+    sections still rely on `site.css` until migrated.
+- Next Tailwind-first migration target: migrate marketing section variants in
+  small groups (`cards.grid`, `steps`, `compare`, `faq`, `levels`, `page.cta`),
+  then remove matching legacy `site.css` rules once no rendered route uses them.
 
 ## Studio Workflow Decisions
 

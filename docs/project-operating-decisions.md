@@ -289,31 +289,28 @@ new commercial content should use structured collections and Directus Files.
   typography, elevation, component rules and Do/Don't guardrails.
 - `.impeccable/design.json` is the generated sidecar for the local impeccable
   live/design panel. Regenerate it when `DESIGN.md` is regenerated.
-- Current frontend styling is intentionally hybrid during migration:
+- Current frontend styling is Tailwind-first:
   - `apps/web/app/globals.css` loads Tailwind base/components/utilities and
-    owns small global Tailwind-backed primitives such as `body`, `.btn-pill`
-    and `.card`.
-  - `apps/web/app/site.css` is now a temporary compatibility layer for
-    remaining legacy/global class names, older route styling and device-page
-    leftovers that have not yet moved fully into Tailwind.
-  - React/Next components and product pages already use Tailwind utility
-    classes directly.
-- Target direction is Tailwind-first for new React/Next work.
-- Keep shrinking `site.css` route by route; do not treat it as the primary API
-  for new marketing/catalog/product UI.
+    owns the small shared layer for `body`, `.btn-pill`, `.card` and
+    `.focus-ring`.
+  - React/Next components, marketing pages, catalog, leads and product pages use
+    Tailwind utility classes directly.
+  - `apps/web/app/site.css` has been removed from the layout and deleted.
+- Do not add new large global CSS blocks for normal product/catalog/lead UI.
+  Build new UI as React components with Tailwind utilities and shared tokens.
 - Do not add new large global CSS blocks for normal product/catalog/lead UI.
   Build new UI as React components with Tailwind utilities and shared tokens.
 - When a renderer/legacy section is migrated into React, move its styling to
   Tailwind during that migration and remove obsolete `site.css` rules.
-- Keep only minimal global CSS for Tailwind directives, base tokens, shared
-  primitives and temporary renderer leftovers.
+- Keep only minimal global CSS for Tailwind directives, base tokens and shared
+  primitives.
 - New visual decisions should update `DESIGN.md` first when they change shared
   color, type, spacing, elevation, component or motion rules.
 - Completed impeccable hardening point 3 on 2026-06-28: header links, brand
   link, mobile menu button, catalog filter chips, sort select, card CTAs,
   gallery tabs and device-page back link now keep at least a 44px hit area and
-  visible focus rings. Renderer/legacy markup was hardened in `site.css`; the
-  React device page and gallery were hardened with Tailwind utilities.
+  visible focus rings. Current runtime hardening is handled through Tailwind
+  utilities and shared `.focus-ring` primitives.
 - Tailwind-first migration started on 2026-06-29:
   - `apps/web/tailwind.config.ts` is aligned with `DESIGN.md` tokens for the
     ISVOI palette, 8px card/image/input radii, product/soft/focus shadows and
@@ -327,9 +324,8 @@ new commercial content should use structured collections and Directus Files.
     `/lead-intake`, source/page/UTM tracking and Turnstile.
   - Product lead form and homepage `final_cta` use React/Tailwind lead UI.
   - `HomeSectionRenderer` introduces the section-key mapping pattern. Homepage
-    `hero`, `trust` and `path_router` now render through React/Tailwind, while
-    unknown or not-yet-migrated homepage sections still fall back to
-    `renderHomeSectionMarkup`.
+    `hero`, `trust` and `path_router` render through React/Tailwind; unknown
+    homepage sections should be mapped explicitly before editors use them.
   - Homepage `catalog_preview` uses `CatalogPreviewSection`, a React/Tailwind
     client component with Directus-configured category/status filters, sorting,
     `DeviceCard` cards and CTA links. It no longer depends on legacy
@@ -373,13 +369,14 @@ new commercial content should use structured collections and Directus Files.
 - `apps/web/lib/site-renderer.ts` is no longer an HTML renderer for homepage or
   marketing pages. It now only provides Directus/fallback data helpers:
   `siteChrome`, marketing fallback pages and homepage fallback sections.
-- Next Tailwind-first migration target: audit rendered routes for remaining
-  legacy class usage, then shrink matching `site.css` rules once no rendered
-  route uses them.
 - Cleanup completed after standard marketing section migration:
   `MarketingSectionRenderer` no longer imports string-rendered marketing
   fallback markup, and unused full-page/catalog/marketing/homepage HTML helpers
   were removed from `apps/web/lib/site-renderer.ts`.
+- Tailwind-first CSS/JS cleanup completed on 2026-06-29:
+  `apps/web/app/layout.tsx` imports only `globals.css`; `apps/web/app/site.css`
+  and `apps/web/public/interactions.js` were deleted after `/`, `/catalog`,
+  marketing routes and product lead flows moved to React/Tailwind.
 
 ## Studio Workflow Decisions
 
@@ -539,5 +536,5 @@ new commercial content should use structured collections and Directus Files.
 3. Continue growing the catalog through the operator import workflow.
 4. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.
-5. As renderer sections move into React, migrate their styling from `site.css`
-   to Tailwind and remove obsolete global CSS rules.
+5. Keep auditing for legacy fallback data and obsolete docs/scripts now that
+   public routes no longer depend on legacy HTML/CSS/JS runtime files.

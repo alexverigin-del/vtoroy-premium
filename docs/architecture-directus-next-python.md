@@ -121,9 +121,10 @@ Still temporary:
   data until the Directus catalog is fully filled.
 - `apps/web/public/assets/` remains as fallback/source media for local builds
   and import scripts while product images continue moving to Directus Files.
-- The old root `script.js` and `styles.css` were removed with the static HTML.
-  The production app uses `apps/web/public/interactions.js`; the site stylesheet
-  is imported globally from `apps/web/app/site.css`.
+- The old root `script.js`/`styles.css`, `apps/web/public/interactions.js` and
+  `apps/web/app/site.css` are removed. Public pages now use React components
+  styled through Tailwind and the small shared layer in
+  `apps/web/app/globals.css`.
 
 ## Secrets
 

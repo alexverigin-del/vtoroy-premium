@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from "./site-metadata";
 import "./globals.css";
-import "./site.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://isvoi.ru"),

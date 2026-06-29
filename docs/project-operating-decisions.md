@@ -338,10 +338,12 @@ new commercial content should use structured collections and Directus Files.
     data and CTA links.
   - Homepage `store_preview` uses `StorePreviewSection`, a React/Tailwind
     section with Directus-managed visual image/caption, steps and CTA links.
+  - Homepage `trade_preview` uses `TradePreviewSection`, a React/Tailwind
+    section with Directus-managed choices, valuation example and CTA links.
   - Most homepage and marketing route bodies still use renderer markup and
     `site.css` as a temporary compatibility layer.
 - Next Tailwind-first migration target: continue homepage section migration in
-  small groups, starting with trade/club previews. After each group, delete the
+  small groups, starting with `club_preview`. After each group, delete the
   matching legacy `site.css`/`interactions.js` code when no fallback still
   depends on it.
 

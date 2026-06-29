@@ -325,12 +325,16 @@ new commercial content should use structured collections and Directus Files.
   - Shared lead submission moved into `useLeadIntake`, preserving
     `/lead-intake`, source/page/UTM tracking and Turnstile.
   - Product lead form and homepage `final_cta` use React/Tailwind lead UI.
+  - `HomeSectionRenderer` introduces the section-key mapping pattern. Homepage
+    `hero`, `trust` and `path_router` now render through React/Tailwind, while
+    unknown or not-yet-migrated homepage sections still fall back to
+    `renderHomeSectionMarkup`.
   - Most homepage and marketing route bodies still use renderer markup and
     `site.css` as a temporary compatibility layer.
-- Next Tailwind-first migration target: introduce the React section renderer
-  mapping and migrate marketing sections in small groups, starting with
-  homepage hero/trust/path router. After each group, delete the matching legacy
-  `site.css`/`interactions.js` code.
+- Next Tailwind-first migration target: continue homepage section migration in
+  small groups, starting with catalog/passport/store/trade/club previews. After
+  each group, delete the matching legacy `site.css`/`interactions.js` code when
+  no fallback still depends on it.
 
 ## Studio Workflow Decisions
 

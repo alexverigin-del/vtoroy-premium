@@ -8,7 +8,9 @@
   --color-muted: #6e6e73;
   --color-surface: #f5f5f7;
   --color-accent: #0071e3;
-  --color-hairline: rgba(210, 210, 215, 0.78);
+  --color-link-blue: #0066cc;
+  --color-graphite: #474747;
+  --color-hairline: #d2d2d7;
 }
 
 @layer base {
@@ -27,6 +29,9 @@
     @apply inline-flex items-center justify-center rounded-pill bg-accent px-7 py-3 text-white font-medium transition-opacity hover:opacity-90;
   }
   .card {
-    @apply rounded-card border border-hairline bg-white shadow-soft;
+    @apply rounded-card border border-hairline bg-white;
+  }
+  .focus-ring {
+    @apply outline-none focus-visible:border-accent focus-visible:shadow-focus;
   }
 }

@@ -1009,6 +1009,16 @@ export function renderCatalogPageMarkup(
   devices: Device[] = [],
   directusEnabled = false,
 ): string {
+  return `${renderHeaderChrome(chrome)}${renderCatalogPageBodyMarkup(devices, directusEnabled)}
+
+${renderFooterChrome(chrome)}
+`;
+}
+
+export function renderCatalogPageBodyMarkup(
+  devices: Device[] = [],
+  directusEnabled = false,
+): string {
   const catalogSection: PageSection = {
     id: "catalog-page-live",
     sectionKey: "catalog_page_live",
@@ -1037,12 +1047,9 @@ export function renderCatalogPageMarkup(
     },
   };
 
-  return `${renderHeaderChrome(chrome)}<main id="top">
+  return `<main id="top">
 
-${renderCatalogPreviewSection(catalogSection, devices)}</main>
-
-${renderFooterChrome(chrome)}
-`;
+${renderCatalogPreviewSection(catalogSection, devices)}</main>`;
 }
 
 function renderPassportSection(section: PageSection): string {
@@ -1818,6 +1825,17 @@ export function renderMarketingPageMarkup(
   chrome: SiteChrome = siteChrome(null, []),
   devices: Device[] = [],
 ): string {
+  return `${renderHeaderChrome(chrome)}${renderMarketingPageBodyMarkup(slug, page, devices)}
+
+${renderFooterChrome(chrome)}
+`;
+}
+
+export function renderMarketingPageBodyMarkup(
+  slug: MarketingSlug,
+  page: SitePage | null,
+  devices: Device[] = [],
+): string {
   const renderedSections = marketingSections(slug, page?.sections)
     .flatMap((section) => {
       const rendered = renderMarketingSection(section);
@@ -1828,12 +1846,9 @@ export function renderMarketingPageMarkup(
     })
     .filter(Boolean)
     .join("\n");
-  return `${renderHeaderChrome(chrome)}<main id="top">
+  return `<main id="top">
 
-${renderedSections}</main>
-
-${renderFooterChrome(chrome)}
-`;
+${renderedSections}</main>`;
 }
 
 function renderHomeSection(section: PageSection, devices: Device[] = []): string {
@@ -1882,17 +1897,24 @@ export function renderHomeMarkup(
   chrome: SiteChrome = siteChrome(null, []),
   devices: Device[] = [],
 ): string {
+  return `${renderHeaderChrome(chrome)}${renderHomeBodyMarkup(sections, devices)}
+
+${renderFooterChrome(chrome)}
+`;
+}
+
+export function renderHomeBodyMarkup(
+  sections: PageSection[] = [],
+  devices: Device[] = [],
+): string {
   const renderedSections = homeSections(sections)
     .map((section) => renderHomeSection(section, devices))
     .filter(Boolean)
     .join("\n");
 
-  return `${renderHeaderChrome(chrome)}<main id="top">
+  return `<main id="top">
 
-${renderedSections}</main>
-
-${renderFooterChrome(chrome)}
-`;
+${renderedSections}</main>`;
 }
 
 

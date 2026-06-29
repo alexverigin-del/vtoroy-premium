@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { notFound } from "next/navigation";
+import { SiteShell } from "@/components/SiteShell";
 import { getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
 import {
   getFallbackMarketingPage,
   isMarketingSlug,
-  renderMarketingPageMarkup,
+  renderMarketingPageBodyMarkup,
   siteChrome,
 } from "@/lib/site-renderer";
 
@@ -55,14 +56,17 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
     getNavigationItems(),
     slug === "store" ? getPublishedDevices() : Promise.resolve([]),
   ]);
+  const chrome = siteChrome(settings, navigation);
 
   return (
     <>
-      <div
-        dangerouslySetInnerHTML={{
-          __html: renderMarketingPageMarkup(slug, page, siteChrome(settings, navigation), devices),
-        }}
-      />
+      <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: renderMarketingPageBodyMarkup(slug, page, devices),
+          }}
+        />
+      </SiteShell>
       <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />
     </>
   );

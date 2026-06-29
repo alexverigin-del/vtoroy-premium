@@ -1,6 +1,7 @@
-import Script from "next/script";
+import { CatalogGrid } from "@/components/CatalogGrid";
+import { SiteShell } from "@/components/SiteShell";
 import { directusConfig, getNavigationItems, getPublishedDevices, getSiteSettings } from "@/lib/directus";
-import { renderCatalogPageMarkup, siteChrome } from "@/lib/site-renderer";
+import { siteChrome } from "@/lib/site-renderer";
 
 export const metadata = {
   title: "ISVOI Store — вещи в кругу",
@@ -27,15 +28,13 @@ export default async function CatalogPage() {
     getNavigationItems(),
     getPublishedDevices(),
   ]);
+  const chrome = siteChrome(settings, navigation);
 
   return (
-    <>
-      <div
-        dangerouslySetInnerHTML={{
-          __html: renderCatalogPageMarkup(siteChrome(settings, navigation), devices, directusConfig.enabled),
-        }}
-      />
-      <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />
-    </>
+    <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
+      <main id="top" className="bg-white">
+        <CatalogGrid devices={devices} directusEnabled={directusConfig.enabled} />
+      </main>
+    </SiteShell>
   );
 }

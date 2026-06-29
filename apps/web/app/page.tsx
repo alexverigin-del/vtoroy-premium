@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { SiteShell } from "@/components/SiteShell";
 import { getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
-import { renderHomeMarkup, siteChrome } from "@/lib/site-renderer";
+import { renderHomeBodyMarkup, siteChrome } from "@/lib/site-renderer";
 import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from "./site-metadata";
 
 export const dynamic = "force-dynamic";
@@ -38,10 +39,13 @@ export default async function HomePage() {
     getNavigationItems(),
     getPublishedDevices(),
   ]);
+  const chrome = siteChrome(settings, navigation);
 
   return (
     <>
-      <div dangerouslySetInnerHTML={{ __html: renderHomeMarkup(page?.sections, siteChrome(settings, navigation), devices) }} />
+      <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
+        <div dangerouslySetInnerHTML={{ __html: renderHomeBodyMarkup(page?.sections, devices) }} />
+      </SiteShell>
       <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />
     </>
   );

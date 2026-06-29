@@ -313,6 +313,21 @@ new commercial content should use structured collections and Directus Files.
   gallery tabs and device-page back link now keep at least a 44px hit area and
   visible focus rings. Renderer/legacy markup was hardened in `site.css`; the
   React device page and gallery were hardened with Tailwind utilities.
+- Tailwind-first migration started on 2026-06-29:
+  - `apps/web/tailwind.config.ts` is aligned with `DESIGN.md` tokens for the
+    ISVOI palette, 8px card/image/input radii, product/soft/focus shadows and
+    shared focus styling.
+  - `SiteShell`, `SiteHeader`, `SiteFooter` and `SiteLogo` render the
+    Directus-managed chrome through React/Tailwind components.
+  - `/catalog` uses a React/Tailwind `CatalogGrid` with client filters,
+    sorting, status chips and empty states; it no longer loads
+    `interactions.js`.
+  - Homepage and marketing route bodies still use renderer markup and
+    `site.css` as a temporary compatibility layer.
+- Next Tailwind-first migration target: move shared lead/CTA UI into a managed
+  React client component, then migrate marketing sections in small groups and
+  delete the matching legacy `site.css`/`interactions.js` code after each
+  group.
 
 ## Studio Workflow Decisions
 

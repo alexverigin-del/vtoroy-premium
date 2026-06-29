@@ -38,11 +38,12 @@ function updatedText(device: Device): string {
 export function DeviceCard({ device }: { device: Device }) {
   const src = imageSrc(device.listingImage);
   const update = updatedText(device);
+  const href = device.detailHref || `/device/${device.id}`;
 
   return (
     <Link
-      href={`/device/${device.id}`}
-      className="card group flex flex-col overflow-hidden transition hover:shadow-product"
+      href={href}
+      className="card group flex h-full flex-col overflow-hidden outline-none transition hover:-translate-y-0.5 hover:shadow-product focus-visible:shadow-focus"
     >
       <div className="flex aspect-[4/3] items-center justify-center bg-surface">
         {src ? (

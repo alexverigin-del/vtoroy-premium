@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Device, PageSection } from "@vtoroy/shared";
 import { CatalogGrid } from "./CatalogGrid";
-import { renderMarketingSectionMarkup, type MarketingSlug } from "@/lib/site-renderer";
+import type { MarketingSlug } from "@/lib/site-renderer";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 
 type MarketingSectionRendererProps = {
@@ -541,12 +541,6 @@ function MarketingFaqSection({ section }: { section: PageSection }) {
   );
 }
 
-function LegacyMarketingSection({ section }: { section: PageSection }) {
-  const markup = renderMarketingSectionMarkup(section);
-  if (!markup) return null;
-  return <div dangerouslySetInnerHTML={{ __html: markup }} />;
-}
-
 function isHeroSection(section: PageSection): boolean {
   return section.variant === "page.hero" || section.sectionKey.endsWith("_hero");
 }
@@ -602,7 +596,7 @@ export function MarketingSectionRenderer({
               ? <MarketingFaqSection section={section} />
               : isPageCtaSection(section)
                 ? <MarketingPageCtaSection section={section} />
-                : <LegacyMarketingSection section={section} />;
+                : null;
 
   if (slug === "store" && section.sectionKey === "final_cta") {
     return (

@@ -364,12 +364,15 @@ new commercial content should use structured collections and Directus Files.
     `MarketingSectionRenderer` as React/Tailwind sections while preserving the
     same Directus `levels`, CTA fields and `visual` content shape.
   - `/[slug]` no longer loads `interactions.js`; standard marketing section
-    variants now render through React/Tailwind, with legacy fallback reserved
-    only for unknown/custom sections during the migration.
+    variants now render through React/Tailwind, and unknown/custom sections
+    should be given explicit React mappings before editors use them.
 - Next Tailwind-first migration target: audit rendered routes for remaining
-  legacy class usage, then remove unused marketing helpers from
-  `site-renderer.ts` and shrink matching `site.css` rules once no rendered route
-  uses them.
+  legacy class usage, then shrink matching `site.css` rules once no rendered
+  route uses them.
+- Cleanup completed after standard marketing section migration:
+  `MarketingSectionRenderer` no longer imports string-rendered marketing
+  fallback markup, and unused full-page/catalog/marketing HTML helpers were
+  removed from `apps/web/lib/site-renderer.ts`.
 
 ## Studio Workflow Decisions
 

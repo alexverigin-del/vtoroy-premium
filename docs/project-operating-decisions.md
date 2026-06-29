@@ -357,11 +357,14 @@ new commercial content should use structured collections and Directus Files.
   - Marketing `cards.grid` and `steps` variants render through
     `MarketingSectionRenderer` as React/Tailwind sections while preserving the
     same Directus `items/cards` and `steps` content shape.
+  - Marketing `compare` and `faq` variants render through
+    `MarketingSectionRenderer` as React/Tailwind sections while preserving the
+    same Directus `comparison.rows` and enriched FAQ `items` content shape.
   - `/[slug]` no longer loads `interactions.js`; remaining marketing fallback
     sections still rely on `site.css` until migrated.
 - Next Tailwind-first migration target: migrate marketing section variants in
-  small groups (`compare`, `faq`, `levels`, `page.cta`, `visual.band`), then
-  remove matching legacy `site.css` rules once no rendered route uses them.
+  small groups (`levels`, `page.cta`, `visual.band`), then remove matching
+  legacy `site.css` rules once no rendered route uses them.
 
 ## Studio Workflow Decisions
 

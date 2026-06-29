@@ -24,9 +24,37 @@ type MarketingStep = {
   text: string;
 };
 
+type ComparisonRow = {
+  label: string;
+  bad: string;
+  good: string;
+};
+
+type ComparisonContent = {
+  ariaLabel: string;
+  labelHeader: string;
+  badHeader: string;
+  goodHeader: string;
+  rows: ComparisonRow[];
+};
+
+type FaqItem = {
+  title: string;
+  text: string;
+  badge: string;
+};
+
 function strField(record: Record<string, unknown>, key: string, fallback = ""): string {
   const value = record[key];
   return typeof value === "string" ? value : fallback;
+}
+
+function textField(record: Record<string, unknown>, camelKey: string, snakeKey: string, fallback: string): string {
+  const camelField = record[camelKey];
+  const snakeField = record[snakeKey];
+  if (typeof camelField === "string" && camelField.trim()) return camelField;
+  if (typeof snakeField === "string" && snakeField.trim()) return snakeField;
+  return fallback;
 }
 
 function marketingCards(value: unknown): MarketingCard[] {
@@ -54,6 +82,43 @@ function marketingSteps(value: unknown): MarketingStep[] {
   });
 }
 
+function comparisonRows(value: unknown): ComparisonRow[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const label = strField(record, "label");
+    const bad = strField(record, "bad");
+    const good = strField(record, "good");
+    return label || bad || good ? [{ label, bad, good }] : [];
+  });
+}
+
+function comparisonContent(value: unknown): ComparisonContent {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const rows = comparisonRows(record.rows);
+
+  return {
+    ariaLabel: textField(record, "ariaLabel", "aria_label", "Сравнение сценариев ISVOI"),
+    labelHeader: textField(record, "labelHeader", "label_header", "Что сравниваем"),
+    badHeader: textField(record, "badHeader", "bad_header", "Случайный рынок"),
+    goodHeader: textField(record, "goodHeader", "good_header", "ISVOI"),
+    rows,
+  };
+}
+
+function faqItems(value: unknown): FaqItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item, index) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = strField(record, "title");
+    const text = strField(record, "text");
+    const badge = strField(record, "badge", String(index + 1).padStart(2, "0"));
+    return title || text ? [{ title, text, badge }] : [];
+  });
+}
+
 function SectionHeader({ section }: { section: PageSection }) {
   if (!section.eyebrow && !section.headline && !section.body) return null;
 
@@ -69,6 +134,22 @@ function SectionHeader({ section }: { section: PageSection }) {
       ) : null}
       {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
     </div>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M5 12l4 4 10-10" />
+    </svg>
   );
 }
 
@@ -115,6 +196,48 @@ function MarketingHeroSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
       ) : null}
+    </section>
+  );
+}
+
+function MarketingCompareSection({ section }: { section: PageSection }) {
+  const comparison = comparisonContent(section.content.comparison);
+  if (comparison.rows.length === 0) return null;
+
+  return (
+    <section className="bg-frost py-16 md:py-20">
+      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+        <SectionHeader section={section} />
+        <div className="mx-auto mt-10 max-w-[1120px] overflow-hidden rounded-card border border-hairline bg-white" role="table" aria-label={comparison.ariaLabel}>
+          <div className="hidden grid-cols-[1.1fr_1fr_1fr] bg-frost text-sm font-semibold text-carbon md:grid" role="row">
+            <div className="border-r border-hairline p-4" role="columnheader">
+              {comparison.labelHeader}
+            </div>
+            <div className="border-r border-hairline p-4" role="columnheader">
+              {comparison.badHeader}
+            </div>
+            <div className="p-4 text-link-blue" role="columnheader">
+              {comparison.goodHeader}
+            </div>
+          </div>
+
+          {comparison.rows.map((row) => (
+            <div key={`${row.label}-${row.bad}-${row.good}`} className="grid border-t border-hairline md:grid-cols-[1.1fr_1fr_1fr]" role="row">
+              <div className="bg-frost p-4 text-sm font-semibold text-carbon md:bg-white" role="cell">
+                {row.label}
+              </div>
+              <div className="flex gap-2 border-t border-hairline p-4 text-sm leading-relaxed text-graphite md:border-l md:border-t-0" role="cell">
+                <XIcon />
+                <span>{row.bad}</span>
+              </div>
+              <div className="flex gap-2 border-t border-hairline bg-ice p-4 text-sm font-semibold leading-relaxed text-carbon md:border-l md:border-t-0" role="cell">
+                <CheckIcon />
+                <span>{row.good}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
@@ -177,6 +300,34 @@ function MarketingStepsSection({ section }: { section: PageSection }) {
   );
 }
 
+function MarketingFaqSection({ section }: { section: PageSection }) {
+  const items = faqItems(section.content.items);
+  if (items.length === 0) return null;
+
+  return (
+    <section className="bg-white py-16 md:py-20">
+      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+        <SectionHeader section={section} />
+        <div className="mx-auto mt-10 grid max-w-[880px] gap-3">
+          {items.map((item) => (
+            <details key={`${item.badge}-${item.title}`} className="group rounded-card border border-hairline bg-white">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-5 p-5 text-left marker:hidden md:items-center md:p-6">
+                <span className="text-base font-semibold leading-snug text-carbon">{item.title}</span>
+                <strong className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-link-blue">{item.badge}</strong>
+              </summary>
+              {item.text ? (
+                <div className="border-t border-hairline px-5 pb-5 pt-4 text-sm leading-relaxed text-graphite md:px-6 md:pb-6">
+                  {item.text}
+                </div>
+              ) : null}
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function LegacyMarketingSection({ section }: { section: PageSection }) {
   const markup = renderMarketingSectionMarkup(section);
   if (!markup) return null;
@@ -185,6 +336,10 @@ function LegacyMarketingSection({ section }: { section: PageSection }) {
 
 function isHeroSection(section: PageSection): boolean {
   return section.variant === "page.hero" || section.sectionKey.endsWith("_hero");
+}
+
+function isCompareSection(section: PageSection): boolean {
+  return section.variant === "compare" || section.sectionKey.endsWith("_compare");
 }
 
 function isCardsSection(section: PageSection): boolean {
@@ -196,6 +351,10 @@ function isStepsSection(section: PageSection): boolean {
   return section.variant === "steps" || section.sectionKey.endsWith("_steps");
 }
 
+function isFaqSection(section: PageSection): boolean {
+  return section.variant === "faq" || section.sectionKey === "faq";
+}
+
 export function MarketingSectionRenderer({
   section,
   slug,
@@ -204,11 +363,15 @@ export function MarketingSectionRenderer({
 }: MarketingSectionRendererProps) {
   const renderedSection = isHeroSection(section)
     ? <MarketingHeroSection section={section} />
+    : isCompareSection(section)
+      ? <MarketingCompareSection section={section} />
     : isCardsSection(section)
       ? <MarketingCardsSection section={section} />
       : isStepsSection(section)
         ? <MarketingStepsSection section={section} />
-        : <LegacyMarketingSection section={section} />;
+        : isFaqSection(section)
+          ? <MarketingFaqSection section={section} />
+          : <LegacyMarketingSection section={section} />;
 
   if (slug === "store" && section.sectionKey === "final_cta") {
     return (

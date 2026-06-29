@@ -1892,6 +1892,14 @@ function homeSections(sections: PageSection[] = []): PageSection[] {
   return [...byKey.values()].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
+export function homeSectionsForRender(sections: PageSection[] = []): PageSection[] {
+  return homeSections(sections);
+}
+
+export function renderHomeSectionMarkup(section: PageSection, devices: Device[] = []): string {
+  return renderHomeSection(section, devices);
+}
+
 export function renderHomeMarkup(
   sections: PageSection[] = [],
   chrome: SiteChrome = siteChrome(null, []),

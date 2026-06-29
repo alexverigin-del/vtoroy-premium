@@ -322,12 +322,15 @@ new commercial content should use structured collections and Directus Files.
   - `/catalog` uses a React/Tailwind `CatalogGrid` with client filters,
     sorting, status chips and empty states; it no longer loads
     `interactions.js`.
-  - Homepage and marketing route bodies still use renderer markup and
+  - Shared lead submission moved into `useLeadIntake`, preserving
+    `/lead-intake`, source/page/UTM tracking and Turnstile.
+  - Product lead form and homepage `final_cta` use React/Tailwind lead UI.
+  - Most homepage and marketing route bodies still use renderer markup and
     `site.css` as a temporary compatibility layer.
-- Next Tailwind-first migration target: move shared lead/CTA UI into a managed
-  React client component, then migrate marketing sections in small groups and
-  delete the matching legacy `site.css`/`interactions.js` code after each
-  group.
+- Next Tailwind-first migration target: introduce the React section renderer
+  mapping and migrate marketing sections in small groups, starting with
+  homepage hero/trust/path router. After each group, delete the matching legacy
+  `site.css`/`interactions.js` code.
 
 ## Studio Workflow Decisions
 

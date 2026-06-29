@@ -1,29 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
-
-type SubmitState = "idle" | "submitting" | "success" | "error";
-
-type TurnstileApi = {
-  render: (
-    element: HTMLElement,
-    options: {
-      sitekey: string;
-      callback: (token: string) => void;
-      "expired-callback": () => void;
-      "error-callback": () => void;
-    },
-  ) => string;
-  reset: (widgetId?: string) => void;
-};
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi;
-  }
-}
-
-const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+import { FormEvent, useState } from "react";
+import { useLeadIntake } from "./useLeadIntake";
 
 type ProductLeadMode = {
   kind: "purchase" | "selection";
@@ -37,21 +15,6 @@ type ProductLeadMode = {
   successNote: string;
   statusNote: string;
 };
-
-function trackingPayload() {
-  const params = new URLSearchParams(window.location.search);
-  return {
-    source_path: window.location.pathname,
-    source_url: window.location.href,
-    page_title: document.title,
-    referrer: document.referrer,
-    utm_source: params.get("utm_source") ?? "",
-    utm_medium: params.get("utm_medium") ?? "",
-    utm_campaign: params.get("utm_campaign") ?? "",
-    utm_content: params.get("utm_content") ?? "",
-    utm_term: params.get("utm_term") ?? "",
-  };
-}
 
 function normalizeStockStatus(value: string): string {
   const status = value.trim().toLowerCase();
@@ -116,55 +79,16 @@ export function ProductLeadForm({
   stockStatus?: string;
   stockStatusLabel?: string;
 }) {
-  const [state, setState] = useState<SubmitState>("idle");
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const turnstileElementRef = useRef<HTMLDivElement | null>(null);
-  const turnstileWidgetRef = useRef<string>();
+  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } = useLeadIntake();
   const normalizedStockStatus = normalizeStockStatus(stockStatus);
   const mode = leadMode(normalizedStockStatus);
-
-  useEffect(() => {
-    if (!TURNSTILE_SITE_KEY || !turnstileElementRef.current || turnstileWidgetRef.current) return;
-
-    let attempts = 0;
-    let cancelled = false;
-    let timeoutId: number | undefined;
-
-    function renderWidget() {
-      if (cancelled || !turnstileElementRef.current || turnstileWidgetRef.current) return;
-      if (window.turnstile) {
-        turnstileWidgetRef.current = window.turnstile.render(turnstileElementRef.current, {
-          sitekey: TURNSTILE_SITE_KEY,
-          callback: setTurnstileToken,
-          "expired-callback": () => setTurnstileToken(""),
-          "error-callback": () => setTurnstileToken(""),
-        });
-        return;
-      }
-      attempts += 1;
-      if (attempts < 40) {
-        timeoutId = window.setTimeout(renderWidget, 250);
-      }
-    }
-
-    renderWidget();
-
-    return () => {
-      cancelled = true;
-      if (timeoutId) window.clearTimeout(timeoutId);
-    };
-  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!contact.trim()) {
-      setState("error");
-      return;
-    }
-    if (TURNSTILE_SITE_KEY && !turnstileToken) {
-      setState("error");
+      markError();
       return;
     }
 
@@ -173,34 +97,21 @@ export function ProductLeadForm({
       message.trim(),
     ].filter(Boolean).join("\n\n");
 
-    setState("submitting");
-    const response = await fetch("/lead-intake", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: mode.kind,
-        scenario: mode.scenario,
-        device: deviceTitle,
-        device_id: deviceId,
-        contact,
-        message: leadMessage,
-        turnstile_token: turnstileToken,
-        ...trackingPayload(),
-      }),
-    }).catch(() => null);
+    const submitted = await submitLead({
+      kind: mode.kind,
+      scenario: mode.scenario,
+      device: deviceTitle,
+      device_id: deviceId,
+      contact,
+      message: leadMessage,
+    });
 
-    if (!response?.ok) {
-      if (turnstileWidgetRef.current) window.turnstile?.reset(turnstileWidgetRef.current);
-      setTurnstileToken("");
-      setState("error");
+    if (!submitted) {
       return;
     }
 
     setContact("");
     setMessage("");
-    if (turnstileWidgetRef.current) window.turnstile?.reset(turnstileWidgetRef.current);
-    setTurnstileToken("");
-    setState("success");
   }
 
   return (
@@ -229,10 +140,10 @@ export function ProductLeadForm({
           className="mt-1 w-full resize-none rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
         />
       </label>
-      {TURNSTILE_SITE_KEY ? <div ref={turnstileElementRef} className="mt-4 min-h-[65px]" /> : null}
+      {turnstileRequired ? <div ref={turnstileElementRef} className="mt-4 min-h-[65px]" /> : null}
       <button
         type="submit"
-        disabled={state === "submitting" || Boolean(TURNSTILE_SITE_KEY && !turnstileToken)}
+        disabled={state === "submitting" || !turnstileReady}
         className="mt-4 inline-flex w-full items-center justify-center rounded-pill bg-accent px-7 py-3 font-medium text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-70"
       >
         {state === "submitting" ? mode.submittingLabel : mode.submitLabel}

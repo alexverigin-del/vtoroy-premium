@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Device, PageSection } from "@vtoroy/shared";
 import { CatalogPreviewSection } from "./CatalogPreviewSection";
 import { ClubPreviewSection } from "./ClubPreviewSection";
+import { DiagnosticsCompareSection } from "./DiagnosticsCompareSection";
 import { renderHomeSectionMarkup } from "@/lib/site-renderer";
 import { FinalCtaSection } from "./FinalCtaSection";
 import { PassportPreviewSection } from "./PassportPreviewSection";
@@ -313,6 +314,7 @@ export function HomeSectionRenderer({ section, devices = [] }: HomeSectionRender
   if (section.sectionKey === "store_preview") return <StorePreviewSection section={section} />;
   if (section.sectionKey === "trade_preview") return <TradePreviewSection section={section} />;
   if (section.sectionKey === "club_preview") return <ClubPreviewSection section={section} />;
+  if (section.sectionKey === "diagnostics_compare") return <DiagnosticsCompareSection section={section} />;
   if (section.sectionKey === "final_cta") return <FinalCtaSection section={section} />;
 
   const markup = renderHomeSectionMarkup(section, devices);

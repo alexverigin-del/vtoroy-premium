@@ -343,12 +343,16 @@ new commercial content should use structured collections and Directus Files.
   - Homepage `club_preview` uses `ClubPreviewSection`, a React/Tailwind dark
     section with Directus-managed levels, featured state, feature lists and CTA
     links.
-  - Most homepage and marketing route bodies still use renderer markup and
-    `site.css` as a temporary compatibility layer.
-- Next Tailwind-first migration target: continue homepage section migration in
-  small groups, starting with `diagnostics_compare`, then remove homepage
-  `interactions.js` when no remaining homepage section depends on reveal,
-  catalog filtering or legacy form wiring.
+  - Homepage `diagnostics_compare` uses `DiagnosticsCompareSection`, a
+    React/Tailwind section with Directus-managed diagnostics image/note and
+    comparison rows.
+  - `/` no longer loads `interactions.js`; homepage mobile nav, catalog
+    filters/sort, lead form and sections are React-managed.
+  - Marketing route bodies still use renderer markup and `site.css` as a
+    temporary compatibility layer.
+- Next Tailwind-first migration target: migrate marketing route sections
+  (`/[slug]`) into React/Tailwind mapping, then remove the matching legacy
+  `site.css` and `interactions.js` dependencies when no route still uses them.
 
 ## Studio Workflow Decisions
 

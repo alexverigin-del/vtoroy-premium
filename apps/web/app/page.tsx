@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { HomeSectionRenderer } from "@/components/HomeSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
 import { getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
@@ -52,7 +51,6 @@ export default async function HomePage() {
           ))}
         </main>
       </SiteShell>
-      <Script src="/interactions.js?v=20260620catalogcore" strategy="afterInteractive" />
     </>
   );
 }

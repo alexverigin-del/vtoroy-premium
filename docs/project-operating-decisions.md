@@ -336,12 +336,14 @@ new commercial content should use structured collections and Directus Files.
   - Homepage `passport_preview` uses `PassportPreviewSection`, a
     React/Tailwind section with Directus-managed feature rows, Passport card
     data and CTA links.
+  - Homepage `store_preview` uses `StorePreviewSection`, a React/Tailwind
+    section with Directus-managed visual image/caption, steps and CTA links.
   - Most homepage and marketing route bodies still use renderer markup and
     `site.css` as a temporary compatibility layer.
 - Next Tailwind-first migration target: continue homepage section migration in
-  small groups, starting with store/trade/club previews. After each group,
-  delete the matching legacy `site.css`/`interactions.js` code when no fallback
-  still depends on it.
+  small groups, starting with trade/club previews. After each group, delete the
+  matching legacy `site.css`/`interactions.js` code when no fallback still
+  depends on it.
 
 ## Studio Workflow Decisions
 

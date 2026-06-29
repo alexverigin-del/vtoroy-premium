@@ -329,12 +329,16 @@ new commercial content should use structured collections and Directus Files.
     `hero`, `trust` and `path_router` now render through React/Tailwind, while
     unknown or not-yet-migrated homepage sections still fall back to
     `renderHomeSectionMarkup`.
+  - Homepage `catalog_preview` uses `CatalogPreviewSection`, a React/Tailwind
+    client component with Directus-configured category/status filters, sorting,
+    `DeviceCard` cards and CTA links. It no longer depends on legacy
+    `.catalog-toolbar` markup or `interactions.js` catalog wiring.
   - Most homepage and marketing route bodies still use renderer markup and
     `site.css` as a temporary compatibility layer.
 - Next Tailwind-first migration target: continue homepage section migration in
-  small groups, starting with catalog/passport/store/trade/club previews. After
-  each group, delete the matching legacy `site.css`/`interactions.js` code when
-  no fallback still depends on it.
+  small groups, starting with passport/store/trade/club previews. After each
+  group, delete the matching legacy `site.css`/`interactions.js` code when no
+  fallback still depends on it.
 
 ## Studio Workflow Decisions
 

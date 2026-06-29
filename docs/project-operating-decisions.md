@@ -348,9 +348,12 @@ new commercial content should use structured collections and Directus Files.
     comparison rows.
   - `/` no longer loads `interactions.js`; homepage mobile nav, catalog
     filters/sort, lead form and sections are React-managed.
+  - Homepage sections no longer use string-rendered fallback markup; unknown
+    homepage sections should be given explicit React mappings before editors use
+    them.
   - Marketing route bodies (`/[slug]`) use `MarketingSectionRenderer`, so pages
-    are composed as React sections with per-section legacy fallback instead of
-    one full-page `dangerouslySetInnerHTML` blob.
+    are composed as explicit React sections instead of one full-page
+    `dangerouslySetInnerHTML` blob.
   - Marketing `page.hero` sections render through React/Tailwind, and `/store`
     uses the shared React/Tailwind `CatalogGrid` for the live catalog insert
     before `final_cta`.

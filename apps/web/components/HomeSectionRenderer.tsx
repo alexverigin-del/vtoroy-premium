@@ -4,7 +4,6 @@ import type { Device, PageSection } from "@vtoroy/shared";
 import { CatalogPreviewSection } from "./CatalogPreviewSection";
 import { ClubPreviewSection } from "./ClubPreviewSection";
 import { DiagnosticsCompareSection } from "./DiagnosticsCompareSection";
-import { renderHomeSectionMarkup } from "@/lib/site-renderer";
 import { FinalCtaSection } from "./FinalCtaSection";
 import { PassportPreviewSection } from "./PassportPreviewSection";
 import { StorePreviewSection } from "./StorePreviewSection";
@@ -317,7 +316,5 @@ export function HomeSectionRenderer({ section, devices = [] }: HomeSectionRender
   if (section.sectionKey === "diagnostics_compare") return <DiagnosticsCompareSection section={section} />;
   if (section.sectionKey === "final_cta") return <FinalCtaSection section={section} />;
 
-  const markup = renderHomeSectionMarkup(section, devices);
-  if (!markup) return null;
-  return <div dangerouslySetInnerHTML={{ __html: markup }} />;
+  return null;
 }

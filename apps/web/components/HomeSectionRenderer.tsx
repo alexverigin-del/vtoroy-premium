@@ -4,6 +4,7 @@ import type { Device, PageSection } from "@vtoroy/shared";
 import { CatalogPreviewSection } from "./CatalogPreviewSection";
 import { renderHomeSectionMarkup } from "@/lib/site-renderer";
 import { FinalCtaSection } from "./FinalCtaSection";
+import { PassportPreviewSection } from "./PassportPreviewSection";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 
 type HomeSectionRendererProps = {
@@ -305,6 +306,7 @@ export function HomeSectionRenderer({ section, devices = [] }: HomeSectionRender
   if (section.sectionKey === "trust") return <TrustSection section={section} />;
   if (section.sectionKey === "path_router") return <PathRouterSection section={section} />;
   if (section.sectionKey === "catalog_preview") return <CatalogPreviewSection section={section} devices={devices} />;
+  if (section.sectionKey === "passport_preview") return <PassportPreviewSection section={section} />;
   if (section.sectionKey === "final_cta") return <FinalCtaSection section={section} />;
 
   const markup = renderHomeSectionMarkup(section, devices);

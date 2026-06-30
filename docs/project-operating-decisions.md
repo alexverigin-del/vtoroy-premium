@@ -431,6 +431,11 @@ new commercial content should use structured collections and Directus Files.
   outside that helper and catches manual `className` string concatenation or
   `.join(" ")` assembly. Use `cn()` or reviewed presentation constants in
   `apps/web/components/ui-classes.ts`.
+- Tailwind-first runtime surface is now allowlisted by `tailwind:post-audit`:
+  CSS imports are allowed only as `apps/web/app/layout.tsx -> ./globals.css`;
+  `next/script` is allowed only in root layout for the reviewed Turnstile
+  loader; raw `<script>` and `dangerouslySetInnerHTML` are allowed only for
+  reviewed product JSON-LD on `apps/web/app/device/[slug]/page.tsx`.
 
 ## Studio Workflow Decisions
 

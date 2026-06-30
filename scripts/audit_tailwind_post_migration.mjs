@@ -17,7 +17,9 @@ const tailwindConfigs = [
   path.join(webRoot, "tailwind.config.ts"),
   path.join(root, "tailwind.config.eslint.cjs"),
 ];
+const rootLayout = path.join(webRoot, "app", "layout.tsx");
 const globalsCss = path.join(webRoot, "app", "globals.css");
+const devicePage = path.join(webRoot, "app", "device", "[slug]", "page.tsx");
 const classCompositionHelper = path.join(webRoot, "lib", "cn.ts");
 
 const riskyPatterns = [
@@ -33,6 +35,8 @@ const riskyPatterns = [
 
 const classComposerImportPattern =
   /(?:from\s+["'](?:clsx|tailwind-merge)["']|require\(["'](?:clsx|tailwind-merge)["']\))/g;
+const cssImportPattern =
+  /(?:import\s+["']([^"']+\.css)["']|require\(["']([^"']+\.css)["']\))/g;
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
 const cssVariableTokenMap = {
   "--color-ink": "ink",
@@ -158,6 +162,53 @@ if (fs.existsSync(globalsCss)) {
 
 for (const file of scanRoots.flatMap(walk)) {
   const source = fs.readFileSync(file, "utf8");
+  for (const match of source.matchAll(cssImportPattern)) {
+    const cssImport = match[1] ?? match[2] ?? "";
+    if (file !== rootLayout || cssImport !== "./globals.css") {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} imports '${cssImport}'. Tailwind-first CSS should enter only through apps/web/app/layout.tsx -> ./globals.css.`,
+      );
+    }
+  }
+
+  for (const match of source.matchAll(/from\s+["']next\/script["']/g)) {
+    if (file !== rootLayout) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} imports next/script outside the root layout. Add a reviewed exception before shipping route-level scripts.`,
+      );
+    }
+  }
+
+  for (const match of source.matchAll(/<Script\b/g)) {
+    if (file !== rootLayout) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} renders <Script> outside the reviewed Turnstile loader in root layout.`,
+      );
+    }
+  }
+
+  for (const match of source.matchAll(/<script\b/g)) {
+    const jsonLdException =
+      file === devicePage &&
+      source.includes('type="application/ld+json"') &&
+      source.includes("jsonLdScript(productJsonLd(device))");
+    if (!jsonLdException) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} renders a raw <script>. Only reviewed JSON-LD on product pages is currently allowed.`,
+      );
+    }
+  }
+
+  for (const match of source.matchAll(/dangerouslySetInnerHTML/g)) {
+    const jsonLdException =
+      file === devicePage && source.includes("jsonLdScript(productJsonLd(device))");
+    if (!jsonLdException) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} uses dangerouslySetInnerHTML outside the reviewed product JSON-LD path.`,
+      );
+    }
+  }
+
   if (file !== classCompositionHelper) {
     for (const match of source.matchAll(classComposerImportPattern)) {
       errors.push(

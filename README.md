@@ -52,15 +52,19 @@ npm install
 npm run web:dev
 npm run web:build
 npm run web:start
+npm run web:verify
 ```
 
 Quality checks:
 
 ```bash
 npm run text:audit
-npm run legacy:audit
+npm run web:verify
 npm run smoke:prod
 ```
+
+`web:verify` runs the local pre-deploy web gate: legacy runtime audit, ESLint,
+TypeScript and production build. `smoke:prod` is the live post-deploy check.
 
 `smoke:prod` opens `/catalog`, `/store` and one device page with Playwright. It
 checks HTTP status, Directus image rendering, the Passport block and lead forms.

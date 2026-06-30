@@ -107,9 +107,7 @@ decisions in this repo rather than relying on chat memory.
 
 ```powershell
 npm install
-npm run lint --workspace @vtoroy/web
-npm run typecheck --workspace @vtoroy/web
-npm run web:build
+npm run web:verify
 ```
 
 - Temporary bundled `pnpm` workarounds were only used before npm was available
@@ -160,11 +158,13 @@ Use the smallest relevant gate for the change, but production changes should
 normally pass:
 
 ```bash
-npm run web:build
-npm run typecheck --workspace @vtoroy/web
-npm run lint --workspace @vtoroy/web
+npm run web:verify
 npm run smoke:prod
 ```
+
+`web:verify` is the local pre-deploy web gate. It runs `legacy:audit`, ESLint,
+TypeScript and production build. `smoke:prod` is the live post-deploy gate
+against `https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
 
 The `@vtoroy/web` lint script uses ESLint CLI over source folders
 (`app`, `components`, `lib`, `data`) instead of deprecated `next lint`.
@@ -185,14 +185,15 @@ npm run directus:audit-images
 npm run directus:audit-legacy-fallback
 ```
 
-Tailwind-first/runtime migration changes should also run:
+Tailwind-first/runtime migration changes are covered by:
 
 ```bash
-npm run legacy:audit
+npm run web:verify
 ```
 
-This guards against reintroducing root static HTML entrypoints, deleted
-`site.css`/`interactions.js` runtime files or old `.html` content links.
+The included `legacy:audit` guards against reintroducing root static HTML
+entrypoints, deleted `site.css`/`interactions.js` runtime files or old `.html`
+content links.
 
 Live deploy checks should include:
 

@@ -65,9 +65,9 @@ Compatibility redirects are defined in `apps/web/next.config.mjs`:
 - `/{catalog,store,passport,trade,club}/index.html` -> canonical route
 - `/device/:slug/index.html` -> `/device/:slug`
 
-Run `npm run legacy:audit` before deployment to confirm the old static HTML
-entrypoints, deleted legacy CSS/JS runtime files and content links have not
-returned.
+Run `npm run web:verify` before deployment. It includes `legacy:audit`, which
+confirms the old static HTML entrypoints, deleted legacy CSS/JS runtime files
+and content links have not returned.
 
 ## Deployment Flow
 
@@ -75,7 +75,7 @@ On Beget, the project lives at `/opt/isvoi`.
 
 ```bash
 git pull --ff-only
-npm run web:build
+npm run web:verify
 pm2 restart isvoi-web
 ```
 

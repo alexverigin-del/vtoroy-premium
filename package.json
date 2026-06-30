@@ -11,6 +11,7 @@
     "web:dev": "npm run dev --workspace @vtoroy/web",
     "web:build": "npm run build --workspace @vtoroy/web",
     "web:start": "npm run start --workspace @vtoroy/web",
+    "web:verify": "npm run legacy:audit && npm run lint --workspace @vtoroy/web && npm run typecheck --workspace @vtoroy/web && npm run web:build",
     "smoke:prod": "node scripts/smoke_playwright.mjs",
     "text:audit": "python scripts/audit_text_encoding.py",
     "legacy:audit": "python scripts/audit_legacy_html.py",

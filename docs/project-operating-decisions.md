@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-06-28.
+Last updated: 2026-06-30.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -426,6 +426,11 @@ new commercial content should use structured collections and Directus Files.
   mirror of shared Tailwind color tokens. `tailwind:post-audit` compares those
   `--color-*` values against `tailwind.shared.cjs` so raw CSS variables cannot
   drift independently from the Tailwind design system.
+- Tailwind class composition is centralized through `apps/web/lib/cn.ts`.
+  `tailwind:post-audit` now blocks direct `clsx`/`tailwind-merge` imports
+  outside that helper and catches manual `className` string concatenation or
+  `.join(" ")` assembly. Use `cn()` or reviewed presentation constants in
+  `apps/web/components/ui-classes.ts`.
 
 ## Studio Workflow Decisions
 

@@ -18,13 +18,21 @@ const tailwindConfigs = [
   path.join(root, "tailwind.config.eslint.cjs"),
 ];
 const globalsCss = path.join(webRoot, "app", "globals.css");
+const classCompositionHelper = path.join(webRoot, "lib", "cn.ts");
 
 const riskyPatterns = [
   { label: "template className", pattern: /className=\{`/ },
   { label: "array className join", pattern: /className=\{\s*\[/ },
+  {
+    label: "manual className join",
+    pattern: /className=\{[^}\n]*\.join\(\s*["']\s+["']\s*\)/,
+  },
+  { label: "manual className concatenation", pattern: /className=\{[^}\n]*\+[^}\n]*\}/ },
   { label: "Tailwind dynamic color class", pattern: /\b(?:bg|text|border)-\$\{/ },
 ];
 
+const classComposerImportPattern =
+  /(?:from\s+["'](?:clsx|tailwind-merge)["']|require\(["'](?:clsx|tailwind-merge)["']\))/g;
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
 const cssVariableTokenMap = {
   "--color-ink": "ink",
@@ -150,6 +158,14 @@ if (fs.existsSync(globalsCss)) {
 
 for (const file of scanRoots.flatMap(walk)) {
   const source = fs.readFileSync(file, "utf8");
+  if (file !== classCompositionHelper) {
+    for (const match of source.matchAll(classComposerImportPattern)) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} imports clsx/tailwind-merge directly; use apps/web/lib/cn.ts as the single class composition helper.`,
+      );
+    }
+  }
+
   for (const { label, pattern } of riskyPatterns) {
     const match = pattern.exec(source);
     if (match) {

@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  /* Mirror of the static site's Refero Apple tokens, available to raw CSS too. */
+  /* Mirror of shared Tailwind tokens, available to raw CSS too. */
   --color-ink: #1d1d1f;
-  --color-muted: #6e6e73;
+  --color-muted: #707070;
   --color-surface: #f5f5f7;
   --color-accent: #0071e3;
   --color-link-blue: #0066cc;

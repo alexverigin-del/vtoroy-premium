@@ -422,6 +422,10 @@ new commercial content should use structured collections and Directus Files.
   utilities unless they match the explicit allowlist in
   `scripts/audit_tailwind_post_migration.mjs`. Repeated or brand-level values
   should become shared tokens instead of expanding the allowlist casually.
+- CSS variables in `apps/web/app/globals.css` are allowed only as a raw-CSS
+  mirror of shared Tailwind color tokens. `tailwind:post-audit` compares those
+  `--color-*` values against `tailwind.shared.cjs` so raw CSS variables cannot
+  drift independently from the Tailwind design system.
 
 ## Studio Workflow Decisions
 

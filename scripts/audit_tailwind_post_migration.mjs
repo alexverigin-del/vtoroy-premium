@@ -1,7 +1,9 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
 const root = process.cwd();
+const require = createRequire(import.meta.url);
 const webRoot = path.join(root, "apps", "web");
 const scanRoots = ["app", "components", "lib"].map((segment) => path.join(webRoot, segment));
 
@@ -15,6 +17,7 @@ const tailwindConfigs = [
   path.join(webRoot, "tailwind.config.ts"),
   path.join(root, "tailwind.config.eslint.cjs"),
 ];
+const globalsCss = path.join(webRoot, "app", "globals.css");
 
 const riskyPatterns = [
   { label: "template className", pattern: /className=\{`/ },
@@ -23,6 +26,15 @@ const riskyPatterns = [
 ];
 
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
+const cssVariableTokenMap = {
+  "--color-ink": "ink",
+  "--color-muted": "muted",
+  "--color-surface": "surface",
+  "--color-accent": "accent",
+  "--color-link-blue": "link-blue",
+  "--color-graphite": "graphite",
+  "--color-hairline": "hairline",
+};
 const arbitraryUtilityPattern =
   /\b(?:[a-z][a-z0-9:-]*-\[[^\]\s"']+\]|[a-z][a-z0-9:-]*\/\[[^\]\s"']+\])/g;
 const arbitraryUtilityAllowed = [
@@ -94,6 +106,10 @@ if (!fs.existsSync(sharedTailwindConfig)) {
   errors.push("tailwind.shared.cjs is required as the single shared Tailwind token source.");
 }
 
+const sharedTokens = fs.existsSync(sharedTailwindConfig)
+  ? require(sharedTailwindConfig).themeExtend
+  : { colors: {} };
+
 for (const file of tailwindConfigs) {
   const source = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
   if (!source.includes("tailwind.shared.cjs")) {
@@ -109,6 +125,26 @@ for (const file of tailwindConfigs) {
     errors.push(
       `${rel(file)} appears to define Tailwind tokens directly; move shared tokens to tailwind.shared.cjs.`,
     );
+  }
+}
+
+if (fs.existsSync(globalsCss)) {
+  const source = fs.readFileSync(globalsCss, "utf8");
+  for (const [variable, token] of Object.entries(cssVariableTokenMap)) {
+    const match = source.match(new RegExp(`${variable}:\\s*([^;]+);`));
+    const expected = sharedTokens.colors?.[token];
+    const actual = match?.[1]?.trim();
+    if (!match) {
+      errors.push(
+        `${rel(globalsCss)} is missing ${variable}, expected to mirror Tailwind token '${token}'.`,
+      );
+      continue;
+    }
+    if (expected && actual?.toLowerCase() !== String(expected).toLowerCase()) {
+      errors.push(
+        `${rel(globalsCss)} defines ${variable}: ${actual}, but tailwind.shared.cjs colors.${token} is ${expected}.`,
+      );
+    }
   }
 }
 

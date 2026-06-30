@@ -14,7 +14,7 @@
     "web:verify": "npm run legacy:audit && npm run lint --workspace @vtoroy/web && npm run typecheck --workspace @vtoroy/web && npm run web:build",
     "smoke:prod": "node scripts/smoke_playwright.mjs",
     "text:audit": "python scripts/audit_text_encoding.py",
-    "legacy:audit": "python scripts/audit_legacy_html.py",
+    "legacy:audit": "node scripts/audit_legacy_html.mjs",
     "directus:seed": "python scripts/seed_directus.py",
     "directus:import:xlsx": "python scripts/import_devices_from_excel.py",
     "directus:catalog:batch": "bash scripts/run_catalog_import_batch.sh",

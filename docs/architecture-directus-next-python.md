@@ -66,7 +66,8 @@ Compatibility redirects are defined in `apps/web/next.config.mjs`:
 - `/device/:slug/index.html` -> `/device/:slug`
 
 Run `npm run legacy:audit` before deployment to confirm the old static HTML
-entrypoints and content links have not returned.
+entrypoints, deleted legacy CSS/JS runtime files and content links have not
+returned.
 
 ## Deployment Flow
 

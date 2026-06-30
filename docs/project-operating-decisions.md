@@ -185,6 +185,15 @@ npm run directus:audit-images
 npm run directus:audit-legacy-fallback
 ```
 
+Tailwind-first/runtime migration changes should also run:
+
+```bash
+npm run legacy:audit
+```
+
+This guards against reintroducing root static HTML entrypoints, deleted
+`site.css`/`interactions.js` runtime files or old `.html` content links.
+
 Live deploy checks should include:
 
 - `https://isvoi.ru/`

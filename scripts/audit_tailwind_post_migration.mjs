@@ -10,6 +10,11 @@ const forbiddenFiles = [
   path.join(webRoot, "public", "interactions.js"),
   path.join(webRoot, "lib", "site-renderer.ts"),
 ];
+const sharedTailwindConfig = path.join(root, "tailwind.shared.cjs");
+const tailwindConfigs = [
+  path.join(webRoot, "tailwind.config.ts"),
+  path.join(root, "tailwind.config.eslint.cjs"),
+];
 
 const riskyPatterns = [
   { label: "template className", pattern: /className=\{`/ },
@@ -57,6 +62,28 @@ const warnings = [];
 for (const file of forbiddenFiles) {
   if (fs.existsSync(file)) {
     errors.push(`${rel(file)} should not exist after Tailwind-first migration.`);
+  }
+}
+
+if (!fs.existsSync(sharedTailwindConfig)) {
+  errors.push("tailwind.shared.cjs is required as the single shared Tailwind token source.");
+}
+
+for (const file of tailwindConfigs) {
+  const source = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+  if (!source.includes("tailwind.shared.cjs")) {
+    errors.push(
+      `${rel(file)} must import tailwind.shared.cjs instead of duplicating design tokens.`,
+    );
+  }
+  if (
+    source.match(/\bcolors:\s*\{/) ||
+    source.match(/\bborderRadius:\s*\{/) ||
+    source.match(/\bboxShadow:\s*\{/)
+  ) {
+    errors.push(
+      `${rel(file)} appears to define Tailwind tokens directly; move shared tokens to tailwind.shared.cjs.`,
+    );
   }
 }
 

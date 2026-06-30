@@ -411,6 +411,11 @@ new commercial content should use structured collections and Directus Files.
   `apps/web/components/ui-classes.ts`. These are TypeScript presentation
   constants, not a revived CSS layer. `npm run tailwind:post-audit` now passes
   without long `className` warnings.
+- Tailwind token drift guard added after the cleanup pass: shared design tokens
+  now live in root `tailwind.shared.cjs`, while `apps/web/tailwind.config.ts`
+  and root `tailwind.config.eslint.cjs` import that file. The post-audit script
+  fails if either config stops using the shared token source or starts defining
+  core tokens directly.
 
 ## Studio Workflow Decisions
 

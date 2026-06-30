@@ -446,6 +446,11 @@ new commercial content should use structured collections and Directus Files.
   only reviewed exception is `SiteLogo` using `logoSizeStyle(settings)` from
   `site-chrome-utils.ts` to expose Directus-managed logo dimensions as bounded
   CSS variables.
+- Raw runtime color literals are guarded by `tailwind:post-audit`: component
+  and app code must not introduce ad hoc `#hex`, `rgb/rgba` or `hsl/hsla`
+  values. Use shared Tailwind tokens, `currentColor` or reviewed CSS variables;
+  new brand-level colors should be added to `DESIGN.md` and
+  `tailwind.shared.cjs` together.
 
 ## Studio Workflow Decisions
 

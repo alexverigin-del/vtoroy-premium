@@ -23,7 +23,7 @@ export const heroPassportCardClass =
   "absolute inset-x-4 bottom-4 mx-auto max-w-[520px] rounded-card border border-white/70 bg-white/95 p-4 text-left shadow-product backdrop-blur md:inset-x-auto md:bottom-8 md:right-8 md:w-[390px] md:p-5";
 
 export const headerCtaClass =
-  "hidden min-h-11 items-center justify-center rounded-pill bg-action-blue px-4 text-sm font-medium text-white outline-none transition hover:bg-[#0077ed] focus-visible:shadow-focus sm:inline-flex";
+  "hidden min-h-11 items-center justify-center rounded-pill bg-action-blue px-4 text-sm font-medium text-white outline-none transition hover:bg-action-hover focus-visible:shadow-focus sm:inline-flex";
 
 export const pathRouterCardClass =
   "focus-ring group flex min-h-[230px] flex-col rounded-card border border-hairline bg-frost p-5 text-left transition hover:-translate-y-0.5 hover:border-link-blue hover:bg-white hover:shadow-soft";

@@ -43,6 +43,7 @@ const moduleImportPattern =
   /(?:from\s+["']([^"']+)["']|import\(["']([^"']+)["']\)|require\(["']([^"']+)["']\))/g;
 const clientEnvPattern = /process\.env\.([A-Z0-9_]+)/g;
 const directDomStylePattern = /(?:\.style(?:\.|\s*=|\[)|\.setProperty\(|\.cssText\b)/g;
+const rawColorLiteralPattern = /(?:#[0-9a-fA-F]{3,8}\b|rgba?\([^)]+\)|hsla?\([^)]+\))/g;
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
 const cssVariableTokenMap = {
   "--color-ink": "ink",
@@ -217,6 +218,16 @@ for (const file of scanRoots.flatMap(walk)) {
     errors.push(
       `${rel(file)}:${lineNumber(source, match.index)} mutates DOM styles directly. Prefer Tailwind classes, cn(), or a reviewed CSS-variable helper.`,
     );
+  }
+
+  for (const match of source.matchAll(rawColorLiteralPattern)) {
+    const allowedColorVariable =
+      file === globalsCss && lineText(source, match.index).trim().startsWith("--color-");
+    if (!allowedColorVariable) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} uses raw color literal '${match[0]}'. Use shared Tailwind tokens, currentColor, or reviewed CSS variables.`,
+      );
+    }
   }
 
   if (isClientComponent(source)) {

@@ -186,13 +186,13 @@ function Icon({ name }: { name: string }) {
 function PassportQr() {
   return (
     <svg className="h-11 w-11 rounded-md bg-frost p-1" viewBox="0 0 44 44" aria-hidden="true">
-      <g fill="#1d1d1f">
+      <g fill="currentColor">
         <rect x="6" y="6" width="11" height="11" />
-        <rect x="9" y="9" width="5" height="5" fill="#f5f5f7" />
+        <rect x="9" y="9" width="5" height="5" fill="var(--color-surface)" />
         <rect x="27" y="6" width="11" height="11" />
-        <rect x="30" y="9" width="5" height="5" fill="#f5f5f7" />
+        <rect x="30" y="9" width="5" height="5" fill="var(--color-surface)" />
         <rect x="6" y="27" width="11" height="11" />
-        <rect x="9" y="30" width="5" height="5" fill="#f5f5f7" />
+        <rect x="9" y="30" width="5" height="5" fill="var(--color-surface)" />
         <rect x="21" y="6" width="3" height="3" />
         <rect x="21" y="14" width="3" height="3" />
         <rect x="21" y="21" width="3" height="3" />

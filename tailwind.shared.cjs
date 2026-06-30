@@ -2,6 +2,7 @@ const themeExtend = {
   colors: {
     action: "#0071e3",
     "action-blue": "#0071e3",
+    "action-hover": "#0077ed",
     "link-blue": "#0066cc",
     "signal-blue": "#2997ff",
     carbon: "#1d1d1f",

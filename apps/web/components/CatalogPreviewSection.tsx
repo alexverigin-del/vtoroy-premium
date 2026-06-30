@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { cn } from "../lib/cn";
 import { DeviceCard } from "./DeviceCard";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 type FilterOption = {
   label: string;
@@ -230,7 +231,7 @@ export function CatalogPreviewSection({
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/catalog")}
-                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
+                className={primaryCtaClass}
               >
                 {section.primaryCtaLabel}
               </Link>
@@ -238,7 +239,7 @@ export function CatalogPreviewSection({
             {section.secondaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.secondaryCtaUrl || "#final")}
-                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
+                className={secondaryCtaClass}
               >
                 {section.secondaryCtaLabel}
               </Link>

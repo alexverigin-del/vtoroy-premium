@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 type FeatureItem = {
   title: string;
@@ -256,7 +257,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
               {section.primaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.primaryCtaUrl || "/passport")}
-                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
+                  className={primaryCtaClass}
                 >
                   {section.primaryCtaLabel}
                 </Link>
@@ -264,7 +265,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
               {section.secondaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
-                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
+                  className={secondaryCtaClass}
                 >
                   {section.secondaryCtaLabel}
                 </Link>

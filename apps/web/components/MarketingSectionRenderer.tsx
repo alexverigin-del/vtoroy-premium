@@ -5,6 +5,7 @@ import { CatalogGrid } from "./CatalogGrid";
 import type { MarketingSlug } from "@/lib/site-content";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
 type MarketingSectionRendererProps = {
   section: PageSection;
@@ -323,18 +324,12 @@ function MarketingHeroSection({ section }: { section: PageSection }) {
       {hasButtons ? (
         <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           {section.primaryCtaLabel ? (
-            <Link
-              href={primaryUrl}
-              className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
-            >
+            <Link href={primaryUrl} className={primaryPillCtaClass}>
               {primaryLabel}
             </Link>
           ) : null}
           {section.secondaryCtaLabel ? (
-            <Link
-              href={secondaryUrl}
-              className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
-            >
+            <Link href={secondaryUrl} className={secondaryPillCtaClass}>
               {secondaryLabel}
             </Link>
           ) : null}
@@ -510,7 +505,7 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
               {section.primaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.primaryCtaUrl || "/#final")}
-                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
+                  className={primaryPillCtaClass}
                 >
                   {section.primaryCtaLabel}
                 </Link>
@@ -518,7 +513,7 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
               {section.secondaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
-                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
+                  className={secondaryPillCtaClass}
                 >
                   {section.secondaryCtaLabel}
                 </Link>

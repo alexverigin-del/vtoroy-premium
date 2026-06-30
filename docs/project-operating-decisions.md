@@ -406,6 +406,11 @@ new commercial content should use structured collections and Directus Files.
 - For DevTools navigation, important top-level UI surfaces may use
   non-styling `data-component` markers. Do not add named CSS classes solely for
   styling or navigation convenience.
+- Tailwind post-migration cleanup continued after the first guardrail pass:
+  repeated long CTA/back-link/card utility chains were moved into
+  `apps/web/components/ui-classes.ts`. These are TypeScript presentation
+  constants, not a revived CSS layer. `npm run tailwind:post-audit` now passes
+  without long `className` warnings.
 
 ## Studio Workflow Decisions
 

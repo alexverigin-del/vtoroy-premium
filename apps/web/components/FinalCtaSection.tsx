@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
+import { submitButtonClass } from "./ui-classes";
 
 type FinalCtaForm = {
   scenarioLabel: string;
@@ -189,7 +190,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
             ) : null}
 
             <button
-              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-action-blue disabled:cursor-wait disabled:opacity-70"
+              className={submitButtonClass}
               type="submit"
               disabled={state === "submitting" || !turnstileReady}
             >

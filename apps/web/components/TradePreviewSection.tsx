@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 type ChoiceItem = {
   title: string;
@@ -209,7 +210,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/trade")}
-                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
+                className={primaryCtaClass}
               >
                 {section.primaryCtaLabel}
               </Link>
@@ -217,7 +218,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
             {section.secondaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.secondaryCtaUrl || "/#final")}
-                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
+                className={secondaryCtaClass}
               >
                 {section.secondaryCtaLabel}
               </Link>

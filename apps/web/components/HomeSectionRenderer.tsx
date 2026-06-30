@@ -10,6 +10,12 @@ import { StorePreviewSection } from "./StorePreviewSection";
 import { TradePreviewSection } from "./TradePreviewSection";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import {
+  heroPassportCardClass,
+  pathRouterCardClass,
+  primaryCtaClass,
+  secondaryCtaClass,
+} from "./ui-classes";
 
 type HomeSectionRendererProps = {
   section: PageSection;
@@ -194,16 +200,10 @@ function HomeHeroSection({ section }: { section: PageSection }) {
       ) : null}
 
       <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-        <Link
-          href={primaryUrl}
-          className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
-        >
+        <Link href={primaryUrl} className={primaryCtaClass}>
           {primaryLabel}
         </Link>
-        <Link
-          href={secondaryUrl}
-          className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
-        >
+        <Link href={secondaryUrl} className={secondaryCtaClass}>
           {secondaryLabel}
         </Link>
       </div>
@@ -231,10 +231,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
           sizes="(min-width: 1180px) 1040px, 92vw"
           className="object-cover"
         />
-        <div
-          className="absolute inset-x-4 bottom-4 mx-auto max-w-[520px] rounded-card border border-white/70 bg-white/95 p-4 text-left shadow-product backdrop-blur md:inset-x-auto md:bottom-8 md:right-8 md:w-[390px] md:p-5"
-          aria-label={passport.ariaLabel}
-        >
+        <div className={heroPassportCardClass} aria-label={passport.ariaLabel}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-base font-semibold text-carbon">{passport.device}</div>
@@ -341,7 +338,7 @@ function PathRouterSection({ section }: { section: PageSection }) {
               <Link
                 key={`${card.title}-${card.url}`}
                 href={normalizeSiteUrl(card.url)}
-                className="focus-ring group flex min-h-[230px] flex-col rounded-card border border-hairline bg-frost p-5 text-left transition hover:-translate-y-0.5 hover:border-link-blue hover:bg-white hover:shadow-soft"
+                className={pathRouterCardClass}
               >
                 <span className="text-sm font-semibold text-link-blue">{number}</span>
                 <strong className="mt-8 text-xl font-semibold leading-tight text-carbon">

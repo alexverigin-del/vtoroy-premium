@@ -9,6 +9,7 @@ import { CTAButton } from "@/components/CTAButton";
 import { DeviceGallery } from "@/components/DeviceGallery";
 import { DeviceCard } from "@/components/DeviceCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
+import { deviceBackLinkClass } from "@/components/ui-classes";
 
 // Keep Directus device edits visible immediately while inventory is being filled.
 export const dynamic = "force-dynamic";
@@ -163,10 +164,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
         dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(device)) }}
       />
       <section className="mx-auto max-w-content px-6 py-10 md:py-14">
-        <Link
-          href="/catalog"
-          className="inline-flex min-h-[44px] items-center rounded-sm pr-2 text-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
-        >
+        <Link href="/catalog" className={deviceBackLinkClass}>
           ← Store
         </Link>
 

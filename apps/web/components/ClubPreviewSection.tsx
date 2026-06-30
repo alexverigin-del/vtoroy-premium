@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { darkSecondaryCtaClass, primaryCtaClass } from "./ui-classes";
 
 type ClubLevel = {
   badge: string;
@@ -166,7 +167,7 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/club")}
-                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
+                className={primaryCtaClass}
               >
                 {section.primaryCtaLabel}
               </Link>
@@ -174,7 +175,7 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
             {section.secondaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.secondaryCtaUrl || "/#final")}
-                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-white/[0.18] bg-white/5 px-7 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10"
+                className={darkSecondaryCtaClass}
               >
                 {section.secondaryCtaLabel}
               </Link>

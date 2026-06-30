@@ -4,6 +4,7 @@ import type { NavigationItem, SiteSettings } from "@vtoroy/shared";
 import { useState } from "react";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
+import { headerCtaClass } from "./ui-classes";
 
 function headerCta(settings: SiteSettings, navigation: NavigationItem[]): NavigationItem | null {
   return (
@@ -73,7 +74,7 @@ export function SiteHeader({
           {cta ? (
             <a
               href={navigationHref(cta, "/#final")}
-              className="hidden min-h-11 items-center justify-center rounded-pill bg-action-blue px-4 text-sm font-medium text-white outline-none transition hover:bg-[#0077ed] focus-visible:shadow-focus sm:inline-flex"
+              className={headerCtaClass}
               {...externalLinkAttrs(cta)}
             >
               {cta.label}

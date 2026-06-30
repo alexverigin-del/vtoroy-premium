@@ -21,6 +21,8 @@ const rootLayout = path.join(webRoot, "app", "layout.tsx");
 const globalsCss = path.join(webRoot, "app", "globals.css");
 const devicePage = path.join(webRoot, "app", "device", "[slug]", "page.tsx");
 const classCompositionHelper = path.join(webRoot, "lib", "cn.ts");
+const siteLogoComponent = path.join(webRoot, "components", "SiteLogo.tsx");
+const siteChromeUtils = path.join(webRoot, "components", "site-chrome-utils.ts");
 
 const riskyPatterns = [
   { label: "template className", pattern: /className=\{`/ },
@@ -40,6 +42,7 @@ const cssImportPattern =
 const moduleImportPattern =
   /(?:from\s+["']([^"']+)["']|import\(["']([^"']+)["']\)|require\(["']([^"']+)["']\))/g;
 const clientEnvPattern = /process\.env\.([A-Z0-9_]+)/g;
+const directDomStylePattern = /(?:\.style(?:\.|\s*=|\[)|\.setProperty\(|\.cssText\b)/g;
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
 const cssVariableTokenMap = {
   "--color-ink": "ink",
@@ -83,6 +86,12 @@ function rel(file) {
 
 function lineNumber(source, index) {
   return source.slice(0, index).split(/\r?\n/).length;
+}
+
+function lineText(source, index) {
+  const start = source.lastIndexOf("\n", index) + 1;
+  const end = source.indexOf("\n", index);
+  return source.slice(start, end === -1 ? source.length : end);
 }
 
 function selectorBeforeApply(source, index) {
@@ -186,6 +195,30 @@ if (fs.existsSync(globalsCss)) {
 
 for (const file of scanRoots.flatMap(walk)) {
   const source = fs.readFileSync(file, "utf8");
+  for (const match of source.matchAll(/style=\{/g)) {
+    const allowedLogoSizeStyle =
+      file === siteLogoComponent && lineText(source, match.index).includes("style={logoSizeStyle(settings)}");
+    if (!allowedLogoSizeStyle) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} uses inline style. Tailwind-first UI should use utilities or a reviewed CSS-variable helper.`,
+      );
+    }
+  }
+
+  for (const match of source.matchAll(/\bCSSProperties\b/g)) {
+    if (file !== siteChromeUtils) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} uses CSSProperties outside the reviewed logo CSS-variable helper.`,
+      );
+    }
+  }
+
+  for (const match of source.matchAll(directDomStylePattern)) {
+    errors.push(
+      `${rel(file)}:${lineNumber(source, match.index)} mutates DOM styles directly. Prefer Tailwind classes, cn(), or a reviewed CSS-variable helper.`,
+    );
+  }
+
   if (isClientComponent(source)) {
     for (const match of source.matchAll(moduleImportPattern)) {
       const specifier = match[1] ?? match[2] ?? match[3] ?? "";

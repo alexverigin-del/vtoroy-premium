@@ -441,6 +441,11 @@ new commercial content should use structured collections and Directus Files.
   `next/headers`, Directus/site-content helpers or fallback data modules.
   Client components may read only `NEXT_PUBLIC_*` environment variables; load
   server data in server components/routes and pass serializable props down.
+- Inline styling is guarded by `tailwind:post-audit`: `style={...}`,
+  `CSSProperties` and direct DOM style mutations are blocked by default. The
+  only reviewed exception is `SiteLogo` using `logoSizeStyle(settings)` from
+  `site-chrome-utils.ts` to expose Directus-managed logo dimensions as bounded
+  CSS variables.
 
 ## Studio Workflow Decisions
 

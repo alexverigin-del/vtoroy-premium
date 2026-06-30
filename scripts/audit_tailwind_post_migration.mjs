@@ -69,7 +69,6 @@ const arbitraryUtilityAllowed = [
   /^tracking-\[(0\.08em|0\.1em|0\.12em|0\.18em)\]$/,
   /^grid-cols-\[(0\.95fr_1\.05fr|1\.05fr_0\.95fr|1\.1fr_1fr_1fr|1\.3fr_repeat\(3,minmax\(0,1fr\)\)|1fr_auto_1fr|minmax\(0,1fr\)_410px)\]$/,
   /^(bg|border|text)-white\/\[(0\.06|0\.12|0\.18|0\.78)\]$/,
-  /^bg-\[#0077ed\]$/,
 ];
 
 function walk(dir) {

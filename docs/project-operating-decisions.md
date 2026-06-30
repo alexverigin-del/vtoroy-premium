@@ -160,12 +160,15 @@ normally pass:
 ```bash
 npm run web:verify
 npm run smoke:prod
+npm run smoke:visual
 ```
 
 `web:verify` is the local pre-deploy web gate. It runs `legacy:audit`,
 `tailwind:post-audit`, Tailwind-aware format check, ESLint, TypeScript and the
 production build. `smoke:prod` is the live post-deploy gate against
-`https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
+`https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden. `smoke:visual` is the
+Playwright visual smoke gate for desktop/mobile route screenshots and catches
+horizontal overflow, clipped text and suspicious visible element overlap.
 
 The `@vtoroy/web` lint script uses ESLint CLI over source folders
 (`app`, `components`, `lib`, `data`) instead of deprecated `next lint`.
@@ -200,6 +203,8 @@ Live deploy checks should include:
 
 - `https://isvoi.ru/`
 - `https://isvoi.ru/catalog`
+- desktop/mobile `smoke:visual` screenshots for `/`, `/catalog`, `/store`,
+  `/trade`, `/passport`, `/club` and one device page when UI/layout changes;
 - one device page, currently `/device/iphone-13-pro`
 - `https://isvoi.ru/robots.txt`
 - `https://isvoi.ru/sitemap.xml`

@@ -11,6 +11,7 @@ assets/qa-*.png
 # Next.js
 .next/
 out/
+output/
 next-env.d.ts
 
 # Build / TS

@@ -61,6 +61,7 @@ Quality checks:
 npm run text:audit
 npm run web:verify
 npm run smoke:prod
+npm run smoke:visual
 ```
 
 `web:verify` runs the local pre-deploy web gate: legacy runtime audit, Tailwind
@@ -69,10 +70,15 @@ production build. `smoke:prod` is the live post-deploy check.
 
 `smoke:prod` opens `/catalog`, `/store` and one device page with Playwright. It
 checks HTTP status, Directus image rendering, the Passport block and lead forms.
+`smoke:visual` opens `/`, `/catalog`, `/store`, `/trade`, `/passport`, `/club`
+and one device page in desktop and mobile viewports. It writes screenshots to
+`output/playwright/visual-smoke/` and fails on horizontal overflow, clipped text
+or suspicious overlap between visible text/interactive elements.
 Override the target when needed:
 
 ```bash
 SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/device/iphone-13-pro npm run smoke:prod
+SMOKE_BASE_URL=https://isvoi.ru VISUAL_SMOKE_ROUTES=/,/catalog npm run smoke:visual
 ```
 
 Directus setup scripts print idempotent SQL. On the server, write the SQL to a

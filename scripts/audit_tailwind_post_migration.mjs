@@ -44,6 +44,7 @@ const moduleImportPattern =
 const clientEnvPattern = /process\.env\.([A-Z0-9_]+)/g;
 const directDomStylePattern = /(?:\.style(?:\.|\s*=|\[)|\.setProperty\(|\.cssText\b)/g;
 const rawColorLiteralPattern = /(?:#[0-9a-fA-F]{3,8}\b|rgba?\([^)]+\)|hsla?\([^)]+\))/g;
+const longClassNameLiteralLimit = 180;
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
 const cssVariableTokenMap = {
   "--color-ink": "ink",
@@ -140,7 +141,6 @@ function forbiddenClientImportReason(specifier) {
 }
 
 const errors = [];
-const warnings = [];
 
 for (const file of forbiddenFiles) {
   if (fs.existsSync(file)) {
@@ -315,10 +315,13 @@ for (const file of scanRoots.flatMap(walk)) {
     }
   }
 
-  for (const match of source.matchAll(/className="([^"]{180,})"/g)) {
-    warnings.push(
-      `${rel(file)}:${lineNumber(source, match.index)} has a long className literal; consider component extraction.`,
-    );
+  for (const match of source.matchAll(/className="([^"]+)"/g)) {
+    const literal = match[1] ?? "";
+    if (literal.length >= longClassNameLiteralLimit) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} has a ${literal.length}-character className literal. Extract repeated or oversized utility sets into a component, cn(), or apps/web/components/ui-classes.ts.`,
+      );
+    }
   }
 
   for (const match of source.matchAll(arbitraryUtilityPattern)) {
@@ -340,11 +343,6 @@ for (const file of scanRoots.flatMap(walk)) {
       }
     }
   }
-}
-
-if (warnings.length) {
-  console.log("Tailwind post-migration warnings:");
-  for (const warning of warnings) console.log(`- ${warning}`);
 }
 
 if (errors.length) {

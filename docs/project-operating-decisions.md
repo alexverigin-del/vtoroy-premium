@@ -397,9 +397,8 @@ new commercial content should use structured collections and Directus Files.
     workspace; keep it synchronized with `apps/web/tailwind.config.ts` when
     shared tokens change.
   - `npm run tailwind:post-audit` blocks reintroduced `site.css`,
-    `interactions.js`, risky dynamic Tailwind class patterns and unapproved
-    `@apply` expansion. It also warns about long className literals that may
-    deserve component extraction.
+    `interactions.js`, risky dynamic Tailwind class patterns, oversized inline
+    `className` literals and unapproved `@apply` expansion.
   - `npm run web:verify` now runs legacy audit, Tailwind post-audit, format
     check, lint, typecheck and build in that order, and passed locally after
     the guardrail pass.
@@ -451,6 +450,10 @@ new commercial content should use structured collections and Directus Files.
   values. Use shared Tailwind tokens, `currentColor` or reviewed CSS variables;
   new brand-level colors should be added to `DESIGN.md` and
   `tailwind.shared.cjs` together.
+- Oversized inline `className` literals are guarded by `tailwind:post-audit`.
+  Utility bundles above the reviewed length threshold should become extracted
+  components, `cn()` calls or named presentation constants in
+  `apps/web/components/ui-classes.ts`.
 
 ## Studio Workflow Decisions
 

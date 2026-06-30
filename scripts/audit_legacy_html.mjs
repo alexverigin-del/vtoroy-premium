@@ -57,7 +57,7 @@ const TEXT_SUFFIXES = new Set([
   ".yaml",
 ]);
 
-const SKIP_DIRS = new Set([".git", ".next", "backups", "node_modules", "uploads", "var"]);
+const SKIP_DIRS = new Set([".git", ".next", ".venv", "backups", "env", "node_modules", "uploads", "var", "venv"]);
 
 const HTML_ROUTE_RE =
   /(?<![A-Za-z0-9_/-])(?:\/|\.\.\/)?(?:index|catalog\/index|store\/index|passport\/index|trade\/index|club\/index)\.html|device\/[^\s"')]+\/index\.html/g;

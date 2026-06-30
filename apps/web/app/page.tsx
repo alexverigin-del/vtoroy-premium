@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { HomeSectionRenderer } from "@/components/HomeSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
-import { getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
+import {
+  getNavigationItems,
+  getPublishedDevices,
+  getSitePage,
+  getSiteSettings,
+} from "@/lib/directus";
 import { homeSectionsForPage, siteChrome } from "@/lib/site-content";
 import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from "./site-metadata";
 
@@ -47,7 +52,11 @@ export default async function HomePage() {
       <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
         <main id="top">
           {sections.map((section) => (
-            <HomeSectionRenderer key={section.id || section.sectionKey} section={section} devices={devices} />
+            <HomeSectionRenderer
+              key={section.id || section.sectionKey}
+              section={section}
+              devices={devices}
+            />
           ))}
         </main>
       </SiteShell>

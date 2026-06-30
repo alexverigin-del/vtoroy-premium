@@ -29,23 +29,137 @@ const defaultSiteSettings: SiteSettings = {
 };
 
 const defaultNavigationItems: NavigationItem[] = [
-  { id: "header-catalog", label: "Каталог", url: "/catalog", location: "header", sort: 1, isActive: true },
-  { id: "header-store", label: "Store", url: "/store", location: "header", sort: 2, isActive: true },
-  { id: "header-passport", label: "Passport", url: "/passport", location: "header", sort: 3, isActive: true },
-  { id: "header-trade", label: "Trade", url: "/trade", location: "header", sort: 4, isActive: true },
+  {
+    id: "header-catalog",
+    label: "Каталог",
+    url: "/catalog",
+    location: "header",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "header-store",
+    label: "Store",
+    url: "/store",
+    location: "header",
+    sort: 2,
+    isActive: true,
+  },
+  {
+    id: "header-passport",
+    label: "Passport",
+    url: "/passport",
+    location: "header",
+    sort: 3,
+    isActive: true,
+  },
+  {
+    id: "header-trade",
+    label: "Trade",
+    url: "/trade",
+    location: "header",
+    sort: 4,
+    isActive: true,
+  },
   { id: "header-club", label: "Club", url: "/club", location: "header", sort: 5, isActive: true },
   { id: "footer-club", label: "Клуб", url: "#top", location: "footer", sort: 1, isActive: true },
-  { id: "footer-club-catalog", label: "Каталог", url: "/catalog", location: "footer", parent: "footer-club", sort: 1, isActive: true },
-  { id: "footer-club-store", label: "Store", url: "/store", location: "footer", parent: "footer-club", sort: 2, isActive: true },
-  { id: "footer-club-passport", label: "ISVOI Passport", url: "/passport", location: "footer", parent: "footer-club", sort: 3, isActive: true },
-  { id: "footer-services", label: "Сервисы", url: "#top", location: "footer", sort: 2, isActive: true },
-  { id: "footer-services-trade", label: "Trade", url: "/trade", location: "footer", parent: "footer-services", sort: 1, isActive: true },
-  { id: "footer-services-club", label: "Club", url: "/club", location: "footer", parent: "footer-services", sort: 2, isActive: true },
-  { id: "footer-services-check", label: "Открытая проверка", url: "/store#diagnostics", location: "footer", parent: "footer-services", sort: 3, isActive: true },
-  { id: "footer-contacts", label: "Контакты", url: "#top", location: "footer", sort: 3, isActive: true },
-  { id: "footer-contacts-city", label: "Северодвинск", url: "/#top", location: "footer", parent: "footer-contacts", sort: 1, isActive: true },
-  { id: "footer-contacts-check", label: "Записаться на проверку", url: "/#final", location: "footer", parent: "footer-contacts", sort: 2, isActive: true },
-  { id: "footer-contacts-sell", label: "Передать вещь дальше", url: "/#final", location: "footer", parent: "footer-contacts", sort: 3, isActive: true },
+  {
+    id: "footer-club-catalog",
+    label: "Каталог",
+    url: "/catalog",
+    location: "footer",
+    parent: "footer-club",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "footer-club-store",
+    label: "Store",
+    url: "/store",
+    location: "footer",
+    parent: "footer-club",
+    sort: 2,
+    isActive: true,
+  },
+  {
+    id: "footer-club-passport",
+    label: "ISVOI Passport",
+    url: "/passport",
+    location: "footer",
+    parent: "footer-club",
+    sort: 3,
+    isActive: true,
+  },
+  {
+    id: "footer-services",
+    label: "Сервисы",
+    url: "#top",
+    location: "footer",
+    sort: 2,
+    isActive: true,
+  },
+  {
+    id: "footer-services-trade",
+    label: "Trade",
+    url: "/trade",
+    location: "footer",
+    parent: "footer-services",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "footer-services-club",
+    label: "Club",
+    url: "/club",
+    location: "footer",
+    parent: "footer-services",
+    sort: 2,
+    isActive: true,
+  },
+  {
+    id: "footer-services-check",
+    label: "Открытая проверка",
+    url: "/store#diagnostics",
+    location: "footer",
+    parent: "footer-services",
+    sort: 3,
+    isActive: true,
+  },
+  {
+    id: "footer-contacts",
+    label: "Контакты",
+    url: "#top",
+    location: "footer",
+    sort: 3,
+    isActive: true,
+  },
+  {
+    id: "footer-contacts-city",
+    label: "Северодвинск",
+    url: "/#top",
+    location: "footer",
+    parent: "footer-contacts",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "footer-contacts-check",
+    label: "Записаться на проверку",
+    url: "/#final",
+    location: "footer",
+    parent: "footer-contacts",
+    sort: 2,
+    isActive: true,
+  },
+  {
+    id: "footer-contacts-sell",
+    label: "Передать вещь дальше",
+    url: "/#final",
+    location: "footer",
+    parent: "footer-contacts",
+    sort: 3,
+    isActive: true,
+  },
 ];
 
 const defaultCatalogPreviewSection: PageSection = {
@@ -79,8 +193,7 @@ const defaultHeroSection: PageSection = {
   variant: "hero.static",
   eyebrow: "ISVOI · клуб разумного владения · Северодвинск",
   headline: "Хорошие вещи проходят через своих.",
-  body:
-    "ISVOI — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
+  body: "ISVOI — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
   primaryCtaLabel: "Войти в круг",
   primaryCtaUrl: "#final",
   secondaryCtaLabel: "Смотреть Store",
@@ -113,7 +226,11 @@ const defaultHeroSection: PageSection = {
   },
 };
 
-function textField(settings: SiteSettings | null, key: keyof SiteSettings, fallback: string): string {
+function textField(
+  settings: SiteSettings | null,
+  key: keyof SiteSettings,
+  fallback: string,
+): string {
   const value = settings?.[key];
   return typeof value === "string" && value.trim() ? value : fallback;
 }
@@ -163,7 +280,9 @@ function normalizeFallbackSection(raw: Record<string, unknown>): PageSection {
     image: strField(raw, "image"),
     sortOrder: numField(raw, "sortOrder"),
     isActive: boolField(raw, "isActive", true),
-    content: (raw.content && typeof raw.content === "object" ? raw.content : {}) as PageSection["content"],
+    content: (raw.content && typeof raw.content === "object"
+      ? raw.content
+      : {}) as PageSection["content"],
   };
 }
 
@@ -187,7 +306,10 @@ function homeSections(sections: PageSection[] = []): PageSection[] {
   return [...byKey.values()].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export function siteChrome(settings: SiteSettings | null, navigation: NavigationItem[]): SiteChrome {
+export function siteChrome(
+  settings: SiteSettings | null,
+  navigation: NavigationItem[],
+): SiteChrome {
   return {
     settings: {
       ...defaultSiteSettings,
@@ -196,18 +318,40 @@ export function siteChrome(settings: SiteSettings | null, navigation: Navigation
       tagline: textField(settings, "tagline", defaultSiteSettings.tagline),
       city: textField(settings, "city", defaultSiteSettings.city),
       logoFile: settings?.logoFile,
-      logoAlt: textField(settings, "logoAlt", settings?.brandName ? `${settings.brandName} logo` : `${defaultSiteSettings.brandName} logo`),
+      logoAlt: textField(
+        settings,
+        "logoAlt",
+        settings?.brandName
+          ? `${settings.brandName} logo`
+          : `${defaultSiteSettings.brandName} logo`,
+      ),
       logoHref: textField(settings, "logoHref", defaultSiteSettings.logoHref ?? "/"),
       logoWidth: settings?.logoWidth ?? defaultSiteSettings.logoWidth,
       logoHeight: settings?.logoHeight ?? defaultSiteSettings.logoHeight,
       logoCaption: settings?.logoCaption?.trim(),
       showBrandName: settings?.showBrandName ?? defaultSiteSettings.showBrandName,
-      headerCtaLabel: textField(settings, "headerCtaLabel", defaultSiteSettings.headerCtaLabel ?? "Войти в круг"),
-      headerCtaUrl: textField(settings, "headerCtaUrl", defaultSiteSettings.headerCtaUrl ?? "/#final"),
+      headerCtaLabel: textField(
+        settings,
+        "headerCtaLabel",
+        defaultSiteSettings.headerCtaLabel ?? "Войти в круг",
+      ),
+      headerCtaUrl: textField(
+        settings,
+        "headerCtaUrl",
+        defaultSiteSettings.headerCtaUrl ?? "/#final",
+      ),
       footerNote: textField(settings, "footerNote", defaultSiteSettings.footerNote ?? ""),
-      footerBrandText: textField(settings, "footerBrandText", defaultSiteSettings.footerBrandText ?? ""),
+      footerBrandText: textField(
+        settings,
+        "footerBrandText",
+        defaultSiteSettings.footerBrandText ?? "",
+      ),
       footerLegal: textField(settings, "footerLegal", defaultSiteSettings.footerLegal ?? ""),
-      footerCopyright: textField(settings, "footerCopyright", defaultSiteSettings.footerCopyright ?? ""),
+      footerCopyright: textField(
+        settings,
+        "footerCopyright",
+        defaultSiteSettings.footerCopyright ?? "",
+      ),
     },
     navigation: navigation.length > 0 ? navigation : defaultNavigationItems,
   };
@@ -227,12 +371,17 @@ export function getFallbackMarketingPage(slug: MarketingSlug): SitePage {
     title: strField(raw, "title", "ISVOI"),
     metaDescription: strField(raw, "metaDescription"),
     sections: sections
-      .filter((section): section is Record<string, unknown> => !!section && typeof section === "object")
+      .filter(
+        (section): section is Record<string, unknown> => !!section && typeof section === "object",
+      )
       .map(normalizeFallbackSection),
   };
 }
 
-export function marketingSectionsForPage(slug: MarketingSlug, sections: PageSection[] = []): PageSection[] {
+export function marketingSectionsForPage(
+  slug: MarketingSlug,
+  sections: PageSection[] = [],
+): PageSection[] {
   return marketingSections(slug, sections);
 }
 

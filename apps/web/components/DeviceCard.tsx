@@ -48,11 +48,7 @@ export function DeviceCard({ device }: { device: Device }) {
       <div className="flex aspect-[4/3] items-center justify-center bg-surface">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
-            alt={device.listingAlt}
-            className="h-full w-full object-cover"
-          />
+          <img src={src} alt={device.listingAlt} className="h-full w-full object-cover" />
         ) : (
           <span className="text-sm text-muted">{device.title}</span>
         )}

@@ -156,9 +156,30 @@ type AssetTransform = {
 };
 
 const ASSET_TRANSFORMS = {
-  card: { width: 720, height: 540, quality: 82, fit: "cover", format: "auto", withoutEnlargement: true },
-  gallery: { width: 1200, height: 900, quality: 86, fit: "cover", format: "auto", withoutEnlargement: true },
-  passport: { width: 900, height: 675, quality: 84, fit: "cover", format: "auto", withoutEnlargement: true },
+  card: {
+    width: 720,
+    height: 540,
+    quality: 82,
+    fit: "cover",
+    format: "auto",
+    withoutEnlargement: true,
+  },
+  gallery: {
+    width: 1200,
+    height: 900,
+    quality: 86,
+    fit: "cover",
+    format: "auto",
+    withoutEnlargement: true,
+  },
+  passport: {
+    width: 900,
+    height: 675,
+    quality: 84,
+    fit: "cover",
+    format: "auto",
+    withoutEnlargement: true,
+  },
   section: { width: 1600, quality: 86, format: "auto", withoutEnlargement: true },
 } satisfies Record<string, AssetTransform>;
 
@@ -178,7 +199,9 @@ async function directusGet<T>(path: string, options: DirectusGetOptions = {}): P
     const cacheMode = options.cache ?? "revalidate";
     const res = await fetch(`${directusConfig.url}${path}`, {
       headers,
-      ...(cacheMode === "no-store" ? { cache: "no-store" as const } : { next: { revalidate: REVALIDATE } }),
+      ...(cacheMode === "no-store"
+        ? { cache: "no-store" as const }
+        : { next: { revalidate: REVALIDATE } }),
     });
     if (!res.ok) return null;
     const json = (await res.json()) as { data: T };
@@ -351,28 +374,34 @@ function stringArrayFromJson(value: unknown): string[] {
   });
 }
 
-function mapStructuredPassportFromDirectus(row: DevicePassportRow, legacyValue: unknown): DevicePassport {
+function mapStructuredPassportFromDirectus(
+  row: DevicePassportRow,
+  legacyValue: unknown,
+): DevicePassport {
   const legacy = mapPassportFromDirectus(legacyValue);
   const defectPhoto = mediaUrl(row.defect_photo, "passport");
 
   return {
-    summaryRows: passportRowsFromJson(row.summary_rows).length > 0
-      ? passportRowsFromJson(row.summary_rows)
-      : legacy.summaryRows,
+    summaryRows:
+      passportRowsFromJson(row.summary_rows).length > 0
+        ? passportRowsFromJson(row.summary_rows)
+        : legacy.summaryRows,
     repair: str(row.repair) || legacy.repair,
     water: str(row.water) || legacy.water,
     diagnostics: {
       status: str(row.diagnostics_status) || legacy.diagnostics.status,
-      checklist: diagnosticsChecklistFromJson(row.diagnostics_checklist).length > 0
-        ? diagnosticsChecklistFromJson(row.diagnostics_checklist)
-        : legacy.diagnostics.checklist,
+      checklist:
+        diagnosticsChecklistFromJson(row.diagnostics_checklist).length > 0
+          ? diagnosticsChecklistFromJson(row.diagnostics_checklist)
+          : legacy.diagnostics.checklist,
     },
     condition: {
       gradeText: str(row.condition_grade_text) || legacy.condition.gradeText,
       note: str(row.condition_note) || legacy.condition.note,
-      notes: stringArrayFromJson(row.condition_notes).length > 0
-        ? stringArrayFromJson(row.condition_notes)
-        : legacy.condition.notes,
+      notes:
+        stringArrayFromJson(row.condition_notes).length > 0
+          ? stringArrayFromJson(row.condition_notes)
+          : legacy.condition.notes,
       defectPhoto: defectPhoto || legacy.condition.defectPhoto,
       defectPhotoAlt: str(row.defect_photo_alt) || legacy.condition.defectPhotoAlt,
     },
@@ -429,12 +458,14 @@ function mapDeviceImagesFromDirectus(rows: DeviceImageRow[] = []): GalleryImage[
   return rows.flatMap((row) => {
     const src = mediaUrl(row.image, "gallery");
     if (!src) return [];
-    return [{
-      src,
-      label: str(row.label) || str(row.role),
-      alt: str(row.alt),
-      role: str(row.role),
-    }];
+    return [
+      {
+        src,
+        label: str(row.label) || str(row.role),
+        alt: str(row.alt),
+        role: str(row.role),
+      },
+    ];
   });
 }
 
@@ -451,7 +482,9 @@ function deviceImagesByDevice(rows: DeviceImageRow[] | null): Map<string, Device
 }
 
 function cardImageFromDeviceImages(rows: DeviceImageRow[] = []): string {
-  const preferred = rows.find((row) => ["card", "listing", "main"].includes(str(row.role).toLowerCase())) ?? rows[0];
+  const preferred =
+    rows.find((row) => ["card", "listing", "main"].includes(str(row.role).toLowerCase())) ??
+    rows[0];
   return preferred ? mediaUrl(preferred.image, "card") : "";
 }
 
@@ -462,7 +495,9 @@ export function mapDeviceFromDirectus(
   tradeRows: TradeOptionRow[] = [],
 ): Device {
   const directusGallery = mapDeviceImagesFromDirectus(imageRows);
-  const detailGallery = directusGallery.filter((image) => !["card", "listing"].includes((image.role ?? "").toLowerCase()));
+  const detailGallery = directusGallery.filter(
+    (image) => !["card", "listing"].includes((image.role ?? "").toLowerCase()),
+  );
   const stockStatus = normalizeStockStatus(row.stock_status);
   const structuredTrade = mapTradeOptionsFromDirectus(tradeRows);
   return {
@@ -492,7 +527,10 @@ export function mapDeviceFromDirectus(
     updatedAt: str(row.updated_at) || str(row.date_updated),
     shortDescription: str(row.short_description),
     headline: str(row.headline),
-    listingImage: cardImageFromDeviceImages(imageRows) || mediaUrl(row.listing_file, "card") || mediaUrl(row.listing_image),
+    listingImage:
+      cardImageFromDeviceImages(imageRows) ||
+      mediaUrl(row.listing_file, "card") ||
+      mediaUrl(row.listing_image),
     listingAlt: str(row.listing_alt),
     ctaLabel: str(row.cta_label),
     hasDetailPage: bool(row.has_detail_page),
@@ -502,9 +540,10 @@ export function mapDeviceFromDirectus(
     passport: passportRow
       ? mapStructuredPassportFromDirectus(passportRow, row.passport)
       : mapPassportFromDirectus(row.passport),
-    trade: structuredTrade.options.length > 0
-      ? structuredTrade
-      : json<TradeInfo>(row.trade, { options: [] }),
+    trade:
+      structuredTrade.options.length > 0
+        ? structuredTrade
+        : json<TradeInfo>(row.trade, { options: [] }),
   };
 }
 
@@ -522,7 +561,7 @@ export function mapDeviceFromDirectus(
 export async function getPublishedDevices(): Promise<Device[]> {
   const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
-    `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_FIELDS}&sort=sort,-updated_at`,
+      `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_FIELDS}&sort=sort,-updated_at`,
       { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
@@ -543,12 +582,14 @@ export async function getPublishedDevices(): Promise<Device[]> {
     const passports = passportsByDevice(passportRows);
     const trades = tradeOptionsByDevice(tradeRows);
     return data
-      .map((row) => mapDeviceFromDirectus(
-        row,
-        images.get(str(row.id)) ?? [],
-        passports.get(str(row.id)),
-        trades.get(str(row.id)) ?? [],
-      ))
+      .map((row) =>
+        mapDeviceFromDirectus(
+          row,
+          images.get(str(row.id)) ?? [],
+          passports.get(str(row.id)),
+          trades.get(str(row.id)) ?? [],
+        ),
+      )
       .filter((device) => device.stockStatus !== "hidden");
   }
   return directusConfig.catalogFallbackAllowed
@@ -565,7 +606,7 @@ export async function getPublishedDevices(): Promise<Device[]> {
 export async function getDeviceBySlug(slug: string): Promise<Device | null> {
   const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
-    `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_FIELDS}&limit=1`,
+      `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_FIELDS}&limit=1`,
       { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
@@ -582,11 +623,16 @@ export async function getDeviceBySlug(slug: string): Promise<Device | null> {
     ),
   ]);
   if (data && data.length > 0) {
-    const device = mapDeviceFromDirectus(data[0], imageRows ?? [], passportRows?.[0], tradeRows ?? []);
+    const device = mapDeviceFromDirectus(
+      data[0],
+      imageRows ?? [],
+      passportRows?.[0],
+      tradeRows ?? [],
+    );
     return device.stockStatus === "hidden" ? null : device;
   }
   return directusConfig.catalogFallbackAllowed
-    ? fallbackDevices.find((d) => d.id === slug && d.stockStatus !== "hidden") ?? null
+    ? (fallbackDevices.find((d) => d.id === slug && d.stockStatus !== "hidden") ?? null)
     : null;
 }
 
@@ -635,7 +681,12 @@ function mapFaqItemFromDirectus(row: Record<string, unknown>): FaqItem {
     question: str(row.question),
     answer: str(row.answer),
     category: str(row.category),
-    page: typeof page === "string" ? page : page && typeof page === "object" ? str((page as Record<string, unknown>).id) : null,
+    page:
+      typeof page === "string"
+        ? page
+        : page && typeof page === "object"
+          ? str((page as Record<string, unknown>).id)
+          : null,
     sort: num(row.sort),
     isActive: bool(row.is_active, true),
   };
@@ -658,17 +709,14 @@ function textFromRichText(value: string): string {
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
+    .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
 function faqSectionKeys(section: PageSection): string[] {
-  return [
-    ...stringList(section.content.faqKeys),
-    ...stringList(section.content.faq_keys),
-  ];
+  return [...stringList(section.content.faqKeys), ...stringList(section.content.faq_keys)];
 }
 
 function faqSectionItems(items: FaqItem[]): { title: string; text: string; badge: string }[] {
@@ -679,7 +727,12 @@ function faqSectionItems(items: FaqItem[]): { title: string; text: string; badge
   }));
 }
 
-function faqItemsForSection(pageId: string, slug: string, section: PageSection, items: FaqItem[]): FaqItem[] {
+function faqItemsForSection(
+  pageId: string,
+  slug: string,
+  section: PageSection,
+  items: FaqItem[],
+): FaqItem[] {
   const keys = faqSectionKeys(section);
   if (keys.length > 0) {
     const byKey = new Map(items.map((item) => [item.key, item]));
@@ -702,8 +755,16 @@ async function getActiveFaqItems(): Promise<FaqItem[]> {
   return data?.map(mapFaqItemFromDirectus) ?? [];
 }
 
-async function enrichFaqSections(pageId: string, slug: string, sections: PageSection[]): Promise<PageSection[]> {
-  if (!sections.some((section) => section.isActive && (section.variant === "faq" || section.sectionKey === "faq"))) {
+async function enrichFaqSections(
+  pageId: string,
+  slug: string,
+  sections: PageSection[],
+): Promise<PageSection[]> {
+  if (
+    !sections.some(
+      (section) => section.isActive && (section.variant === "faq" || section.sectionKey === "faq"),
+    )
+  ) {
     return sections;
   }
 
@@ -779,7 +840,12 @@ function mapNavigationItemFromDirectus(row: Record<string, unknown>): Navigation
     itemRole: str(row.item_role, "link") as NavigationItem["itemRole"],
     icon: str(row.icon),
     location: str(row.location, "header") as NavigationItem["location"],
-    parent: typeof parent === "string" ? parent : parent && typeof parent === "object" ? str((parent as Record<string, unknown>).id) : null,
+    parent:
+      typeof parent === "string"
+        ? parent
+        : parent && typeof parent === "object"
+          ? str((parent as Record<string, unknown>).id)
+          : null,
     sort: num(row.sort),
     isActive: bool(row.is_active, true),
     openInNew: bool(row.open_in_new),
@@ -817,9 +883,7 @@ export async function getSitePage(slug: string): Promise<SitePage | null> {
 export async function getPageSections(slug: string): Promise<PageSection[]> {
   const page = await getSitePage(slug);
   if (!page) return [];
-  return page.sections
-    .filter((s) => s.isActive)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  return page.sections.filter((s) => s.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 /** Global site settings singleton. */
@@ -843,9 +907,7 @@ export async function getNavigationItems(): Promise<NavigationItem[]> {
 
 /** Active FAQ items, optionally filtered by category. */
 export async function getFaqItems(category?: string): Promise<FaqItem[]> {
-  const catFilter = category
-    ? `&filter[category][_eq]=${encodeURIComponent(category)}`
-    : "";
+  const catFilter = category ? `&filter[category][_eq]=${encodeURIComponent(category)}` : "";
   const data = await directusGet<Record<string, unknown>[]>(
     `/items/faq_items?filter[is_active][_eq]=true${catFilter}&sort=sort`,
   );

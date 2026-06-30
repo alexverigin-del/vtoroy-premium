@@ -34,7 +34,12 @@ const DEFAULT_STEPS: StepItem[] = [
   },
 ];
 
-function textField(record: Record<string, unknown>, camelKey: string, snakeKey: string, fallback: string): string {
+function textField(
+  record: Record<string, unknown>,
+  camelKey: string,
+  snakeKey: string,
+  fallback: string,
+): string {
   const camelValue = record[camelKey];
   const snakeValue = record[snakeKey];
   if (typeof camelValue === "string" && camelValue.trim()) return camelValue;
@@ -85,14 +90,18 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <div className="mx-auto max-w-[780px] text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              {section.eyebrow}
+            </div>
           ) : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
-          {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+          {section.body ? (
+            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+          ) : null}
         </div>
 
         <div className="relative mt-10 min-h-[320px] overflow-hidden rounded-img bg-white shadow-product md:min-h-[520px]">
@@ -104,8 +113,12 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             className="object-cover"
           />
           <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-[420px] md:p-5">
-            <strong className="block text-base font-semibold text-carbon">{visual.captionTitle}</strong>
-            <span className="mt-2 block text-sm leading-relaxed text-graphite">{visual.captionText}</span>
+            <strong className="block text-base font-semibold text-carbon">
+              {visual.captionTitle}
+            </strong>
+            <span className="mt-2 block text-sm leading-relaxed text-graphite">
+              {visual.captionText}
+            </span>
           </div>
         </div>
 
@@ -113,9 +126,14 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
           {renderedSteps.map((step, index) => {
             const number = String(index + 1).padStart(2, "0");
             return (
-              <div key={`${step.title}-${step.text}`} className="rounded-card border border-hairline bg-white p-5">
+              <div
+                key={`${step.title}-${step.text}`}
+                className="rounded-card border border-hairline bg-white p-5"
+              >
                 <div className="text-sm font-semibold text-link-blue">{number}</div>
-                <div className="mt-6 text-lg font-semibold leading-tight text-carbon">{step.title}</div>
+                <div className="mt-6 text-lg font-semibold leading-tight text-carbon">
+                  {step.title}
+                </div>
                 <div className="mt-3 text-sm leading-relaxed text-graphite">{step.text}</div>
               </div>
             );
@@ -127,7 +145,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/store")}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue focus-ring"
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
               >
                 {section.primaryCtaLabel}
               </Link>
@@ -135,7 +153,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             {section.secondaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue focus-ring"
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
               >
                 {section.secondaryCtaLabel}
               </Link>

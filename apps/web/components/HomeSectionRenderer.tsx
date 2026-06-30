@@ -8,6 +8,7 @@ import { FinalCtaSection } from "./FinalCtaSection";
 import { PassportPreviewSection } from "./PassportPreviewSection";
 import { StorePreviewSection } from "./StorePreviewSection";
 import { TradePreviewSection } from "./TradePreviewSection";
+import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 
 type HomeSectionRendererProps = {
@@ -34,7 +35,12 @@ function stringList(value: unknown): string[] {
     : [];
 }
 
-function textField(record: Record<string, unknown>, camelKey: string, snakeKey: string, fallback: string): string {
+function textField(
+  record: Record<string, unknown>,
+  camelKey: string,
+  snakeKey: string,
+  fallback: string,
+): string {
   const camelField = record[camelKey];
   const snakeField = record[snakeKey];
   if (typeof camelField === "string" && camelField.trim()) return camelField;
@@ -53,7 +59,9 @@ function sectionItemList(value: unknown): { title: string; text: string }[] {
   });
 }
 
-function pathCardList(value: unknown): { title: string; text: string; url: string; label: string }[] {
+function pathCardList(
+  value: unknown,
+): { title: string; text: string; url: string; label: string }[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
@@ -69,7 +77,12 @@ function pathCardList(value: unknown): { title: string; text: string; url: strin
 function heroVisualContent(value: unknown): { imageSrc: string; imageAlt: string } {
   const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
   return {
-    imageSrc: textField(record, "imageSrc", "image_src", "/assets/hero-apple-like-single-phone-clean.webp"),
+    imageSrc: textField(
+      record,
+      "imageSrc",
+      "image_src",
+      "/assets/hero-apple-like-single-phone-clean.webp",
+    ),
     imageAlt: textField(
       record,
       "imageAlt",
@@ -158,7 +171,9 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   const secondaryLabel = section.secondaryCtaLabel || "Смотреть Store";
   const secondaryUrl = normalizeSiteUrl(section.secondaryCtaUrl || "/catalog");
   const assuranceItems =
-    assurance.length > 0 ? assurance : ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"];
+    assurance.length > 0
+      ? assurance
+      : ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"];
 
   return (
     <section className="mx-auto max-w-[1180px] px-4 pb-16 pt-14 text-center md:px-6 md:pb-20 md:pt-20">
@@ -173,34 +188,49 @@ function HomeHeroSection({ section }: { section: PageSection }) {
         </h1>
       ) : null}
       {section.body ? (
-        <p className="mx-auto mt-5 max-w-[660px] text-lg leading-relaxed text-graphite md:text-xl">{section.body}</p>
+        <p className="mx-auto mt-5 max-w-[660px] text-lg leading-relaxed text-graphite md:text-xl">
+          {section.body}
+        </p>
       ) : null}
 
       <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
         <Link
           href={primaryUrl}
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue focus-ring"
+          className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
         >
           {primaryLabel}
         </Link>
         <Link
           href={secondaryUrl}
-          className="inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue focus-ring"
+          className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
         >
           {secondaryLabel}
         </Link>
       </div>
 
-      <div className="mx-auto mt-6 flex max-w-[780px] flex-wrap justify-center gap-2" aria-label="Принципы клуба">
+      <div
+        className="mx-auto mt-6 flex max-w-[780px] flex-wrap justify-center gap-2"
+        aria-label="Принципы клуба"
+      >
         {assuranceItems.map((item) => (
-          <span key={item} className="rounded-full border border-hairline bg-frost px-3 py-2 text-sm text-graphite">
+          <span
+            key={item}
+            className="rounded-full border border-hairline bg-frost px-3 py-2 text-sm text-graphite"
+          >
             {item}
           </span>
         ))}
       </div>
 
       <div className="relative mx-auto mt-10 min-h-[560px] max-w-[1040px] overflow-hidden rounded-img bg-frost md:min-h-[620px]">
-        <Image src={imageSrc} alt={visual.imageAlt} fill priority sizes="(min-width: 1180px) 1040px, 92vw" className="object-cover" />
+        <Image
+          src={imageSrc}
+          alt={visual.imageAlt}
+          fill
+          priority
+          sizes="(min-width: 1180px) 1040px, 92vw"
+          className="object-cover"
+        />
         <div
           className="absolute inset-x-4 bottom-4 mx-auto max-w-[520px] rounded-card border border-white/70 bg-white/95 p-4 text-left shadow-product backdrop-blur md:inset-x-auto md:bottom-8 md:right-8 md:w-[390px] md:p-5"
           aria-label={passport.ariaLabel}
@@ -212,15 +242,20 @@ function HomeHeroSection({ section }: { section: PageSection }) {
             </div>
             <div className="rounded-card border border-hairline bg-frost px-3 py-2 text-center">
               <b className="block text-lg text-carbon">{passport.grade}</b>
-              <span className="text-[11px] uppercase tracking-[0.08em] text-ash">{passport.gradeLabel}</span>
+              <span className="text-[11px] uppercase tracking-[0.08em] text-ash">
+                {passport.gradeLabel}
+              </span>
             </div>
           </div>
 
           <div className="mt-4 grid gap-2">
             {passport.rows.map((row) => (
-              <div key={`${row.label}-${row.value}`} className="flex items-center justify-between gap-4 rounded-card bg-frost px-3 py-2 text-sm">
+              <div
+                key={`${row.label}-${row.value}`}
+                className="flex items-center justify-between gap-4 rounded-card bg-frost px-3 py-2 text-sm"
+              >
                 <span className="flex items-center gap-2 text-graphite">
-                  <span className={`h-2 w-2 rounded-full ${statusClasses(row.state)}`} />
+                  <span className={cn("h-2 w-2 rounded-full", statusClasses(row.state))} />
                   {row.label}
                 </span>
                 <span className="font-medium text-carbon">{row.value}</span>
@@ -250,12 +285,22 @@ function TrustSection({ section }: { section: PageSection }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="border-y border-hairline bg-white py-8" aria-label={section.eyebrow || "Принципы клуба"}>
+    <section
+      className="border-y border-hairline bg-white py-8"
+      aria-label={section.eyebrow || "Принципы клуба"}
+    >
       <div className="mx-auto grid max-w-[1180px] gap-px px-4 md:grid-cols-3 md:px-6">
         {items.map((item) => (
-          <div key={`${item.title}-${item.text}`} className="bg-frost px-5 py-6 text-center md:px-6">
-            <div className="text-2xl font-semibold leading-tight text-carbon md:text-3xl">{item.title}</div>
-            <div className="mx-auto mt-2 max-w-[280px] text-sm leading-relaxed text-ash">{item.text}</div>
+          <div
+            key={`${item.title}-${item.text}`}
+            className="bg-frost px-5 py-6 text-center md:px-6"
+          >
+            <div className="text-2xl font-semibold leading-tight text-carbon md:text-3xl">
+              {item.title}
+            </div>
+            <div className="mx-auto mt-2 max-w-[280px] text-sm leading-relaxed text-ash">
+              {item.text}
+            </div>
           </div>
         ))}
       </div>
@@ -268,18 +313,25 @@ function PathRouterSection({ section }: { section: PageSection }) {
   if (cards.length === 0) return null;
 
   return (
-    <section className="bg-white py-16 md:py-20" aria-label={section.eyebrow || "Выберите свой сценарий"}>
+    <section
+      className="bg-white py-16 md:py-20"
+      aria-label={section.eyebrow || "Выберите свой сценарий"}
+    >
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <div className="mx-auto max-w-[760px] text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              {section.eyebrow}
+            </div>
           ) : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
-          {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+          {section.body ? (
+            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+          ) : null}
         </div>
 
         <div className="mt-10 grid gap-3 md:grid-cols-3">
@@ -289,12 +341,16 @@ function PathRouterSection({ section }: { section: PageSection }) {
               <Link
                 key={`${card.title}-${card.url}`}
                 href={normalizeSiteUrl(card.url)}
-                className="group flex min-h-[230px] flex-col rounded-card border border-hairline bg-frost p-5 text-left transition hover:-translate-y-0.5 hover:border-link-blue hover:bg-white hover:shadow-soft focus-ring"
+                className="focus-ring group flex min-h-[230px] flex-col rounded-card border border-hairline bg-frost p-5 text-left transition hover:-translate-y-0.5 hover:border-link-blue hover:bg-white hover:shadow-soft"
               >
                 <span className="text-sm font-semibold text-link-blue">{number}</span>
-                <strong className="mt-8 text-xl font-semibold leading-tight text-carbon">{card.title}</strong>
+                <strong className="mt-8 text-xl font-semibold leading-tight text-carbon">
+                  {card.title}
+                </strong>
                 <p className="mt-3 text-sm leading-relaxed text-graphite">{card.text}</p>
-                <span className="mt-auto pt-6 text-sm font-semibold text-link-blue group-hover:text-action">{card.label}</span>
+                <span className="mt-auto pt-6 text-sm font-semibold text-link-blue group-hover:text-action">
+                  {card.label}
+                </span>
               </Link>
             );
           })}
@@ -308,12 +364,15 @@ export function HomeSectionRenderer({ section, devices = [] }: HomeSectionRender
   if (section.sectionKey === "hero") return <HomeHeroSection section={section} />;
   if (section.sectionKey === "trust") return <TrustSection section={section} />;
   if (section.sectionKey === "path_router") return <PathRouterSection section={section} />;
-  if (section.sectionKey === "catalog_preview") return <CatalogPreviewSection section={section} devices={devices} />;
-  if (section.sectionKey === "passport_preview") return <PassportPreviewSection section={section} />;
+  if (section.sectionKey === "catalog_preview")
+    return <CatalogPreviewSection section={section} devices={devices} />;
+  if (section.sectionKey === "passport_preview")
+    return <PassportPreviewSection section={section} />;
   if (section.sectionKey === "store_preview") return <StorePreviewSection section={section} />;
   if (section.sectionKey === "trade_preview") return <TradePreviewSection section={section} />;
   if (section.sectionKey === "club_preview") return <ClubPreviewSection section={section} />;
-  if (section.sectionKey === "diagnostics_compare") return <DiagnosticsCompareSection section={section} />;
+  if (section.sectionKey === "diagnostics_compare")
+    return <DiagnosticsCompareSection section={section} />;
   if (section.sectionKey === "final_cta") return <FinalCtaSection section={section} />;
 
   return null;

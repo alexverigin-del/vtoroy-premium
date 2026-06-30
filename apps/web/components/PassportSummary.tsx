@@ -1,4 +1,5 @@
 import type { DevicePassport, PassportState } from "@vtoroy/shared";
+import { cn } from "../lib/cn";
 
 const stateColor: Record<PassportState, string> = {
   ok: "text-emerald-600",
@@ -17,16 +18,14 @@ export function PassportSummary({ passport }: { passport: DevicePassport }) {
   const conditionNotes = passport.condition.notes ?? [];
 
   return (
-    <aside className="card overflow-hidden">
+    <aside className="card overflow-hidden" data-component="PassportSummary">
       <div className="border-b border-hairline bg-ink px-6 py-5 text-white">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/60">
           ISVOI Passport
         </p>
         <div className="mt-2 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Проверка вещи
-            </h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Проверка вещи</h2>
             <p className="mt-1 text-sm text-white/65">
               Состояние, история и условия выхода в одном документе.
             </p>
@@ -45,17 +44,12 @@ export function PassportSummary({ passport }: { passport: DevicePassport }) {
       <div className="p-6">
         <dl className="grid gap-3 sm:grid-cols-2">
           {passport.summaryRows.map((row) => (
-            <div
-              key={row.label}
-              className="rounded-card border border-hairline bg-surface p-4"
-            >
+            <div key={row.label} className="rounded-card border border-hairline bg-surface p-4">
               <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted">
-                <span
-                  className={`h-2 w-2 rounded-full ${stateDot[row.state] ?? "bg-muted"}`}
-                />
+                <span className={cn("h-2 w-2 rounded-full", stateDot[row.state] ?? "bg-muted")} />
                 {row.label}
               </dt>
-              <dd className={`mt-2 text-lg font-semibold ${stateColor[row.state] ?? "text-ink"}`}>
+              <dd className={cn("mt-2 text-lg font-semibold", stateColor[row.state] ?? "text-ink")}>
                 {row.value}
               </dd>
             </div>
@@ -80,7 +74,10 @@ export function PassportSummary({ passport }: { passport: DevicePassport }) {
               {checklist.map((item) => (
                 <li key={item.text} className="flex items-start gap-2 text-sm">
                   <span
-                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${stateDot[item.state] ?? "bg-muted"}`}
+                    className={cn(
+                      "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                      stateDot[item.state] ?? "bg-muted",
+                    )}
                   />
                   <span className="text-muted">{item.text}</span>
                 </li>
@@ -104,9 +101,7 @@ export function PassportSummary({ passport }: { passport: DevicePassport }) {
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <section className="rounded-card border border-hairline p-5">
             <h3 className="font-semibold">Гарантия</h3>
-            <p className="mt-2 text-sm text-muted">
-              {passport.warranty.duration || "90 дней"}
-            </p>
+            <p className="mt-2 text-sm text-muted">{passport.warranty.duration || "90 дней"}</p>
             {passport.warranty.covered ? (
               <p className="mt-3 text-xs text-muted">{passport.warranty.covered}</p>
             ) : null}
@@ -114,9 +109,7 @@ export function PassportSummary({ passport }: { passport: DevicePassport }) {
 
           <section className="rounded-card border border-hairline p-5">
             <h3 className="font-semibold">Цена выхода</h3>
-            <p className="mt-2 text-lg font-semibold text-accent">
-              {passport.exitPrice.headline}
-            </p>
+            <p className="mt-2 text-lg font-semibold text-accent">{passport.exitPrice.headline}</p>
             <p className="mt-2 text-xs text-muted">{passport.exitPrice.note}</p>
           </section>
         </div>

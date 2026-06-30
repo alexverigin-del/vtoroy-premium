@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
+import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 
 type FeatureItem = {
@@ -57,7 +58,12 @@ const DEFAULT_ROWS: PassportRow[] = [
   { label: "Экран / корпус", value: "микроцарапины", state: "ok" },
 ];
 
-function textField(record: Record<string, unknown>, camelKey: string, snakeKey: string, fallback: string): string {
+function textField(
+  record: Record<string, unknown>,
+  camelKey: string,
+  snakeKey: string,
+  fallback: string,
+): string {
   const camelValue = record[camelKey];
   const snakeValue = record[snakeKey];
   if (typeof camelValue === "string" && camelValue.trim()) return camelValue;
@@ -72,7 +78,10 @@ function featureList(value: unknown): FeatureItem[] {
     const record = item as Record<string, unknown>;
     const title = typeof record.title === "string" ? record.title : "";
     const text = typeof record.text === "string" ? record.text : "";
-    const icon = typeof record.icon === "string" ? record.icon : ["device", "shield", "clock", "chart"][index] ?? "device";
+    const icon =
+      typeof record.icon === "string"
+        ? record.icon
+        : (["device", "shield", "clock", "chart"][index] ?? "device");
     return title || text ? [{ title, text, icon }] : [];
   });
 }
@@ -115,7 +124,14 @@ function dotClasses(state: string): string {
 function Icon({ name }: { name: string }) {
   if (name === "shield") {
     return (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        aria-hidden="true"
+      >
         <path d="M12 3l7 4v5c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V7l7-4Z" />
         <path d="M9.5 12l1.8 1.8L15 10" />
       </svg>
@@ -123,7 +139,14 @@ function Icon({ name }: { name: string }) {
   }
   if (name === "clock") {
     return (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="9" />
         <path d="M12 7v5l3 2" />
       </svg>
@@ -131,14 +154,28 @@ function Icon({ name }: { name: string }) {
   }
   if (name === "chart") {
     return (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        aria-hidden="true"
+      >
         <path d="M4 17l6-6 4 4 6-7" />
         <path d="M20 8v4h-4" />
       </svg>
     );
   }
   return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
       <rect x="6" y="3" width="12" height="18" rx="2" />
       <path d="M9 7h6M9 11h6" />
     </svg>
@@ -176,22 +213,33 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
   const card = passportCard(section.content.passport);
 
   return (
-    <section className="bg-frost py-16 md:py-20" id="passport">
+    <section
+      className="bg-frost py-16 md:py-20"
+      id="passport"
+      data-component="PassportPreviewSection"
+    >
       <div className="mx-auto grid max-w-[1180px] gap-8 px-4 md:grid-cols-[0.95fr_1.05fr] md:px-6">
         <div className="flex flex-col justify-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              {section.eyebrow}
+            </div>
           ) : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
-          {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+          {section.body ? (
+            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+          ) : null}
 
           <ul className="mt-8 grid gap-3">
             {renderedFeatures.map((feature) => (
-              <li key={`${feature.title}-${feature.text}`} className="flex gap-4 rounded-card border border-hairline bg-white p-4">
+              <li
+                key={`${feature.title}-${feature.text}`}
+                className="flex gap-4 rounded-card border border-hairline bg-white p-4"
+              >
                 <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-frost text-link-blue">
                   <Icon name={feature.icon} />
                 </span>
@@ -208,7 +256,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
               {section.primaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.primaryCtaUrl || "/passport")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue focus-ring"
+                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
                 >
                   {section.primaryCtaLabel}
                 </Link>
@@ -216,7 +264,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
               {section.secondaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue focus-ring"
+                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
                 >
                   {section.secondaryCtaLabel}
                 </Link>
@@ -233,15 +281,20 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             </div>
             <div className="rounded-card border border-hairline bg-frost px-4 py-3 text-center">
               <b className="block text-2xl text-carbon">{card.grade}</b>
-              <span className="text-xs uppercase tracking-[0.08em] text-ash">{card.gradeLabel}</span>
+              <span className="text-xs uppercase tracking-[0.08em] text-ash">
+                {card.gradeLabel}
+              </span>
             </div>
           </div>
 
           <div className="mt-5 grid gap-3">
             {card.rows.map((row) => (
-              <div key={`${row.label}-${row.value}`} className="flex items-center justify-between gap-4 rounded-card bg-frost px-4 py-3 text-sm">
+              <div
+                key={`${row.label}-${row.value}`}
+                className="flex items-center justify-between gap-4 rounded-card bg-frost px-4 py-3 text-sm"
+              >
                 <span className="flex items-center gap-2 text-graphite">
-                  <span className={`h-2 w-2 rounded-full ${dotClasses(row.state)}`} />
+                  <span className={cn("h-2 w-2 rounded-full", dotClasses(row.state))} />
                   {row.label}
                 </span>
                 <span className="font-semibold text-carbon">{row.value}</span>
@@ -256,7 +309,8 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
 
           <div className="mt-5 flex items-center justify-between gap-4">
             <span className="text-sm text-graphite">
-              {card.warranty} <b className="text-carbon">{card.warrantyStrong}</b> · проверка пройдена
+              {card.warranty} <b className="text-carbon">{card.warrantyStrong}</b> · проверка
+              пройдена
             </span>
             <PassportQr />
           </div>

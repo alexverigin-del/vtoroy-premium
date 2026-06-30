@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MarketingSectionRenderer } from "@/components/MarketingSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
-import { directusConfig, getNavigationItems, getPublishedDevices, getSitePage, getSiteSettings } from "@/lib/directus";
+import {
+  directusConfig,
+  getNavigationItems,
+  getPublishedDevices,
+  getSitePage,
+  getSiteSettings,
+} from "@/lib/directus";
 import {
   getFallbackMarketingPage,
   isMarketingSlug,

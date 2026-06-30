@@ -43,7 +43,8 @@ function text(value: unknown, fallback = ""): string {
 function bool(value: unknown): boolean {
   if (typeof value === "boolean") return value;
   if (typeof value === "number") return value === 1;
-  if (typeof value === "string") return ["1", "true", "yes", "apply", "import"].includes(value.toLowerCase());
+  if (typeof value === "string")
+    return ["1", "true", "yes", "apply", "import"].includes(value.toLowerCase());
   return false;
 }
 
@@ -54,7 +55,8 @@ function safeName(value: string): string {
 
 function fileId(value: unknown): string {
   if (typeof value === "string") return value;
-  if (value && typeof value === "object" && "id" in value) return String((value as DirectusFile).id || "");
+  if (value && typeof value === "object" && "id" in value)
+    return String((value as DirectusFile).id || "");
   return "";
 }
 
@@ -151,15 +153,23 @@ async function config() {
   const repoRoot = await resolveRepoRoot();
   const fileEnv = await readEnvFile(repoRoot);
   const directusUrl = (
-    process.env.DIRECTUS_URL
-    || fileEnv.DIRECTUS_URL
-    || process.env.NEXT_PUBLIC_DIRECTUS_URL
-    || fileEnv.NEXT_PUBLIC_DIRECTUS_URL
-    || ""
+    process.env.DIRECTUS_URL ||
+    fileEnv.DIRECTUS_URL ||
+    process.env.NEXT_PUBLIC_DIRECTUS_URL ||
+    fileEnv.NEXT_PUBLIC_DIRECTUS_URL ||
+    ""
   ).replace(/\/+$/, "");
-  const directusToken = process.env.CATALOG_IMPORT_DIRECTUS_TOKEN || fileEnv.CATALOG_IMPORT_DIRECTUS_TOKEN || process.env.DIRECTUS_TOKEN || "";
-  const secret = process.env.CATALOG_IMPORT_WEBHOOK_SECRET || fileEnv.CATALOG_IMPORT_WEBHOOK_SECRET || "";
-  const workRoot = process.env.CATALOG_IMPORT_WORKDIR || fileEnv.CATALOG_IMPORT_WORKDIR || "/opt/isvoi/imports/studio";
+  const directusToken =
+    process.env.CATALOG_IMPORT_DIRECTUS_TOKEN ||
+    fileEnv.CATALOG_IMPORT_DIRECTUS_TOKEN ||
+    process.env.DIRECTUS_TOKEN ||
+    "";
+  const secret =
+    process.env.CATALOG_IMPORT_WEBHOOK_SECRET || fileEnv.CATALOG_IMPORT_WEBHOOK_SECRET || "";
+  const workRoot =
+    process.env.CATALOG_IMPORT_WORKDIR ||
+    fileEnv.CATALOG_IMPORT_WORKDIR ||
+    "/opt/isvoi/imports/studio";
 
   if (!directusUrl || !directusToken) throw new Error("Directus URL/token is not configured.");
   if (!secret) throw new Error("Catalog import webhook secret is not configured.");
@@ -171,7 +181,9 @@ type CatalogImportConfig = Awaited<ReturnType<typeof config>>;
 function authorized(request: NextRequest, secret: string): boolean {
   const expected = secret.trim();
   const headerSecret = (request.headers.get("x-isvoi-import-secret") || "").trim();
-  const bearerSecret = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const bearerSecret = (request.headers.get("authorization") || "")
+    .replace(/^Bearer\s+/i, "")
+    .trim();
   return headerSecret === expected || bearerSecret === expected;
 }
 
@@ -197,11 +209,24 @@ async function directusRequest<T>(
   return json.data as T;
 }
 
-async function patchBatch(cfg: CatalogImportConfig, id: string, payload: Record<string, unknown>): Promise<void> {
-  await directusRequest(cfg, "PATCH", `/items/catalog_import_batches/${encodeURIComponent(id)}`, payload);
+async function patchBatch(
+  cfg: CatalogImportConfig,
+  id: string,
+  payload: Record<string, unknown>,
+): Promise<void> {
+  await directusRequest(
+    cfg,
+    "PATCH",
+    `/items/catalog_import_batches/${encodeURIComponent(id)}`,
+    payload,
+  );
 }
 
-async function downloadDirectusFile(cfg: CatalogImportConfig, id: string, target: string): Promise<void> {
+async function downloadDirectusFile(
+  cfg: CatalogImportConfig,
+  id: string,
+  target: string,
+): Promise<void> {
   const res = await fetch(`${cfg.directusUrl}/assets/${encodeURIComponent(id)}`, {
     headers: { Authorization: `Bearer ${cfg.directusToken}` },
     cache: "no-store",
@@ -248,7 +273,10 @@ export async function POST(request: NextRequest) {
     );
     const batch = batches[0];
     if (!batch) {
-      return NextResponse.json({ ok: false, batch_id: batchId, error: "batch_not_found" }, { status: 404 });
+      return NextResponse.json(
+        { ok: false, batch_id: batchId, error: "batch_not_found" },
+        { status: 404 },
+      );
     }
 
     const workbookId = fileId(batch.workbook);
@@ -296,7 +324,9 @@ export async function POST(request: NextRequest) {
         `--batch ${shellQuote(batchName)}`,
         `--default-status ${shellQuote(text(batch.default_status, "draft"))}`,
         apply ? "--apply" : "",
-      ].filter(Boolean).join(" "),
+      ]
+        .filter(Boolean)
+        .join(" "),
     ].join(" && ");
 
     const output = await runCommand(command, cfg.repoRoot, {

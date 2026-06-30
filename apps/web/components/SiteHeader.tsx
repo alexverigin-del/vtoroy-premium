@@ -7,7 +7,11 @@ import { SiteLogo } from "./SiteLogo";
 
 function headerCta(settings: SiteSettings, navigation: NavigationItem[]): NavigationItem | null {
   return (
-    sortNavigation(navigation.filter((item) => item.location === "header" && !item.parent && item.itemRole === "cta"))[0] ??
+    sortNavigation(
+      navigation.filter(
+        (item) => item.location === "header" && !item.parent && item.itemRole === "cta",
+      ),
+    )[0] ??
     (settings.headerCtaLabel
       ? {
           id: "header-cta",
@@ -45,12 +49,17 @@ export function SiteHeader({
 }) {
   const [open, setOpen] = useState(false);
   const headerItems = sortNavigation(
-    navigation.filter((item) => item.location === "header" && !item.parent && item.itemRole !== "cta"),
+    navigation.filter(
+      (item) => item.location === "header" && !item.parent && item.itemRole !== "cta",
+    ),
   );
   const cta = headerCta(settings, navigation);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-hairline/80 bg-white/85 backdrop-blur-xl">
+    <header
+      className="sticky top-0 z-50 border-b border-hairline/80 bg-white/85 backdrop-blur-xl"
+      data-component="SiteHeader"
+    >
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-5 py-1.5">
         <SiteLogo settings={settings} />
 
@@ -77,7 +86,14 @@ export function SiteHeader({
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            >
               <path d={open ? "M6 6l12 12M18 6L6 18" : "M3 6h18M3 12h18M3 18h18"} />
             </svg>
           </button>

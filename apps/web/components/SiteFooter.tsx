@@ -13,10 +13,19 @@ export function SiteFooter({
   const parentItems = footerItems.filter((item) => !item.parent);
   const columns = parentItems.length
     ? parentItems
-    : [{ id: "footer-links", label: "Навигация", url: "#top", location: "footer" as const, sort: 1, isActive: true }];
+    : [
+        {
+          id: "footer-links",
+          label: "Навигация",
+          url: "#top",
+          location: "footer" as const,
+          sort: 1,
+          isActive: true,
+        },
+      ];
 
   return (
-    <footer className="border-t border-hairline bg-white py-12">
+    <footer className="border-t border-hairline bg-white py-12" data-component="SiteFooter">
       <div className="mx-auto max-w-[1440px] px-5">
         {settings.footerNote ? (
           <p className="max-w-[980px] text-sm leading-relaxed text-ash">{settings.footerNote}</p>
@@ -29,7 +38,9 @@ export function SiteFooter({
             </p>
           </div>
           {columns.map((column) => {
-            const links = parentItems.length ? footerItems.filter((item) => item.parent === column.id) : footerItems;
+            const links = parentItems.length
+              ? footerItems.filter((item) => item.parent === column.id)
+              : footerItems;
             return (
               <div key={column.id}>
                 <h4 className="mb-3 text-sm font-semibold text-carbon">{column.label}</h4>

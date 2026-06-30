@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import type { PageSection } from "@vtoroy/shared";
+import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
 
 type FinalCtaForm = {
@@ -41,9 +42,18 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
     scenarioOptions:
       scenarioOptions.length > 0
         ? scenarioOptions
-        : ["Найти вещь в кругу", "Передать свою вещь дальше", "Обновиться на следующую", "Узнать про Club"],
+        : [
+            "Найти вещь в кругу",
+            "Передать свою вещь дальше",
+            "Обновиться на следующую",
+            "Узнать про Club",
+          ],
     deviceLabel: text("deviceLabel", "device_label", "Какая вещь интересна?"),
-    devicePlaceholder: text("devicePlaceholder", "device_placeholder", "Например, iPhone 13 Pro или MacBook Air"),
+    devicePlaceholder: text(
+      "devicePlaceholder",
+      "device_placeholder",
+      "Например, iPhone 13 Pro или MacBook Air",
+    ),
     contactLabel: text("contactLabel", "contact_label", "Контакт для ответа"),
     contactPlaceholder: text("contactPlaceholder", "contact_placeholder", "Телефон или Telegram"),
     submitLabel: text("submitLabel", "submit_label", "Войти в круг"),
@@ -68,7 +78,8 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
   const [scenario, setScenario] = useState(form.scenarioOptions[0] ?? "");
   const [device, setDevice] = useState("");
   const [contact, setContact] = useState("");
-  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } = useLeadIntake();
+  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
+    useLeadIntake();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -90,12 +101,14 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
   }
 
   return (
-    <section className="bg-frost py-16 md:py-20" id="final">
+    <section className="bg-frost py-16 md:py-20" id="final" data-component="FinalCtaSection">
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <div className="grid gap-6 rounded-card border border-hairline bg-white p-5 shadow-soft md:grid-cols-[1.05fr_0.95fr] md:p-8">
           <div className="flex flex-col justify-center">
             {section.eyebrow ? (
-              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+                {section.eyebrow}
+              </div>
             ) : null}
             {section.headline ? (
               <h2 className="mt-3 max-w-[640px] text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-4xl">
@@ -103,7 +116,9 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
               </h2>
             ) : null}
             {section.body ? (
-              <p className="mt-4 max-w-[620px] text-[17px] leading-relaxed text-graphite">{section.body}</p>
+              <p className="mt-4 max-w-[620px] text-[17px] leading-relaxed text-graphite">
+                {section.body}
+              </p>
             ) : null}
             <div className="mt-6 flex flex-wrap gap-2">
               {renderedProof.map((item) => (
@@ -117,7 +132,10 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="rounded-card border border-hairline bg-frost p-4 md:p-5">
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-card border border-hairline bg-frost p-4 md:p-5"
+          >
             <label className="block text-sm font-medium text-carbon">
               <span>{form.scenarioLabel}</span>
               <select
@@ -166,7 +184,9 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
               className="absolute left-[-9999px] h-px w-px opacity-0"
             />
 
-            {turnstileRequired ? <div ref={turnstileElementRef} className="mt-4 min-h-[65px]" /> : null}
+            {turnstileRequired ? (
+              <div ref={turnstileElementRef} className="mt-4 min-h-[65px]" />
+            ) : null}
 
             <button
               className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-action-blue disabled:cursor-wait disabled:opacity-70"
@@ -177,11 +197,11 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
             </button>
 
             <p
-              className={[
+              className={cn(
                 "mt-3 text-sm leading-relaxed",
                 state === "success" ? "text-success" : "text-ash",
                 state === "error" ? "text-red-600" : "",
-              ].join(" ")}
+              )}
             >
               {state === "success"
                 ? "Заявка принята. Мы свяжемся с вами и предложим спокойный следующий шаг."

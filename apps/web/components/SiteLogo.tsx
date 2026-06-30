@@ -59,7 +59,9 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
         ) : null}
       </span>
       {settings.showBrandName === false ? null : (
-        <span className="text-sm font-semibold tracking-normal text-carbon">{settings.brandName}</span>
+        <span className="text-sm font-semibold tracking-normal text-carbon">
+          {settings.brandName}
+        </span>
       )}
     </a>
   );

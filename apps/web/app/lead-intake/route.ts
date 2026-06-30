@@ -73,23 +73,27 @@ function inferKind(kind: string, scenario: string): string {
   }
 
   const value = scenario.toLowerCase();
-  if (value.includes("trade") || value.includes("оцен") || value.includes("передать")) return "trade";
+  if (value.includes("trade") || value.includes("оцен") || value.includes("передать"))
+    return "trade";
   if (value.includes("club")) return "club";
   if (value.includes("обнов")) return "upgrade";
   if (
-    value.includes("забронировать")
-    || value.includes("купить")
-    || value.includes("брон")
-    || value.includes("лист ожидания")
-  ) return "purchase";
+    value.includes("забронировать") ||
+    value.includes("купить") ||
+    value.includes("брон") ||
+    value.includes("лист ожидания")
+  )
+    return "purchase";
   if (value.includes("похож") || value.includes("альтернатив")) return "selection";
   return "selection";
 }
 
 function inferContactChannel(contact: string): string {
   const value = contact.toLowerCase();
-  if (value.includes("@") && !value.includes("t.me/") && !value.includes("telegram")) return "email";
-  if (value.includes("telegram") || value.includes("t.me/") || value.startsWith("@")) return "telegram";
+  if (value.includes("@") && !value.includes("t.me/") && !value.includes("telegram"))
+    return "email";
+  if (value.includes("telegram") || value.includes("t.me/") || value.startsWith("@"))
+    return "telegram";
   if (value.includes("whatsapp") || value.includes("wa.me/")) return "whatsapp";
   if (/[0-9][0-9\s()+-]{5,}/.test(value)) return "phone";
   return "unknown";
@@ -138,7 +142,10 @@ async function parseLeadRequest(request: NextRequest): Promise<LeadRequest> {
     }
   }
 
-  if (contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded")) {
+  if (
+    contentType.includes("multipart/form-data") ||
+    contentType.includes("application/x-www-form-urlencoded")
+  ) {
     const form = await request.formData();
     return Object.fromEntries(form.entries()) as LeadRequest;
   }
@@ -183,7 +190,11 @@ async function verifyTurnstile(body: LeadRequest, request: NextRequest): Promise
 }
 
 async function postToDirectus(lead: StoredLead): Promise<boolean> {
-  const directusUrl = (process.env.DIRECTUS_URL ?? process.env.NEXT_PUBLIC_DIRECTUS_URL ?? "").replace(/\/+$/, "");
+  const directusUrl = (
+    process.env.DIRECTUS_URL ??
+    process.env.NEXT_PUBLIC_DIRECTUS_URL ??
+    ""
+  ).replace(/\/+$/, "");
   const token = process.env.DIRECTUS_LEADS_TOKEN ?? "";
   if (!directusUrl || !token) return false;
 
@@ -242,7 +253,9 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       lead.utm_campaign ? `UTM campaign: ${lead.utm_campaign}` : "",
       lead.utm_content ? `UTM content: ${lead.utm_content}` : "",
       lead.utm_term ? `UTM term: ${lead.utm_term}` : "",
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     const legacyResponse = await postPayload({
       kind: lead.kind,
@@ -283,17 +296,11 @@ export async function POST(request: NextRequest) {
   }
 
   if (isRateLimited(rateLimitKey(request))) {
-    return NextResponse.json(
-      { ok: false, error: "rate_limited" },
-      { status: 429 },
-    );
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
   }
 
   if (!(await verifyTurnstile(body, request))) {
-    return NextResponse.json(
-      { ok: false, error: "turnstile_failed" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "turnstile_failed" }, { status: 400 });
   }
 
   const scenario = text(body.scenario, 160);
@@ -302,10 +309,7 @@ export async function POST(request: NextRequest) {
   const sourceUrl = text(body.source_url, 800) || text(request.headers.get("referer"), 800);
 
   if (!contact) {
-    return NextResponse.json(
-      { ok: false, error: "contact_required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "contact_required" }, { status: 400 });
   }
 
   const lead: StoredLead = {

@@ -1,6 +1,11 @@
 import { CatalogGrid } from "@/components/CatalogGrid";
 import { SiteShell } from "@/components/SiteShell";
-import { directusConfig, getNavigationItems, getPublishedDevices, getSiteSettings } from "@/lib/directus";
+import {
+  directusConfig,
+  getNavigationItems,
+  getPublishedDevices,
+  getSiteSettings,
+} from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 
 export const metadata = {
@@ -12,8 +17,7 @@ export const metadata = {
   },
   openGraph: {
     title: "ISVOI Store — вещи в кругу",
-    description:
-      "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода.",
+    description: "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода.",
     url: "/catalog",
   },
 };

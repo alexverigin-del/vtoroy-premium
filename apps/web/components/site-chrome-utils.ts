@@ -47,7 +47,11 @@ export function externalLinkAttrs(item: NavigationItem): {
   return item.openInNew ? { target: "_blank", rel: "noopener noreferrer" } : {};
 }
 
-export function boundedLogoSize(value: number | undefined, min: number, max: number): number | undefined {
+export function boundedLogoSize(
+  value: number | undefined,
+  min: number,
+  max: number,
+): number | undefined {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return undefined;
   return Math.max(min, Math.min(max, Math.round(value)));
 }

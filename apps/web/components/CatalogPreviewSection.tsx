@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Device, PageSection } from "@vtoroy/shared";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { cn } from "../lib/cn";
 import { DeviceCard } from "./DeviceCard";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 
@@ -75,8 +76,10 @@ function sortDevices(devices: Device[], sort: string): Device[] {
     if (sort === "price-desc") return Number(b.price || 0) - Number(a.price || 0);
     if (sort === "updated-desc") return updatedTime(b) - updatedTime(a);
     if (sort === "status") {
-      return statusOrder(normalizeStockStatus(a)) - statusOrder(normalizeStockStatus(b))
-        || Number(a.sort ?? 0) - Number(b.sort ?? 0);
+      return (
+        statusOrder(normalizeStockStatus(a)) - statusOrder(normalizeStockStatus(b)) ||
+        Number(a.sort ?? 0) - Number(b.sort ?? 0)
+      );
     }
     return Number(a.sort ?? 0) - Number(b.sort ?? 0);
   });
@@ -94,12 +97,12 @@ function FilterChip({
   return (
     <button
       type="button"
-      className={[
+      className={cn(
         "min-h-11 rounded-pill border px-4 text-sm font-medium outline-none transition focus-visible:shadow-focus",
         active
           ? "border-link-blue bg-link-blue/5 text-link-blue"
           : "border-hairline bg-white text-graphite hover:border-link-blue hover:text-link-blue",
-      ].join(" ")}
+      )}
       onClick={onClick}
     >
       {children}
@@ -107,23 +110,34 @@ function FilterChip({
   );
 }
 
-export function CatalogPreviewSection({ section, devices }: { section: PageSection; devices: Device[] }) {
+export function CatalogPreviewSection({
+  section,
+  devices,
+}: {
+  section: PageSection;
+  devices: Device[];
+}) {
   const categoryFilters = filterList(section.content.filters);
   const statusFilters = filterList(section.content.statusFilters);
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   const [sort, setSort] = useState("default");
   const headingTag = section.content.headingTag === "h1" ? "h1" : "h2";
-  const limit = typeof section.content.limit === "number" && section.content.limit > 0 ? section.content.limit : 6;
+  const limit =
+    typeof section.content.limit === "number" && section.content.limit > 0
+      ? section.content.limit
+      : 6;
   const categories = categoryFilters.length > 0 ? categoryFilters : DEFAULT_CATEGORY_FILTERS;
   const statuses = statusFilters.length > 0 ? statusFilters : DEFAULT_STATUS_FILTERS;
 
   const visibleDevices = useMemo(() => {
     const filtered = devices.filter((device) => {
       const stockStatus = normalizeStockStatus(device);
-      return stockStatus !== "hidden"
-        && matchesCategory(device, category)
-        && (status === "all" || stockStatus === status);
+      return (
+        stockStatus !== "hidden" &&
+        matchesCategory(device, category) &&
+        (status === "all" || stockStatus === status)
+      );
     });
     return sortDevices(filtered, sort).slice(0, limit);
   }, [category, devices, limit, sort, status]);
@@ -131,24 +145,39 @@ export function CatalogPreviewSection({ section, devices }: { section: PageSecti
   const Heading = headingTag;
 
   return (
-    <section className="bg-white py-16 md:py-20" id="catalog">
+    <section
+      className="bg-white py-16 md:py-20"
+      id="catalog"
+      data-component="CatalogPreviewSection"
+    >
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <div className="mx-auto max-w-[780px] text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              {section.eyebrow}
+            </div>
           ) : null}
           {section.headline ? (
             <Heading className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </Heading>
           ) : null}
-          {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+          {section.body ? (
+            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+          ) : null}
         </div>
 
         <div className="mt-10 flex flex-col gap-4 rounded-card border border-hairline bg-frost p-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2" aria-label={section.subheadline || "Фильтры каталога"}>
+          <div
+            className="flex flex-wrap gap-2"
+            aria-label={section.subheadline || "Фильтры каталога"}
+          >
             {categories.map((filter) => (
-              <FilterChip key={filter.value} active={category === filter.value} onClick={() => setCategory(filter.value)}>
+              <FilterChip
+                key={filter.value}
+                active={category === filter.value}
+                onClick={() => setCategory(filter.value)}
+              >
                 {filter.label}
               </FilterChip>
             ))}
@@ -156,7 +185,11 @@ export function CatalogPreviewSection({ section, devices }: { section: PageSecti
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex flex-wrap gap-2" aria-label="Статус устройства">
               {statuses.map((filter) => (
-                <FilterChip key={filter.value} active={status === filter.value} onClick={() => setStatus(filter.value)}>
+                <FilterChip
+                  key={filter.value}
+                  active={status === filter.value}
+                  onClick={() => setStatus(filter.value)}
+                >
                   {filter.label}
                 </FilterChip>
               ))}
@@ -197,7 +230,7 @@ export function CatalogPreviewSection({ section, devices }: { section: PageSecti
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/catalog")}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue focus-ring"
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
               >
                 {section.primaryCtaLabel}
               </Link>
@@ -205,7 +238,7 @@ export function CatalogPreviewSection({ section, devices }: { section: PageSecti
             {section.secondaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.secondaryCtaUrl || "#final")}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue focus-ring"
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
               >
                 {section.secondaryCtaLabel}
               </Link>

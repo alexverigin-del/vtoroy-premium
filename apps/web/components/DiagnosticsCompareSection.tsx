@@ -22,7 +22,12 @@ type ComparisonContent = {
   rows: ComparisonRow[];
 };
 
-function textField(record: Record<string, unknown>, camelKey: string, snakeKey: string, fallback: string): string {
+function textField(
+  record: Record<string, unknown>,
+  camelKey: string,
+  snakeKey: string,
+  fallback: string,
+): string {
   const camelField = record[camelKey];
   const snakeField = record[snakeKey];
   if (typeof camelField === "string" && camelField.trim()) return camelField;
@@ -63,7 +68,12 @@ function comparisonContent(value: unknown): ComparisonContent {
   const rows = comparisonRows(record.rows);
 
   return {
-    ariaLabel: textField(record, "ariaLabel", "aria_label", "Сравнение случайного рынка и круга ISVOI"),
+    ariaLabel: textField(
+      record,
+      "ariaLabel",
+      "aria_label",
+      "Сравнение случайного рынка и круга ISVOI",
+    ),
     labelHeader: textField(record, "labelHeader", "label_header", "Что вы получаете"),
     badHeader: textField(record, "badHeader", "bad_header", "Случайный рынок"),
     goodHeader: textField(record, "goodHeader", "good_header", "Круг ISVOI"),
@@ -81,7 +91,14 @@ function comparisonContent(value: unknown): ComparisonContent {
 
 function XIcon() {
   return (
-    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <svg
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
       <path d="M6 6l12 12M18 6L6 18" />
     </svg>
   );
@@ -89,7 +106,14 @@ function XIcon() {
 
 function CheckIcon() {
   return (
-    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <svg
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
       <path d="M5 12l4 4 10-10" />
     </svg>
   );
@@ -105,14 +129,18 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <div className="mx-auto max-w-[780px] text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              {section.eyebrow}
+            </div>
           ) : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
-          {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+          {section.body ? (
+            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+          ) : null}
         </div>
 
         <div className="relative mt-10 min-h-[300px] overflow-hidden rounded-img bg-frost shadow-soft md:min-h-[520px]">
@@ -124,13 +152,24 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
             className="object-cover"
           />
           <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-[420px] md:p-5">
-            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{diagnostics.noteLabel}</span>
-            <strong className="mt-2 block text-base font-semibold leading-snug text-carbon">{diagnostics.noteText}</strong>
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              {diagnostics.noteLabel}
+            </span>
+            <strong className="mt-2 block text-base font-semibold leading-snug text-carbon">
+              {diagnostics.noteText}
+            </strong>
           </div>
         </div>
 
-        <div className="mt-8 overflow-hidden rounded-card border border-hairline bg-white" role="table" aria-label={comparison.ariaLabel}>
-          <div className="hidden grid-cols-[1.1fr_1fr_1fr] bg-frost text-sm font-semibold text-carbon md:grid" role="row">
+        <div
+          className="mt-8 overflow-hidden rounded-card border border-hairline bg-white"
+          role="table"
+          aria-label={comparison.ariaLabel}
+        >
+          <div
+            className="hidden grid-cols-[1.1fr_1fr_1fr] bg-frost text-sm font-semibold text-carbon md:grid"
+            role="row"
+          >
             <div className="border-r border-hairline p-4" role="columnheader">
               {comparison.labelHeader}
             </div>
@@ -143,15 +182,28 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
           </div>
 
           {comparison.rows.map((row) => (
-            <div key={`${row.label}-${row.bad}-${row.good}`} className="grid gap-0 border-t border-hairline md:grid-cols-[1.1fr_1fr_1fr]" role="row">
-              <div className="bg-frost p-4 text-sm font-semibold text-carbon md:bg-white" role="cell">
+            <div
+              key={`${row.label}-${row.bad}-${row.good}`}
+              className="grid gap-0 border-t border-hairline md:grid-cols-[1.1fr_1fr_1fr]"
+              role="row"
+            >
+              <div
+                className="bg-frost p-4 text-sm font-semibold text-carbon md:bg-white"
+                role="cell"
+              >
                 {row.label}
               </div>
-              <div className="flex gap-2 border-t border-hairline p-4 text-sm leading-relaxed text-red-700 md:border-l md:border-t-0" role="cell">
+              <div
+                className="flex gap-2 border-t border-hairline p-4 text-sm leading-relaxed text-red-700 md:border-l md:border-t-0"
+                role="cell"
+              >
                 <XIcon />
                 <span>{row.bad}</span>
               </div>
-              <div className="flex gap-2 border-t border-hairline p-4 text-sm font-medium leading-relaxed text-success md:border-l md:border-t-0" role="cell">
+              <div
+                className="flex gap-2 border-t border-hairline p-4 text-sm font-medium leading-relaxed text-success md:border-l md:border-t-0"
+                role="cell"
+              >
                 <CheckIcon />
                 <span>{row.good}</span>
               </div>

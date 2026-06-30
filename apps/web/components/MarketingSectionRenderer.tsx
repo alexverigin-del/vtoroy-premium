@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { Device, PageSection } from "@vtoroy/shared";
 import { CatalogGrid } from "./CatalogGrid";
 import type { MarketingSlug } from "@/lib/site-content";
+import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 
 type MarketingSectionRendererProps = {
@@ -65,7 +66,12 @@ function strField(record: Record<string, unknown>, key: string, fallback = ""): 
   return typeof value === "string" ? value : fallback;
 }
 
-function textField(record: Record<string, unknown>, camelKey: string, snakeKey: string, fallback: string): string {
+function textField(
+  record: Record<string, unknown>,
+  camelKey: string,
+  snakeKey: string,
+  fallback: string,
+): string {
   const camelField = record[camelKey];
   const snakeField = record[snakeKey];
   if (typeof camelField === "string" && camelField.trim()) return camelField;
@@ -182,14 +188,18 @@ function SectionHeader({ section }: { section: PageSection }) {
   return (
     <div className="mx-auto max-w-[780px] text-center">
       {section.eyebrow ? (
-        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+          {section.eyebrow}
+        </div>
       ) : null}
       {section.headline ? (
         <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
           {section.headline}
         </h2>
       ) : null}
-      {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+      {section.body ? (
+        <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+      ) : null}
     </div>
   );
 }
@@ -200,21 +210,32 @@ function DarkSectionHeader({ section }: { section: PageSection }) {
   return (
     <div className="mx-auto max-w-[780px] text-center">
       {section.eyebrow ? (
-        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-signal-blue">{section.eyebrow}</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-signal-blue">
+          {section.eyebrow}
+        </div>
       ) : null}
       {section.headline ? (
         <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-white md:text-5xl">
           {section.headline}
         </h2>
       ) : null}
-      {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-white/70">{section.body}</p> : null}
+      {section.body ? (
+        <p className="mt-4 text-[17px] leading-relaxed text-white/70">{section.body}</p>
+      ) : null}
     </div>
   );
 }
 
 function XIcon() {
   return (
-    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <svg
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
       <path d="M6 6l12 12M18 6L6 18" />
     </svg>
   );
@@ -222,7 +243,14 @@ function XIcon() {
 
 function CheckIcon() {
   return (
-    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <svg
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
       <path d="M5 12l4 4 10-10" />
     </svg>
   );
@@ -251,8 +279,14 @@ function MarketingVisualBandSection({ section }: { section: PageSection }) {
           ) : null}
           {captionTitle || captionText ? (
             <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/90 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-[390px] md:p-5">
-              {captionTitle ? <strong className="block text-base font-semibold text-carbon">{captionTitle}</strong> : null}
-              {captionText ? <span className="mt-1 block text-sm leading-relaxed text-ash">{captionText}</span> : null}
+              {captionTitle ? (
+                <strong className="block text-base font-semibold text-carbon">
+                  {captionTitle}
+                </strong>
+              ) : null}
+              {captionText ? (
+                <span className="mt-1 block text-sm leading-relaxed text-ash">{captionText}</span>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -281,7 +315,9 @@ function MarketingHeroSection({ section }: { section: PageSection }) {
         </h1>
       ) : null}
       {section.body ? (
-        <p className="mx-auto mt-5 max-w-[760px] text-lg leading-relaxed text-graphite md:text-xl">{section.body}</p>
+        <p className="mx-auto mt-5 max-w-[760px] text-lg leading-relaxed text-graphite md:text-xl">
+          {section.body}
+        </p>
       ) : null}
 
       {hasButtons ? (
@@ -289,7 +325,7 @@ function MarketingHeroSection({ section }: { section: PageSection }) {
           {section.primaryCtaLabel ? (
             <Link
               href={primaryUrl}
-              className="inline-flex min-h-11 items-center justify-center rounded-pill bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue focus-ring"
+              className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
             >
               {primaryLabel}
             </Link>
@@ -297,7 +333,7 @@ function MarketingHeroSection({ section }: { section: PageSection }) {
           {section.secondaryCtaLabel ? (
             <Link
               href={secondaryUrl}
-              className="inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue focus-ring"
+              className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
             >
               {secondaryLabel}
             </Link>
@@ -320,33 +356,46 @@ function MarketingLevelsSection({ section }: { section: PageSection }) {
           {levels.map((level) => (
             <article
               key={level.name || level.badge}
-              className={[
+              className={cn(
                 "flex min-h-[360px] flex-col rounded-card border p-7",
                 level.featured
                   ? "border-signal-blue bg-white text-carbon shadow-product"
                   : "border-white/15 bg-white/[0.06] text-white",
-              ].join(" ")}
+              )}
             >
               {level.badge ? (
                 <div
-                  className={[
+                  className={cn(
                     "mb-5 inline-flex w-fit rounded-pill px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em]",
                     level.featured ? "bg-frost text-link-blue" : "bg-white/10 text-signal-blue",
-                  ].join(" ")}
+                  )}
                 >
                   {level.badge}
                 </div>
               ) : null}
-              {level.name ? <h3 className="text-3xl font-semibold leading-tight">{level.name}</h3> : null}
+              {level.name ? (
+                <h3 className="text-3xl font-semibold leading-tight">{level.name}</h3>
+              ) : null}
               {level.tag ? (
-                <p className={["mt-2 min-h-11 text-sm leading-relaxed", level.featured ? "text-graphite" : "text-white/70"].join(" ")}>
+                <p
+                  className={cn(
+                    "mt-2 min-h-11 text-sm leading-relaxed",
+                    level.featured ? "text-graphite" : "text-white/70",
+                  )}
+                >
                   {level.tag}
                 </p>
               ) : null}
               {level.features.length > 0 ? (
                 <ul className="mt-6 grid gap-3">
                   {level.features.map((feature) => (
-                    <li key={feature} className={["flex gap-2 text-sm leading-relaxed", level.featured ? "text-graphite" : "text-white/85"].join(" ")}>
+                    <li
+                      key={feature}
+                      className={cn(
+                        "flex gap-2 text-sm leading-relaxed",
+                        level.featured ? "text-graphite" : "text-white/85",
+                      )}
+                    >
                       <span className="text-signal-blue">
                         <CheckIcon />
                       </span>
@@ -358,12 +407,12 @@ function MarketingLevelsSection({ section }: { section: PageSection }) {
               {level.name ? (
                 <Link
                   href="/#final"
-                  className={[
-                    "mt-auto inline-flex min-h-11 items-center justify-center rounded-pill px-5 py-3 text-sm font-semibold transition focus-ring",
+                  className={cn(
+                    "focus-ring mt-auto inline-flex min-h-11 items-center justify-center rounded-pill px-5 py-3 text-sm font-semibold transition",
                     level.featured
                       ? "bg-action text-white hover:bg-action-blue"
                       : "border border-white/25 text-white hover:border-signal-blue hover:text-signal-blue",
-                  ].join(" ")}
+                  )}
                 >
                   Выбрать {level.name}
                 </Link>
@@ -384,8 +433,15 @@ function MarketingCompareSection({ section }: { section: PageSection }) {
     <section className="bg-frost py-16 md:py-20">
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-10 max-w-[1120px] overflow-hidden rounded-card border border-hairline bg-white" role="table" aria-label={comparison.ariaLabel}>
-          <div className="hidden grid-cols-[1.1fr_1fr_1fr] bg-frost text-sm font-semibold text-carbon md:grid" role="row">
+        <div
+          className="mx-auto mt-10 max-w-[1120px] overflow-hidden rounded-card border border-hairline bg-white"
+          role="table"
+          aria-label={comparison.ariaLabel}
+        >
+          <div
+            className="hidden grid-cols-[1.1fr_1fr_1fr] bg-frost text-sm font-semibold text-carbon md:grid"
+            role="row"
+          >
             <div className="border-r border-hairline p-4" role="columnheader">
               {comparison.labelHeader}
             </div>
@@ -398,15 +454,28 @@ function MarketingCompareSection({ section }: { section: PageSection }) {
           </div>
 
           {comparison.rows.map((row) => (
-            <div key={`${row.label}-${row.bad}-${row.good}`} className="grid border-t border-hairline md:grid-cols-[1.1fr_1fr_1fr]" role="row">
-              <div className="bg-frost p-4 text-sm font-semibold text-carbon md:bg-white" role="cell">
+            <div
+              key={`${row.label}-${row.bad}-${row.good}`}
+              className="grid border-t border-hairline md:grid-cols-[1.1fr_1fr_1fr]"
+              role="row"
+            >
+              <div
+                className="bg-frost p-4 text-sm font-semibold text-carbon md:bg-white"
+                role="cell"
+              >
                 {row.label}
               </div>
-              <div className="flex gap-2 border-t border-hairline p-4 text-sm leading-relaxed text-graphite md:border-l md:border-t-0" role="cell">
+              <div
+                className="flex gap-2 border-t border-hairline p-4 text-sm leading-relaxed text-graphite md:border-l md:border-t-0"
+                role="cell"
+              >
                 <XIcon />
                 <span>{row.bad}</span>
               </div>
-              <div className="flex gap-2 border-t border-hairline bg-ice p-4 text-sm font-semibold leading-relaxed text-carbon md:border-l md:border-t-0" role="cell">
+              <div
+                className="flex gap-2 border-t border-hairline bg-ice p-4 text-sm font-semibold leading-relaxed text-carbon md:border-l md:border-t-0"
+                role="cell"
+              >
                 <CheckIcon />
                 <span>{row.good}</span>
               </div>
@@ -419,22 +488,29 @@ function MarketingCompareSection({ section }: { section: PageSection }) {
 }
 
 function MarketingPageCtaSection({ section }: { section: PageSection }) {
-  if (!section.headline && !section.body && !section.primaryCtaLabel && !section.secondaryCtaLabel) return null;
+  if (!section.headline && !section.body && !section.primaryCtaLabel && !section.secondaryCtaLabel)
+    return null;
 
   return (
     <section className="bg-white py-16 md:py-20">
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <div className="mx-auto max-w-[980px] rounded-card border border-hairline bg-white/80 p-8 text-center shadow-soft md:p-12">
           {section.headline ? (
-            <h2 className="text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">{section.headline}</h2>
+            <h2 className="text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+              {section.headline}
+            </h2>
           ) : null}
-          {section.body ? <p className="mx-auto mt-4 max-w-[700px] text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+          {section.body ? (
+            <p className="mx-auto mt-4 max-w-[700px] text-[17px] leading-relaxed text-graphite">
+              {section.body}
+            </p>
+          ) : null}
           {section.primaryCtaLabel || section.secondaryCtaLabel ? (
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               {section.primaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.primaryCtaUrl || "/#final")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-pill bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue focus-ring"
+                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
                 >
                   {section.primaryCtaLabel}
                 </Link>
@@ -442,7 +518,7 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
               {section.secondaryCtaLabel ? (
                 <Link
                   href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue focus-ring"
+                  className="focus-ring inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
                 >
                   {section.secondaryCtaLabel}
                 </Link>
@@ -461,7 +537,7 @@ function MarketingCardsSection({ section }: { section: PageSection }) {
   const isWash = section.variant?.includes("wash");
 
   return (
-    <section className={`${isWash ? "bg-frost" : "bg-white"} py-16 md:py-20`}>
+    <section className={cn("py-16 md:py-20", isWash ? "bg-frost" : "bg-white")}>
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <SectionHeader section={section} />
         <div className="mx-auto mt-10 grid max-w-[1120px] gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -470,13 +546,21 @@ function MarketingCardsSection({ section }: { section: PageSection }) {
               key={`${card.badge}-${card.title}`}
               className="flex min-h-[250px] flex-col rounded-card border border-hairline bg-white p-7"
             >
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-link-blue">{card.badge}</span>
-              {card.title ? <h3 className="mt-5 text-xl font-semibold leading-tight text-carbon">{card.title}</h3> : null}
-              {card.text ? <p className="mt-3 text-sm leading-relaxed text-ash">{card.text}</p> : null}
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-link-blue">
+                {card.badge}
+              </span>
+              {card.title ? (
+                <h3 className="mt-5 text-xl font-semibold leading-tight text-carbon">
+                  {card.title}
+                </h3>
+              ) : null}
+              {card.text ? (
+                <p className="mt-3 text-sm leading-relaxed text-ash">{card.text}</p>
+              ) : null}
               {card.url && card.label ? (
                 <Link
                   href={card.url}
-                  className="mt-auto pt-6 text-sm font-semibold text-link-blue transition hover:text-action focus-ring"
+                  className="focus-ring mt-auto pt-6 text-sm font-semibold text-link-blue transition hover:text-action"
                 >
                   {card.label}
                 </Link>
@@ -499,12 +583,21 @@ function MarketingStepsSection({ section }: { section: PageSection }) {
         <SectionHeader section={section} />
         <div className="mx-auto mt-10 grid max-w-[1120px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
-            <article key={`${step.title}-${index}`} className="rounded-card border border-hairline bg-white p-7">
+            <article
+              key={`${step.title}-${index}`}
+              className="rounded-card border border-hairline bg-white p-7"
+            >
               <div className="text-sm font-semibold uppercase tracking-[0.08em] text-link-blue">
                 {String(index + 1).padStart(2, "0")}
               </div>
-              {step.title ? <h3 className="mt-4 text-xl font-semibold leading-tight text-carbon">{step.title}</h3> : null}
-              {step.text ? <p className="mt-2 text-sm leading-relaxed text-ash">{step.text}</p> : null}
+              {step.title ? (
+                <h3 className="mt-4 text-xl font-semibold leading-tight text-carbon">
+                  {step.title}
+                </h3>
+              ) : null}
+              {step.text ? (
+                <p className="mt-2 text-sm leading-relaxed text-ash">{step.text}</p>
+              ) : null}
             </article>
           ))}
         </div>
@@ -523,10 +616,17 @@ function MarketingFaqSection({ section }: { section: PageSection }) {
         <SectionHeader section={section} />
         <div className="mx-auto mt-10 grid max-w-[880px] gap-3">
           {items.map((item) => (
-            <details key={`${item.badge}-${item.title}`} className="group rounded-card border border-hairline bg-white">
+            <details
+              key={`${item.badge}-${item.title}`}
+              className="group rounded-card border border-hairline bg-white"
+            >
               <summary className="flex cursor-pointer list-none items-start justify-between gap-5 p-5 text-left marker:hidden md:items-center md:p-6">
-                <span className="text-base font-semibold leading-snug text-carbon">{item.title}</span>
-                <strong className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-link-blue">{item.badge}</strong>
+                <span className="text-base font-semibold leading-snug text-carbon">
+                  {item.title}
+                </span>
+                <strong className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-link-blue">
+                  {item.badge}
+                </strong>
               </summary>
               {item.text ? (
                 <div className="border-t border-hairline px-5 pb-5 pt-4 text-sm leading-relaxed text-graphite md:px-6 md:pb-6">
@@ -580,23 +680,23 @@ export function MarketingSectionRenderer({
   devices = [],
   directusEnabled,
 }: MarketingSectionRendererProps) {
-  const renderedSection = isHeroSection(section)
-    ? <MarketingHeroSection section={section} />
-    : isVisualBandSection(section)
-      ? <MarketingVisualBandSection section={section} />
-    : isCompareSection(section)
-      ? <MarketingCompareSection section={section} />
-      : isLevelsSection(section)
-        ? <MarketingLevelsSection section={section} />
-        : isCardsSection(section)
-          ? <MarketingCardsSection section={section} />
-          : isStepsSection(section)
-            ? <MarketingStepsSection section={section} />
-            : isFaqSection(section)
-              ? <MarketingFaqSection section={section} />
-              : isPageCtaSection(section)
-                ? <MarketingPageCtaSection section={section} />
-                : null;
+  const renderedSection = isHeroSection(section) ? (
+    <MarketingHeroSection section={section} />
+  ) : isVisualBandSection(section) ? (
+    <MarketingVisualBandSection section={section} />
+  ) : isCompareSection(section) ? (
+    <MarketingCompareSection section={section} />
+  ) : isLevelsSection(section) ? (
+    <MarketingLevelsSection section={section} />
+  ) : isCardsSection(section) ? (
+    <MarketingCardsSection section={section} />
+  ) : isStepsSection(section) ? (
+    <MarketingStepsSection section={section} />
+  ) : isFaqSection(section) ? (
+    <MarketingFaqSection section={section} />
+  ) : isPageCtaSection(section) ? (
+    <MarketingPageCtaSection section={section} />
+  ) : null;
 
   if (slug === "store" && section.sectionKey === "final_cta") {
     return (

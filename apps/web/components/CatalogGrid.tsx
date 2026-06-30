@@ -3,6 +3,7 @@
 import type { Device } from "@vtoroy/shared";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { cn } from "../lib/cn";
 import { DeviceCard } from "./DeviceCard";
 
 const CATEGORY_FILTERS = [
@@ -57,8 +58,10 @@ function sortDevices(devices: Device[], sort: string): Device[] {
     if (sort === "price-desc") return Number(b.price || 0) - Number(a.price || 0);
     if (sort === "updated-desc") return updatedTime(b) - updatedTime(a);
     if (sort === "status") {
-      return statusOrder(normalizeStockStatus(a)) - statusOrder(normalizeStockStatus(b))
-        || Number(a.sort ?? 0) - Number(b.sort ?? 0);
+      return (
+        statusOrder(normalizeStockStatus(a)) - statusOrder(normalizeStockStatus(b)) ||
+        Number(a.sort ?? 0) - Number(b.sort ?? 0)
+      );
     }
     return Number(a.sort ?? 0) - Number(b.sort ?? 0);
   });
@@ -76,12 +79,12 @@ function FilterChip({
   return (
     <button
       type="button"
-      className={[
+      className={cn(
         "min-h-11 rounded-pill border px-4 text-sm font-medium outline-none transition focus-visible:shadow-focus",
         active
           ? "border-link-blue bg-link-blue/5 text-link-blue"
           : "border-hairline bg-transparent text-graphite hover:border-link-blue hover:text-link-blue",
-      ].join(" ")}
+      )}
       onClick={onClick}
     >
       {children}
@@ -103,15 +106,17 @@ export function CatalogGrid({
   const visibleDevices = useMemo(() => {
     const filtered = devices.filter((device) => {
       const stockStatus = normalizeStockStatus(device);
-      return stockStatus !== "hidden"
-        && matchesCategory(device, category)
-        && (status === "all" || stockStatus === status);
+      return (
+        stockStatus !== "hidden" &&
+        matchesCategory(device, category) &&
+        (status === "all" || stockStatus === status)
+      );
     });
     return sortDevices(filtered, sort);
   }, [category, devices, sort, status]);
 
   return (
-    <section className="bg-white py-16" id="catalog">
+    <section className="bg-white py-16" id="catalog" data-component="CatalogGrid">
       <div className="mx-auto max-w-[1440px] px-5">
         <div className="mx-auto max-w-[980px] text-center">
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-ash">Store</div>
@@ -128,7 +133,11 @@ export function CatalogGrid({
         <div className="mt-10 flex flex-col gap-4 rounded-card border border-hairline bg-frost p-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2" aria-label="Фильтры каталога">
             {CATEGORY_FILTERS.map((filter) => (
-              <FilterChip key={filter.value} active={category === filter.value} onClick={() => setCategory(filter.value)}>
+              <FilterChip
+                key={filter.value}
+                active={category === filter.value}
+                onClick={() => setCategory(filter.value)}
+              >
                 {filter.label}
               </FilterChip>
             ))}
@@ -136,7 +145,11 @@ export function CatalogGrid({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex flex-wrap gap-2" aria-label="Статус устройства">
               {STATUS_FILTERS.map((filter) => (
-                <FilterChip key={filter.value} active={status === filter.value} onClick={() => setStatus(filter.value)}>
+                <FilterChip
+                  key={filter.value}
+                  active={status === filter.value}
+                  onClick={() => setStatus(filter.value)}
+                >
                   {filter.label}
                 </FilterChip>
               ))}
@@ -168,7 +181,8 @@ export function CatalogGrid({
           </ul>
         ) : (
           <div className="mt-8 rounded-card border border-hairline bg-frost p-8 text-center text-graphite">
-            Подходящих устройств пока нет. Измените фильтры или добавьте опубликованные устройства в Directus.
+            Подходящих устройств пока нет. Измените фильтры или добавьте опубликованные устройства в
+            Directus.
           </div>
         )}
       </div>

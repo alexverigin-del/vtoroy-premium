@@ -108,28 +108,31 @@ ISVOI is a restrained premium storefront for verified devices. The system should
 
 The current visual language is Apple-adjacent by design: near-black ink, cool light surfaces, one confident blue, hairline dividers, pill actions, and carefully cropped product imagery. That restraint is useful, but it must stay attached to ISVOI's own promise: good things move through trusted hands, not through anonymous marketplace noise.
 
-Implementation is intentionally hybrid during migration. `globals.css` loads Tailwind and owns minimal global primitives, `site.css` owns the renderer-generated marketing layer, and new React/Next product, catalog, and lead UI should be Tailwind-first with shared tokens rather than new large global CSS blocks.
+Implementation is Tailwind-first after the renderer migration. `globals.css` loads Tailwind and owns only minimal global primitives; React/Next product, catalog, lead and marketing UI should use Tailwind utilities, shared tokens and small components rather than large global CSS blocks.
 
 The system explicitly rejects generic electronics-store clutter, aggressive discount banners, anonymous marketplace noise, heavy casino-like promotions, fake luxury, and purely decorative AI-style visuals when real product information is needed.
 
 **Key Characteristics:**
+
 - Light premium surfaces with near-black text and restrained blue actions.
 - Product and passport information first; decoration only supports trust.
 - Rounded pills for actions and chips; 8px cards for operational clarity.
 - Quiet motion and tactile hover states, never attention-hungry animation.
 - Editor-safe layouts that survive variable Directus content and logo lockups.
-- Tailwind-first implementation for new React/Next UI; `site.css` is a transition layer for renderer-generated HTML.
+- Tailwind-first implementation for React/Next UI with formatter, lint and post-migration audit guardrails.
 
 ## 2. Colors
 
 The palette is restrained and trust-led: a cool Apple-like neutral field, near-black ink, and one blue action family used sparingly for decisions and links.
 
 ### Primary
+
 - **Action Blue**: The filled action color for primary CTAs and form submission. Use it where the user can move forward: enter the circle, submit a lead, choose a catalog path.
 - **Link Blue**: The outline/link color for secondary CTAs, detail prices, active chips, and lower-commitment navigation.
 - **Signal Blue**: A decorative signal used for small accents, icons, and glow materials. Do not use it as small body text unless contrast is verified.
 
 ### Neutral
+
 - **Carbon**: Primary text and serious UI ink.
 - **Frost**: Main canvas and quiet control background.
 - **Ice**: Elevated wash for callouts, exit-price panels, and soft information zones.
@@ -140,6 +143,7 @@ The palette is restrained and trust-led: a cool Apple-like neutral field, near-b
 - **Pebble / Mist / Smoke / Onyx**: Supporting neutral steps for imagery, dark bands, and rare high-contrast accents.
 
 ### Secondary
+
 - **Success Green**: Availability, passed checks, and positive passport states.
 - **Warning Amber**: Reserved or cautionary availability states.
 
@@ -158,6 +162,7 @@ The palette is restrained and trust-led: a cool Apple-like neutral field, near-b
 **Character:** The type is clean, precise, and retail-technical without becoming cold. It behaves like a product label and a verification card: compact enough for catalog data, but spacious enough for trust-building narrative.
 
 ### Hierarchy
+
 - **Display** (600, `clamp(48px, 7vw, 64px)`, 1.07): Hero headlines and the largest brand claims only.
 - **Headline** (600, `clamp(32px, 5vw, 48px)`, 1.1): Section introductions and major page promises.
 - **Title** (600, `clamp(24px, 3vw, 28px)`, 1.18): Cards, module headings, and device section titles.
@@ -175,6 +180,7 @@ The palette is restrained and trust-led: a cool Apple-like neutral field, near-b
 The system is mostly flat and layered by tone. Surfaces are separated by white-on-frost contrast, hairline borders, and careful spacing. Shadows exist only to ground product imagery or special elevated visuals, not as generic card decoration.
 
 ### Shadow Vocabulary
+
 - **Product Grounding** (`rgba(0, 0, 0, 0.18) 0 26px 90px`): Use only for hero/detail product renders or major device imagery.
 - **Soft Product Shadow** (`rgba(0, 0, 0, 0.08) 0 18px 55px`): Use for subtle product objects and rare lifted visual moments.
 - **Form Focus Ring** (`0 0 0 2px rgba(0,113,227,0.14)`): Use on focused inputs only, paired with the action blue border.
@@ -231,11 +237,11 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 ### Implementation Model
 
 - **Global layer:** `globals.css` loads Tailwind base/components/utilities and keeps only minimal tokens, base styles, and shared primitives.
-- **Renderer transition layer:** `site.css` owns the large renderer/legacy marketing layer emitted by `site-renderer.ts`.
-- **New UI:** Product, catalog, lead, and future React/Next components should use Tailwind utilities and shared tokens directly.
-- **Migration:** When a renderer section moves into React, move its styling into Tailwind at the same time and delete obsolete `site.css` rules.
+- **Component layer:** Product, catalog, lead, marketing, chrome and future React/Next components should use Tailwind utilities and shared tokens directly.
+- **Class composition:** Conditional classes should go through the shared `cn()` helper, backed by `clsx` and `tailwind-merge`.
+- **Guardrails:** `prettier-plugin-tailwindcss` sorts classes, `eslint-plugin-tailwindcss` runs as warn-level feedback, and `tailwind:post-audit` blocks legacy CSS/JS regressions and risky dynamic class patterns.
 
-**The Tailwind-First Migration Rule.** Do not grow `site.css` for normal product/catalog/lead UI. Use Tailwind-first React components unless the change specifically touches renderer-generated markup that still depends on `site.css`.
+**The Tailwind-First Rule.** Do not reintroduce `site.css` or large global CSS for normal product/catalog/lead/marketing UI. Use Tailwind-first React components, shared tokens and `cn()` for stateful class composition.
 
 ## 6. Do's and Don'ts
 
@@ -250,7 +256,7 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Do** keep interactive header links, menu buttons, filter chips, gallery tabs and card CTAs at a 44px minimum hit area.
 - **Do** respect reduced motion; reveal transitions must never hide content by default.
 - **Do** build new React/Next product, catalog, lead, and component UI with Tailwind utilities and shared tokens.
-- **Do** migrate styling out of `site.css` when renderer/legacy sections are moved into React.
+- **Do** use `cn()` for conditional className composition and keep CMS-driven dynamic styling behind explicit tokens, CSS variables or safelists.
 
 ### Don't:
 
@@ -262,4 +268,4 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Don't** duplicate a logo descriptor: if the uploaded asset already says "Проверенная техника для своих", leave the live caption empty.
 - **Don't** let controls remain below comfortable touch size when they are header links, primary filters, menu buttons, gallery tabs, or card CTAs.
 - **Don't** add new large global CSS blocks for normal product/catalog/lead UI.
-- **Don't** treat `site.css` as the permanent home for new React component styling.
+- **Don't** reintroduce `site.css`, `interactions.js` or dynamic Tailwind class concatenation such as `bg-${value}`.

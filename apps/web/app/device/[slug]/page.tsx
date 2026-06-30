@@ -97,11 +97,12 @@ function relatedDevices(device: Device, devices: Device[]): Device[] {
 
 function productJsonLd(device: Device) {
   const status = normalizedStockStatus(device);
-  const availability = status === "sold"
-    ? "https://schema.org/SoldOut"
-    : status === "reserved"
-      ? "https://schema.org/LimitedAvailability"
-      : "https://schema.org/InStock";
+  const availability =
+    status === "sold"
+      ? "https://schema.org/SoldOut"
+      : status === "reserved"
+        ? "https://schema.org/LimitedAvailability"
+        : "https://schema.org/InStock";
 
   return {
     "@context": "https://schema.org",
@@ -129,13 +130,7 @@ function jsonLdScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-function DetailCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+function DetailCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="card p-6">
       <h2 className="text-lg font-semibold">{title}</h2>
@@ -144,16 +139,9 @@ function DetailCard({
   );
 }
 
-export default async function DevicePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function DevicePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [device, devices] = await Promise.all([
-    getDeviceBySlug(slug),
-    getPublishedDevices(),
-  ]);
+  const [device, devices] = await Promise.all([getDeviceBySlug(slug), getPublishedDevices()]);
   if (!device) notFound();
 
   const facts = compact([
@@ -208,9 +196,7 @@ export default async function DevicePage({
                 {stockStatusLabel(device)}
               </span>
               {lastUpdated ? (
-                <span className="rounded-pill bg-surface px-3 py-1">
-                  {lastUpdated}
-                </span>
+                <span className="rounded-pill bg-surface px-3 py-1">{lastUpdated}</span>
               ) : null}
             </div>
 
@@ -261,9 +247,7 @@ export default async function DevicePage({
           </DetailCard>
 
           <DetailCard title="Состояние и нюансы">
-            <p className="text-sm leading-relaxed text-muted">
-              {device.passport.condition.note}
-            </p>
+            <p className="text-sm leading-relaxed text-muted">{device.passport.condition.note}</p>
             {conditionNotes.length > 0 ? (
               <ul className="mt-4 grid gap-2 text-sm text-muted sm:grid-cols-2">
                 {conditionNotes.map((note) => (
@@ -280,13 +264,15 @@ export default async function DevicePage({
               <div>
                 <p className="text-sm font-medium">Покрывается</p>
                 <p className="mt-1 text-sm text-muted">
-                  {device.passport.warranty.covered || "Функциональные неисправности в рамках условий Store."}
+                  {device.passport.warranty.covered ||
+                    "Функциональные неисправности в рамках условий Store."}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium">Не покрывается</p>
                 <p className="mt-1 text-sm text-muted">
-                  {device.passport.warranty.notCovered || "Механические повреждения после покупки и следы влаги."}
+                  {device.passport.warranty.notCovered ||
+                    "Механические повреждения после покупки и следы влаги."}
                 </p>
               </div>
             </div>
@@ -325,9 +311,7 @@ export default async function DevicePage({
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
                 Еще в Store
               </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight">
-                Похожие устройства
-              </h2>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">Похожие устройства</h2>
             </div>
             <CTAButton href="/catalog" label="Весь каталог" variant="secondary" />
           </div>

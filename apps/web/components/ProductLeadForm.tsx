@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
 
 type ProductLeadMode = {
@@ -34,8 +35,10 @@ function leadMode(stockStatus: string): ProductLeadMode {
       submitLabel: "Встать в лист ожидания",
       submittingLabel: "Отправляем...",
       idleNote: "Заявка попадёт в Directus как обращение по забронированной карточке.",
-      successNote: "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
-      statusNote: "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
+      successNote:
+        "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
+      statusNote:
+        "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
     };
   }
 
@@ -49,7 +52,8 @@ function leadMode(stockStatus: string): ProductLeadMode {
       submitLabel: "Подобрать альтернативу",
       submittingLabel: "Отправляем...",
       idleNote: "Заявка попадёт в Directus как подбор альтернативы по проданной карточке.",
-      successNote: "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
+      successNote:
+        "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
       statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
     };
   }
@@ -81,7 +85,8 @@ export function ProductLeadForm({
 }) {
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
-  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } = useLeadIntake();
+  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
+    useLeadIntake();
   const normalizedStockStatus = normalizeStockStatus(stockStatus);
   const mode = leadMode(normalizedStockStatus);
 
@@ -95,7 +100,9 @@ export function ProductLeadForm({
     const leadMessage = [
       `Статус карточки на момент заявки: ${stockStatusLabel} (${normalizedStockStatus}).`,
       message.trim(),
-    ].filter(Boolean).join("\n\n");
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     const submitted = await submitLead({
       kind: mode.kind,
@@ -115,7 +122,11 @@ export function ProductLeadForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 rounded-card bg-surface p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="mt-8 rounded-card bg-surface p-4"
+      data-component="ProductLeadForm"
+    >
       <p className="text-sm font-semibold">{mode.title}</p>
       <p className="mt-1 text-xs leading-relaxed text-muted">{mode.statusNote}</p>
       <label className="mt-3 block text-sm">
@@ -149,11 +160,11 @@ export function ProductLeadForm({
         {state === "submitting" ? mode.submittingLabel : mode.submitLabel}
       </button>
       <p
-        className={[
+        className={cn(
           "mt-3 text-xs",
           state === "success" ? "text-emerald-700" : "text-muted",
           state === "error" ? "text-red-600" : "",
-        ].join(" ")}
+        )}
       >
         {state === "success"
           ? mode.successNote

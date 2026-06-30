@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "../lib/cn";
 
 type Variant = "primary" | "secondary" | "ghost";
 
@@ -20,7 +21,7 @@ export function CTAButton({
   const base =
     "inline-flex items-center justify-center rounded-pill px-7 py-3 font-medium transition";
   return (
-    <Link href={href} className={`${base} ${styles[variant]}`}>
+    <Link href={href} className={cn(base, styles[variant])}>
       {label}
     </Link>
   );

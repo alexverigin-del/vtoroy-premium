@@ -19,14 +19,14 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-surface text-ink font-sans antialiased;
+    @apply bg-surface font-sans text-ink antialiased;
   }
 }
 
 @layer components {
   /* Pill CTA matching the static site's primary button. */
   .btn-pill {
-    @apply inline-flex items-center justify-center rounded-pill bg-accent px-7 py-3 text-white font-medium transition-opacity hover:opacity-90;
+    @apply inline-flex items-center justify-center rounded-pill bg-accent px-7 py-3 font-medium text-white transition-opacity hover:opacity-90;
   }
   .card {
     @apply rounded-card border border-hairline bg-white;

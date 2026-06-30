@@ -1,10 +1,10 @@
-import type { Config } from "tailwindcss";
-
-// Tokens approximate the current "Refero Apple" static style:
-// calm light surfaces, near-black ink, a single confident blue accent,
-// hairline borders, generous radii and soft product shadows.
-const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./apps/web/app/**/*.{ts,tsx}",
+    "./apps/web/components/**/*.{ts,tsx}",
+    "./apps/web/lib/**/*.{ts,tsx}",
+  ],
   theme: {
     extend: {
       colors: {
@@ -51,5 +51,3 @@ const config: Config = {
   },
   plugins: [],
 };
-
-export default config;

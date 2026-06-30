@@ -33,16 +33,16 @@ Compatibility redirects live in `apps/web/next.config.mjs`:
 
 ## Repository Layout
 
-| Path | Purpose |
-| --- | --- |
-| `apps/web/` | Next.js public site and renderer |
-| `apps/web/public/` | Static assets served by Next |
-| `directus/` | Directus schema and workflow docs |
-| `docs/` | Architecture, launch and catalog runbooks |
-| `infra/directus-beget/` | Docker Compose and nginx examples for Beget |
-| `packages/shared/` | Shared TypeScript contracts |
-| `scripts/` | Directus setup, imports, media, audits and ops helpers |
-| `data/` | Legacy/reference seed data for fallback and migration scripts |
+| Path                      | Purpose                                                                |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `apps/web/`               | Next.js public site and renderer                                       |
+| `apps/web/public/`        | Static assets served by Next                                           |
+| `directus/`               | Directus schema and workflow docs                                      |
+| `docs/`                   | Architecture, launch and catalog runbooks                              |
+| `infra/directus-beget/`   | Docker Compose and nginx examples for Beget                            |
+| `packages/shared/`        | Shared TypeScript contracts                                            |
+| `scripts/`                | Directus setup, imports, media, audits and ops helpers                 |
+| `data/`                   | Legacy/reference seed data for fallback and migration scripts          |
 | `apps/web/public/assets/` | Public fallback/reference media for local builds and migration scripts |
 
 ## Common Commands
@@ -63,8 +63,9 @@ npm run web:verify
 npm run smoke:prod
 ```
 
-`web:verify` runs the local pre-deploy web gate: legacy runtime audit, ESLint,
-TypeScript and production build. `smoke:prod` is the live post-deploy check.
+`web:verify` runs the local pre-deploy web gate: legacy runtime audit, Tailwind
+post-migration audit, Tailwind-aware format check, ESLint, TypeScript and
+production build. `smoke:prod` is the live post-deploy check.
 
 `smoke:prod` opens `/catalog`, `/store` and one device page with Playwright. It
 checks HTTP status, Directus image rendering, the Passport block and lead forms.

@@ -36,7 +36,12 @@ const DEFAULT_CHOICES: ChoiceItem[] = [
   },
 ];
 
-function textField(record: Record<string, unknown>, camelKey: string, snakeKey: string, fallback: string): string {
+function textField(
+  record: Record<string, unknown>,
+  camelKey: string,
+  snakeKey: string,
+  fallback: string,
+): string {
   const camelValue = record[camelKey];
   const snakeValue = record[snakeKey];
   if (typeof camelValue === "string" && camelValue.trim()) return camelValue;
@@ -51,7 +56,10 @@ function choiceList(value: unknown): ChoiceItem[] {
     const record = item as Record<string, unknown>;
     const title = typeof record.title === "string" ? record.title : "";
     const text = typeof record.text === "string" ? record.text : "";
-    const icon = typeof record.icon === "string" ? record.icon : ["money", "chart", "swap"][index] ?? "money";
+    const icon =
+      typeof record.icon === "string"
+        ? record.icon
+        : (["money", "chart", "swap"][index] ?? "money");
     return title || text ? [{ title, text, icon }] : [];
   });
 }
@@ -73,7 +81,14 @@ function valuationContent(value: unknown): ValuationContent {
 function Icon({ name }: { name: string }) {
   if (name === "chart") {
     return (
-      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <svg
+        className="h-7 w-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        aria-hidden="true"
+      >
         <path d="M4 17l6-6 4 4 6-7" />
         <path d="M20 8v4h-4" />
       </svg>
@@ -81,14 +96,28 @@ function Icon({ name }: { name: string }) {
   }
   if (name === "swap") {
     return (
-      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <svg
+        className="h-7 w-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        aria-hidden="true"
+      >
         <path d="M7 7h11l-2.5-2.5" />
         <path d="M17 17H6l2.5 2.5" />
       </svg>
     );
   }
   return (
-    <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <svg
+      className="h-7 w-7"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
       <rect x="3" y="6" width="18" height="12" rx="2" />
       <circle cx="12" cy="12" r="2.5" />
     </svg>
@@ -97,7 +126,14 @@ function Icon({ name }: { name: string }) {
 
 function ArrowIcon() {
   return (
-    <svg className="h-9 w-9 text-link-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <svg
+      className="h-9 w-9 text-link-blue"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
       <path d="M5 12h14" />
       <path d="M13 6l6 6-6 6" />
     </svg>
@@ -114,30 +150,41 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
       <div className="mx-auto max-w-[1180px] px-4 md:px-6">
         <div className="mx-auto max-w-[780px] text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">{section.eyebrow}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              {section.eyebrow}
+            </div>
           ) : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
-          {section.body ? <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p> : null}
+          {section.body ? (
+            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+          ) : null}
         </div>
 
         <div className="mt-10 grid gap-3 md:grid-cols-3">
           {renderedChoices.map((choice) => (
-            <div key={`${choice.title}-${choice.text}`} className="rounded-card border border-hairline bg-frost p-5">
+            <div
+              key={`${choice.title}-${choice.text}`}
+              className="rounded-card border border-hairline bg-frost p-5"
+            >
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-card bg-white text-link-blue">
                 <Icon name={choice.icon} />
               </span>
-              <div className="mt-6 text-lg font-semibold leading-tight text-carbon">{choice.title}</div>
+              <div className="mt-6 text-lg font-semibold leading-tight text-carbon">
+                {choice.title}
+              </div>
               <div className="mt-3 text-sm leading-relaxed text-graphite">{choice.text}</div>
             </div>
           ))}
         </div>
 
         <div className="mt-8 rounded-card border border-hairline bg-frost p-5 md:p-6">
-          <div className="text-sm font-semibold uppercase tracking-[0.12em] text-link-blue">{valuation.heading}</div>
+          <div className="text-sm font-semibold uppercase tracking-[0.12em] text-link-blue">
+            {valuation.heading}
+          </div>
           <div className="mt-5 grid items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
             <div className="rounded-card border border-hairline bg-white p-5">
               <div className="text-xl font-semibold text-carbon">{valuation.fromDevice}</div>
@@ -162,7 +209,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/trade")}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue focus-ring"
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue"
               >
                 {section.primaryCtaLabel}
               </Link>
@@ -170,7 +217,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
             {section.secondaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.secondaryCtaUrl || "/#final")}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue focus-ring"
+                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue"
               >
                 {section.secondaryCtaLabel}
               </Link>

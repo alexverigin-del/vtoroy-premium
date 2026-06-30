@@ -162,9 +162,10 @@ npm run web:verify
 npm run smoke:prod
 ```
 
-`web:verify` is the local pre-deploy web gate. It runs `legacy:audit`, ESLint,
-TypeScript and production build. `smoke:prod` is the live post-deploy gate
-against `https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
+`web:verify` is the local pre-deploy web gate. It runs `legacy:audit`,
+`tailwind:post-audit`, Tailwind-aware format check, ESLint, TypeScript and the
+production build. `smoke:prod` is the live post-deploy gate against
+`https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
 
 The `@vtoroy/web` lint script uses ESLint CLI over source folders
 (`app`, `components`, `lib`, `data`) instead of deprecated `next lint`.
@@ -384,6 +385,27 @@ new commercial content should use structured collections and Directus Files.
   `apps/web/app/layout.tsx` imports only `globals.css`; `apps/web/app/site.css`
   and `apps/web/public/interactions.js` were deleted after `/`, `/catalog`,
   marketing routes and product lead flows moved to React/Tailwind.
+- Tailwind post-migration guardrails completed first pass on 2026-06-30:
+  - `prettier` with `prettier-plugin-tailwindcss` sorts utility classes through
+    `npm run web:format:check` / `npm run web:format:write`.
+  - `clsx` + `tailwind-merge` are wrapped by `apps/web/lib/cn.ts`; use `cn()`
+    for conditional className composition instead of template strings or
+    array `.join(" ")` chains.
+  - `eslint-plugin-tailwindcss` is enabled as warn-level feedback through
+    `apps/web/.eslintrc.cjs`. The plugin uses root
+    `tailwind.config.eslint.cjs` because the package is hoisted in the npm
+    workspace; keep it synchronized with `apps/web/tailwind.config.ts` when
+    shared tokens change.
+  - `npm run tailwind:post-audit` blocks reintroduced `site.css`,
+    `interactions.js`, risky dynamic Tailwind class patterns and unapproved
+    `@apply` expansion. It also warns about long className literals that may
+    deserve component extraction.
+  - `npm run web:verify` now runs legacy audit, Tailwind post-audit, format
+    check, lint, typecheck and build in that order, and passed locally after
+    the guardrail pass.
+- For DevTools navigation, important top-level UI surfaces may use
+  non-styling `data-component` markers. Do not add named CSS classes solely for
+  styling or navigation convenience.
 
 ## Studio Workflow Decisions
 

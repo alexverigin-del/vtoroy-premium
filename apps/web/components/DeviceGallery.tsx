@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { GalleryImage } from "@vtoroy/shared";
+import { cn } from "../lib/cn";
 
 function imageSrc(path: string): string {
   if (!path) return "";
@@ -27,14 +28,10 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
   if (!active) return null;
 
   return (
-    <section aria-label="Фотографии устройства">
+    <section aria-label="Фотографии устройства" data-component="DeviceGallery">
       <figure className="overflow-hidden rounded-card border border-hairline bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={active.src}
-          alt={active.alt}
-          className="aspect-[4/3] w-full object-cover"
-        />
+        <img src={active.src} alt={active.alt} className="aspect-[4/3] w-full object-cover" />
         <figcaption className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-muted">
           <span>{active.label}</span>
           <span>
@@ -53,12 +50,12 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 aria-pressed={isActive}
-                className={[
+                className={cn(
                   "min-h-[44px] rounded-pill border px-4 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                   isActive
                     ? "border-accent bg-accent text-white"
                     : "border-hairline bg-white text-muted hover:border-accent/50 hover:text-accent",
-                ].join(" ")}
+                )}
               >
                 {image.label}
               </button>

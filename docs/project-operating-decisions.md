@@ -416,6 +416,12 @@ new commercial content should use structured collections and Directus Files.
   and root `tailwind.config.eslint.cjs` import that file. The post-audit script
   fails if either config stops using the shared token source or starts defining
   core tokens directly.
+- Tailwind arbitrary utility governance added after the token guard:
+  `npm run tailwind:post-audit` now blocks unreviewed arbitrary utilities such
+  as new `max-w-[...]`, `grid-cols-[...]`, opacity slash values or hex-color
+  utilities unless they match the explicit allowlist in
+  `scripts/audit_tailwind_post_migration.mjs`. Repeated or brand-level values
+  should become shared tokens instead of expanding the allowlist casually.
 
 ## Studio Workflow Decisions
 

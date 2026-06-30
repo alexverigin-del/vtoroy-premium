@@ -23,6 +23,22 @@ const riskyPatterns = [
 ];
 
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
+const arbitraryUtilityPattern =
+  /\b(?:[a-z][a-z0-9:-]*-\[[^\]\s"']+\]|[a-z][a-z0-9:-]*\/\[[^\]\s"']+\])/g;
+const arbitraryUtilityAllowed = [
+  /^aspect-\[4\/3\]$/,
+  /^(h|min-h|w)-\[var\(--logo-(height|width),\d+px\)\]$/,
+  /^left-\[-9999px\]$/,
+  /^leading-\[(1\.03|1\.05)\]$/,
+  /^max-w-\[(88|280|390|420|520|620|640|660|700|720|760|780|880|900|980|1040|1120|1180|1440)px\]$/,
+  /^min-h-\[(44|65|230|250|260|300|320|360|390|410|520|560|620)px\]$/,
+  /^w-\[390px\]$/,
+  /^text-\[(9px|11px|17px)\]$/,
+  /^tracking-\[(0\.08em|0\.1em|0\.12em|0\.18em)\]$/,
+  /^grid-cols-\[(0\.95fr_1\.05fr|1\.05fr_0\.95fr|1\.1fr_1fr_1fr|1\.3fr_repeat\(3,minmax\(0,1fr\)\)|1fr_auto_1fr|minmax\(0,1fr\)_410px)\]$/,
+  /^(bg|border|text)-white\/\[(0\.06|0\.12|0\.18|0\.78)\]$/,
+  /^bg-\[#0077ed\]$/,
+];
 
 function walk(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -54,6 +70,15 @@ function selectorBeforeApply(source, index) {
       .split(/\s+/)
       .at(-1) ?? ""
   );
+}
+
+function utilityBase(token) {
+  return token.split(":").at(-1) ?? token;
+}
+
+function arbitraryUtilityAllowedByPolicy(token) {
+  const base = utilityBase(token);
+  return arbitraryUtilityAllowed.some((pattern) => pattern.test(base));
 }
 
 const errors = [];
@@ -102,6 +127,15 @@ for (const file of scanRoots.flatMap(walk)) {
     warnings.push(
       `${rel(file)}:${lineNumber(source, match.index)} has a long className literal; consider component extraction.`,
     );
+  }
+
+  for (const match of source.matchAll(arbitraryUtilityPattern)) {
+    const token = match[0];
+    if (!arbitraryUtilityAllowedByPolicy(token)) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} uses unreviewed arbitrary Tailwind utility '${token}'. Move repeated values to tokens or add an explicit audit allowlist entry.`,
+      );
+    }
   }
 
   if (file.endsWith("globals.css")) {

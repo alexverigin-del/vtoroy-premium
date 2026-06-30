@@ -37,6 +37,9 @@ const classComposerImportPattern =
   /(?:from\s+["'](?:clsx|tailwind-merge)["']|require\(["'](?:clsx|tailwind-merge)["']\))/g;
 const cssImportPattern =
   /(?:import\s+["']([^"']+\.css)["']|require\(["']([^"']+\.css)["']\))/g;
+const moduleImportPattern =
+  /(?:from\s+["']([^"']+)["']|import\(["']([^"']+)["']\)|require\(["']([^"']+)["']\))/g;
+const clientEnvPattern = /process\.env\.([A-Z0-9_]+)/g;
 const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
 const cssVariableTokenMap = {
   "--color-ink": "ink",
@@ -105,6 +108,27 @@ function arbitraryUtilityAllowedByPolicy(token) {
   return arbitraryUtilityAllowed.some((pattern) => pattern.test(base));
 }
 
+function isClientComponent(source) {
+  return /^\s*["']use client["'];?/.test(source);
+}
+
+function forbiddenClientImportReason(specifier) {
+  if (specifier.startsWith("node:")) return "Node.js runtime modules stay server-only";
+  if (["fs", "path", "child_process", "next/server", "next/headers"].includes(specifier)) {
+    return "server runtime modules stay out of client components";
+  }
+  if (specifier === "@/lib/directus" || /^(?:\.\.\/)+lib\/directus$/.test(specifier)) {
+    return "Directus data fetching stays in server components/routes";
+  }
+  if (specifier === "@/lib/site-content" || /^(?:\.\.\/)+lib\/site-content$/.test(specifier)) {
+    return "site content helpers stay server-side; pass serializable data into clients";
+  }
+  if (specifier.startsWith("@/data/") || /^(?:\.\.\/)+data\//.test(specifier)) {
+    return "fallback data should be loaded server-side and passed as props";
+  }
+  return "";
+}
+
 const errors = [];
 const warnings = [];
 
@@ -162,6 +186,27 @@ if (fs.existsSync(globalsCss)) {
 
 for (const file of scanRoots.flatMap(walk)) {
   const source = fs.readFileSync(file, "utf8");
+  if (isClientComponent(source)) {
+    for (const match of source.matchAll(moduleImportPattern)) {
+      const specifier = match[1] ?? match[2] ?? match[3] ?? "";
+      const reason = forbiddenClientImportReason(specifier);
+      if (reason) {
+        errors.push(
+          `${rel(file)}:${lineNumber(source, match.index)} imports '${specifier}' in a client component. ${reason}.`,
+        );
+      }
+    }
+
+    for (const match of source.matchAll(clientEnvPattern)) {
+      const envName = match[1] ?? "";
+      if (!envName.startsWith("NEXT_PUBLIC_")) {
+        errors.push(
+          `${rel(file)}:${lineNumber(source, match.index)} reads process.env.${envName} in a client component. Only NEXT_PUBLIC_* env vars are browser-safe.`,
+        );
+      }
+    }
+  }
+
   for (const match of source.matchAll(cssImportPattern)) {
     const cssImport = match[1] ?? match[2] ?? "";
     if (file !== rootLayout || cssImport !== "./globals.css") {

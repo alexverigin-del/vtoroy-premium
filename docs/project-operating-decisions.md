@@ -436,6 +436,11 @@ new commercial content should use structured collections and Directus Files.
   `next/script` is allowed only in root layout for the reviewed Turnstile
   loader; raw `<script>` and `dangerouslySetInnerHTML` are allowed only for
   reviewed product JSON-LD on `apps/web/app/device/[slug]/page.tsx`.
+- Client/server boundaries are guarded by `tailwind:post-audit`: files with
+  `"use client"` must not import Node.js runtime modules, `next/server`,
+  `next/headers`, Directus/site-content helpers or fallback data modules.
+  Client components may read only `NEXT_PUBLIC_*` environment variables; load
+  server data in server components/routes and pass serializable props down.
 
 ## Studio Workflow Decisions
 

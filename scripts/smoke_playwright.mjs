@@ -11,7 +11,8 @@ import { chromium } from "playwright";
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
-const DIRECTUS_ASSET_RE = /https:\/\/api\.isvoi\.ru\/assets\//i;
+const DIRECTUS_ASSET_RE = /(https:\/\/api\.isvoi\.ru\/assets\/|api\.isvoi\.ru%2fassets%2f)/i;
+const DIRECTUS_ASSET_SOURCE = "api.isvoi.ru/assets/";
 
 function normalizeBaseUrl(value) {
   return String(value || DEFAULT_BASE_URL).replace(/\/+$/, "");
@@ -35,39 +36,95 @@ async function gotoOk(page, url) {
 
 async function countLoadedDirectusImages(page) {
   return page.evaluate((directusSource) => {
+    function includesDirectusAsset(value) {
+      if (!value) return false;
+      const source = String(value).toLowerCase();
+      try {
+        return (
+          source.includes(directusSource) || decodeURIComponent(source).includes(directusSource)
+        );
+      } catch {
+        return source.includes(directusSource);
+      }
+    }
+
     return Array.from(document.images).filter((img) => {
-      return img.currentSrc.includes(directusSource)
-        && img.complete
-        && img.naturalWidth > 0
-        && img.naturalHeight > 0;
+      const sources = [img.currentSrc, img.src, img.srcset];
+      return (
+        sources.some(includesDirectusAsset) &&
+        img.complete &&
+        img.naturalWidth > 0 &&
+        img.naturalHeight > 0
+      );
     }).length;
-  }, "api.isvoi.ru/assets/");
+  }, DIRECTUS_ASSET_SOURCE);
+}
+
+async function waitForDirectusImages(page, minCount) {
+  await page.waitForFunction(
+    ({ directusSource, count }) => {
+      function includesDirectusAsset(value) {
+        if (!value) return false;
+        const source = String(value).toLowerCase();
+        try {
+          return (
+            source.includes(directusSource) || decodeURIComponent(source).includes(directusSource)
+          );
+        } catch {
+          return source.includes(directusSource);
+        }
+      }
+
+      const loaded = Array.from(document.images).filter((img) => {
+        const sources = [img.currentSrc, img.src, img.srcset];
+        return (
+          sources.some(includesDirectusAsset) &&
+          img.complete &&
+          img.naturalWidth > 0 &&
+          img.naturalHeight > 0
+        );
+      });
+      return loaded.length >= count;
+    },
+    { directusSource: DIRECTUS_ASSET_SOURCE, count: minCount },
+    { timeout: 10_000 },
+  );
 }
 
 async function assertDirectusImages(page, label, minCount) {
   const html = await page.content();
-  const refs = (html.match(new RegExp(DIRECTUS_ASSET_RE.source, "gi")) || []).length;
-  assert(refs >= minCount, `${label}: expected at least ${minCount} Directus asset refs, got ${refs}`);
+  const refs = (html.toLowerCase().match(new RegExp(DIRECTUS_ASSET_RE.source, "gi")) || []).length;
+  assert(
+    refs >= minCount,
+    `${label}: expected at least ${minCount} Directus asset refs, got ${refs}`,
+  );
 
   const loaded = await countLoadedDirectusImages(page);
-  assert(loaded >= minCount, `${label}: expected at least ${minCount} loaded Directus images, got ${loaded}`);
+  assert(
+    loaded >= minCount,
+    `${label}: expected at least ${minCount} loaded Directus images, got ${loaded}`,
+  );
 }
 
 async function smokeCatalog(page, baseUrl) {
   const url = joinUrl(baseUrl, "/catalog");
   await gotoOk(page, url);
-  await page.waitForSelector("img[src*='api.isvoi.ru/assets/']", { timeout: 10_000 });
+  await waitForDirectusImages(page, 1);
   await assertDirectusImages(page, "catalog", 1);
 
   const cardCount = await page.locator("a[href^='/device/'], a[href*='/device/']").count();
   assert(cardCount > 0, "catalog: expected at least one device link");
-  return { route: "/catalog", directusImages: await countLoadedDirectusImages(page), deviceLinks: cardCount };
+  return {
+    route: "/catalog",
+    directusImages: await countLoadedDirectusImages(page),
+    deviceLinks: cardCount,
+  };
 }
 
 async function smokeStore(page, baseUrl) {
   const url = joinUrl(baseUrl, "/store");
   await gotoOk(page, url);
-  await page.waitForSelector("img[src*='api.isvoi.ru/assets/']", { timeout: 10_000 });
+  await waitForDirectusImages(page, 1);
   await assertDirectusImages(page, "store", 1);
 
   return { route: "/store", directusImages: await countLoadedDirectusImages(page) };
@@ -76,7 +133,7 @@ async function smokeStore(page, baseUrl) {
 async function smokeDevice(page, baseUrl, devicePath) {
   const url = joinUrl(baseUrl, devicePath);
   await gotoOk(page, url);
-  await page.waitForSelector("img[src*='api.isvoi.ru/assets/']", { timeout: 10_000 });
+  await waitForDirectusImages(page, 1);
   await assertDirectusImages(page, "device", 1);
 
   const passportBlocks = await page.locator("text=ISVOI Passport").count();

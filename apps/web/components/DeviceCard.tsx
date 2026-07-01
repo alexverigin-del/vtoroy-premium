@@ -1,15 +1,6 @@
 import Link from "next/link";
 import type { DeviceCardData } from "@/lib/device-card-data";
-
-function isAbsolute(url: string): boolean {
-  return /^https?:\/\//.test(url);
-}
-
-function imageSrc(path: string): string {
-  if (!path) return "";
-  if (isAbsolute(path) || path.startsWith("/")) return path;
-  return `/${path}`;
-}
+import { ProductImage, productImageSrc } from "./ProductImage";
 
 function stockStatusLabel(device: DeviceCardData): string {
   if (device.stockStatusLabel) return device.stockStatusLabel;
@@ -36,7 +27,7 @@ function updatedText(device: DeviceCardData): string {
 }
 
 export function DeviceCard({ device }: { device: DeviceCardData }) {
-  const src = imageSrc(device.listingImage);
+  const src = productImageSrc(device.listingImage);
   const update = updatedText(device);
   const href = device.detailHref || `/device/${device.id}`;
 
@@ -45,10 +36,15 @@ export function DeviceCard({ device }: { device: DeviceCardData }) {
       href={href}
       className="card group flex h-full flex-col overflow-hidden outline-none transition hover:-translate-y-0.5 hover:shadow-product focus-visible:shadow-focus"
     >
-      <div className="flex aspect-product items-center justify-center bg-surface">
+      <div className="relative flex aspect-product items-center justify-center bg-surface">
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={device.listingAlt} className="h-full w-full object-cover" />
+          <ProductImage
+            src={src}
+            alt={device.listingAlt || device.title}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
+          />
         ) : (
           <span className="text-sm text-muted">{device.title}</span>
         )}

@@ -80,8 +80,13 @@ Override the target when needed:
 ```bash
 SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/device/iphone-13-pro npm run smoke:prod
 SMOKE_BASE_URL=https://isvoi.ru VISUAL_SMOKE_ROUTES=/,/catalog npm run smoke:visual
-BUNDLE_ROUTE_JS_KB=460 BUNDLE_TOTAL_JS_KB=900 npm run bundle:budget
+BUNDLE_ROUTE_CATALOG_JS_KB=425 BUNDLE_ROUTE_CATALOG_JS_GZIP_KB=132 npm run bundle:budget
 ```
+
+`bundle:budget` runs after `next build` and checks raw, gzip and brotli client
+JS. It also has route-specific budgets for `/`, `/catalog` and
+`/device/[slug]` so one commercial route cannot quietly absorb all remaining
+headroom.
 
 Directus setup scripts print idempotent SQL. On the server, write the SQL to a
 temporary file and apply it through the Beget compose env:

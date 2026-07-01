@@ -3,12 +3,7 @@
 import { useMemo, useState } from "react";
 import type { GalleryImage } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
-
-function imageSrc(path: string): string {
-  if (!path) return "";
-  if (/^https?:\/\//.test(path) || path.startsWith("/")) return path;
-  return `/${path}`;
-}
+import { ProductImage, productImageSrc } from "./ProductImage";
 
 export function DeviceGallery({ images }: { images: GalleryImage[] }) {
   const normalizedImages = useMemo(
@@ -16,7 +11,7 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
       images
         .map((image) => ({
           ...image,
-          src: imageSrc(image.src),
+          src: productImageSrc(image.src),
           label: image.label || image.role || "Фото",
         }))
         .filter((image) => image.src),
@@ -30,8 +25,16 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
   return (
     <section aria-label="Фотографии устройства" data-component="DeviceGallery">
       <figure className="overflow-hidden rounded-card border border-hairline bg-white">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={active.src} alt={active.alt} className="aspect-product w-full object-cover" />
+        <div className="relative aspect-product w-full">
+          <ProductImage
+            src={active.src}
+            alt={active.alt || active.label}
+            fill
+            sizes="(min-width: 1120px) 680px, 100vw"
+            className="object-cover"
+            priority={activeIndex === 0}
+          />
+        </div>
         <figcaption className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-muted">
           <span>{active.label}</span>
           <span>

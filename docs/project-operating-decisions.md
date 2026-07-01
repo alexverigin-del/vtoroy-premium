@@ -173,10 +173,18 @@ element overlap.
 
 `bundle:budget` reads `apps/web/.next/build-manifest.json` and
 `apps/web/.next/app-build-manifest.json` after `next build`, then checks shared
-app JS, the largest route JS payload and total emitted client JS. Default
-budgets are intentionally modest and can be overridden only after review:
-`BUNDLE_SHARED_JS_KB=380`, `BUNDLE_ROUTE_JS_KB=460`,
-`BUNDLE_TOTAL_JS_KB=900`.
+app JS, the largest route JS payload, total emitted client JS and key commercial
+route payloads. It checks raw, gzip and brotli sizes by compressing each emitted
+client chunk individually. Default budgets are intentionally modest and can be
+overridden only after review:
+`BUNDLE_SHARED_JS_KB=380`, `BUNDLE_SHARED_JS_GZIP_KB=115`,
+`BUNDLE_SHARED_JS_BROTLI_KB=100`; `BUNDLE_ROUTE_JS_KB=460`,
+`BUNDLE_ROUTE_JS_GZIP_KB=150`, `BUNDLE_ROUTE_JS_BROTLI_KB=130`;
+`BUNDLE_TOTAL_JS_KB=900`, `BUNDLE_TOTAL_JS_GZIP_KB=290`,
+`BUNDLE_TOTAL_JS_BROTLI_KB=250`. Route-specific budgets currently guard
+`app:/page` via `BUNDLE_ROUTE_HOME_JS_*`, `app:/catalog/page` via
+`BUNDLE_ROUTE_CATALOG_JS_*` and `app:/device/[slug]/page` via
+`BUNDLE_ROUTE_DEVICE_JS_*`.
 
 The `@vtoroy/web` lint script uses ESLint CLI over source folders
 (`app`, `components`, `lib`, `data`) instead of deprecated `next lint`.
@@ -464,6 +472,17 @@ new commercial content should use structured collections and Directus Files.
   the matching page render from duplicating identical `getSitePage`,
   `getDeviceBySlug`, chrome or catalog-card reads during one RSC render pass
   while preserving `no-store` live Directus reads between requests.
+- Catalog client filtering/sorting was deduplicated after the RSC audit:
+  `CatalogGrid` and `CatalogPreviewSection` share
+  `apps/web/components/CatalogClientControls.tsx` for filter parsing, filter
+  chips, sort options, visible-device selection and card-list rendering. Keep
+  future catalog filter behavior in that shared module so `/catalog`, `/store`
+  and homepage catalog preview do not drift apart.
+- Product images in catalog cards and device galleries render through
+  `apps/web/components/ProductImage.tsx`, a shared `next/image` wrapper that
+  normalizes local fallback paths and Directus asset URLs. Do not reintroduce
+  raw product `<img>` tags; update `ProductImage` when product-media behavior
+  changes.
 - Inline styling is guarded by `tailwind:post-audit`: `style={...}`,
   `CSSProperties` and direct DOM style mutations are blocked by default. The
   only reviewed exception is `SiteLogo` using `logoSizeStyle(settings)` from

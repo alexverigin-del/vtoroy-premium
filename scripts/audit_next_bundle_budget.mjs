@@ -1,15 +1,37 @@
 import fs from "node:fs";
 import path from "node:path";
+import zlib from "node:zlib";
 
 const root = process.cwd();
 const nextRoot = path.join(root, "apps", "web", ".next");
 const staticRoot = path.join(nextRoot, "static");
 
 const budgets = {
-  sharedKb: readBudget("BUNDLE_SHARED_JS_KB", 380),
-  routeKb: readBudget("BUNDLE_ROUTE_JS_KB", 460),
-  totalKb: readBudget("BUNDLE_TOTAL_JS_KB", 900),
+  shared: readBudgetSet("BUNDLE_SHARED_JS", { raw: 380, gzip: 115, brotli: 100 }),
+  route: readBudgetSet("BUNDLE_ROUTE_JS", { raw: 460, gzip: 150, brotli: 130 }),
+  total: readBudgetSet("BUNDLE_TOTAL_JS", { raw: 900, gzip: 290, brotli: 250 }),
+  routes: {
+    "app:/page": readBudgetSet("BUNDLE_ROUTE_HOME_JS", { raw: 430, gzip: 135, brotli: 115 }),
+    "app:/catalog/page": readBudgetSet("BUNDLE_ROUTE_CATALOG_JS", {
+      raw: 425,
+      gzip: 132,
+      brotli: 112,
+    }),
+    "app:/device/[slug]/page": readBudgetSet("BUNDLE_ROUTE_DEVICE_JS", {
+      raw: 420,
+      gzip: 130,
+      brotli: 110,
+    }),
+  },
 };
+
+function readBudgetSet(prefix, fallback) {
+  return {
+    raw: readBudget(`${prefix}_KB`, fallback.raw),
+    gzip: readBudget(`${prefix}_GZIP_KB`, fallback.gzip),
+    brotli: readBudget(`${prefix}_BROTLI_KB`, fallback.brotli),
+  };
+}
 
 function readBudget(name, fallback) {
   const raw = process.env[name];
@@ -51,18 +73,56 @@ function jsAssets(files) {
   ];
 }
 
-function assetSizeKb(file) {
-  const absolute = path.join(nextRoot, file);
-  if (!fs.existsSync(absolute)) return 0;
-  return fs.statSync(absolute).size / 1024;
+function compressedSize(bytes, mode) {
+  if (mode === "gzip") return zlib.gzipSync(bytes, { level: 9 }).length;
+  if (mode === "brotli") {
+    return zlib.brotliCompressSync(bytes, {
+      params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 },
+    }).length;
+  }
+  return bytes.length;
 }
 
-function sumAssetsKb(files) {
-  return jsAssets(files).reduce((total, file) => total + assetSizeKb(file), 0);
+function assetSizeKb(file, mode = "raw") {
+  const absolute = path.join(nextRoot, file);
+  if (!fs.existsSync(absolute)) return 0;
+  const bytes = fs.readFileSync(absolute);
+  return compressedSize(bytes, mode) / 1024;
+}
+
+function sumAssetsKb(files, mode = "raw") {
+  return jsAssets(files).reduce((total, file) => total + assetSizeKb(file, mode), 0);
+}
+
+function assetSizeSet(files) {
+  const assets = jsAssets(files);
+  return {
+    raw: sumAssetsKb(assets, "raw"),
+    gzip: sumAssetsKb(assets, "gzip"),
+    brotli: sumAssetsKb(assets, "brotli"),
+  };
 }
 
 function formatKb(value) {
   return `${value.toFixed(1)} kB`;
+}
+
+function formatSizeSet(size) {
+  return `${formatKb(size.raw)} raw, ${formatKb(size.gzip)} gzip, ${formatKb(size.brotli)} brotli`;
+}
+
+function formatBudgetSet(budget) {
+  return `${formatKb(budget.raw)} raw / ${formatKb(budget.gzip)} gzip / ${formatKb(
+    budget.brotli,
+  )} brotli`;
+}
+
+function checkBudget(label, size, budget, failures) {
+  for (const mode of ["raw", "gzip", "brotli"]) {
+    if (size[mode] > budget[mode]) {
+      failures.push(`${label} ${mode} ${formatKb(size[mode])} exceeds ${formatKb(budget[mode])}`);
+    }
+  }
 }
 
 function routeEntriesFromManifest(name, manifest) {
@@ -71,7 +131,7 @@ function routeEntriesFromManifest(name, manifest) {
     .map(([route, files]) => ({
       route: `${name}:${route}`,
       files: jsAssets(files),
-      kb: sumAssetsKb(files),
+      size: assetSizeSet(files),
     }))
     .filter((entry) => entry.files.length > 0);
 }
@@ -88,14 +148,18 @@ const sharedFiles = jsAssets([
   ...(buildManifest.rootMainFiles ?? []),
   ...(appBuildManifest.rootMainFiles ?? []),
 ]);
-const sharedKb = sumAssetsKb(sharedFiles);
+const sharedSize = assetSizeSet(sharedFiles);
 
 const routeEntries = [
   ...routeEntriesFromManifest("pages", buildManifest),
   ...routeEntriesFromManifest("app", appBuildManifest),
-].sort((a, b) => b.kb - a.kb);
+].sort((a, b) => b.size.raw - a.size.raw);
 
-const largestRoute = routeEntries[0] ?? { route: "n/a", kb: 0, files: [] };
+const largestRoute = routeEntries[0] ?? {
+  route: "n/a",
+  size: { raw: 0, gzip: 0, brotli: 0 },
+  files: [],
+};
 const allClientJs = [
   ...new Set(
     walk(staticRoot)
@@ -103,21 +167,20 @@ const allClientJs = [
       .map((file) => path.relative(nextRoot, file).replaceAll(path.sep, "/")),
   ),
 ];
-const totalKb = sumAssetsKb(allClientJs);
+const totalSize = assetSizeSet(allClientJs);
 
 const failures = [];
-if (sharedKb > budgets.sharedKb) {
-  failures.push(`shared app JS ${formatKb(sharedKb)} exceeds ${formatKb(budgets.sharedKb)}`);
-}
-if (largestRoute.kb > budgets.routeKb) {
-  failures.push(
-    `largest route JS ${largestRoute.route} is ${formatKb(largestRoute.kb)}, exceeds ${formatKb(
-      budgets.routeKb,
-    )}`,
-  );
-}
-if (totalKb > budgets.totalKb) {
-  failures.push(`total emitted client JS ${formatKb(totalKb)} exceeds ${formatKb(budgets.totalKb)}`);
+checkBudget("shared app JS", sharedSize, budgets.shared, failures);
+checkBudget(`largest route JS ${largestRoute.route}`, largestRoute.size, budgets.route, failures);
+checkBudget("total emitted client JS", totalSize, budgets.total, failures);
+
+for (const [route, budget] of Object.entries(budgets.routes)) {
+  const entry = routeEntries.find((candidate) => candidate.route === route);
+  if (!entry) {
+    failures.push(`route budget target ${route} was not found in Next app build manifest`);
+    continue;
+  }
+  checkBudget(`route JS ${route}`, entry.size, budget, failures);
 }
 
 const topRoutes = routeEntries
@@ -125,18 +188,27 @@ const topRoutes = routeEntries
   .slice(0, 6);
 
 console.log("Next bundle budget:");
-console.log(`- shared app JS: ${formatKb(sharedKb)} / ${formatKb(budgets.sharedKb)}`);
+console.log(`- shared app JS: ${formatSizeSet(sharedSize)} / ${formatBudgetSet(budgets.shared)}`);
 console.log(
-  `- largest route JS: ${largestRoute.route} ${formatKb(largestRoute.kb)} / ${formatKb(
-    budgets.routeKb,
+  `- largest route JS: ${largestRoute.route} ${formatSizeSet(largestRoute.size)} / ${formatBudgetSet(
+    budgets.route,
   )}`,
 );
-console.log(`- total emitted client JS: ${formatKb(totalKb)} / ${formatKb(budgets.totalKb)}`);
+console.log(
+  `- total emitted client JS: ${formatSizeSet(totalSize)} / ${formatBudgetSet(budgets.total)}`,
+);
+
+console.log("- route budgets:");
+for (const [route, budget] of Object.entries(budgets.routes)) {
+  const entry = routeEntries.find((candidate) => candidate.route === route);
+  const size = entry?.size ?? { raw: 0, gzip: 0, brotli: 0 };
+  console.log(`  - ${route}: ${formatSizeSet(size)} / ${formatBudgetSet(budget)}`);
+}
 
 if (topRoutes.length) {
   console.log("- top page routes:");
   for (const entry of topRoutes) {
-    console.log(`  - ${entry.route}: ${formatKb(entry.kb)}`);
+    console.log(`  - ${entry.route}: ${formatSizeSet(entry.size)}`);
   }
 }
 
@@ -144,7 +216,7 @@ if (failures.length) {
   console.error("Bundle budget failed:");
   for (const failure of failures) console.error(`- ${failure}`);
   console.error(
-    "Raise the matching BUNDLE_*_JS_KB env var only after reviewing why client JS grew.",
+    "Raise the matching BUNDLE_*_JS_KB, BUNDLE_*_JS_GZIP_KB or BUNDLE_*_JS_BROTLI_KB env var only after reviewing why client JS grew.",
   );
   process.exit(1);
 }

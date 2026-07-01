@@ -10,13 +10,8 @@ import { CTAButton } from "@/components/CTAButton";
 import { DeviceGallery } from "@/components/DeviceGallery";
 import { DeviceCard } from "@/components/DeviceCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
-import {
-  deviceBackLinkClass,
-  mobileProductCtaBarClass,
-  mobileProductCtaInnerClass,
-  mobileProductPrimaryCtaClass,
-  mobileProductSecondaryCtaClass,
-} from "@/components/ui-classes";
+import { MobileProductActionBar } from "@/components/MobileProductActionBar";
+import { deviceBackLinkClass } from "@/components/ui-classes";
 
 // Keep Directus device edits visible immediately while inventory is being filled.
 export const dynamic = "force-dynamic";
@@ -353,24 +348,12 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
         </section>
       ) : null}
 
-      <nav className={mobileProductCtaBarClass} aria-label="Действия по товару">
-        <div className={mobileProductCtaInnerClass}>
-          <Link
-            href={`#${leadFormId}`}
-            className={mobileProductPrimaryCtaClass}
-            aria-label={mobileCta.ariaLabel}
-          >
-            {mobileCta.label}
-          </Link>
-          <Link
-            href="/trade"
-            className={mobileProductSecondaryCtaClass}
-            aria-label={`Рассчитать Trade для ${device.title}`}
-          >
-            Trade
-          </Link>
-        </div>
-      </nav>
+      <MobileProductActionBar
+        leadFormId={leadFormId}
+        primaryAriaLabel={mobileCta.ariaLabel}
+        primaryLabel={mobileCta.label}
+        tradeAriaLabel={`Рассчитать Trade для ${device.title}`}
+      />
     </main>
   );
 }

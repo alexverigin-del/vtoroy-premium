@@ -525,8 +525,10 @@ new commercial content should use structured collections and Directus Files.
 - Second safe implementation step from the same recommendations added a
   mobile-only product action bar on device pages. It links to the existing
   `ProductLeadForm` anchor and the existing Trade page, keeps the lead payload
-  and Directus Studio schema unchanged, and is hidden on desktop. Verified with
-  `npm run web:verify` plus local Playwright checks for mobile visibility,
+  and Directus Studio schema unchanged, and is hidden on desktop. The action
+  bar must appear only after mobile scroll; production visual smoke caught that
+  an always-visible fixed bar occluded first-screen product specs. Verified
+  with `npm run web:verify` plus local Playwright checks for mobile visibility,
   desktop hidden state and anchor scrolling on `/device/iphone-13-pro`.
 - Release package for the first and second implementation steps was requested
   on 2026-07-01. Ship them together: code changes, this operating-memory update,

@@ -18,6 +18,7 @@
     "tailwind:post-audit": "node scripts/audit_tailwind_post_migration.mjs",
     "bundle:budget": "node scripts/audit_next_bundle_budget.mjs",
     "smoke:prod": "node scripts/smoke_playwright.mjs",
+    "smoke:images": "node scripts/smoke_image_latency.mjs",
     "smoke:visual": "node scripts/smoke_visual_playwright.mjs",
     "text:audit": "python scripts/audit_text_encoding.py",
     "legacy:audit": "node scripts/audit_legacy_html.mjs",

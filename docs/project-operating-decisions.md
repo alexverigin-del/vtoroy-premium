@@ -540,6 +540,23 @@ new commercial content should use structured collections and Directus Files.
   caught the mobile product action bar overlapping first-screen specs; the
   follow-up fix made that bar appear only after scroll, then visual smoke passed
   on `/device/iphone-13-pro` mobile and the full default route set.
+- Third local implementation step from the same recommendations started after
+  the release: marketing `page.hero` sections now support a compact trust strip
+  with optional Directus JSON fields `highlights`, `hero_highlights` or `facts`
+  and slug-specific fallbacks for Store, Trade, Passport and Club. This keeps
+  the Directus schema unchanged while making marketing pages less template-like.
+  Verified locally with `npm run web:verify` and `SMOKE_BASE_URL=http://127.0.0.1:3101`
+  `VISUAL_SMOKE_ROUTES=/store,/trade,/passport,/club npm run smoke:visual`.
+- Fourth local implementation step softened repeated marketing section
+  eyebrows: `MarketingSectionRenderer` now preserves editor wording without
+  forcing uppercase/tracked labels in page heroes and section headers. The
+  editor guide documents hero highlight JSON so Studio users can safely override
+  the trust strip without schema changes. Re-run `npm run web:verify` and
+  marketing route visual smoke before release.
+- Fifth local implementation step converted marketing `steps` sections from
+  another bordered-card grid into lightweight ordered timelines. The renderer
+  still consumes the same Directus `content.steps` array, but presents steps
+  with numbered pills and hairline connectors for clearer sequence rhythm.
 
 ## Studio Workflow Decisions
 

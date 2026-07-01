@@ -37,6 +37,21 @@ nested image URL inside `JSON-настройки блока`, use a Directus ass
 `JSON-настройки блока` is an advanced field for structured parts of a block:
 cards, steps, comparison rows, FAQ keys and similar repeatable content.
 
+For Store, Trade, Passport and Club hero sections, the JSON field may include a
+compact trust strip under the main actions. Use one of these keys:
+`highlights`, `hero_highlights` or `facts`. Each item may contain:
+
+```json
+{
+  "label": "Проверка",
+  "value": "при вас",
+  "text": "Состояние устройства фиксируется открыто до решения."
+}
+```
+
+Keep hero facts short: two or three items are enough. If the field is empty, the
+site uses safe page-specific defaults.
+
 For ordinary edits, use regular fields:
 
 - `Заголовок`

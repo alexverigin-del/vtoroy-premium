@@ -55,12 +55,89 @@ type VisualContent = {
   captionText: string;
 };
 
+type MarketingHeroHighlight = {
+  label: string;
+  value: string;
+  text: string;
+};
+
 type ClubLevel = {
   badge: string;
   name: string;
   tag: string;
   features: string[];
   featured: boolean;
+};
+
+const DEFAULT_HERO_HIGHLIGHTS: Record<MarketingSlug, MarketingHeroHighlight[]> = {
+  store: [
+    {
+      label: "Витрина",
+      value: "проверенные вещи",
+      text: "Карточки показывают грейд, наличие, гарантию и цену выхода до решения.",
+    },
+    {
+      label: "Проверка",
+      value: "при вас",
+      text: "Состояние устройства фиксируется открыто, без обещаний со слов продавца.",
+    },
+    {
+      label: "После покупки",
+      value: "Passport + гарантия",
+      text: "Покупатель получает понятную историю вещи и письменные условия.",
+    },
+  ],
+  trade: [
+    {
+      label: "Маршрут",
+      value: "выкуп / комиссия / обновление",
+      text: "После оценки вы выбираете сценарий, а не торгуетесь в переписках.",
+    },
+    {
+      label: "Оценка",
+      value: "после диагностики",
+      text: "Цена опирается на состояние, комплектацию и понятный спрос внутри круга.",
+    },
+    {
+      label: "Безопасность",
+      value: "без случайных встреч",
+      text: "Вещь проходит через Store и дальше уходит с зафиксированной историей.",
+    },
+  ],
+  passport: [
+    {
+      label: "Состояние",
+      value: "зафиксировано",
+      text: "Экран, корпус, аккумулятор, ремонты и следы влаги не остаются словами.",
+    },
+    {
+      label: "Покупка",
+      value: "без тумана",
+      text: "Покупатель видит нюансы до решения, а не узнаёт их после сделки.",
+    },
+    {
+      label: "Выход",
+      value: "понятный ориентир",
+      text: "Passport помогает оценивать не только покупку, но и будущую передачу вещи.",
+    },
+  ],
+  club: [
+    {
+      label: "Круг",
+      value: "разумное владение",
+      text: "Устройства не теряются на случайном рынке, а переходят через своих.",
+    },
+    {
+      label: "Обновление",
+      value: "без лишнего шума",
+      text: "Trade и Store помогают перейти на следующую вещь без объявлений и торга.",
+    },
+    {
+      label: "Отношения",
+      value: "после первой сделки",
+      text: "Club удерживает историю, доверие и понятные правила следующего шага.",
+    },
+  ],
 };
 
 function strField(record: Record<string, unknown>, key: string, fallback = ""): string {
@@ -104,6 +181,21 @@ function marketingSteps(value: unknown): MarketingStep[] {
     const text = strField(record, "text");
     return title || text ? [{ title, text }] : [];
   });
+}
+
+function heroHighlights(value: unknown, slug: MarketingSlug): MarketingHeroHighlight[] {
+  if (!Array.isArray(value)) return DEFAULT_HERO_HIGHLIGHTS[slug];
+
+  const highlights = value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const label = strField(record, "label");
+    const valueText = textField(record, "value", "value_text", "");
+    const text = strField(record, "text");
+    return label || valueText || text ? [{ label, value: valueText, text }] : [];
+  });
+
+  return highlights.length > 0 ? highlights.slice(0, 3) : DEFAULT_HERO_HIGHLIGHTS[slug];
 }
 
 function comparisonRows(value: unknown): ComparisonRow[] {
@@ -190,9 +282,7 @@ function SectionHeader({ section }: { section: PageSection }) {
   return (
     <div className="mx-auto max-w-copy text-center">
       {section.eyebrow ? (
-        <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
-          {section.eyebrow}
-        </div>
+        <div className="text-sm font-semibold leading-snug text-link-blue">{section.eyebrow}</div>
       ) : null}
       {section.headline ? (
         <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
@@ -212,9 +302,7 @@ function DarkSectionHeader({ section }: { section: PageSection }) {
   return (
     <div className="mx-auto max-w-copy text-center">
       {section.eyebrow ? (
-        <div className="text-xs font-semibold uppercase tracking-label text-signal-blue">
-          {section.eyebrow}
-        </div>
+        <div className="text-sm font-semibold leading-snug text-signal-blue">{section.eyebrow}</div>
       ) : null}
       {section.headline ? (
         <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-white md:text-5xl">
@@ -297,17 +385,21 @@ function MarketingVisualBandSection({ section }: { section: PageSection }) {
   );
 }
 
-function MarketingHeroSection({ section }: { section: PageSection }) {
+function MarketingHeroSection({ section, slug }: { section: PageSection; slug: MarketingSlug }) {
   const primaryLabel = section.primaryCtaLabel || "Войти в круг";
   const primaryUrl = normalizeSiteUrl(section.primaryCtaUrl || "/#final");
   const secondaryLabel = section.secondaryCtaLabel || "Смотреть каталог";
   const secondaryUrl = normalizeSiteUrl(section.secondaryCtaUrl || "/catalog");
   const hasButtons = section.primaryCtaLabel || section.secondaryCtaLabel;
+  const highlights = heroHighlights(
+    section.content.highlights ?? section.content.hero_highlights ?? section.content.facts,
+    slug,
+  );
 
   return (
     <section className="mx-auto max-w-page px-4 pb-14 pt-14 text-center md:px-6 md:pb-16 md:pt-20">
       {section.eyebrow ? (
-        <div className="mx-auto inline-flex min-h-9 items-center rounded-pill border border-hairline bg-frost px-4 text-xs font-semibold uppercase tracking-label text-ash">
+        <div className="mx-auto inline-flex min-h-9 items-center rounded-pill border border-hairline bg-frost px-4 text-xs font-semibold text-ash">
           {section.eyebrow}
         </div>
       ) : null}
@@ -334,6 +426,29 @@ function MarketingHeroSection({ section }: { section: PageSection }) {
               {secondaryLabel}
             </Link>
           ) : null}
+        </div>
+      ) : null}
+
+      {highlights.length > 0 ? (
+        <div className="mx-auto mt-10 grid max-w-content overflow-hidden rounded-card border border-hairline bg-hairline text-left sm:grid-cols-3">
+          {highlights.map((highlight) => (
+            <article
+              key={`${highlight.label}-${highlight.value}`}
+              className="min-h-marketing-fact bg-white p-5"
+            >
+              {highlight.label ? (
+                <p className="text-xs font-semibold text-link-blue">{highlight.label}</p>
+              ) : null}
+              {highlight.value ? (
+                <p className="mt-2 text-lg font-semibold leading-snug text-carbon">
+                  {highlight.value}
+                </p>
+              ) : null}
+              {highlight.text ? (
+                <p className="mt-2 text-sm leading-relaxed text-graphite">{highlight.text}</p>
+              ) : null}
+            </article>
+          ))}
         </div>
       ) : null}
     </section>
@@ -577,26 +692,24 @@ function MarketingStepsSection({ section }: { section: PageSection }) {
     <section className="bg-white py-16 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-content gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mx-auto mt-10 grid max-w-content gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
-            <article
-              key={`${step.title}-${index}`}
-              className="rounded-card border border-hairline bg-white p-7"
-            >
-              <div className="text-sm font-semibold uppercase tracking-caption text-link-blue">
-                {String(index + 1).padStart(2, "0")}
+            <li key={`${step.title}-${index}`} className="border-t border-hairline pt-5">
+              <div className="mb-5 flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-ice text-sm font-semibold text-link-blue">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="h-px flex-1 bg-hairline" aria-hidden="true" />
               </div>
               {step.title ? (
-                <h3 className="mt-4 text-xl font-semibold leading-tight text-carbon">
-                  {step.title}
-                </h3>
+                <h3 className="text-xl font-semibold leading-tight text-carbon">{step.title}</h3>
               ) : null}
               {step.text ? (
-                <p className="mt-2 text-sm leading-relaxed text-ash">{step.text}</p>
+                <p className="mt-3 text-sm leading-relaxed text-graphite">{step.text}</p>
               ) : null}
-            </article>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
@@ -677,7 +790,7 @@ export function MarketingSectionRenderer({
   directusEnabled,
 }: MarketingSectionRendererProps) {
   const renderedSection = isHeroSection(section) ? (
-    <MarketingHeroSection section={section} />
+    <MarketingHeroSection section={section} slug={slug} />
   ) : isVisualBandSection(section) ? (
     <MarketingVisualBandSection section={section} />
   ) : isCompareSection(section) ? (

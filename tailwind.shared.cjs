@@ -77,6 +77,7 @@ const themeExtend = {
     touch: "44px",
     turnstile: "65px",
     "path-card": "230px",
+    "marketing-fact": "190px",
     "marketing-card": "250px",
     "visual-compact": "260px",
     "visual-md": "300px",

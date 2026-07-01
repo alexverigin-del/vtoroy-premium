@@ -597,6 +597,16 @@ new commercial content should use structured collections and Directus Files.
   - `ISVOI Catalog Imports`
 - Directus asset transforms should be used for delivery instead of committing
   multiple generated derivatives.
+- Image optimization policy as of 2026-07-01: keep the current dual layer for
+  the small catalog, where Directus produces transformed asset URLs and Next
+  Image serves them through `/_next/image` with its cache. This is the stable
+  deployed baseline and is covered by `smoke:prod` plus `smoke:images`.
+- Strategic target for a larger catalog is Directus-first image delivery:
+  Directus asset transforms own resize/crop/format/focal-point behavior, Next
+  Image becomes layout/lazy-loading only with `unoptimized`, and
+  `api.isvoi.ru/assets/*` should sit behind nginx proxy cache or a CDN before
+  switching. Do not migrate to that target until image latency, CPU or cache
+  pressure shows the current dual layer is becoming a bottleneck.
 - `apps/web/public/assets/` remains only as public fallback/reference media for
   local builds and migration scripts.
 - The old root `assets/` directory has been removed to avoid duplicate sources

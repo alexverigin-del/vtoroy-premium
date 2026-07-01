@@ -151,7 +151,7 @@ BEGIN
   v_review_folder := isvoi_file_folder_id('ISVOI File Review');
 
   UPDATE directus_collections
-  SET note = 'Памятка ISVOI Files: товарные фото хранятся в ISVOI Device Photos и связываются через device_images/listing_file; изображения страниц — в ISVOI Site Assets; редакционные материалы — в ISVOI Editorial; спорные и неиспользуемые файлы — в ISVOI File Review. Не удаляйте файл, пока не проверили его связи с каталогом или страницами.',
+  SET note = 'Памятка ISVOI Files: товарные фото хранятся в ISVOI Device Photos, но появляются на сайте только после связи через device_images.image или fallback devices.listing_file. Не вставляйте товарные фото в JSON-поля, listing_image или внешними URL. Изображения страниц — в ISVOI Site Assets; редакционные материалы — в ISVOI Editorial; спорные и неиспользуемые файлы — в ISVOI File Review. Не удаляйте файл, пока не проверили его связи с каталогом или страницами.',
     display_template = '{{title}} · {{filename_download}}',
     icon = 'perm_media'
   WHERE collection = 'directus_files';
@@ -249,7 +249,7 @@ END $$;
 
 SELECT isvoi_set_file_field_note(
   'folder',
-  'Выберите рабочую папку. ISVOI Device Photos — товарные фото; ISVOI Site Assets — изображения страниц и секций; ISVOI Editorial — редакционные материалы; ISVOI File Review — спорные или неиспользуемые файлы. Не оставляйте новые файлы без папки.',
+  'Выберите рабочую папку. ISVOI Device Photos — товарные фото, которые затем обязательно связываются через device_images.image или devices.listing_file; ISVOI Site Assets — изображения страниц и секций; ISVOI Editorial — редакционные материалы; ISVOI File Review — спорные или неиспользуемые файлы. Не оставляйте новые файлы без папки.',
   'Папка ISVOI',
   10,
   'half'
@@ -263,7 +263,7 @@ SELECT isvoi_set_file_field_note(
 );
 SELECT isvoi_set_file_field_note(
   'description',
-  'Коротко опишите, что на изображении и где оно используется. Для Review-файлов добавьте причину: не привязан, дубль, плохое качество, требует проверки.',
+  'Коротко опишите, что на изображении и где оно используется. Для товарных фото укажите устройство и роль кадра: card/main/screen/body/defect/other. Для Review-файлов добавьте причину: не привязан, дубль, плохое качество, требует проверки.',
   'Описание и использование',
   30,
   'full'

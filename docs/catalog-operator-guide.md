@@ -71,6 +71,11 @@ ISVOI: импортировать партию каталога
 
 После импорта проверьте товары в `devices` и фотографии в `device_images`.
 
+Важно: товарные фото на сайте должны появляться только через `device_images`
+или fallback-поле `devices.listing_file`. Не вставляйте фото вручную в
+`devices.gallery`, `devices.listing_image`, JSON-поля, `/assets/...`,
+`https://api.isvoi.ru/assets/...` или внешние URL.
+
 Операторский экран настроен так, чтобы случайно не сломать состояние партии:
 
 - файлы партии загружайте в папку `ISVOI Catalog Imports`;
@@ -142,6 +147,8 @@ https://api.isvoi.ru/admin/
 - `devices`: цена, описание, статус наличия, `content_status`;
 - `device_images`: есть `card`, `main`, дополнительные фото;
 - `directus_files`: фото лежат в `ISVOI Device Photos`.
+- В `devices.gallery`, `devices.listing_image` и JSON-полях нет вручную
+  вставленных ссылок на товарные фото.
 
 Когда карточка готова:
 

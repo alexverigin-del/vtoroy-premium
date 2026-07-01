@@ -78,7 +78,7 @@ $$;
 
 UPDATE directus_collections
 SET icon = 'inventory_2',
-  note = 'Рабочий каталог устройств. Открывайте устройство, проверьте публикацию, цену, тексты и фото. Новые фото ведите в блоке "Фото устройства"; legacy JSON-поля не используйте для нового наполнения.',
+  note = 'Рабочий каталог устройств. Открывайте устройство, проверьте публикацию, цену, тексты и фото. Товарные фото добавляйте только через блок "Фото устройства" (device_images.image); devices.listing_file — fallback для карточки. Не вставляйте фото в JSON, listing_image или внешними URL.',
   display_template = '{{title}} · {{price_text}} · {{stock_status}} · {{content_status}}',
   sort_field = 'sort',
   accountability = 'all',
@@ -89,7 +89,7 @@ WHERE collection = 'devices';
 
 UPDATE directus_collections
 SET icon = 'photo_library',
-  note = 'Фото устройств. Обычно редактируются из карточки устройства через блок "Фото устройства". Для публикации нужны status=published и shot_status=approved.',
+  note = 'Фото устройств. Это единственный рабочий раздел для товарной галереи: файл выбирается из Directus Files / ISVOI Device Photos. Для публикации нужны status=published и shot_status=approved. Не используйте внешние URL и JSON-галереи.',
   display_template = '{{device.title}} · {{role}} · {{label}}',
   sort_field = 'sort',
   accountability = 'all',
@@ -108,7 +108,7 @@ SELECT isvoi_upsert_directus_field(
   NULL,
   'full',
   50,
-  'Фото товара. Основной сценарий: добавляйте строки в "Фото устройства"; role=card отвечает за плитку каталога, остальные роли формируют галерею.',
+  'Фото товара. Основной сценарий: добавляйте строки в "Фото устройства"; role=card отвечает за плитку каталога, остальные роли формируют галерею. Не добавляйте товарные фото через JSON-поля, listing_image или внешние URL.',
   false,
   false,
   false,
@@ -126,7 +126,7 @@ SELECT isvoi_upsert_directus_field(
   NULL,
   'full',
   51,
-  'Все фото устройства. Для карточки каталога нужна одна строка role=card. Для товарной страницы используйте main, screen, body, defect или other.',
+  'Все фото устройства. Для карточки каталога нужна одна строка role=card. Для товарной страницы используйте main, screen, body, defect или other. Файлы должны лежать в Directus Files / ISVOI Device Photos.',
   false,
   false,
   false,
@@ -144,7 +144,7 @@ SELECT isvoi_upsert_directus_field(
   NULL,
   'full',
   52,
-  'Совместимость со старой карточкой: сайт сначала ищет device_images role=card, затем использует это поле. Для новых устройств лучше заполнять "Фото устройства".',
+  'Fallback для карточки каталога: сайт сначала ищет device_images role=card, затем использует это поле. Заполняйте только файлом из ISVOI Device Photos. Для новых устройств основной путь — "Фото устройства".',
   false,
   false,
   false,
@@ -153,7 +153,7 @@ SELECT isvoi_upsert_directus_field(
   'Фото карточки (fallback)'
 );
 
-SELECT isvoi_upsert_directus_field('devices', 'listing_image', 'input', NULL, NULL, NULL, 'half', 53, 'Legacy path. Не используйте для новых устройств.', false, true, false, NULL, 'group_media', 'Legacy image path');
+SELECT isvoi_upsert_directus_field('devices', 'listing_image', 'input', NULL, NULL, NULL, 'half', 53, 'Legacy path. Не используйте для новых устройств и не вставляйте сюда /assets, http(s) URL или Directus asset URL. Товарные фото ведутся через device_images/listing_file.', false, true, false, NULL, 'group_media', 'Legacy image path');
 SELECT isvoi_upsert_directus_field('devices', 'visual_class', 'input', NULL, NULL, NULL, 'half', 54, 'Legacy CSS-класс. Обычно не нужен после Directus Files.', false, true, false, NULL, 'group_media', 'Legacy visual class');
 SELECT isvoi_upsert_directus_field('devices', 'listing_alt', 'input', NULL, NULL, NULL, 'half', 55, 'Alt-текст основного фото, если нужен отдельно от alt в device_images.', false, false, false, NULL, 'group_media', 'Alt основного фото');
 
@@ -166,7 +166,7 @@ SELECT isvoi_upsert_directus_field(
   NULL,
   'full',
   90,
-  'Расширенные JSON-данные. Галерею для новых устройств не редактируйте здесь: используйте "Фото устройства".',
+  'Расширенные JSON-данные. Галерею для новых устройств не редактируйте здесь: товарные фото ведутся только через "Фото устройства" и Directus Files.',
   false,
   false,
   false,
@@ -175,7 +175,7 @@ SELECT isvoi_upsert_directus_field(
   'Расширенные данные'
 );
 
-SELECT isvoi_upsert_directus_field('devices', 'gallery', 'list', NULL, NULL, NULL, 'full', 91, 'Legacy JSON-галерея. Скрыто из обычного workflow: новые фото ведутся через device_images.', false, true, false, 'cast-json', 'group_structured', 'Legacy gallery JSON');
+SELECT isvoi_upsert_directus_field('devices', 'gallery', 'list', NULL, NULL, NULL, 'full', 91, 'Legacy JSON-галерея. Скрыто из обычного workflow: не добавляйте сюда image_src, /assets или внешние URL. Новые фото ведутся через device_images.', false, true, false, 'cast-json', 'group_structured', 'Legacy gallery JSON');
 SELECT isvoi_upsert_directus_field('devices', 'passport', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 92, 'JSON ISVOI Passport. До отдельной модели редактируйте осторожно и проверяйте страницу товара после изменений.', false, false, false, 'cast-json', 'group_structured', 'Passport JSON');
 SELECT isvoi_upsert_directus_field('devices', 'trade', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 93, 'JSON trade options. До отдельной модели редактируйте осторожно.', false, false, false, 'cast-json', 'group_structured', 'Trade JSON');
 
@@ -189,7 +189,7 @@ SELECT isvoi_upsert_directus_field(
   NULL,
   'full',
   1,
-  'Связь изображения с устройством, роль кадра и публикация.',
+  'Связь изображения с устройством, роль кадра и публикация. Это основной и безопасный путь для всех товарных фото.',
   false,
   false,
   false,
@@ -207,7 +207,7 @@ SELECT isvoi_upsert_directus_field(
   NULL,
   'full',
   8,
-  'Файл из Directus Files. Используйте папку ISVOI Device Photos; сайт отдаёт изображение через Directus asset transforms.',
+  'Файл из Directus Files. Используйте только папку ISVOI Device Photos для товарных фото; сайт отдаёт изображение через Directus asset transforms и Next image optimizer. Не вставляйте URL вручную.',
   false,
   false,
   true,

@@ -25,7 +25,14 @@ npm run directus:setup:files-cleanup
 
 ## Памятка для редактора
 
-- Товарные фото загружайте в `ISVOI Device Photos` и связывайте через `device_images` или `devices.listing_file`.
+- Товарные фото загружайте в `ISVOI Device Photos`, но помните: загрузка файла
+  сама по себе не добавляет фото на сайт. Привязывайте товарные фото через
+  `device_images.image`; `devices.listing_file` используйте только как fallback
+  для карточки каталога.
+- Не вставляйте товарные фото в `devices.gallery`, `devices.listing_image`,
+  JSON-поля секций, `/assets/...`, `https://api.isvoi.ru/assets/...` или
+  внешние URL. Такие вставки обходят редакторский workflow, роли кадров,
+  оптимизацию и аудиты.
 - Изображения страниц и секций держите в `ISVOI Site Assets`.
 - Редакционные/контентные изображения держите в `ISVOI Editorial`.
 - Спорные, лишние или неиспользуемые файлы переносите в `ISVOI File Review`, а не удаляйте сразу.

@@ -160,6 +160,7 @@ normally pass:
 ```bash
 npm run web:verify
 npm run smoke:prod
+npm run smoke:images
 npm run smoke:visual
 ```
 
@@ -170,6 +171,11 @@ against `https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
 `smoke:visual` is the Playwright visual smoke gate for desktop/mobile route
 screenshots and catches horizontal overflow, clipped text and suspicious visible
 element overlap.
+`smoke:images` is the lightweight Directus/Next image latency gate. It samples
+Directus asset ids from `/catalog`, `/store` and one device page, then checks
+3-5 Directus transform URLs and matching `/_next/image` optimizer URLs. Defaults
+can be tuned with `IMAGE_SMOKE_LIMIT`, `IMAGE_SMOKE_MIN_ASSETS`,
+`IMAGE_SMOKE_DIRECTUS_BUDGET_MS` and `IMAGE_SMOKE_NEXT_BUDGET_MS`.
 
 `bundle:budget` reads `apps/web/.next/build-manifest.json` and
 `apps/web/.next/app-build-manifest.json` after `next build`, then checks shared
@@ -577,6 +583,12 @@ new commercial content should use structured collections and Directus Files.
 - Product and editorial images that editors manage belong in Directus Files.
 - New product photos should use `device_images`, with roles such as `card`,
   `main`, `screen`, `body` and `defect`.
+- Uploading a file to `ISVOI Device Photos` is not enough to put it on the
+  site. Product photos must be linked through `device_images.image`;
+  `devices.listing_file` is only a fallback for the catalog card. Do not put
+  product photos into `devices.gallery`, `devices.listing_image`,
+  `page_sections.content`, `/assets/...`, `https://api.isvoi.ru/assets/...` or
+  other external URL fields.
 - Directus file folders are part of the operating model:
   - `ISVOI Device Photos`
   - `ISVOI Site Assets`

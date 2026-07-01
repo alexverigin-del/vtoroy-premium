@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-06-30.
+Last updated: 2026-07-01.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -164,11 +164,19 @@ npm run smoke:visual
 ```
 
 `web:verify` is the local pre-deploy web gate. It runs `legacy:audit`,
-`tailwind:post-audit`, Tailwind-aware format check, ESLint, TypeScript and the
-production build. `smoke:prod` is the live post-deploy gate against
-`https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden. `smoke:visual` is the
-Playwright visual smoke gate for desktop/mobile route screenshots and catches
-horizontal overflow, clipped text and suspicious visible element overlap.
+`tailwind:post-audit`, Tailwind-aware format check, ESLint, TypeScript, the
+production build and `bundle:budget`. `smoke:prod` is the live post-deploy gate
+against `https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
+`smoke:visual` is the Playwright visual smoke gate for desktop/mobile route
+screenshots and catches horizontal overflow, clipped text and suspicious visible
+element overlap.
+
+`bundle:budget` reads `apps/web/.next/build-manifest.json` and
+`apps/web/.next/app-build-manifest.json` after `next build`, then checks shared
+app JS, the largest route JS payload and total emitted client JS. Default
+budgets are intentionally modest and can be overridden only after review:
+`BUNDLE_SHARED_JS_KB=380`, `BUNDLE_ROUTE_JS_KB=460`,
+`BUNDLE_TOTAL_JS_KB=900`.
 
 The `@vtoroy/web` lint script uses ESLint CLI over source folders
 (`app`, `components`, `lib`, `data`) instead of deprecated `next lint`.

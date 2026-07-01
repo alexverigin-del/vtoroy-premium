@@ -65,8 +65,9 @@ npm run smoke:visual
 ```
 
 `web:verify` runs the local pre-deploy web gate: legacy runtime audit, Tailwind
-post-migration audit, Tailwind-aware format check, ESLint, TypeScript and
-production build. `smoke:prod` is the live post-deploy check.
+post-migration audit, Tailwind-aware format check, ESLint, TypeScript,
+production build and the Next client JS bundle budget. `smoke:prod` is the live
+post-deploy check.
 
 `smoke:prod` opens `/catalog`, `/store` and one device page with Playwright. It
 checks HTTP status, Directus image rendering, the Passport block and lead forms.
@@ -79,6 +80,7 @@ Override the target when needed:
 ```bash
 SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/device/iphone-13-pro npm run smoke:prod
 SMOKE_BASE_URL=https://isvoi.ru VISUAL_SMOKE_ROUTES=/,/catalog npm run smoke:visual
+BUNDLE_ROUTE_JS_KB=460 BUNDLE_TOTAL_JS_KB=900 npm run bundle:budget
 ```
 
 Directus setup scripts print idempotent SQL. On the server, write the SQL to a

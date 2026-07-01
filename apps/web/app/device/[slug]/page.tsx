@@ -10,7 +10,13 @@ import { CTAButton } from "@/components/CTAButton";
 import { DeviceGallery } from "@/components/DeviceGallery";
 import { DeviceCard } from "@/components/DeviceCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
-import { deviceBackLinkClass } from "@/components/ui-classes";
+import {
+  deviceBackLinkClass,
+  mobileProductCtaBarClass,
+  mobileProductCtaInnerClass,
+  mobileProductPrimaryCtaClass,
+  mobileProductSecondaryCtaClass,
+} from "@/components/ui-classes";
 
 // Keep Directus device edits visible immediately while inventory is being filled.
 export const dynamic = "force-dynamic";
@@ -70,6 +76,26 @@ function stockStatusLabel(device: Device): string {
       return "Продано";
     default:
       return "В наличии";
+  }
+}
+
+function mobileLeadCta(device: Device): { label: string; ariaLabel: string } {
+  switch (normalizedStockStatus(device)) {
+    case "reserved":
+      return {
+        label: "Очередь",
+        ariaLabel: `Встать в лист ожидания по ${device.title}`,
+      };
+    case "sold":
+      return {
+        label: "Подобрать",
+        ariaLabel: `Подобрать похожее устройство вместо ${device.title}`,
+      };
+    default:
+      return {
+        label: "Заявка",
+        ariaLabel: `Оставить заявку по ${device.title}`,
+      };
   }
 }
 
@@ -157,9 +183,11 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
   const conditionNotes = device.passport.condition.notes ?? [];
   const tradeOptions = device.trade.options ?? [];
   const lastUpdated = updatedText(device);
+  const leadFormId = "product-lead";
+  const mobileCta = mobileLeadCta(device);
 
   return (
-    <main className="bg-surface">
+    <main className="bg-surface pb-24 lg:pb-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(device)) }}
@@ -211,6 +239,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
             <ProductLeadForm
               deviceId={device.id}
               deviceTitle={device.title}
+              formId={leadFormId}
               stockStatus={device.stockStatus}
               stockStatusLabel={stockStatusLabel(device)}
             />
@@ -323,6 +352,25 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
           </ul>
         </section>
       ) : null}
+
+      <nav className={mobileProductCtaBarClass} aria-label="Действия по товару">
+        <div className={mobileProductCtaInnerClass}>
+          <Link
+            href={`#${leadFormId}`}
+            className={mobileProductPrimaryCtaClass}
+            aria-label={mobileCta.ariaLabel}
+          >
+            {mobileCta.label}
+          </Link>
+          <Link
+            href="/trade"
+            className={mobileProductSecondaryCtaClass}
+            aria-label={`Рассчитать Trade для ${device.title}`}
+          >
+            Trade
+          </Link>
+        </div>
+      </nav>
     </main>
   );
 }

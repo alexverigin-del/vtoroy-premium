@@ -1,7 +1,9 @@
 "use client";
 
 import type { NavigationItem, SiteSettings } from "@vtoroy/shared";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { cn } from "../lib/cn";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
 import { headerCtaClass } from "./ui-classes";
@@ -27,12 +29,42 @@ function headerCta(settings: SiteSettings, navigation: NavigationItem[]): Naviga
   );
 }
 
-function NavLink({ item, onClick }: { item: NavigationItem; onClick?: () => void }) {
+function navPath(value: string): string {
+  try {
+    const url = new URL(value, "https://isvoi.ru");
+    return url.pathname.replace(/\/+$/, "") || "/";
+  } catch {
+    const path = value.split("#")[0]?.split("?")[0] || "/";
+    return path.replace(/\/+$/, "") || "/";
+  }
+}
+
+function isCurrentNavItem(item: NavigationItem, pathname: string): boolean {
+  const href = navigationHref(item);
+  if (/^(https?:|mailto:|tel:|#)/i.test(href)) return false;
+  return navPath(href) === navPath(pathname);
+}
+
+function NavLink({
+  active,
+  item,
+  onClick,
+}: {
+  active: boolean;
+  item: NavigationItem;
+  onClick?: () => void;
+}) {
   return (
     <a
       href={navigationHref(item)}
+      aria-current={active ? "page" : undefined}
       aria-label={item.ariaLabel || undefined}
-      className="flex min-h-11 items-center rounded-card px-3 text-xs font-medium text-graphite opacity-80 outline-none transition hover:opacity-100 focus-visible:shadow-focus"
+      className={cn(
+        "flex min-h-11 items-center rounded-card px-3 text-xs font-medium outline-none transition focus-visible:shadow-focus",
+        active
+          ? "bg-ice text-carbon opacity-100"
+          : "text-graphite opacity-80 hover:text-carbon hover:opacity-100",
+      )}
       onClick={onClick}
       {...externalLinkAttrs(item)}
     >
@@ -48,6 +80,7 @@ export function SiteHeader({
   settings: SiteSettings;
   navigation: NavigationItem[];
 }) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const headerItems = sortNavigation(
     navigation.filter(
@@ -66,7 +99,7 @@ export function SiteHeader({
 
         <nav className="hidden items-center gap-2 md:flex" aria-label="Основная навигация">
           {headerItems.map((item) => (
-            <NavLink key={item.id} item={item} />
+            <NavLink key={item.id} active={isCurrentNavItem(item, pathname)} item={item} />
           ))}
         </nav>
 
@@ -105,7 +138,12 @@ export function SiteHeader({
         <div className="border-t border-hairline bg-white px-5 py-3 md:hidden">
           <nav className="mx-auto grid max-w-shell gap-1" aria-label="Мобильная навигация">
             {headerItems.map((item) => (
-              <NavLink key={item.id} item={item} onClick={() => setOpen(false)} />
+              <NavLink
+                key={item.id}
+                active={isCurrentNavItem(item, pathname)}
+                item={item}
+                onClick={() => setOpen(false)}
+              />
             ))}
             {cta ? (
               <a

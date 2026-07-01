@@ -25,7 +25,7 @@ export const fallbackDevices: Device[] = [
     warrantyText: "Гарантия 90 дней",
     exit: "до 42 000 ₽",
     exitText: "Выход до 42 000 ₽",
-    availability: "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
+    availability: "Устройство в наличии в Store. Карточка проверена перед публикацией.",
     shortDescription:
       "256 GB · Graphite · грейд A− · батарея 89% · гарантия 90 дней · цена выхода до 42 000 ₽.",
     headline: "iPhone 13 Pro. Проверен. Идёт дальше.",
@@ -174,7 +174,7 @@ export const fallbackDevices: Device[] = [
     warrantyText: "Гарантия 90 дней",
     exit: "до 45 000 ₽",
     exitText: "Выход до 45 000 ₽",
-    availability: "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
+    availability: "Устройство в наличии в Store. Карточка проверена перед публикацией.",
     shortDescription:
       "128 GB · Starlight · грейд A · батарея 94% · гарантия 90 дней · цена выхода до 45 000 ₽.",
     headline: "iPhone 14. Проверен. Идёт дальше.",
@@ -324,7 +324,7 @@ export const fallbackDevices: Device[] = [
     warrantyText: "Гарантия 90 дней",
     exit: "до 49 000 ₽",
     exitText: "Выход до 49 000 ₽",
-    availability: "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
+    availability: "Устройство в наличии в Store. Карточка проверена перед публикацией.",
     shortDescription:
       "8 / 256 GB · Silver · грейд B+ · 214 циклов · гарантия 90 дней · цена выхода до 49 000 ₽.",
     headline: "MacBook Air M1. Проверен. Идёт дальше.",
@@ -473,7 +473,7 @@ export const fallbackDevices: Device[] = [
     warrantyText: "Гарантия 90 дней",
     exit: "до 31 000 ₽",
     exitText: "Выход до 31 000 ₽",
-    availability: "Устройство в наличии в Store. Иллюстративная карточка прототипа.",
+    availability: "Устройство в наличии в Store. Карточка проверена перед публикацией.",
     shortDescription: "64 GB · Wi‑Fi · грейд A · гарантия 90 дней · цена выхода до 31 000 ₽.",
     headline: "iPad Air. Проверен. Идёт дальше.",
     listingImage: "assets/catalog-ipad-air.webp",

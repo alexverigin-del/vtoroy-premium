@@ -30,8 +30,8 @@ export function CatalogGrid({
           </h1>
           <p className="mx-auto mt-4 max-w-prose text-copy leading-relaxed text-graphite">
             {directusEnabled
-              ? "Карточки загружаются из Directus: фото, грейд, цена, Passport и цена выхода обновляются без правки кода."
-              : "Directus не настроен — показаны демо-данные из data/devices.json."}
+              ? "В наличии только проверенные вещи: фото, грейд, гарантия и цена выхода обновляются после проверки."
+              : "Показаны демонстрационные карточки: они помогают оценить формат Store до подключения живого каталога."}
           </p>
         </div>
 

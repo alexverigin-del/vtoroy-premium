@@ -210,6 +210,7 @@ export function CatalogToolbar({
         <label className="flex min-h-11 items-center gap-2 rounded-pill border border-hairline bg-white px-4 text-sm text-graphite">
           <span>Сортировка</span>
           <select
+            aria-label="Сортировка каталога"
             className="bg-transparent font-medium text-carbon outline-none"
             value={controls.sort}
             onChange={(event) => controls.setSort(event.target.value)}

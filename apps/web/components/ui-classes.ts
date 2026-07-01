@@ -19,6 +19,17 @@ export const submitButtonClass =
 export const deviceBackLinkClass =
   "inline-flex min-h-touch items-center rounded-sm pr-2 text-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 
+export const mobileProductCtaBarClass =
+  "fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-white/95 px-4 py-3 shadow-soft backdrop-blur lg:hidden";
+
+export const mobileProductCtaInnerClass = "mx-auto grid max-w-content grid-cols-2 gap-2";
+
+export const mobileProductPrimaryCtaClass =
+  "focus-ring inline-flex min-h-11 items-center justify-center rounded-full bg-action px-4 py-3 text-sm font-semibold text-white transition hover:bg-action-blue";
+
+export const mobileProductSecondaryCtaClass =
+  "focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-hairline bg-white px-4 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue";
+
 export const heroPassportCardClass =
   "absolute inset-x-4 bottom-4 mx-auto max-w-overlay-wide rounded-card border border-white/70 bg-white/95 p-4 text-left shadow-product backdrop-blur md:inset-x-auto md:bottom-8 md:right-8 md:w-overlay md:p-5";
 

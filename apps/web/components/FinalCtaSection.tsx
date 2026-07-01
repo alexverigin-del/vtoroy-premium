@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
@@ -79,6 +79,9 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
   const [scenario, setScenario] = useState(form.scenarioOptions[0] ?? "");
   const [device, setDevice] = useState("");
   const [contact, setContact] = useState("");
+  const scenarioId = useId();
+  const deviceId = useId();
+  const contactId = useId();
   const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
     useLeadIntake();
 
@@ -137,9 +140,10 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
             onSubmit={handleSubmit}
             className="rounded-card border border-hairline bg-frost p-4 md:p-5"
           >
-            <label className="block text-sm font-medium text-carbon">
+            <label className="block text-sm font-medium text-carbon" htmlFor={scenarioId}>
               <span>{form.scenarioLabel}</span>
               <select
+                id={scenarioId}
                 name="scenario"
                 aria-label={form.scenarioAriaLabel}
                 value={scenario}
@@ -152,11 +156,13 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
               </select>
             </label>
 
-            <label className="mt-4 block text-sm font-medium text-carbon">
+            <label className="mt-4 block text-sm font-medium text-carbon" htmlFor={deviceId}>
               <span>{form.deviceLabel}</span>
               <input
+                id={deviceId}
                 name="device"
                 type="text"
+                aria-label={form.deviceLabel}
                 value={device}
                 onChange={(event) => setDevice(event.target.value)}
                 placeholder={form.devicePlaceholder}
@@ -164,11 +170,13 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
               />
             </label>
 
-            <label className="mt-4 block text-sm font-medium text-carbon">
+            <label className="mt-4 block text-sm font-medium text-carbon" htmlFor={contactId}>
               <span>{form.contactLabel}</span>
               <input
+                id={contactId}
                 name="contact"
                 type="text"
+                aria-label={form.contactLabel}
                 value={contact}
                 onChange={(event) => setContact(event.target.value)}
                 placeholder={form.contactPlaceholder}

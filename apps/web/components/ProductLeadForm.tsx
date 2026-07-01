@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useId, useState } from "react";
 import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
 
@@ -75,16 +75,20 @@ function leadMode(stockStatus: string): ProductLeadMode {
 export function ProductLeadForm({
   deviceId,
   deviceTitle,
+  formId,
   stockStatus = "available",
   stockStatusLabel = "В наличии",
 }: {
   deviceId: string;
   deviceTitle: string;
+  formId?: string;
   stockStatus?: string;
   stockStatusLabel?: string;
 }) {
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
+  const contactId = useId();
+  const messageId = useId();
   const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
     useLeadIntake();
   const normalizedStockStatus = normalizeStockStatus(stockStatus);
@@ -123,29 +127,34 @@ export function ProductLeadForm({
 
   return (
     <form
+      id={formId}
       onSubmit={handleSubmit}
-      className="mt-8 rounded-card bg-surface p-4"
+      className="mt-8 scroll-mt-24 rounded-card bg-surface p-4"
       data-component="ProductLeadForm"
     >
       <p className="text-sm font-semibold">{mode.title}</p>
       <p className="mt-1 text-xs leading-relaxed text-muted">{mode.statusNote}</p>
-      <label className="mt-3 block text-sm">
+      <label className="mt-3 block text-sm" htmlFor={contactId}>
         <span className="text-muted">Контакт</span>
         <input
+          id={contactId}
           value={contact}
           onChange={(event) => setContact(event.target.value)}
           type="text"
           name="contact"
+          aria-label="Контакт для ответа"
           placeholder={mode.contactPlaceholder}
           className="mt-1 w-full rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
         />
       </label>
-      <label className="mt-3 block text-sm">
+      <label className="mt-3 block text-sm" htmlFor={messageId}>
         <span className="text-muted">Комментарий</span>
         <textarea
+          id={messageId}
           value={message}
           onChange={(event) => setMessage(event.target.value)}
           name="message"
+          aria-label="Комментарий к заявке"
           rows={3}
           placeholder={mode.messagePlaceholder}
           className="mt-1 w-full resize-none rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"

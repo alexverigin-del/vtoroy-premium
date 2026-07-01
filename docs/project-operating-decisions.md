@@ -513,6 +513,25 @@ new commercial content should use structured collections and Directus Files.
   only Directus-managed logo CSS variables and the offscreen lead-form honeypot
   are allowed. Repeated new values should become shared Tailwind tokens or
   reviewed component constants instead of expanding the allowlist.
+- First implementation package from the 2026-07-01 taste-skill + impeccable
+  recommendations is in progress locally: public fallback/runtime copy no
+  longer says "prototype" or exposes technical Directus loading language,
+  header navigation now marks the active route with `aria-current`, and catalog
+  sort plus lead forms have explicit labels/ARIA hooks. Verified with
+  `npm run web:verify`, `npm run tailwind:post-audit`,
+  `npm run web:format:check`, text search for removed prototype/Directus copy,
+  and a local Playwright DOM check for `/catalog`, `/store` and
+  `/device/iphone-13-pro`.
+- Second safe implementation step from the same recommendations added a
+  mobile-only product action bar on device pages. It links to the existing
+  `ProductLeadForm` anchor and the existing Trade page, keeps the lead payload
+  and Directus Studio schema unchanged, and is hidden on desktop. Verified with
+  `npm run web:verify` plus local Playwright checks for mobile visibility,
+  desktop hidden state and anchor scrolling on `/device/iphone-13-pro`.
+- Release package for the first and second implementation steps was requested
+  on 2026-07-01. Ship them together: code changes, this operating-memory update,
+  `npm run web:verify`, GitHub push, Beget `git pull --ff-only`, Beget
+  `npm run web:verify`, `pm2 restart isvoi-web`, then production smoke checks.
 
 ## Studio Workflow Decisions
 
@@ -537,6 +556,11 @@ new commercial content should use structured collections and Directus Files.
   future header/menu changes compatible with `site_settings` and
   `navigation_items` rather than baking labels, CTA text or logo presentation
   into code.
+- Footer note/legal/copyright text is also Directus-managed via
+  `site_settings`. Runtime fallbacks were cleaned in code, but production
+  Studio values may still need a content update if they contain prototype or
+  concept language. Do that through Studio or an idempotent content script; do
+  not hardcode footer/legal text into React components.
 
 ## Catalog Decisions
 

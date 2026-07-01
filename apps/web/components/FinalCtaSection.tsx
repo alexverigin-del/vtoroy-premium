@@ -103,21 +103,21 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-frost py-16 md:py-20" id="final" data-component="FinalCtaSection">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="grid gap-6 rounded-card border border-hairline bg-white p-5 shadow-soft md:grid-cols-[1.05fr_0.95fr] md:p-8">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="grid gap-6 rounded-card border border-hairline bg-white p-5 shadow-soft md:grid-cols-lead md:p-8">
           <div className="flex flex-col justify-center">
             {section.eyebrow ? (
-              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+              <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
                 {section.eyebrow}
               </div>
             ) : null}
             {section.headline ? (
-              <h2 className="mt-3 max-w-[640px] text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-4xl">
+              <h2 className="mt-3 max-w-heading text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-4xl">
                 {section.headline}
               </h2>
             ) : null}
             {section.body ? (
-              <p className="mt-4 max-w-[620px] text-[17px] leading-relaxed text-graphite">
+              <p className="mt-4 max-w-form text-copy leading-relaxed text-graphite">
                 {section.body}
               </p>
             ) : null}
@@ -186,7 +186,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
             />
 
             {turnstileRequired ? (
-              <div ref={turnstileElementRef} className="mt-4 min-h-[65px]" />
+              <div ref={turnstileElementRef} className="mt-4 min-h-turnstile" />
             ) : null}
 
             <button

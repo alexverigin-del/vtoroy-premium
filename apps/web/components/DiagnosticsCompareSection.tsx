@@ -126,10 +126,10 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
 
   return (
     <section className="bg-white py-16 md:py-20" id="diagnostics">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="mx-auto max-w-[780px] text-center">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {section.eyebrow}
             </div>
           ) : null}
@@ -139,11 +139,11 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
         </div>
 
-        <div className="relative mt-10 min-h-[300px] overflow-hidden rounded-img bg-frost shadow-soft md:min-h-[520px]">
+        <div className="relative mt-10 min-h-visual-md overflow-hidden rounded-img bg-frost shadow-soft md:min-h-section-visual">
           <Image
             src={imageSrc}
             alt={diagnostics.imageAlt}
@@ -151,8 +151,8 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
             sizes="(min-width: 1180px) 1180px, 92vw"
             className="object-cover"
           />
-          <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-[420px] md:p-5">
-            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+          <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
+            <span className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {diagnostics.noteLabel}
             </span>
             <strong className="mt-2 block text-base font-semibold leading-snug text-carbon">
@@ -167,7 +167,7 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
           aria-label={comparison.ariaLabel}
         >
           <div
-            className="hidden grid-cols-[1.1fr_1fr_1fr] bg-frost text-sm font-semibold text-carbon md:grid"
+            className="hidden grid-cols-compare bg-frost text-sm font-semibold text-carbon md:grid"
             role="row"
           >
             <div className="border-r border-hairline p-4" role="columnheader">
@@ -184,7 +184,7 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
           {comparison.rows.map((row) => (
             <div
               key={`${row.label}-${row.bad}-${row.good}`}
-              className="grid gap-0 border-t border-hairline md:grid-cols-[1.1fr_1fr_1fr]"
+              className="grid gap-0 border-t border-hairline md:grid-cols-compare"
               role="row"
             >
               <div

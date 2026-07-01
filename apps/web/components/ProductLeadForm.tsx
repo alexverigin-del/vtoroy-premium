@@ -151,7 +151,9 @@ export function ProductLeadForm({
           className="mt-1 w-full resize-none rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
         />
       </label>
-      {turnstileRequired ? <div ref={turnstileElementRef} className="mt-4 min-h-[65px]" /> : null}
+      {turnstileRequired ? (
+        <div ref={turnstileElementRef} className="mt-4 min-h-turnstile" />
+      ) : null}
       <button
         type="submit"
         disabled={state === "submitting" || !turnstileReady}

@@ -467,6 +467,16 @@ new commercial content should use structured collections and Directus Files.
   Utility bundles above the reviewed length threshold should become extracted
   components, `cn()` calls or named presentation constants in
   `apps/web/components/ui-classes.ts`.
+- Repeated Tailwind arbitrary values were promoted to shared tokens on
+  2026-07-01. Layout widths, custom letter spacing, 17px copy text, display
+  line heights, repeated min-heights, product aspect ratio and custom grid
+  columns now live in `tailwind.shared.cjs`. Prefer semantic utilities such as
+  `max-w-page`, `max-w-shell`, `max-w-copy`, `tracking-label`, `text-copy`,
+  `grid-cols-product` and `aspect-product` over new `[...]` classes.
+- The arbitrary utility allowlist is intentionally narrow after the token pass:
+  only Directus-managed logo CSS variables and the offscreen lead-form honeypot
+  are allowed. Repeated new values should become shared Tailwind tokens or
+  reviewed component constants instead of expanding the allowlist.
 
 ## Studio Workflow Decisions
 

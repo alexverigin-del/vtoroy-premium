@@ -88,10 +88,10 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-frost py-16 md:py-20" id="store">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="mx-auto max-w-[780px] text-center">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {section.eyebrow}
             </div>
           ) : null}
@@ -101,11 +101,11 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
         </div>
 
-        <div className="relative mt-10 min-h-[320px] overflow-hidden rounded-img bg-white shadow-product md:min-h-[520px]">
+        <div className="relative mt-10 min-h-store-visual overflow-hidden rounded-img bg-white shadow-product md:min-h-section-visual">
           <Image
             src={imageSrc}
             alt={visual.imageAlt}
@@ -113,7 +113,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             sizes="(min-width: 1180px) 1180px, 92vw"
             className="object-cover"
           />
-          <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-[420px] md:p-5">
+          <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
             <strong className="block text-base font-semibold text-carbon">
               {visual.captionTitle}
             </strong>

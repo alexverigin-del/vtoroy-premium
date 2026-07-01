@@ -187,9 +187,9 @@ function SectionHeader({ section }: { section: PageSection }) {
   if (!section.eyebrow && !section.headline && !section.body) return null;
 
   return (
-    <div className="mx-auto max-w-[780px] text-center">
+    <div className="mx-auto max-w-copy text-center">
       {section.eyebrow ? (
-        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+        <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
           {section.eyebrow}
         </div>
       ) : null}
@@ -199,7 +199,7 @@ function SectionHeader({ section }: { section: PageSection }) {
         </h2>
       ) : null}
       {section.body ? (
-        <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+        <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
       ) : null}
     </div>
   );
@@ -209,9 +209,9 @@ function DarkSectionHeader({ section }: { section: PageSection }) {
   if (!section.eyebrow && !section.headline && !section.body) return null;
 
   return (
-    <div className="mx-auto max-w-[780px] text-center">
+    <div className="mx-auto max-w-copy text-center">
       {section.eyebrow ? (
-        <div className="text-xs font-semibold uppercase tracking-[0.12em] text-signal-blue">
+        <div className="text-xs font-semibold uppercase tracking-label text-signal-blue">
           {section.eyebrow}
         </div>
       ) : null}
@@ -221,7 +221,7 @@ function DarkSectionHeader({ section }: { section: PageSection }) {
         </h2>
       ) : null}
       {section.body ? (
-        <p className="mt-4 text-[17px] leading-relaxed text-white/70">{section.body}</p>
+        <p className="mt-4 text-copy leading-relaxed text-white/70">{section.body}</p>
       ) : null}
     </div>
   );
@@ -267,8 +267,8 @@ function MarketingVisualBandSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-white pb-16 pt-0 md:pb-20">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="relative min-h-[260px] overflow-hidden rounded-img border border-hairline bg-frost md:min-h-[560px]">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="relative min-h-visual-compact overflow-hidden rounded-img border border-hairline bg-frost md:min-h-hero-visual">
           {imageSrc ? (
             <Image
               src={imageSrc}
@@ -279,7 +279,7 @@ function MarketingVisualBandSection({ section }: { section: PageSection }) {
             />
           ) : null}
           {captionTitle || captionText ? (
-            <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/90 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-[390px] md:p-5">
+            <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/90 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay-sm md:p-5">
               {captionTitle ? (
                 <strong className="block text-base font-semibold text-carbon">
                   {captionTitle}
@@ -304,19 +304,19 @@ function MarketingHeroSection({ section }: { section: PageSection }) {
   const hasButtons = section.primaryCtaLabel || section.secondaryCtaLabel;
 
   return (
-    <section className="mx-auto max-w-[1180px] px-4 pb-14 pt-14 text-center md:px-6 md:pb-16 md:pt-20">
+    <section className="mx-auto max-w-page px-4 pb-14 pt-14 text-center md:px-6 md:pb-16 md:pt-20">
       {section.eyebrow ? (
-        <div className="mx-auto inline-flex min-h-9 items-center rounded-pill border border-hairline bg-frost px-4 text-xs font-semibold uppercase tracking-[0.12em] text-ash">
+        <div className="mx-auto inline-flex min-h-9 items-center rounded-pill border border-hairline bg-frost px-4 text-xs font-semibold uppercase tracking-label text-ash">
           {section.eyebrow}
         </div>
       ) : null}
       {section.headline ? (
-        <h1 className="mx-auto mt-6 max-w-[980px] text-5xl font-semibold leading-[1.03] tracking-normal text-carbon md:text-7xl">
+        <h1 className="mx-auto mt-6 max-w-copy-wide text-5xl font-semibold leading-display tracking-normal text-carbon md:text-7xl">
           {section.headline}
         </h1>
       ) : null}
       {section.body ? (
-        <p className="mx-auto mt-5 max-w-[760px] text-lg leading-relaxed text-graphite md:text-xl">
+        <p className="mx-auto mt-5 max-w-measure text-lg leading-relaxed text-graphite md:text-xl">
           {section.body}
         </p>
       ) : null}
@@ -345,23 +345,23 @@ function MarketingLevelsSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-carbon py-16 text-white md:py-20">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+      <div className="mx-auto max-w-page px-4 md:px-6">
         <DarkSectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-[1120px] gap-5 lg:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-content gap-5 lg:grid-cols-3">
           {levels.map((level) => (
             <article
               key={level.name || level.badge}
               className={cn(
-                "flex min-h-[360px] flex-col rounded-card border p-7",
+                "flex min-h-marketing-tall flex-col rounded-card border p-7",
                 level.featured
                   ? "border-signal-blue bg-white text-carbon shadow-product"
-                  : "border-white/15 bg-white/[0.06] text-white",
+                  : "border-white/15 bg-white/5 text-white",
               )}
             >
               {level.badge ? (
                 <div
                   className={cn(
-                    "mb-5 inline-flex w-fit rounded-pill px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em]",
+                    "mb-5 inline-flex w-fit rounded-pill px-3 py-1 text-xs font-semibold uppercase tracking-caption",
                     level.featured ? "bg-frost text-link-blue" : "bg-white/10 text-signal-blue",
                   )}
                 >
@@ -426,15 +426,15 @@ function MarketingCompareSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-frost py-16 md:py-20">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+      <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
         <div
-          className="mx-auto mt-10 max-w-[1120px] overflow-hidden rounded-card border border-hairline bg-white"
+          className="mx-auto mt-10 max-w-content overflow-hidden rounded-card border border-hairline bg-white"
           role="table"
           aria-label={comparison.ariaLabel}
         >
           <div
-            className="hidden grid-cols-[1.1fr_1fr_1fr] bg-frost text-sm font-semibold text-carbon md:grid"
+            className="hidden grid-cols-compare bg-frost text-sm font-semibold text-carbon md:grid"
             role="row"
           >
             <div className="border-r border-hairline p-4" role="columnheader">
@@ -451,7 +451,7 @@ function MarketingCompareSection({ section }: { section: PageSection }) {
           {comparison.rows.map((row) => (
             <div
               key={`${row.label}-${row.bad}-${row.good}`}
-              className="grid border-t border-hairline md:grid-cols-[1.1fr_1fr_1fr]"
+              className="grid border-t border-hairline md:grid-cols-compare"
               role="row"
             >
               <div
@@ -488,15 +488,15 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-white py-16 md:py-20">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="mx-auto max-w-[980px] rounded-card border border-hairline bg-white/80 p-8 text-center shadow-soft md:p-12">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy-wide rounded-card border border-hairline bg-white/80 p-8 text-center shadow-soft md:p-12">
           {section.headline ? (
             <h2 className="text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mx-auto mt-4 max-w-[700px] text-[17px] leading-relaxed text-graphite">
+            <p className="mx-auto mt-4 max-w-prose-narrow text-copy leading-relaxed text-graphite">
               {section.body}
             </p>
           ) : null}
@@ -533,15 +533,15 @@ function MarketingCardsSection({ section }: { section: PageSection }) {
 
   return (
     <section className={cn("py-16 md:py-20", isWash ? "bg-frost" : "bg-white")}>
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+      <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-[1120px] gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-content gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
             <article
               key={`${card.badge}-${card.title}`}
-              className="flex min-h-[250px] flex-col rounded-card border border-hairline bg-white p-7"
+              className="flex min-h-marketing-card flex-col rounded-card border border-hairline bg-white p-7"
             >
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-link-blue">
+              <span className="text-xs font-semibold uppercase tracking-caption text-link-blue">
                 {card.badge}
               </span>
               {card.title ? (
@@ -574,15 +574,15 @@ function MarketingStepsSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-white py-16 md:py-20">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+      <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-[1120px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto mt-10 grid max-w-content gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
             <article
               key={`${step.title}-${index}`}
               className="rounded-card border border-hairline bg-white p-7"
             >
-              <div className="text-sm font-semibold uppercase tracking-[0.08em] text-link-blue">
+              <div className="text-sm font-semibold uppercase tracking-caption text-link-blue">
                 {String(index + 1).padStart(2, "0")}
               </div>
               {step.title ? (
@@ -607,9 +607,9 @@ function MarketingFaqSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-white py-16 md:py-20">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+      <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-[880px] gap-3">
+        <div className="mx-auto mt-10 grid max-w-faq gap-3">
           {items.map((item) => (
             <details
               key={`${item.badge}-${item.title}`}
@@ -619,7 +619,7 @@ function MarketingFaqSection({ section }: { section: PageSection }) {
                 <span className="text-base font-semibold leading-snug text-carbon">
                   {item.title}
                 </span>
-                <strong className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-link-blue">
+                <strong className="shrink-0 text-xs font-semibold uppercase tracking-caption text-link-blue">
                   {item.badge}
                 </strong>
               </summary>

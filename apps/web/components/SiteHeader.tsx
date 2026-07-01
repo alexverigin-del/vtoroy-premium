@@ -61,7 +61,7 @@ export function SiteHeader({
       className="sticky top-0 z-50 border-b border-hairline/80 bg-white/85 backdrop-blur-xl"
       data-component="SiteHeader"
     >
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-5 py-1.5">
+      <div className="mx-auto flex max-w-shell items-center justify-between gap-4 px-5 py-1.5">
         <SiteLogo settings={settings} />
 
         <nav className="hidden items-center gap-2 md:flex" aria-label="Основная навигация">
@@ -103,7 +103,7 @@ export function SiteHeader({
 
       {open ? (
         <div className="border-t border-hairline bg-white px-5 py-3 md:hidden">
-          <nav className="mx-auto grid max-w-[1440px] gap-1" aria-label="Мобильная навигация">
+          <nav className="mx-auto grid max-w-shell gap-1" aria-label="Мобильная навигация">
             {headerItems.map((item) => (
               <NavLink key={item.id} item={item} onClick={() => setOpen(false)} />
             ))}

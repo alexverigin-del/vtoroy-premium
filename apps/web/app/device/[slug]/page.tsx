@@ -168,13 +168,13 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
           ← Store
         </Link>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_410px] lg:items-start">
+        <div className="mt-6 grid gap-8 lg:grid-cols-product lg:items-start">
           <div>
             <DeviceGallery images={device.gallery} />
           </div>
 
           <aside className="card p-6 lg:sticky lg:top-6">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+            <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
               {device.category}
             </p>
             <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
@@ -225,7 +225,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-content gap-6 px-6 pb-14 lg:grid-cols-[minmax(0,1fr)_410px]">
+      <section className="mx-auto grid max-w-content gap-6 px-6 pb-14 lg:grid-cols-product">
         <div className="grid gap-6">
           <DetailCard title="Что входит в карточку">
             <div className="grid gap-4 sm:grid-cols-3">
@@ -306,7 +306,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
         <section className="mx-auto max-w-content px-6 pb-16">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+              <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
                 Еще в Store
               </p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight">Похожие устройства</h2>

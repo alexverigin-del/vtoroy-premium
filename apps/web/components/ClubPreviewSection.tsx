@@ -89,10 +89,10 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
       id="club"
       data-component="ClubPreviewSection"
     >
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="mx-auto max-w-[780px] text-center">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-white/55">
+            <div className="text-xs font-semibold uppercase tracking-label text-white/55">
               {section.eyebrow}
             </div>
           ) : null}
@@ -102,7 +102,7 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-[17px] leading-relaxed text-white/70">{section.body}</p>
+            <p className="mt-4 text-copy leading-relaxed text-white/70">{section.body}</p>
           ) : null}
         </div>
 
@@ -114,13 +114,13 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
                 "rounded-card border p-5",
                 level.featured
                   ? "border-link-blue bg-white text-carbon shadow-product"
-                  : "border-white/15 bg-white/[0.06] text-white",
+                  : "border-white/15 bg-white/5 text-white",
               )}
             >
               {level.badge ? (
                 <div
                   className={cn(
-                    "inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em]",
+                    "inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-badge",
                     level.featured ? "bg-link-blue/10 text-link-blue" : "bg-white/10 text-white/65",
                   )}
                 >
@@ -147,7 +147,7 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
                       key={feature}
                       className={cn(
                         "flex gap-2 text-sm leading-relaxed",
-                        level.featured ? "text-carbon" : "text-white/[0.78]",
+                        level.featured ? "text-carbon" : "text-white/80",
                       )}
                     >
                       <span className={level.featured ? "text-link-blue" : "text-white"}>

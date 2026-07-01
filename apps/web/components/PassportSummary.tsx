@@ -20,7 +20,7 @@ export function PassportSummary({ passport }: { passport: DevicePassport }) {
   return (
     <aside className="card overflow-hidden" data-component="PassportSummary">
       <div className="border-b border-hairline bg-ink px-6 py-5 text-white">
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/60">
+        <p className="text-xs font-medium uppercase tracking-eyebrow text-white/60">
           ISVOI Passport
         </p>
         <div className="mt-2 flex items-end justify-between gap-4">

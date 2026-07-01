@@ -26,14 +26,14 @@ export function SiteFooter({
 
   return (
     <footer className="border-t border-hairline bg-white py-12" data-component="SiteFooter">
-      <div className="mx-auto max-w-[1440px] px-5">
+      <div className="mx-auto max-w-shell px-5">
         {settings.footerNote ? (
-          <p className="max-w-[980px] text-sm leading-relaxed text-ash">{settings.footerNote}</p>
+          <p className="max-w-copy-wide text-sm leading-relaxed text-ash">{settings.footerNote}</p>
         ) : null}
-        <div className="mt-9 grid gap-8 md:grid-cols-[1.3fr_repeat(3,minmax(0,1fr))]">
+        <div className="mt-9 grid gap-8 md:grid-cols-footer">
           <div className="grid content-start gap-4">
             <SiteLogo settings={settings} />
-            <p className="max-w-[280px] text-sm leading-relaxed text-ash">
+            <p className="max-w-caption text-sm leading-relaxed text-ash">
               {settings.footerBrandText || settings.tagline}
             </p>
           </div>

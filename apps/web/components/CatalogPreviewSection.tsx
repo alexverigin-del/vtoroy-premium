@@ -151,10 +151,10 @@ export function CatalogPreviewSection({
       id="catalog"
       data-component="CatalogPreviewSection"
     >
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="mx-auto max-w-[780px] text-center">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {section.eyebrow}
             </div>
           ) : null}
@@ -164,7 +164,7 @@ export function CatalogPreviewSection({
             </Heading>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
         </div>
 

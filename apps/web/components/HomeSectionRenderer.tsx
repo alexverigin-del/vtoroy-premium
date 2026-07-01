@@ -182,19 +182,19 @@ function HomeHeroSection({ section }: { section: PageSection }) {
       : ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"];
 
   return (
-    <section className="mx-auto max-w-[1180px] px-4 pb-16 pt-14 text-center md:px-6 md:pb-20 md:pt-20">
+    <section className="mx-auto max-w-page px-4 pb-16 pt-14 text-center md:px-6 md:pb-20 md:pt-20">
       {section.eyebrow ? (
-        <div className="mx-auto max-w-[760px] text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+        <div className="mx-auto max-w-measure text-xs font-semibold uppercase tracking-label text-link-blue">
           {section.eyebrow}
         </div>
       ) : null}
       {section.headline ? (
-        <h1 className="mx-auto mt-4 max-w-[900px] text-5xl font-semibold leading-[1.03] tracking-normal text-carbon md:text-7xl">
+        <h1 className="mx-auto mt-4 max-w-display text-5xl font-semibold leading-display tracking-normal text-carbon md:text-7xl">
           {section.headline}
         </h1>
       ) : null}
       {section.body ? (
-        <p className="mx-auto mt-5 max-w-[660px] text-lg leading-relaxed text-graphite md:text-xl">
+        <p className="mx-auto mt-5 max-w-body-copy text-lg leading-relaxed text-graphite md:text-xl">
           {section.body}
         </p>
       ) : null}
@@ -209,7 +209,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
       </div>
 
       <div
-        className="mx-auto mt-6 flex max-w-[780px] flex-wrap justify-center gap-2"
+        className="mx-auto mt-6 flex max-w-copy flex-wrap justify-center gap-2"
         aria-label="Принципы клуба"
       >
         {assuranceItems.map((item) => (
@@ -222,7 +222,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
         ))}
       </div>
 
-      <div className="relative mx-auto mt-10 min-h-[560px] max-w-[1040px] overflow-hidden rounded-img bg-frost md:min-h-[620px]">
+      <div className="relative mx-auto mt-10 min-h-hero-visual max-w-stage overflow-hidden rounded-img bg-frost md:min-h-hero-visual-lg">
         <Image
           src={imageSrc}
           alt={visual.imageAlt}
@@ -239,7 +239,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
             </div>
             <div className="rounded-card border border-hairline bg-frost px-3 py-2 text-center">
               <b className="block text-lg text-carbon">{passport.grade}</b>
-              <span className="text-[11px] uppercase tracking-[0.08em] text-ash">
+              <span className="text-caption uppercase tracking-caption text-ash">
                 {passport.gradeLabel}
               </span>
             </div>
@@ -286,7 +286,7 @@ function TrustSection({ section }: { section: PageSection }) {
       className="border-y border-hairline bg-white py-8"
       aria-label={section.eyebrow || "Принципы клуба"}
     >
-      <div className="mx-auto grid max-w-[1180px] gap-px px-4 md:grid-cols-3 md:px-6">
+      <div className="mx-auto grid max-w-page gap-px px-4 md:grid-cols-3 md:px-6">
         {items.map((item) => (
           <div
             key={`${item.title}-${item.text}`}
@@ -295,7 +295,7 @@ function TrustSection({ section }: { section: PageSection }) {
             <div className="text-2xl font-semibold leading-tight text-carbon md:text-3xl">
               {item.title}
             </div>
-            <div className="mx-auto mt-2 max-w-[280px] text-sm leading-relaxed text-ash">
+            <div className="mx-auto mt-2 max-w-caption text-sm leading-relaxed text-ash">
               {item.text}
             </div>
           </div>
@@ -314,10 +314,10 @@ function PathRouterSection({ section }: { section: PageSection }) {
       className="bg-white py-16 md:py-20"
       aria-label={section.eyebrow || "Выберите свой сценарий"}
     >
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="mx-auto max-w-[760px] text-center">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-measure text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {section.eyebrow}
             </div>
           ) : null}
@@ -327,7 +327,7 @@ function PathRouterSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
         </div>
 

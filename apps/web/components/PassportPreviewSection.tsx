@@ -219,10 +219,10 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
       id="passport"
       data-component="PassportPreviewSection"
     >
-      <div className="mx-auto grid max-w-[1180px] gap-8 px-4 md:grid-cols-[0.95fr_1.05fr] md:px-6">
+      <div className="mx-auto grid max-w-page gap-8 px-4 md:grid-cols-passport md:px-6">
         <div className="flex flex-col justify-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {section.eyebrow}
             </div>
           ) : null}
@@ -232,7 +232,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
 
           <ul className="mt-8 grid gap-3">
@@ -282,9 +282,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             </div>
             <div className="rounded-card border border-hairline bg-frost px-4 py-3 text-center">
               <b className="block text-2xl text-carbon">{card.grade}</b>
-              <span className="text-xs uppercase tracking-[0.08em] text-ash">
-                {card.gradeLabel}
-              </span>
+              <span className="text-xs uppercase tracking-caption text-ash">{card.gradeLabel}</span>
             </div>
           </div>
 

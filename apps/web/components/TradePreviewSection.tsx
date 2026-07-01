@@ -148,10 +148,10 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-white py-16 md:py-20" id="trade">
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="mx-auto max-w-[780px] text-center">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-link-blue">
+            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {section.eyebrow}
             </div>
           ) : null}
@@ -161,7 +161,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-[17px] leading-relaxed text-graphite">{section.body}</p>
+            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
         </div>
 
@@ -183,10 +183,10 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
         </div>
 
         <div className="mt-8 rounded-card border border-hairline bg-frost p-5 md:p-6">
-          <div className="text-sm font-semibold uppercase tracking-[0.12em] text-link-blue">
+          <div className="text-sm font-semibold uppercase tracking-label text-link-blue">
             {valuation.heading}
           </div>
-          <div className="mt-5 grid items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
+          <div className="mt-5 grid items-center gap-4 md:grid-cols-trade">
             <div className="rounded-card border border-hairline bg-white p-5">
               <div className="text-xl font-semibold text-carbon">{valuation.fromDevice}</div>
               <div className="mt-2 text-sm leading-relaxed text-ash">{valuation.fromNote}</div>

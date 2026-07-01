@@ -45,7 +45,7 @@ export function DeviceCard({ device }: { device: Device }) {
       href={href}
       className="card group flex h-full flex-col overflow-hidden outline-none transition hover:-translate-y-0.5 hover:shadow-product focus-visible:shadow-focus"
     >
-      <div className="flex aspect-[4/3] items-center justify-center bg-surface">
+      <div className="flex aspect-product items-center justify-center bg-surface">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt={device.listingAlt} className="h-full w-full object-cover" />

@@ -534,6 +534,12 @@ new commercial content should use structured collections and Directus Files.
   on 2026-07-01. Ship them together: code changes, this operating-memory update,
   `npm run web:verify`, GitHub push, Beget `git pull --ff-only`, Beget
   `npm run web:verify`, `pm2 restart isvoi-web`, then production smoke checks.
+- The 2026-07-01 release was pushed and deployed to Beget. Production passed
+  local `npm run web:verify`, Beget `npm run web:verify`, `npm run smoke:prod`,
+  `npm run smoke:images` and `npm run smoke:visual`. The visual smoke initially
+  caught the mobile product action bar overlapping first-screen specs; the
+  follow-up fix made that bar appear only after scroll, then visual smoke passed
+  on `/device/iphone-13-pro` mobile and the full default route set.
 
 ## Studio Workflow Decisions
 

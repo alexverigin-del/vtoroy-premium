@@ -3,7 +3,7 @@ import { HomeSectionRenderer } from "@/components/HomeSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
 import {
   getNavigationItems,
-  getPublishedDevices,
+  getPublishedDeviceCards,
   getSitePage,
   getSiteSettings,
 } from "@/lib/directus";
@@ -42,7 +42,7 @@ export default async function HomePage() {
     getSitePage("home"),
     getSiteSettings(),
     getNavigationItems(),
-    getPublishedDevices(),
+    getPublishedDeviceCards(),
   ]);
   const chrome = siteChrome(settings, navigation);
   const sections = homeSectionsForPage(page?.sections);

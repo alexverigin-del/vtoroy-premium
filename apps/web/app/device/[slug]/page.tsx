@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import type { Device } from "@vtoroy/shared";
-import { getDeviceBySlug, getPublishedDevices } from "@/lib/directus";
+import { getDeviceBySlug, getPublishedDeviceCards } from "@/lib/directus";
+import type { DeviceCardData } from "@/lib/device-card-data";
 import { PassportSummary } from "@/components/PassportSummary";
 import { CTAButton } from "@/components/CTAButton";
 import { DeviceGallery } from "@/components/DeviceGallery";
@@ -17,7 +18,7 @@ export const revalidate = 0;
 
 // Pre-render known device pages at build time; others render on demand.
 export async function generateStaticParams() {
-  const devices = await getPublishedDevices();
+  const devices = await getPublishedDeviceCards();
   return devices.map((d) => ({ slug: d.id }));
 }
 
@@ -48,14 +49,14 @@ function compact(values: Array<string | undefined | null | false>): string[] {
   return values.filter(Boolean) as string[];
 }
 
-function normalizedStockStatus(device: Device): string {
+function normalizedStockStatus(device: Pick<DeviceCardData, "stockStatus">): string {
   const raw = (device.stockStatus || "available").toLowerCase();
   if (!raw || raw === "in_stock") return "available";
   if (raw === "service") return "hidden";
   return raw;
 }
 
-function isActionableDevice(device: Device): boolean {
+function isActionableDevice(device: DeviceCardData): boolean {
   const status = normalizedStockStatus(device);
   return status !== "hidden" && status !== "sold";
 }
@@ -84,7 +85,7 @@ function updatedText(device: Device): string {
   }).format(date)}`;
 }
 
-function relatedDevices(device: Device, devices: Device[]): Device[] {
+function relatedDevices(device: Device, devices: DeviceCardData[]): DeviceCardData[] {
   const candidates = devices
     .filter((item) => item.id !== device.id && normalizedStockStatus(item) !== "hidden")
     .sort((a, b) => Number(a.sort ?? 0) - Number(b.sort ?? 0));
@@ -142,7 +143,7 @@ function DetailCard({ title, children }: { title: string; children: ReactNode })
 
 export default async function DevicePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [device, devices] = await Promise.all([getDeviceBySlug(slug), getPublishedDevices()]);
+  const [device, devices] = await Promise.all([getDeviceBySlug(slug), getPublishedDeviceCards()]);
   if (!device) notFound();
 
   const facts = compact([

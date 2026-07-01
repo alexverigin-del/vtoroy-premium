@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import type { Device, PageSection } from "@vtoroy/shared";
+import type { PageSection } from "@vtoroy/shared";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import type { DeviceCardData } from "@/lib/device-card-data";
 import { cn } from "../lib/cn";
 import { DeviceCard } from "./DeviceCard";
 import { normalizeSiteUrl } from "./site-chrome-utils";
@@ -40,7 +41,7 @@ function filterList(value: unknown): FilterOption[] {
   });
 }
 
-function normalizeStockStatus(device: Device): string {
+function normalizeStockStatus(device: DeviceCardData): string {
   const raw = (device.stockStatus || "available").trim().toLowerCase();
   if (!raw || raw === "in_stock") return "available";
   if (raw === "service") return "hidden";
@@ -60,18 +61,18 @@ function statusOrder(status: string): number {
   }
 }
 
-function updatedTime(device: Device): number {
+function updatedTime(device: DeviceCardData): number {
   if (!device.updatedAt) return 0;
   const time = Date.parse(device.updatedAt);
   return Number.isFinite(time) ? time : 0;
 }
 
-function matchesCategory(device: Device, category: string): boolean {
+function matchesCategory(device: DeviceCardData, category: string): boolean {
   if (category === "all") return true;
   return device.category === category || device.tags.includes(category);
 }
 
-function sortDevices(devices: Device[], sort: string): Device[] {
+function sortDevices(devices: DeviceCardData[], sort: string): DeviceCardData[] {
   return [...devices].sort((a, b) => {
     if (sort === "price-asc") return Number(a.price || 0) - Number(b.price || 0);
     if (sort === "price-desc") return Number(b.price || 0) - Number(a.price || 0);
@@ -116,7 +117,7 @@ export function CatalogPreviewSection({
   devices,
 }: {
   section: PageSection;
-  devices: Device[];
+  devices: DeviceCardData[];
 }) {
   const categoryFilters = filterList(section.content.filters);
   const statusFilters = filterList(section.content.statusFilters);

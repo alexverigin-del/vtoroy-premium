@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getPublishedDevices } from "@/lib/directus";
+import { getPublishedDeviceCards } from "@/lib/directus";
 
 const SITE_URL = "https://isvoi.ru";
 
@@ -13,7 +13,7 @@ function validDate(value?: string): Date | undefined {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const devices = await getPublishedDevices();
+  const devices = await getPublishedDeviceCards();
 
   return [
     ...staticRoutes.map((route) => ({

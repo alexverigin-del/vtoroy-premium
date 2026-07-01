@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Device, PageSection } from "@vtoroy/shared";
+import type { PageSection } from "@vtoroy/shared";
+import type { DeviceCardData } from "@/lib/device-card-data";
 import { CatalogPreviewSection } from "./CatalogPreviewSection";
 import { ClubPreviewSection } from "./ClubPreviewSection";
 import { DiagnosticsCompareSection } from "./DiagnosticsCompareSection";
@@ -19,7 +20,7 @@ import {
 
 type HomeSectionRendererProps = {
   section: PageSection;
-  devices?: Device[];
+  devices?: DeviceCardData[];
 };
 
 type HeroPassport = {

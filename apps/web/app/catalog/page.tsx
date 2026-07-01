@@ -3,7 +3,7 @@ import { SiteShell } from "@/components/SiteShell";
 import {
   directusConfig,
   getNavigationItems,
-  getPublishedDevices,
+  getPublishedDeviceCards,
   getSiteSettings,
 } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
@@ -30,7 +30,7 @@ export default async function CatalogPage() {
   const [settings, navigation, devices] = await Promise.all([
     getSiteSettings(),
     getNavigationItems(),
-    getPublishedDevices(),
+    getPublishedDeviceCards(),
   ]);
   const chrome = siteChrome(settings, navigation);
 

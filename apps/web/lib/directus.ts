@@ -9,6 +9,8 @@ import type {
   FaqItem,
   TradeInfo,
 } from "@vtoroy/shared";
+import { cache } from "react";
+import type { DeviceCardData } from "@/lib/device-card-data";
 import { fallbackDevices } from "@/data/devices";
 
 // Directus client for the Catalog MVP.
@@ -97,6 +99,29 @@ const DEVICE_FIELDS = [
   "updated_at",
   "stock_status",
   "content_status",
+].join(",");
+
+const DEVICE_CARD_FIELDS = [
+  "id",
+  "status",
+  "sort",
+  "tags",
+  "category",
+  "title",
+  "model",
+  "specs",
+  "color",
+  "price",
+  "price_text",
+  "grade",
+  "exit_text",
+  "listing_image",
+  "listing_alt",
+  "cta_label",
+  "detail_href",
+  "listing_file",
+  "updated_at",
+  "stock_status",
 ].join(",");
 
 const DEVICE_IMAGE_FIELDS = [
@@ -488,6 +513,37 @@ function cardImageFromDeviceImages(rows: DeviceImageRow[] = []): string {
   return preferred ? mediaUrl(preferred.image, "card") : "";
 }
 
+function mapDeviceCardFromDirectus(
+  row: Record<string, unknown>,
+  imageRows: DeviceImageRow[] = [],
+): DeviceCardData {
+  const stockStatus = normalizeStockStatus(row.stock_status);
+  return {
+    id: str(row.id),
+    tags: json<string[]>(row.tags, []),
+    category: str(row.category),
+    model: str(row.model),
+    sort: num(row.sort),
+    title: str(row.title),
+    specs: str(row.specs),
+    color: str(row.color),
+    price: num(row.price),
+    priceText: str(row.price_text),
+    grade: str(row.grade),
+    exitText: str(row.exit_text),
+    stockStatus,
+    stockStatusLabel: stockStatusLabel(stockStatus),
+    updatedAt: str(row.updated_at) || str(row.date_updated),
+    listingImage:
+      cardImageFromDeviceImages(imageRows) ||
+      mediaUrl(row.listing_file, "card") ||
+      mediaUrl(row.listing_image),
+    listingAlt: str(row.listing_alt),
+    ctaLabel: str(row.cta_label),
+    detailHref: str(row.detail_href),
+  };
+}
+
 export function mapDeviceFromDirectus(
   row: Record<string, unknown>,
   imageRows: DeviceImageRow[] = [],
@@ -558,7 +614,7 @@ export function mapDeviceFromDirectus(
  * Structured related collections are read first; legacy JSON fields remain as
  * fallback until all rows are migrated.
  */
-export async function getPublishedDevices(): Promise<Device[]> {
+export const getPublishedDevices = cache(async function getPublishedDevices(): Promise<Device[]> {
   const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
       `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_FIELDS}&sort=sort,-updated_at`,
@@ -595,7 +651,36 @@ export async function getPublishedDevices(): Promise<Device[]> {
   return directusConfig.catalogFallbackAllowed
     ? fallbackDevices.filter((device) => device.stockStatus !== "hidden")
     : [];
-}
+});
+
+/**
+ * Lightweight published devices for catalog cards, previews, related products
+ * and sitemap. This intentionally avoids passport/trade/detail relations so
+ * client catalog components do not receive the full product payload.
+ */
+export const getPublishedDeviceCards = cache(async function getPublishedDeviceCards(): Promise<
+  DeviceCardData[]
+> {
+  const [data, imageRows] = await Promise.all([
+    directusGet<Record<string, unknown>[]>(
+      `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_CARD_FIELDS}&sort=sort,-updated_at`,
+      { cache: "no-store" },
+    ),
+    directusGet<DeviceImageRow[]>(
+      `/items/device_images?filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=device,sort`,
+      { cache: "no-store" },
+    ),
+  ]);
+  if (data && data.length > 0) {
+    const images = deviceImagesByDevice(imageRows);
+    return data
+      .map((row) => mapDeviceCardFromDirectus(row, images.get(str(row.id)) ?? []))
+      .filter((device) => device.stockStatus !== "hidden");
+  }
+  return directusConfig.catalogFallbackAllowed
+    ? fallbackDevices.filter((device) => device.stockStatus !== "hidden")
+    : [];
+});
 
 /**
  * A single device by slug (id). In production this fails closed unless
@@ -603,7 +688,9 @@ export async function getPublishedDevices(): Promise<Device[]> {
  *
  *   GET /items/devices?filter[id][_eq]={slug}&fields=*&limit=1
  */
-export async function getDeviceBySlug(slug: string): Promise<Device | null> {
+export const getDeviceBySlug = cache(async function getDeviceBySlug(
+  slug: string,
+): Promise<Device | null> {
   const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
       `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_FIELDS}&limit=1`,
@@ -634,7 +721,7 @@ export async function getDeviceBySlug(slug: string): Promise<Device | null> {
   return directusConfig.catalogFallbackAllowed
     ? (fallbackDevices.find((d) => d.id === slug && d.stockStatus !== "hidden") ?? null)
     : null;
-}
+});
 
 // ---------------------------------------------------------------------------
 // Editable site content (texts)
@@ -859,7 +946,9 @@ function mapNavigationItemFromDirectus(row: Record<string, unknown>): Navigation
  * back to template defaults baked into the component. Content has no bundled
  * fallback by design (the static prototype is the reference, not seed data).
  */
-export async function getSitePage(slug: string): Promise<SitePage | null> {
+export const getSitePage = cache(async function getSitePage(
+  slug: string,
+): Promise<SitePage | null> {
   const data = await directusGet<Record<string, unknown>[]>(
     `/items/site_pages?filter[slug][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*&limit=1`,
     { cache: "no-store" },
@@ -877,39 +966,45 @@ export async function getSitePage(slug: string): Promise<SitePage | null> {
     };
   }
   return null;
-}
+});
 
 /** Active sections for a page slug (convenience wrapper over getSitePage). */
-export async function getPageSections(slug: string): Promise<PageSection[]> {
+export const getPageSections = cache(async function getPageSections(
+  slug: string,
+): Promise<PageSection[]> {
   const page = await getSitePage(slug);
   if (!page) return [];
   return page.sections.filter((s) => s.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
-}
+});
 
 /** Global site settings singleton. */
-export async function getSiteSettings(): Promise<SiteSettings | null> {
-  const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
-    "/items/site_settings?limit=1",
-    { cache: "no-store" },
-  );
-  const row = Array.isArray(data) ? data[0] : data;
-  return row ? mapSiteSettingsFromDirectus(row) : null;
-}
+export const getSiteSettings = cache(
+  async function getSiteSettings(): Promise<SiteSettings | null> {
+    const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
+      "/items/site_settings?limit=1",
+      { cache: "no-store" },
+    );
+    const row = Array.isArray(data) ? data[0] : data;
+    return row ? mapSiteSettingsFromDirectus(row) : null;
+  },
+);
 
 /** Active navigation links for header/footer/mobile chrome. */
-export async function getNavigationItems(): Promise<NavigationItem[]> {
+export const getNavigationItems = cache(async function getNavigationItems(): Promise<
+  NavigationItem[]
+> {
   const data = await directusGet<Record<string, unknown>[]>(
     "/items/navigation_items?filter[is_active][_eq]=true&fields=*,page.slug&sort=location,sort",
     { cache: "no-store" },
   );
   return data?.map(mapNavigationItemFromDirectus).filter((item) => item.label && item.url) ?? [];
-}
+});
 
 /** Active FAQ items, optionally filtered by category. */
-export async function getFaqItems(category?: string): Promise<FaqItem[]> {
+export const getFaqItems = cache(async function getFaqItems(category?: string): Promise<FaqItem[]> {
   const catFilter = category ? `&filter[category][_eq]=${encodeURIComponent(category)}` : "";
   const data = await directusGet<Record<string, unknown>[]>(
     `/items/faq_items?filter[is_active][_eq]=true${catFilter}&sort=sort`,
   );
   return data?.map(mapFaqItemFromDirectus) ?? [];
-}
+});

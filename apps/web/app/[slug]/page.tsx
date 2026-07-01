@@ -5,7 +5,7 @@ import { SiteShell } from "@/components/SiteShell";
 import {
   directusConfig,
   getNavigationItems,
-  getPublishedDevices,
+  getPublishedDeviceCards,
   getSitePage,
   getSiteSettings,
 } from "@/lib/directus";
@@ -60,7 +60,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
     getSitePage(slug),
     getSiteSettings(),
     getNavigationItems(),
-    slug === "store" ? getPublishedDevices() : Promise.resolve([]),
+    slug === "store" ? getPublishedDeviceCards() : Promise.resolve([]),
   ]);
   const chrome = siteChrome(settings, navigation);
   const sections = marketingSectionsForPage(slug, page?.sections);

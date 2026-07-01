@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Device, PageSection } from "@vtoroy/shared";
+import type { PageSection } from "@vtoroy/shared";
 import { CatalogGrid } from "./CatalogGrid";
+import type { DeviceCardData } from "@/lib/device-card-data";
 import type { MarketingSlug } from "@/lib/site-content";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
@@ -10,7 +11,7 @@ import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 type MarketingSectionRendererProps = {
   section: PageSection;
   slug: MarketingSlug;
-  devices?: Device[];
+  devices?: DeviceCardData[];
   directusEnabled: boolean;
 };
 

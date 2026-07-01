@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Device } from "@vtoroy/shared";
+import type { DeviceCardData } from "@/lib/device-card-data";
 
 function isAbsolute(url: string): boolean {
   return /^https?:\/\//.test(url);
@@ -11,7 +11,7 @@ function imageSrc(path: string): string {
   return `/${path}`;
 }
 
-function stockStatusLabel(device: Device): string {
+function stockStatusLabel(device: DeviceCardData): string {
   if (device.stockStatusLabel) return device.stockStatusLabel;
   switch ((device.stockStatus || "available").toLowerCase()) {
     case "reserved":
@@ -23,7 +23,7 @@ function stockStatusLabel(device: Device): string {
   }
 }
 
-function updatedText(device: Device): string {
+function updatedText(device: DeviceCardData): string {
   if (device.updatedText) return device.updatedText;
   if (!device.updatedAt) return "";
   const date = new Date(device.updatedAt);
@@ -35,7 +35,7 @@ function updatedText(device: Device): string {
   }).format(date)}`;
 }
 
-export function DeviceCard({ device }: { device: Device }) {
+export function DeviceCard({ device }: { device: DeviceCardData }) {
   const src = imageSrc(device.listingImage);
   const update = updatedText(device);
   const href = device.detailHref || `/device/${device.id}`;

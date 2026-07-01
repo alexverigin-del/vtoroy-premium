@@ -453,6 +453,17 @@ new commercial content should use structured collections and Directus Files.
   `next/headers`, Directus/site-content helpers or fallback data modules.
   Client components may read only `NEXT_PUBLIC_*` environment variables; load
   server data in server components/routes and pass serializable props down.
+- RSC/data-fetching audit on 2026-07-01 split catalog card data from full
+  product detail data. Catalog pages, homepage catalog preview, `/store`,
+  related products and sitemap use `getPublishedDeviceCards()`, which fetches
+  only card fields plus published device images. Full `getPublishedDevices()`
+  remains for server-only detail workflows that genuinely need passport/trade
+  data for every item.
+- Directus read helpers that are used by App Router pages are wrapped in
+  request-level `react/cache` memoization. This keeps `generateMetadata` and
+  the matching page render from duplicating identical `getSitePage`,
+  `getDeviceBySlug`, chrome or catalog-card reads during one RSC render pass
+  while preserving `no-store` live Directus reads between requests.
 - Inline styling is guarded by `tailwind:post-audit`: `style={...}`,
   `CSSProperties` and direct DOM style mutations are blocked by default. The
   only reviewed exception is `SiteLogo` using `logoSizeStyle(settings)` from

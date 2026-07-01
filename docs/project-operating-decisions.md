@@ -557,6 +557,15 @@ new commercial content should use structured collections and Directus Files.
   another bordered-card grid into lightweight ordered timelines. The renderer
   still consumes the same Directus `content.steps` array, but presents steps
   with numbered pills and hairline connectors for clearer sequence rhythm.
+- Sixth local implementation step adjusted marketing card grids so four-card
+  sections use four desktop columns instead of a 3+1 orphan layout. This
+  currently improves `store_offer` while preserving the same Directus
+  `content.items/cards` shape and the existing three-column rhythm for
+  three-card sections.
+- Seventh local implementation step flattened marketing `page.cta` blocks:
+  remove the broad `shadow-soft` from the bordered CTA container and use the
+  shared Ice surface instead. This aligns the renderer with the Flat Retail Rule
+  and avoids a generic border-plus-shadow promo-card pattern.
 
 ## Studio Workflow Decisions
 

@@ -235,6 +235,10 @@ Marketing section eyebrows should read like quiet orientation text, not a repeat
 
 Marketing step sections should render as lightweight ordered timelines, not another grid of heavy cards. Use the existing `content.steps` order, compact numbered pills, and hairline connectors so the sequence is readable while the page keeps breathing room.
 
+Marketing card grids should avoid orphan rows when the content count is known. Three-card sections can stay at three desktop columns; four-card sections should use four desktop columns rather than a 3+1 layout.
+
+Marketing page CTA blocks should stay flat: use a hairline border and Ice/Frost surface, not a border plus broad decorative shadow. The CTA should feel like a calm next step, not a floating promo card.
+
 ### Device Card
 
 Device cards are the commerce workhorse. They combine real product imagery, stock badge, updated date, device title, grade, key facts, price, and a passport CTA in one flat bordered card. The card should feel like a verified dossier, not a discount tile.

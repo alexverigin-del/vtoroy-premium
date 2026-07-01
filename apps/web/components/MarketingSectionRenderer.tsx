@@ -605,7 +605,7 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-white py-16 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy-wide rounded-card border border-hairline bg-white/80 p-8 text-center shadow-soft md:p-12">
+        <div className="mx-auto max-w-copy-wide rounded-card border border-hairline bg-ice p-8 text-center md:p-12">
           {section.headline ? (
             <h2 className="text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
@@ -646,12 +646,16 @@ function MarketingCardsSection({ section }: { section: PageSection }) {
   const cards = marketingCards(section.content.items ?? section.content.cards);
   if (cards.length === 0) return null;
   const isWash = section.variant?.includes("wash");
+  const cardGridClass = cn(
+    "mx-auto mt-10 grid max-w-content gap-6 sm:grid-cols-2",
+    cards.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3",
+  );
 
   return (
     <section className={cn("py-16 md:py-20", isWash ? "bg-frost" : "bg-white")}>
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-content gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={cardGridClass}>
           {cards.map((card) => (
             <article
               key={`${card.badge}-${card.title}`}

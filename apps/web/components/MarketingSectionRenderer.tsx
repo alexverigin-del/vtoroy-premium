@@ -346,6 +346,21 @@ function CheckIcon() {
   );
 }
 
+function ChevronIcon() {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 function MarketingVisualBandSection({ section }: { section: PageSection }) {
   const visual = visualContent(section.content.visual);
   const imageSrc = section.image || visual.imageSrc;
@@ -368,7 +383,7 @@ function MarketingVisualBandSection({ section }: { section: PageSection }) {
             />
           ) : null}
           {captionTitle || captionText ? (
-            <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/90 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay-sm md:p-5">
+            <div className="absolute inset-x-4 bottom-4 rounded-card border border-hairline bg-white p-4 md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay-sm md:p-5">
               {captionTitle ? (
                 <strong className="block text-base font-semibold text-carbon">
                   {captionTitle}
@@ -470,7 +485,7 @@ function MarketingLevelsSection({ section }: { section: PageSection }) {
               className={cn(
                 "flex min-h-marketing-tall flex-col rounded-card border p-7",
                 level.featured
-                  ? "border-signal-blue bg-white text-carbon shadow-product"
+                  ? "border-signal-blue bg-white text-carbon"
                   : "border-white/15 bg-white/5 text-white",
               )}
             >
@@ -577,18 +592,32 @@ function MarketingCompareSection({ section }: { section: PageSection }) {
                 {row.label}
               </div>
               <div
-                className="flex gap-2 border-t border-hairline p-4 text-sm leading-relaxed text-graphite md:border-l md:border-t-0"
+                className="flex items-start gap-2 border-t border-hairline p-4 text-sm leading-relaxed text-graphite md:border-l md:border-t-0"
                 role="cell"
               >
-                <XIcon />
-                <span>{row.bad}</span>
+                <span className="mt-0.5 text-ash">
+                  <XIcon />
+                </span>
+                <span className="grid gap-1">
+                  <span className="text-xs font-semibold text-ash md:hidden">
+                    {comparison.badHeader}
+                  </span>
+                  <span>{row.bad}</span>
+                </span>
               </div>
               <div
-                className="flex gap-2 border-t border-hairline bg-ice p-4 text-sm font-semibold leading-relaxed text-carbon md:border-l md:border-t-0"
+                className="flex items-start gap-2 border-t border-hairline bg-ice p-4 text-sm font-semibold leading-relaxed text-carbon md:border-l md:border-t-0"
                 role="cell"
               >
-                <CheckIcon />
-                <span>{row.good}</span>
+                <span className="mt-0.5 text-link-blue">
+                  <CheckIcon />
+                </span>
+                <span className="grid gap-1">
+                  <span className="text-xs font-semibold text-link-blue md:hidden">
+                    {comparison.goodHeader}
+                  </span>
+                  <span>{row.good}</span>
+                </span>
               </div>
             </div>
           ))}
@@ -731,15 +760,29 @@ function MarketingFaqSection({ section }: { section: PageSection }) {
           {items.map((item) => (
             <details
               key={`${item.badge}-${item.title}`}
-              className="group rounded-card border border-hairline bg-white"
+              className="group rounded-card border border-hairline bg-white transition open:border-pebble"
             >
-              <summary className="flex cursor-pointer list-none items-start justify-between gap-5 p-5 text-left marker:hidden md:items-center md:p-6">
+              <summary
+                className={cn(
+                  "flex min-h-16 cursor-pointer list-none items-start justify-between gap-5",
+                  "rounded-card p-5 text-left outline-none transition marker:hidden",
+                  "focus-visible:shadow-focus md:items-center md:p-6",
+                )}
+              >
                 <span className="text-base font-semibold leading-snug text-carbon">
                   {item.title}
                 </span>
-                <strong className="shrink-0 text-xs font-semibold uppercase tracking-caption text-link-blue">
-                  {item.badge}
-                </strong>
+                <span className="flex shrink-0 items-center gap-3 text-link-blue">
+                  <strong className="text-xs font-semibold uppercase tracking-caption">
+                    {item.badge}
+                  </strong>
+                  <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-pill border border-hairline bg-frost text-link-blue transition group-open:rotate-180"
+                    aria-hidden="true"
+                  >
+                    <ChevronIcon />
+                  </span>
+                </span>
               </summary>
               {item.text ? (
                 <div className="border-t border-hairline px-5 pb-5 pt-4 text-sm leading-relaxed text-graphite md:px-6 md:pb-6">

@@ -566,6 +566,22 @@ new commercial content should use structured collections and Directus Files.
   remove the broad `shadow-soft` from the bordered CTA container and use the
   shared Ice surface instead. This aligns the renderer with the Flat Retail Rule
   and avoids a generic border-plus-shadow promo-card pattern.
+- Eighth local implementation step improved marketing `compare` sections on
+  mobile: when the desktop column header row is hidden, bad/good cells now
+  repeat compact labels from the Directus `comparison.bad_header` and
+  `comparison.good_header` fields. The `comparison.rows` content shape and
+  desktop layout stay unchanged.
+- Ninth local implementation step flattened decorative marketing emphasis in
+  `MarketingSectionRenderer`: `visual.band` captions now use a solid white
+  hairline panel instead of blur plus a broad shadow, and featured Club level
+  cards use contrast and border emphasis instead of `shadow-product`. This
+  keeps Directus `visual` and `levels` content unchanged while aligning with
+  the Flat Retail Rule.
+- Tenth local implementation step hardened marketing FAQ rows:
+  `MarketingFaqSection` still uses native `details/summary` and the same
+  Directus `content.items` shape, but now replaces the hidden browser marker
+  with an explicit chevron disclosure control and adds a visible keyboard focus
+  state on the `summary` row.
 
 ## Studio Workflow Decisions
 

@@ -239,6 +239,12 @@ Marketing card grids should avoid orphan rows when the content count is known. T
 
 Marketing page CTA blocks should stay flat: use a hairline border and Ice/Frost surface, not a border plus broad decorative shadow. The CTA should feel like a calm next step, not a floating promo card.
 
+Marketing comparison sections must keep column context on mobile. When the desktop header row collapses, each bad/good cell should repeat a compact label from the Directus comparison headers so users do not have to infer which scenario they are reading.
+
+Marketing visual-band captions and Club level cards should stay flat unless they are grounding real product imagery. Use solid readable panels, hairline borders and contrast changes for emphasis instead of decorative blur or broad shadows.
+
+Marketing FAQ rows use native `details/summary`, but the hidden browser marker must be replaced with an explicit disclosure indicator and a visible keyboard focus state. The row should look interactive before it is opened.
+
 ### Device Card
 
 Device cards are the commerce workhorse. They combine real product imagery, stock badge, updated date, device title, grade, key facts, price, and a passport CTA in one flat bordered card. The card should feel like a verified dossier, not a discount tile.

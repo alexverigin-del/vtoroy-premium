@@ -114,7 +114,7 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
                 "rounded-card border p-5",
                 level.featured
                   ? "border-link-blue bg-white text-carbon shadow-product"
-                  : "border-white/[0.12] bg-white/[0.06] text-white",
+                  : "border-white/15 bg-white/[0.06] text-white",
               )}
             >
               {level.badge ? (

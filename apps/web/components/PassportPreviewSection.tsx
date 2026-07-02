@@ -274,7 +274,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
 
-        <div className="rounded-card border border-hairline bg-white p-4 shadow-product md:p-6">
+        <div className="rounded-card border border-hairline bg-white p-4 md:p-6">
           <div className="flex items-start justify-between gap-4 border-b border-hairline pb-5">
             <div>
               <div className="text-xl font-semibold text-carbon">{card.device}</div>

@@ -105,7 +105,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
 
-        <div className="relative mt-10 min-h-store-visual overflow-hidden rounded-img bg-white shadow-product md:min-h-section-visual">
+        <div className="relative mt-10 min-h-store-visual overflow-hidden rounded-img border border-hairline bg-white md:min-h-section-visual">
           <Image
             src={imageSrc}
             alt={visual.imageAlt}
@@ -113,7 +113,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             sizes="(min-width: 1180px) 1180px, 92vw"
             className="object-cover"
           />
-          <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
+          <div className="absolute inset-x-4 bottom-4 rounded-card border border-hairline bg-white p-4 md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
             <strong className="block text-base font-semibold text-carbon">
               {visual.captionTitle}
             </strong>

@@ -591,6 +591,13 @@ new commercial content should use structured collections and Directus Files.
   `PassportPreviewSection`, preserving existing Directus content shapes and
   aligning the homepage with the same Flat Retail Rule already applied to
   marketing pages.
+- Eleventh local implementation step completed that homepage preview flattening
+  pass: `heroPassportCardClass`, `StorePreviewSection` visual frames/captions
+  and `DiagnosticsCompareSection` visual frames/captions now use hairline
+  borders and solid white panels instead of `backdrop-blur` plus broad shadows,
+  and `PassportPreviewSection` no longer uses `shadow-product` on its preview
+  card. The existing homepage section keys and Directus `visual`, `passport`
+  and feature content shapes stay unchanged.
 
 ## Studio Workflow Decisions
 

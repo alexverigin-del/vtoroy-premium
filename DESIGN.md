@@ -231,6 +231,8 @@ The system is mostly flat and layered by tone. Surfaces are separated by white-o
 
 Store, Trade, Passport, and Club hero sections may include a compact trust strip under the primary actions. The strip uses two or three concise facts with a small blue label, a strong value line, and one explanatory sentence. It should make each page's role clearer without becoming a generic stats row: Store explains verified inventory, Trade explains routes, Passport explains recorded condition, and Club explains ongoing ownership. Editors can override the facts through page-section JSON (`highlights`, `hero_highlights`, or `facts`), while code fallbacks stay short and brand-specific.
 
+Homepage preview overlays and visual frames should follow the same Flat Retail Rule as marketing pages. Use solid white panels, hairline borders and product/content hierarchy instead of decorative blur or broad shadows for hero Passport, Store visual, Diagnostics visual and Passport preview modules.
+
 Marketing section eyebrows should read like quiet orientation text, not a repeated all-caps scaffold. Preserve the editor's wording and use compact blue labels without forced uppercase tracking except where the content itself is an intentional badge or sequence marker.
 
 Marketing step sections should render as lightweight ordered timelines, not another grid of heavy cards. Use the existing `content.steps` order, compact numbered pills, and hairline connectors so the sequence is readable while the page keeps breathing room.

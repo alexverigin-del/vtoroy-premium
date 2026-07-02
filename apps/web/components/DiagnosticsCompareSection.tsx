@@ -143,7 +143,7 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
           ) : null}
         </div>
 
-        <div className="relative mt-10 min-h-visual-md overflow-hidden rounded-img bg-frost shadow-soft md:min-h-section-visual">
+        <div className="relative mt-10 min-h-visual-md overflow-hidden rounded-img border border-hairline bg-frost md:min-h-section-visual">
           <Image
             src={imageSrc}
             alt={diagnostics.imageAlt}
@@ -151,7 +151,7 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
             sizes="(min-width: 1180px) 1180px, 92vw"
             className="object-cover"
           />
-          <div className="absolute inset-x-4 bottom-4 rounded-card border border-white/70 bg-white/95 p-4 shadow-soft backdrop-blur md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
+          <div className="absolute inset-x-4 bottom-4 rounded-card border border-hairline bg-white p-4 md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
             <span className="text-xs font-semibold uppercase tracking-label text-link-blue">
               {diagnostics.noteLabel}
             </span>

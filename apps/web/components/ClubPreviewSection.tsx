@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
-import { darkSecondaryCtaClass, primaryCtaClass } from "./ui-classes";
+import { darkSecondaryCtaClass, homeDarkSectionLabelClass, primaryCtaClass } from "./ui-classes";
 
 type ClubLevel = {
   badge: string;
@@ -92,9 +92,7 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
       <div className="mx-auto max-w-page px-4 md:px-6">
         <div className="mx-auto max-w-copy text-center">
           {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-label text-white/55">
-              {section.eyebrow}
-            </div>
+            <div className={homeDarkSectionLabelClass}>{section.eyebrow}</div>
           ) : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-white md:text-5xl">
@@ -113,7 +111,7 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
               className={cn(
                 "rounded-card border p-5",
                 level.featured
-                  ? "border-link-blue bg-white text-carbon shadow-product"
+                  ? "border-link-blue bg-white text-carbon"
                   : "border-white/15 bg-white/5 text-white",
               )}
             >

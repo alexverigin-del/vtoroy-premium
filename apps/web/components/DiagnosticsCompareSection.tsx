@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { PageSection } from "@vtoroy/shared";
+import { homeSectionLabelClass } from "./ui-classes";
 
 type DiagnosticsContent = {
   imageSrc: string;
@@ -128,11 +129,7 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
     <section className="bg-white py-16 md:py-20" id="diagnostics">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <div className="mx-auto max-w-copy text-center">
-          {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
-              {section.eyebrow}
-            </div>
-          ) : null}
+          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
@@ -152,9 +149,7 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
             className="object-cover"
           />
           <div className="absolute inset-x-4 bottom-4 rounded-card border border-hairline bg-white p-4 md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
-            <span className="text-xs font-semibold uppercase tracking-label text-link-blue">
-              {diagnostics.noteLabel}
-            </span>
+            <span className={homeSectionLabelClass}>{diagnostics.noteLabel}</span>
             <strong className="mt-2 block text-base font-semibold leading-snug text-carbon">
               {diagnostics.noteText}
             </strong>

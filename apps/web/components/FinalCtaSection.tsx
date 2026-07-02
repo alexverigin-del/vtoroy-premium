@@ -5,7 +5,7 @@ import { useId, useState } from "react";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
-import { submitButtonClass } from "./ui-classes";
+import { homeSectionLabelClass, submitButtonClass } from "./ui-classes";
 
 type FinalCtaForm = {
   scenarioLabel: string;
@@ -107,12 +107,10 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-frost py-16 md:py-20" id="final" data-component="FinalCtaSection">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="grid gap-6 rounded-card border border-hairline bg-white p-5 shadow-soft md:grid-cols-lead md:p-8">
+        <div className="grid gap-6 rounded-card border border-hairline bg-white p-5 md:grid-cols-lead md:p-8">
           <div className="flex flex-col justify-center">
             {section.eyebrow ? (
-              <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
-                {section.eyebrow}
-              </div>
+              <div className={homeSectionLabelClass}>{section.eyebrow}</div>
             ) : null}
             {section.headline ? (
               <h2 className="mt-3 max-w-heading text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-4xl">

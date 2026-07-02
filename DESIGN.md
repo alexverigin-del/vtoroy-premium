@@ -233,6 +233,10 @@ Store, Trade, Passport, and Club hero sections may include a compact trust strip
 
 Homepage preview overlays and visual frames should follow the same Flat Retail Rule as marketing pages. Use solid white panels, hairline borders and product/content hierarchy instead of decorative blur or broad shadows for hero Passport, Store visual, Diagnostics visual and Passport preview modules.
 
+Homepage Club and final CTA panels should also stay flat at rest. Featured Club tiers can use contrast and a blue border for emphasis, and lead CTA shells can use a white surface with a hairline border; avoid broad decorative shadows on both.
+
+Homepage section labels should use quiet sentence-case orientation text. Preserve editor wording and avoid forced uppercase tracking on repeated homepage eyebrows, valuation labels, visual captions and final CTA labels; reserve uppercase tracking for true compact badges such as grades, tier badges and logo captions.
+
 Marketing section eyebrows should read like quiet orientation text, not a repeated all-caps scaffold. Preserve the editor's wording and use compact blue labels without forced uppercase tracking except where the content itself is an intentional badge or sequence marker.
 
 Marketing step sections should render as lightweight ordered timelines, not another grid of heavy cards. Use the existing `content.steps` order, compact numbered pills, and hairline connectors so the sequence is readable while the page keeps breathing room.

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { normalizeSiteUrl } from "./site-chrome-utils";
-import { primaryCtaClass, secondaryCtaClass } from "./ui-classes";
+import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 type StepItem = {
   title: string;
@@ -90,11 +90,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
     <section className="bg-frost py-16 md:py-20" id="store">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <div className="mx-auto max-w-copy text-center">
-          {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
-              {section.eyebrow}
-            </div>
-          ) : null}
+          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}

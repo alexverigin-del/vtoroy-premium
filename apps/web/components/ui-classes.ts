@@ -13,6 +13,10 @@ export const secondaryPillCtaClass =
 export const darkSecondaryCtaClass =
   "focus-ring inline-flex min-h-11 items-center justify-center rounded-full border border-white/20 bg-white/5 px-7 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10";
 
+export const homeSectionLabelClass = "text-sm font-semibold leading-snug text-link-blue";
+
+export const homeDarkSectionLabelClass = "text-sm font-semibold leading-snug text-white/65";
+
 export const submitButtonClass =
   "mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-action-blue disabled:cursor-wait disabled:opacity-70";
 

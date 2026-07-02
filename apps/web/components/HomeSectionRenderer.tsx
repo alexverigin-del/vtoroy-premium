@@ -13,6 +13,7 @@ import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import {
   heroPassportCardClass,
+  homeSectionLabelClass,
   pathRouterCardClass,
   primaryCtaClass,
   secondaryCtaClass,
@@ -185,9 +186,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   return (
     <section className="mx-auto max-w-page px-4 pb-16 pt-14 text-center md:px-6 md:pb-20 md:pt-20">
       {section.eyebrow ? (
-        <div className="mx-auto max-w-measure text-xs font-semibold uppercase tracking-label text-link-blue">
-          {section.eyebrow}
-        </div>
+        <div className={cn("mx-auto max-w-measure", homeSectionLabelClass)}>{section.eyebrow}</div>
       ) : null}
       {section.headline ? (
         <h1 className="mx-auto mt-4 max-w-display text-5xl font-semibold leading-display tracking-normal text-carbon md:text-7xl">
@@ -317,11 +316,7 @@ function PathRouterSection({ section }: { section: PageSection }) {
     >
       <div className="mx-auto max-w-page px-4 md:px-6">
         <div className="mx-auto max-w-measure text-center">
-          {section.eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-label text-link-blue">
-              {section.eyebrow}
-            </div>
-          ) : null}
+          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
           {section.headline ? (
             <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}

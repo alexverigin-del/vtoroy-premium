@@ -598,6 +598,22 @@ new commercial content should use structured collections and Directus Files.
   and `PassportPreviewSection` no longer uses `shadow-product` on its preview
   card. The existing homepage section keys and Directus `visual`, `passport`
   and feature content shapes stay unchanged.
+- Twelfth local implementation step continued the Flat Retail pass across
+  homepage panels: featured `ClubPreviewSection` tiers no longer use
+  `shadow-product`, and `FinalCtaSection` no longer uses `shadow-soft` on the
+  outer lead shell. Emphasis now comes from contrast, blue borders and content
+  hierarchy while preserving existing Directus `levels`, proof and form content
+  shapes.
+- Thirteenth local implementation step softened repeated homepage orientation
+  labels: homepage hero, path router, catalog, store, trade, passport,
+  diagnostics, club and final CTA sections no longer force editor-provided
+  eyebrows or valuation labels into uppercase/tracked text. True compact badges
+  such as grades, tier badges and logo captions keep their badge styling.
+- Fourteenth local implementation step centralized that homepage label styling
+  through `homeSectionLabelClass` and `homeDarkSectionLabelClass` in
+  `apps/web/components/ui-classes.ts`. This preserves the thirteenth-step
+  visuals while keeping future homepage section labels from drifting across
+  individual preview components.
 
 ## Studio Workflow Decisions
 

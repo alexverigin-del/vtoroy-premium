@@ -582,6 +582,15 @@ new commercial content should use structured collections and Directus Files.
   Directus `content.items` shape, but now replaces the hidden browser marker
   with an explicit chevron disclosure control and adds a visible keyboard focus
   state on the `summary` row.
+- Follow-up `impeccable audit` after the `a628acb` release found no formal
+  detector issues and confirmed clean git/deployed state, but identified the
+  next frontend/design-safe step: flatten remaining homepage preview overlay
+  panels that still use decorative blur plus broad soft/product shadows. Start
+  with `heroPassportCardClass` in `apps/web/components/ui-classes.ts`,
+  `StorePreviewSection`, `DiagnosticsCompareSection` and
+  `PassportPreviewSection`, preserving existing Directus content shapes and
+  aligning the homepage with the same Flat Retail Rule already applied to
+  marketing pages.
 
 ## Studio Workflow Decisions
 

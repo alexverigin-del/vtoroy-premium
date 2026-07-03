@@ -42,3 +42,12 @@ export const headerCtaClass =
 
 export const pathRouterCardClass =
   "focus-ring group flex min-h-path-card flex-col rounded-card border border-hairline bg-frost p-5 text-left transition hover:-translate-y-0.5 hover:border-link-blue hover:bg-white hover:shadow-soft";
+
+export const skipLinkClass =
+  "sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-skip focus:rounded-pill focus:bg-carbon focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-focus";
+
+export const notFoundPrimaryLinkClass =
+  "focus-ring inline-flex min-h-11 items-center justify-center rounded-pill bg-action px-7 py-3 text-sm font-semibold text-white transition hover:bg-action-blue";
+
+export const notFoundSecondaryLinkClass =
+  "focus-ring inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue";

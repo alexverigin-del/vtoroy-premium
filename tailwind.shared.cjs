@@ -52,6 +52,9 @@ const themeExtend = {
     soft: "rgba(0, 0, 0, 0.08) 0 18px 55px",
     focus: "0 0 0 2px rgba(0,113,227,0.14)",
   },
+  zIndex: {
+    skip: "60",
+  },
   maxWidth: {
     shell: "1440px",
     page: "1180px",

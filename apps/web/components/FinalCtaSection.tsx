@@ -82,6 +82,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
   const scenarioId = useId();
   const deviceId = useId();
   const contactId = useId();
+  const statusId = useId();
   const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
     useLeadIntake();
 
@@ -175,6 +176,8 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
                 name="contact"
                 type="text"
                 aria-label={form.contactLabel}
+                aria-describedby={statusId}
+                aria-invalid={state === "error"}
                 value={contact}
                 onChange={(event) => setContact(event.target.value)}
                 placeholder={form.contactPlaceholder}
@@ -204,6 +207,8 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
             </button>
 
             <p
+              id={statusId}
+              aria-live="polite"
               className={cn(
                 "mt-3 text-sm leading-relaxed",
                 state === "success" ? "text-success" : "text-ash",

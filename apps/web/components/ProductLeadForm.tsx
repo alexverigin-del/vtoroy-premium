@@ -89,6 +89,7 @@ export function ProductLeadForm({
   const [message, setMessage] = useState("");
   const contactId = useId();
   const messageId = useId();
+  const statusId = useId();
   const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
     useLeadIntake();
   const normalizedStockStatus = normalizeStockStatus(stockStatus);
@@ -143,6 +144,8 @@ export function ProductLeadForm({
           type="text"
           name="contact"
           aria-label="Контакт для ответа"
+          aria-describedby={statusId}
+          aria-invalid={state === "error"}
           placeholder={mode.contactPlaceholder}
           className="mt-1 w-full rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
         />
@@ -171,6 +174,8 @@ export function ProductLeadForm({
         {state === "submitting" ? mode.submittingLabel : mode.submitLabel}
       </button>
       <p
+        id={statusId}
+        aria-live="polite"
         className={cn(
           "mt-3 text-xs",
           state === "success" ? "text-emerald-700" : "text-muted",

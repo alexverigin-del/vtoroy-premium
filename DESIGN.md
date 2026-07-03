@@ -281,6 +281,8 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Do** use the darker Link Blue for ordinary text links on Frost/Surface backgrounds; reserve Action Blue for filled CTAs and controls where contrast is already guaranteed.
 - **Do** keep interactive header links, menu buttons, filter chips, gallery tabs and card CTAs at a 44px minimum hit area.
 - **Do** keep footer and catalog-control tap areas at the same 44px minimum even when the visual treatment stays quiet.
+- **Do** collapse secondary footer navigation into native mobile disclosure groups when link count makes the footer taller than the content warrants; desktop footers can stay fully expanded.
+- **Do** balance sparse related-device sections with a calm catalog prompt instead of leaving a single card stranded in a wide desktop row.
 - **Do** respect reduced motion; reveal transitions must never hide content by default.
 - **Do** build new React/Next product, catalog, lead, and component UI with Tailwind utilities and shared tokens.
 - **Do** use `cn()` for conditional className composition and keep CMS-driven dynamic styling behind explicit tokens, CSS variables or safelists.
@@ -295,5 +297,6 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Don't** duplicate a logo descriptor: if the uploaded asset already says "Проверенная техника для своих", leave the live caption empty.
 - **Don't** let controls remain below comfortable touch size when they are header links, primary filters, menu buttons, gallery tabs, or card CTAs.
 - **Don't** force desktop marketing-card heights onto mobile; compact mobile cards and timelines should keep the content moving without becoming a long identical scroll.
+- **Don't** let low-count related grids reserve empty columns; one or two products should still feel like an intentional next step.
 - **Don't** add new large global CSS blocks for normal product/catalog/lead UI.
 - **Don't** reintroduce `site.css`, `interactions.js` or dynamic Tailwind class concatenation such as `bg-${value}`.

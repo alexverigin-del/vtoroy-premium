@@ -2,6 +2,12 @@ import type { NavigationItem, SiteSettings } from "@vtoroy/shared";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
 
+const footerLinkClass =
+  "inline-flex min-h-11 items-center text-sm text-ash outline-none transition hover:text-carbon focus-visible:shadow-focus";
+
+const mobileFooterSummaryClass =
+  "flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-card px-4 text-sm font-semibold text-carbon outline-none transition marker:hidden focus-visible:shadow-focus";
+
 export function SiteFooter({
   settings,
   navigation,
@@ -23,6 +29,8 @@ export function SiteFooter({
           isActive: true,
         },
       ];
+  const columnLinks = (columnId: string) =>
+    parentItems.length ? footerItems.filter((item) => item.parent === columnId) : footerItems;
 
   return (
     <footer className="border-t border-hairline bg-white py-12" data-component="SiteFooter">
@@ -30,7 +38,47 @@ export function SiteFooter({
         {settings.footerNote ? (
           <p className="max-w-copy-wide text-sm leading-relaxed text-ash">{settings.footerNote}</p>
         ) : null}
-        <div className="mt-9 grid gap-8 md:grid-cols-footer">
+        <div className="mt-9 grid content-start gap-4 md:hidden">
+          <SiteLogo settings={settings} />
+          <p className="max-w-caption text-sm leading-relaxed text-ash">
+            {settings.footerBrandText || settings.tagline}
+          </p>
+        </div>
+        <div className="mt-8 grid gap-2 md:hidden">
+          {columns.map((column) => {
+            const links = columnLinks(column.id);
+            return (
+              <details
+                key={column.id}
+                className="group rounded-card border border-hairline bg-white"
+              >
+                <summary className={mobileFooterSummaryClass}>
+                  <span>{column.label}</span>
+                  <span
+                    className="text-lg leading-none text-link-blue transition group-open:rotate-45"
+                    aria-hidden="true"
+                  >
+                    +
+                  </span>
+                </summary>
+                <div className="grid gap-1 border-t border-hairline px-4 py-2">
+                  {links.map((item) => (
+                    <a
+                      key={item.id}
+                      href={navigationHref(item)}
+                      aria-label={item.ariaLabel || undefined}
+                      className={footerLinkClass}
+                      {...externalLinkAttrs(item)}
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </details>
+            );
+          })}
+        </div>
+        <div className="mt-9 hidden gap-8 md:grid md:grid-cols-footer">
           <div className="grid content-start gap-4">
             <SiteLogo settings={settings} />
             <p className="max-w-caption text-sm leading-relaxed text-ash">
@@ -38,9 +86,7 @@ export function SiteFooter({
             </p>
           </div>
           {columns.map((column) => {
-            const links = parentItems.length
-              ? footerItems.filter((item) => item.parent === column.id)
-              : footerItems;
+            const links = columnLinks(column.id);
             return (
               <div key={column.id}>
                 <h4 className="mb-3 text-sm font-semibold text-carbon">{column.label}</h4>
@@ -50,7 +96,7 @@ export function SiteFooter({
                       key={item.id}
                       href={navigationHref(item)}
                       aria-label={item.ariaLabel || undefined}
-                      className="inline-flex min-h-11 items-center text-sm text-ash outline-none transition hover:text-carbon focus-visible:shadow-focus"
+                      className={footerLinkClass}
                       {...externalLinkAttrs(item)}
                     >
                       {item.label}

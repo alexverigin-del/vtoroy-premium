@@ -181,6 +181,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
   const lastUpdated = updatedText(device);
   const leadFormId = "product-lead";
   const mobileCta = mobileLeadCta(device);
+  const showRelatedPrompt = related.length > 0 && related.length < 3;
 
   return (
     <main className="bg-surface pb-24 lg:pb-0">
@@ -330,30 +331,44 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
 
       {related.length > 0 ? (
         <section className="mx-auto max-w-content px-6 pb-16">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
                 Еще в Store
               </p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight">Похожие устройства</h2>
             </div>
-            <CTAButton href="/catalog" label="Весь каталог" variant="secondary" />
+            {!showRelatedPrompt ? (
+              <CTAButton href="/catalog" label="Весь каталог" variant="secondary" />
+            ) : null}
           </div>
           <ul
             className={cn(
-              "mt-6 grid gap-6",
-              related.length === 1
-                ? "max-w-sm"
-                : related.length === 2
-                  ? "sm:grid-cols-2 lg:max-w-3xl"
-                  : "sm:grid-cols-2 lg:grid-cols-3",
+              "mt-6 gap-6",
+              showRelatedPrompt
+                ? "grid sm:grid-cols-2 lg:flex lg:items-stretch"
+                : "grid sm:grid-cols-2 lg:grid-cols-3",
             )}
           >
             {related.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className={showRelatedPrompt ? "lg:w-80 lg:shrink-0" : undefined}>
                 <DeviceCard device={item} />
               </li>
             ))}
+            {showRelatedPrompt ? (
+              <li className="flex flex-col justify-center rounded-card border border-hairline bg-white p-6 sm:col-span-2 lg:flex-1">
+                <h3 className="text-xl font-semibold leading-tight text-carbon">
+                  Больше вариантов в Store
+                </h3>
+                <p className="mt-3 max-w-body-copy text-sm leading-relaxed text-graphite">
+                  Если эта вещь не подходит по цвету, памяти или бюджету, каталог покажет соседние
+                  проверенные варианты с Passport и понятной ценой выхода.
+                </p>
+                <div className="mt-5">
+                  <CTAButton href="/catalog" label="Открыть каталог" variant="secondary" />
+                </div>
+              </li>
+            ) : null}
           </ul>
         </section>
       ) : null}

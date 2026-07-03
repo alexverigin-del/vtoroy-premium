@@ -621,6 +621,13 @@ new commercial content should use structured collections and Directus Files.
   desktop height on desktop but compact on mobile, and related device grids no
   longer reserve a full three-column row when only one or two related devices
   are available. Directus schemas and content shapes remain unchanged.
+- Sixteenth local implementation step continued the same audit package:
+  mobile footer navigation now uses native `details/summary` disclosure groups
+  so the footer keeps 44px links without becoming a long mobile scroll, while
+  desktop footer columns remain fully expanded. Sparse product related-device
+  sections now pair one or two `DeviceCard` items with a calm catalog prompt
+  instead of leaving empty desktop columns. Directus navigation and catalog data
+  shapes remain unchanged.
 
 ## Studio Workflow Decisions
 

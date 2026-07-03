@@ -7,16 +7,18 @@ export function SiteShell({
   settings,
   navigation,
   children,
+  footerClassName,
 }: {
   settings: SiteSettings;
   navigation: NavigationItem[];
   children: ReactNode;
+  footerClassName?: string;
 }) {
   return (
     <>
       <SiteHeader settings={settings} navigation={navigation} />
       {children}
-      <SiteFooter settings={settings} navigation={navigation} />
+      <SiteFooter settings={settings} navigation={navigation} className={footerClassName} />
     </>
   );
 }

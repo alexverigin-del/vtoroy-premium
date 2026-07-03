@@ -1,4 +1,5 @@
 import type { NavigationItem, SiteSettings } from "@vtoroy/shared";
+import { cn } from "../lib/cn";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
 
@@ -11,9 +12,11 @@ const mobileFooterSummaryClass =
 export function SiteFooter({
   settings,
   navigation,
+  className,
 }: {
   settings: SiteSettings;
   navigation: NavigationItem[];
+  className?: string;
 }) {
   const footerItems = sortNavigation(navigation.filter((item) => item.location === "footer"));
   const parentItems = footerItems.filter((item) => !item.parent);
@@ -33,7 +36,10 @@ export function SiteFooter({
     parentItems.length ? footerItems.filter((item) => item.parent === columnId) : footerItems;
 
   return (
-    <footer className="border-t border-hairline bg-white py-12" data-component="SiteFooter">
+    <footer
+      className={cn("border-t border-hairline bg-white py-12", className)}
+      data-component="SiteFooter"
+    >
       <div className="mx-auto max-w-shell px-5">
         {settings.footerNote ? (
           <p className="max-w-copy-wide text-sm leading-relaxed text-ash">{settings.footerNote}</p>

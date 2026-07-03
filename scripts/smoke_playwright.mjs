@@ -7,7 +7,7 @@
  *   SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/device/iphone-13-pro npm run smoke:prod
  */
 
-import { chromium } from "playwright";
+import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs";
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
@@ -155,7 +155,7 @@ async function smokeDevice(page, baseUrl, devicePath) {
 async function main() {
   const baseUrl = normalizeBaseUrl(process.env.SMOKE_BASE_URL);
   const devicePath = process.env.SMOKE_DEVICE_PATH || DEFAULT_DEVICE_PATH;
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchChromium({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
 
   try {
@@ -175,7 +175,7 @@ async function main() {
 
 main().catch((error) => {
   if (String(error.message || "").includes("Executable doesn't exist")) {
-    console.error("Playwright browser is not installed. Run: npx playwright install chromium");
+    console.error(playwrightBrowserHint());
   }
   console.error(`Smoke failed: ${error.message}`);
   process.exit(1);

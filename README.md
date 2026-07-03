@@ -79,6 +79,10 @@ budgets.
 and one device page in desktop and mobile viewports. It writes screenshots to
 `output/playwright/visual-smoke/` and fails on horizontal overflow, clipped text
 or suspicious overlap between visible text/interactive elements.
+The Playwright smoke scripts use `scripts/playwright_browser.mjs`, so they can
+fall back to an installed Chrome/Edge browser when the Playwright browser cache
+is missing. Prefer the smoke scripts and env vars below over inline `node -e`
+browser snippets in PowerShell.
 Override the target when needed:
 
 ```bash

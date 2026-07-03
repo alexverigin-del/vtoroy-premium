@@ -26,10 +26,24 @@ function updatedText(device: DeviceCardData): string {
   }).format(date)}`;
 }
 
-export function DeviceCard({ device }: { device: DeviceCardData }) {
+function trustFacts(device: DeviceCardData): string[] {
+  return [device.batteryText, device.warrantyText, "Passport"]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+export function DeviceCard({
+  device,
+  imagePriority = false,
+}: {
+  device: DeviceCardData;
+  imagePriority?: boolean;
+}) {
   const src = productImageSrc(device.listingImage);
   const update = updatedText(device);
   const href = device.detailHref || `/device/${device.id}`;
+  const facts = trustFacts(device);
 
   return (
     <Link
@@ -42,6 +56,7 @@ export function DeviceCard({ device }: { device: DeviceCardData }) {
             src={src}
             alt={device.listingAlt || device.title}
             fill
+            priority={imagePriority}
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover"
           />
@@ -65,6 +80,19 @@ export function DeviceCard({ device }: { device: DeviceCardData }) {
         <p className="mt-1 text-sm text-muted">
           {device.specs} · {device.color}
         </p>
+        {facts.length > 0 ? (
+          <div className="mt-4 grid gap-2">
+            {facts.map((fact) => (
+              <span
+                key={fact}
+                className="flex min-h-8 items-center justify-between rounded-card bg-surface px-3 text-xs font-medium text-graphite"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
+                <span className="ml-2 flex-1 truncate">{fact}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
         <p className="mt-4 font-medium">{device.priceText}</p>
         <p className="mt-1 text-xs text-muted">{device.exitText}</p>
         <span className="mt-4 text-sm font-medium text-accent group-hover:underline">

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from "./site-metadata";
+import {
+  DEFAULT_SITE_DESCRIPTION,
+  DEFAULT_SITE_TITLE,
+  DEFAULT_SOCIAL_IMAGE,
+} from "./site-metadata";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,11 +20,13 @@ export const metadata: Metadata = {
     title: DEFAULT_SITE_TITLE,
     description: DEFAULT_SITE_DESCRIPTION,
     url: "https://isvoi.ru",
+    images: [DEFAULT_SOCIAL_IMAGE],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: DEFAULT_SITE_TITLE,
     description: DEFAULT_SITE_DESCRIPTION,
+    images: [DEFAULT_SOCIAL_IMAGE],
   },
   icons: {
     icon: [

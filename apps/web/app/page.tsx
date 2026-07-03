@@ -8,7 +8,11 @@ import {
   getSiteSettings,
 } from "@/lib/directus";
 import { homeSectionsForPage, siteChrome } from "@/lib/site-content";
-import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from "./site-metadata";
+import {
+  DEFAULT_SITE_DESCRIPTION,
+  DEFAULT_SITE_TITLE,
+  DEFAULT_SOCIAL_IMAGE,
+} from "./site-metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const page = await getSitePage("home");
   const title = page?.title || DEFAULT_SITE_TITLE;
   const description = page?.metaDescription || DEFAULT_SITE_DESCRIPTION;
+  const socialImage = page?.ogImage || DEFAULT_SOCIAL_IMAGE;
 
   return {
     title,
@@ -27,12 +32,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url: "/",
-      ...(page?.ogImage ? { images: [page.ogImage] } : {}),
+      images: [socialImage],
     },
     twitter: {
+      card: "summary_large_image",
       title,
       description,
-      ...(page?.ogImage ? { images: [page.ogImage] } : {}),
+      images: [socialImage],
     },
   };
 }

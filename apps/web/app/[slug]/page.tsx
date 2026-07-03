@@ -15,6 +15,7 @@ import {
   marketingSectionsForPage,
   siteChrome,
 } from "@/lib/site-content";
+import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,13 @@ export async function generateMetadata({ params }: MarketingPageProps): Promise<
       title: page.title,
       description: page.metaDescription,
       url: `/${slug}`,
+      images: [page.ogImage || DEFAULT_SOCIAL_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: page.title,
+      description: page.metaDescription,
+      images: [page.ogImage || DEFAULT_SOCIAL_IMAGE],
     },
   };
 }

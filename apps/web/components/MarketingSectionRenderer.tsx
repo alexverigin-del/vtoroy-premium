@@ -857,7 +857,7 @@ export function MarketingSectionRenderer({
   if (slug === "store" && section.sectionKey === "final_cta") {
     return (
       <>
-        <CatalogGrid devices={devices} directusEnabled={directusEnabled} />
+        <CatalogGrid devices={devices} directusEnabled={directusEnabled} headingLevel="h2" />
         {renderedSection}
       </>
     );

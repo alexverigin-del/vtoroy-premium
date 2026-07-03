@@ -9,7 +9,7 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { chromium } from "playwright";
+import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs";
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
@@ -134,7 +134,10 @@ async function visualIssues(page) {
       if (hasOwnBox && clipsText && style.overflow !== "visible") {
         issues.push(`${selectorFor(element)} clips content`);
       }
-      if (rect.left < -4 || rect.right > viewportWidth + 4) {
+      if (
+        !element.closest("[data-allow-horizontal-scroll='true']") &&
+        (rect.left < -4 || rect.right > viewportWidth + 4)
+      ) {
         issues.push(
           `${selectorFor(element)} overflows viewport horizontally: left=${Math.round(rect.left)}, right=${Math.round(rect.right)}, viewport=${viewportWidth}`,
         );
@@ -195,7 +198,7 @@ async function main() {
     path.join(process.cwd(), "output", "playwright", "visual-smoke");
   await fs.mkdir(outputDir, { recursive: true });
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchChromium({ headless: true });
   try {
     const page = await browser.newPage();
     page.setDefaultTimeout(15_000);
@@ -215,7 +218,7 @@ async function main() {
 
 main().catch((error) => {
   if (String(error.message || "").includes("Executable doesn't exist")) {
-    console.error("Playwright browser is not installed. Run: npx playwright install chromium");
+    console.error(playwrightBrowserHint());
   }
   console.error(`Visual smoke failed: ${error.message}`);
   process.exit(1);

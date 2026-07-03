@@ -13,6 +13,8 @@ export type DeviceCardData = Pick<
   | "price"
   | "priceText"
   | "grade"
+  | "batteryText"
+  | "warrantyText"
   | "exitText"
   | "stockStatus"
   | "stockStatusLabel"

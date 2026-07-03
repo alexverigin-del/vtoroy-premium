@@ -7,6 +7,7 @@ import {
   getSiteSettings,
 } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
+import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
 export const metadata = {
   title: "ISVOI Store — вещи в кругу",
@@ -19,6 +20,13 @@ export const metadata = {
     title: "ISVOI Store — вещи в кругу",
     description: "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода.",
     url: "/catalog",
+    images: [DEFAULT_SOCIAL_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ISVOI Store — вещи в кругу",
+    description: "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода.",
+    images: [DEFAULT_SOCIAL_IMAGE],
   },
 };
 

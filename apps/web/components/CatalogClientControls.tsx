@@ -112,7 +112,7 @@ function FilterChip({
     <button
       type="button"
       className={cn(
-        "min-h-11 rounded-pill border px-4 text-sm font-medium outline-none transition focus-visible:shadow-focus",
+        "min-h-11 shrink-0 rounded-pill border px-4 text-sm font-medium outline-none transition focus-visible:shadow-focus",
         active
           ? "border-link-blue bg-link-blue/5 text-link-blue"
           : cn(
@@ -181,8 +181,12 @@ export function CatalogToolbar({
   inactiveSurface?: "transparent" | "white";
 }) {
   return (
-    <div className="mt-10 flex flex-col gap-4 rounded-card border border-hairline bg-frost p-4 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-wrap gap-2" aria-label={categoryLabel}>
+    <div className="mt-8 flex flex-col gap-3 rounded-card border border-hairline bg-frost p-3 md:mt-10 md:gap-4 md:p-4 lg:flex-row lg:items-center lg:justify-between">
+      <div
+        className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0"
+        data-allow-horizontal-scroll="true"
+        aria-label={categoryLabel}
+      >
         {categories.map((filter) => (
           <FilterChip
             key={filter.value}
@@ -194,8 +198,12 @@ export function CatalogToolbar({
           </FilterChip>
         ))}
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-wrap gap-2" aria-label="Статус устройства">
+      <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
+        <div
+          className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0"
+          data-allow-horizontal-scroll="true"
+          aria-label="Статус устройства"
+        >
           {statuses.map((filter) => (
             <FilterChip
               key={filter.value}
@@ -207,11 +215,11 @@ export function CatalogToolbar({
             </FilterChip>
           ))}
         </div>
-        <label className="flex min-h-11 items-center gap-2 rounded-pill border border-hairline bg-white px-4 text-sm text-graphite">
+        <label className="flex min-h-11 w-full items-center justify-between gap-2 rounded-pill border border-hairline bg-white px-4 text-sm text-graphite sm:w-fit">
           <span>Сортировка</span>
           <select
             aria-label="Сортировка каталога"
-            className="min-h-11 bg-transparent font-medium text-carbon outline-none"
+            className="min-h-11 min-w-0 bg-transparent font-medium text-carbon outline-none"
             value={controls.sort}
             onChange={(event) => controls.setSort(event.target.value)}
           >
@@ -230,15 +238,17 @@ export function CatalogToolbar({
 export function CatalogDeviceList({
   devices,
   emptyMessage,
+  priorityImages = false,
 }: {
   devices: DeviceCardData[];
   emptyMessage: string;
+  priorityImages?: boolean;
 }) {
   return devices.length > 0 ? (
     <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {devices.map((device) => (
+      {devices.map((device, index) => (
         <li key={device.id}>
-          <DeviceCard device={device} />
+          <DeviceCard device={device} imagePriority={priorityImages && index < 3} />
         </li>
       ))}
     </ul>

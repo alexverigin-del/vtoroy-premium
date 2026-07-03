@@ -184,22 +184,22 @@ function HomeHeroSection({ section }: { section: PageSection }) {
       : ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"];
 
   return (
-    <section className="mx-auto max-w-page px-4 pb-16 pt-14 text-center md:px-6 md:pb-20 md:pt-20">
+    <section className="mx-auto max-w-page px-4 pb-14 pt-10 text-center md:px-6 md:pb-20 md:pt-20">
       {section.eyebrow ? (
         <div className={cn("mx-auto max-w-measure", homeSectionLabelClass)}>{section.eyebrow}</div>
       ) : null}
       {section.headline ? (
-        <h1 className="mx-auto mt-4 max-w-display text-5xl font-semibold leading-display tracking-normal text-carbon md:text-7xl">
+        <h1 className="mx-auto mt-4 max-w-display text-4xl font-semibold leading-display tracking-normal text-carbon sm:text-5xl md:text-7xl">
           {section.headline}
         </h1>
       ) : null}
       {section.body ? (
-        <p className="mx-auto mt-5 max-w-body-copy text-lg leading-relaxed text-graphite md:text-xl">
+        <p className="mx-auto mt-4 max-w-body-copy text-base leading-relaxed text-graphite md:mt-5 md:text-xl">
           {section.body}
         </p>
       ) : null}
 
-      <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+      <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center md:mt-8">
         <Link href={primaryUrl} className={primaryCtaClass}>
           {primaryLabel}
         </Link>
@@ -209,7 +209,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
       </div>
 
       <div
-        className="mx-auto mt-6 flex max-w-copy flex-wrap justify-center gap-2"
+        className="mx-auto mt-5 flex max-w-copy flex-wrap justify-center gap-2 md:mt-6"
         aria-label="Принципы клуба"
       >
         {assuranceItems.map((item) => (
@@ -222,7 +222,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
         ))}
       </div>
 
-      <div className="relative mx-auto mt-10 min-h-hero-visual max-w-stage overflow-hidden rounded-img bg-frost md:min-h-hero-visual-lg">
+      <div className="relative mx-auto mt-8 min-h-hero-visual max-w-stage overflow-hidden rounded-img bg-frost md:mt-10 md:min-h-hero-visual-lg">
         <Image
           src={imageSrc}
           alt={visual.imageAlt}

@@ -171,6 +171,13 @@ against `https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
 `smoke:visual` is the Playwright visual smoke gate for desktop/mobile route
 screenshots and catches horizontal overflow, clipped text and suspicious visible
 element overlap.
+Playwright smoke scripts must use `scripts/playwright_browser.mjs` for browser
+launch. Do not replace them with long `node -e` one-liners in PowerShell: the
+helper first tries the normal Playwright browser cache, then falls back to
+`PLAYWRIGHT_EXECUTABLE_PATH`, `CHROME_EXECUTABLE_PATH`, or installed
+Windows Chrome/Edge. Intentional horizontally scrollable UI rows should declare
+`data-allow-horizontal-scroll="true"` so the visual smoke can distinguish a
+controlled chip rail from document-level overflow.
 `smoke:images` is the lightweight Directus/Next image latency gate. It samples
 Directus asset ids from `/catalog`, `/store` and one device page, then checks
 3-5 Directus transform URLs and matching `/_next/image` optimizer URLs. Defaults

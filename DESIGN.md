@@ -278,7 +278,9 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Do** use real product imagery and passport facts before decorative visuals.
 - **Do** keep Directus-managed logo captions short enough to fit inside the header at mobile widths.
 - **Do** verify contrast for all 12-14px labels, badges, and eyebrow text.
+- **Do** use the darker Link Blue for ordinary text links on Frost/Surface backgrounds; reserve Action Blue for filled CTAs and controls where contrast is already guaranteed.
 - **Do** keep interactive header links, menu buttons, filter chips, gallery tabs and card CTAs at a 44px minimum hit area.
+- **Do** keep footer and catalog-control tap areas at the same 44px minimum even when the visual treatment stays quiet.
 - **Do** respect reduced motion; reveal transitions must never hide content by default.
 - **Do** build new React/Next product, catalog, lead, and component UI with Tailwind utilities and shared tokens.
 - **Do** use `cn()` for conditional className composition and keep CMS-driven dynamic styling behind explicit tokens, CSS variables or safelists.
@@ -292,5 +294,6 @@ Detail pages use white bordered modules for gallery, buy panel, passport panel, 
 - **Don't** use monospace as a lazy signal of technical competence.
 - **Don't** duplicate a logo descriptor: if the uploaded asset already says "Проверенная техника для своих", leave the live caption empty.
 - **Don't** let controls remain below comfortable touch size when they are header links, primary filters, menu buttons, gallery tabs, or card CTAs.
+- **Don't** force desktop marketing-card heights onto mobile; compact mobile cards and timelines should keep the content moving without becoming a long identical scroll.
 - **Don't** add new large global CSS blocks for normal product/catalog/lead UI.
 - **Don't** reintroduce `site.css`, `interactions.js` or dynamic Tailwind class concatenation such as `bg-${value}`.

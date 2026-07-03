@@ -211,7 +211,7 @@ export function CatalogToolbar({
           <span>Сортировка</span>
           <select
             aria-label="Сортировка каталога"
-            className="bg-transparent font-medium text-carbon outline-none"
+            className="min-h-11 bg-transparent font-medium text-carbon outline-none"
             value={controls.sort}
             onChange={(event) => controls.setSort(event.target.value)}
           >

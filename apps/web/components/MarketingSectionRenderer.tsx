@@ -370,7 +370,7 @@ function MarketingVisualBandSection({ section }: { section: PageSection }) {
   if (!imageSrc && !captionTitle && !captionText) return null;
 
   return (
-    <section className="bg-white pb-16 pt-0 md:pb-20">
+    <section className="bg-white pb-14 pt-0 md:pb-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <div className="relative min-h-visual-compact overflow-hidden rounded-img border border-hairline bg-frost md:min-h-hero-visual">
           {imageSrc ? (
@@ -449,7 +449,7 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
           {highlights.map((highlight) => (
             <article
               key={`${highlight.label}-${highlight.value}`}
-              className="min-h-marketing-fact bg-white p-5"
+              className="bg-white p-4 md:min-h-marketing-fact md:p-5"
             >
               {highlight.label ? (
                 <p className="text-xs font-semibold text-link-blue">{highlight.label}</p>
@@ -475,15 +475,15 @@ function MarketingLevelsSection({ section }: { section: PageSection }) {
   if (levels.length === 0) return null;
 
   return (
-    <section className="bg-carbon py-16 text-white md:py-20">
+    <section className="bg-carbon py-14 text-white md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <DarkSectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-content gap-5 lg:grid-cols-3">
+        <div className="mx-auto mt-8 grid max-w-content gap-4 md:mt-10 md:gap-5 lg:grid-cols-3">
           {levels.map((level) => (
             <article
               key={level.name || level.badge}
               className={cn(
-                "flex min-h-marketing-tall flex-col rounded-card border p-7",
+                "flex flex-col rounded-card border p-5 md:min-h-marketing-tall md:p-7",
                 level.featured
                   ? "border-signal-blue bg-white text-carbon"
                   : "border-white/15 bg-white/5 text-white",
@@ -492,7 +492,7 @@ function MarketingLevelsSection({ section }: { section: PageSection }) {
               {level.badge ? (
                 <div
                   className={cn(
-                    "mb-5 inline-flex w-fit rounded-pill px-3 py-1 text-xs font-semibold uppercase tracking-caption",
+                    "mb-4 inline-flex w-fit rounded-pill px-3 py-1 text-xs font-semibold uppercase tracking-caption md:mb-5",
                     level.featured ? "bg-frost text-link-blue" : "bg-white/10 text-signal-blue",
                   )}
                 >
@@ -513,7 +513,7 @@ function MarketingLevelsSection({ section }: { section: PageSection }) {
                 </p>
               ) : null}
               {level.features.length > 0 ? (
-                <ul className="mt-6 grid gap-3">
+                <ul className="mt-5 grid gap-3 md:mt-6">
                   {level.features.map((feature) => (
                     <li
                       key={feature}
@@ -556,11 +556,11 @@ function MarketingCompareSection({ section }: { section: PageSection }) {
   if (comparison.rows.length === 0) return null;
 
   return (
-    <section className="bg-frost py-16 md:py-20">
+    <section className="bg-frost py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
         <div
-          className="mx-auto mt-10 max-w-content overflow-hidden rounded-card border border-hairline bg-white"
+          className="mx-auto mt-8 max-w-content overflow-hidden rounded-card border border-hairline bg-white md:mt-10"
           role="table"
           aria-label={comparison.ariaLabel}
         >
@@ -632,9 +632,9 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
     return null;
 
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy-wide rounded-card border border-hairline bg-ice p-8 text-center md:p-12">
+        <div className="mx-auto max-w-copy-wide rounded-card border border-hairline bg-ice p-6 text-center md:p-12">
           {section.headline ? (
             <h2 className="text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
@@ -681,14 +681,14 @@ function MarketingCardsSection({ section }: { section: PageSection }) {
   );
 
   return (
-    <section className={cn("py-16 md:py-20", isWash ? "bg-frost" : "bg-white")}>
+    <section className={cn("py-14 md:py-20", isWash ? "bg-frost" : "bg-white")}>
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
         <div className={cardGridClass}>
           {cards.map((card) => (
             <article
               key={`${card.badge}-${card.title}`}
-              className="flex min-h-marketing-card flex-col rounded-card border border-hairline bg-white p-7"
+              className="flex flex-col rounded-card border border-hairline bg-white p-5 md:min-h-marketing-card md:p-7"
             >
               <span className="text-xs font-semibold uppercase tracking-caption text-link-blue">
                 {card.badge}
@@ -722,13 +722,13 @@ function MarketingStepsSection({ section }: { section: PageSection }) {
   if (steps.length === 0) return null;
 
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <ol className="mx-auto mt-10 grid max-w-content gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mx-auto mt-8 grid max-w-content gap-x-6 gap-y-6 sm:grid-cols-2 md:mt-10 md:gap-y-8 lg:grid-cols-4">
           {steps.map((step, index) => (
-            <li key={`${step.title}-${index}`} className="border-t border-hairline pt-5">
-              <div className="mb-5 flex items-center gap-3">
+            <li key={`${step.title}-${index}`} className="border-t border-hairline pt-4 md:pt-5">
+              <div className="mb-4 flex items-center gap-3 md:mb-5">
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-ice text-sm font-semibold text-link-blue">
                   {String(index + 1).padStart(2, "0")}
                 </span>
@@ -753,10 +753,10 @@ function MarketingFaqSection({ section }: { section: PageSection }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-10 grid max-w-faq gap-3">
+        <div className="mx-auto mt-8 grid max-w-faq gap-3 md:mt-10">
           {items.map((item) => (
             <details
               key={`${item.badge}-${item.title}`}

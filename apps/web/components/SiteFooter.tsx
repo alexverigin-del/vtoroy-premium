@@ -44,13 +44,13 @@ export function SiteFooter({
             return (
               <div key={column.id}>
                 <h4 className="mb-3 text-sm font-semibold text-carbon">{column.label}</h4>
-                <div className="grid gap-2">
+                <div className="grid gap-1">
                   {links.map((item) => (
                     <a
                       key={item.id}
                       href={navigationHref(item)}
                       aria-label={item.ariaLabel || undefined}
-                      className="inline-flex min-h-8 items-center text-sm text-ash outline-none transition hover:text-carbon focus-visible:shadow-focus"
+                      className="inline-flex min-h-11 items-center text-sm text-ash outline-none transition hover:text-carbon focus-visible:shadow-focus"
                       {...externalLinkAttrs(item)}
                     >
                       {item.label}

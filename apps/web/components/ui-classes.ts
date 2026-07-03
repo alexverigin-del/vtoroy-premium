@@ -21,7 +21,7 @@ export const submitButtonClass =
   "mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-action-blue disabled:cursor-wait disabled:opacity-70";
 
 export const deviceBackLinkClass =
-  "inline-flex min-h-touch items-center rounded-sm pr-2 text-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
+  "inline-flex min-h-touch items-center rounded-sm pr-2 text-sm font-medium text-link-blue hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link-blue";
 
 export const mobileProductCtaBarClass =
   "fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-white/95 px-4 py-3 shadow-soft backdrop-blur lg:hidden";

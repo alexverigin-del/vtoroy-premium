@@ -12,6 +12,7 @@ import { DeviceCard } from "@/components/DeviceCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
 import { MobileProductActionBar } from "@/components/MobileProductActionBar";
 import { deviceBackLinkClass } from "@/components/ui-classes";
+import { cn } from "@/lib/cn";
 
 // Keep Directus device edits visible immediately while inventory is being filled.
 export const dynamic = "force-dynamic";
@@ -338,7 +339,16 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
             </div>
             <CTAButton href="/catalog" label="Весь каталог" variant="secondary" />
           </div>
-          <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul
+            className={cn(
+              "mt-6 grid gap-6",
+              related.length === 1
+                ? "max-w-sm"
+                : related.length === 2
+                  ? "sm:grid-cols-2 lg:max-w-3xl"
+                  : "sm:grid-cols-2 lg:grid-cols-3",
+            )}
+          >
             {related.map((item) => (
               <li key={item.id}>
                 <DeviceCard device={item} />

@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-07-01.
+Last updated: 2026-07-03.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -614,6 +614,13 @@ new commercial content should use structured collections and Directus Files.
   `apps/web/components/ui-classes.ts`. This preserves the thirteenth-step
   visuals while keeping future homepage section labels from drifting across
   individual preview components.
+- Fifteenth local implementation step started from the repeat Impeccable audit:
+  shared `CTAButton` secondary/ghost links and the device back link now use the
+  darker Link Blue on light Frost/Surface backgrounds, footer links and catalog
+  sort controls keep 44px touch targets, marketing cards/facts/steps keep their
+  desktop height on desktop but compact on mobile, and related device grids no
+  longer reserve a full three-column row when only one or two related devices
+  are available. Directus schemas and content shapes remain unchanged.
 
 ## Studio Workflow Decisions
 

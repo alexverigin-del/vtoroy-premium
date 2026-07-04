@@ -689,6 +689,10 @@ new commercial content should use structured collections and Directus Files.
   "Не нашли свою модель?" selection CTA. Production footer copy was updated in
   Directus before release; after PM2 restart, verify with `npm run smoke:copy`
   plus the standard live smoke gates.
+- The first live `smoke:copy` run after that release caught a remaining
+  service-facing ProductLeadForm note on `/device/iphone-13-pro`. Keep lead
+  form helper text public-reader friendly; do not mention storage systems or
+  internal CMS names in serialized client component props.
 
 ## Studio Workflow Decisions
 

@@ -723,6 +723,19 @@ new commercial content should use structured collections and Directus Files.
   the story block with Passport, but avoid large hardcoded spacing that would
   break with different product copy. Mobile should stay linear: purchase first,
   then condition/story/warranty, Trade and Passport.
+- `/catalog` and `/store` have different commercial jobs. Keep `/catalog` as
+  the clean transactional vitrine with filters, sorting, sparse-grid balance and
+  the "Не нашли свою модель?" CTA. Keep `/store` as the decision page: entry
+  scenarios, a short choosing guide, proof/trust context and only a curated
+  device preview before the final lead action. Do not reinsert the full
+  filterable `CatalogGrid` into `/store`.
+- Passport, Trade and Club marketing pages should include one live fragment
+  from current catalog data when devices are available. These examples should
+  reuse existing device/card fields and disappear when the catalog is empty
+  rather than publishing fake demo data.
+- Legal/trust links near lead forms and footer remain intentionally deferred
+  until the privacy/personal-data consent text is approved. Do not add
+  placeholder consent UI or invented legal copy.
 
 ## Studio Workflow Decisions
 
@@ -900,8 +913,11 @@ new commercial content should use structured collections and Directus Files.
    off-server backup upload and run `npm run directus:restore-rehearsal`.
 2. Apply the nginx `/lead-intake` rate-limit snippet on Beget and enable
    Turnstile keys when public traffic requires it.
-3. Continue growing the catalog through the operator import workflow.
-4. Keep reducing legacy fallback fields after Directus content reaches full
+3. Prepare approved privacy/personal-data consent text, add legal/trust links
+   near lead forms and footer, and include those routes in copy/visual smoke
+   checks before release. Do not publish placeholder consent UI.
+4. Continue growing the catalog through the operator import workflow.
+5. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.
-5. Keep auditing for legacy fallback data and obsolete docs/scripts now that
+6. Keep auditing for legacy fallback data and obsolete docs/scripts now that
    public routes no longer depend on legacy HTML/CSS/JS runtime files.

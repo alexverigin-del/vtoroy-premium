@@ -25,7 +25,7 @@
         "eyebrow": "Мы здесь",
         "headline": "Нас можно найти, а проверку можно увидеть.",
         "body": "Локальный Store с открытой проверкой и понятными условиями. Вещи проходят через своих, а не через незнакомцев.",
-        "sortOrder": 2,
+        "sortOrder": 3,
         "isActive": true,
         "content": {
           "visual": {
@@ -37,12 +37,60 @@
         }
       },
       {
+        "sectionKey": "store_decision",
+        "variant": "decision.guide",
+        "eyebrow": "С чего начать",
+        "headline": "Три спокойных входа в Store.",
+        "body": "Store помогает не листать всё подряд, а быстро понять свой сценарий: купить проверенную вещь, обновиться через Trade или подобрать формат Club.",
+        "sortOrder": 2,
+        "isActive": true,
+        "content": {
+          "items": [
+            {
+              "title": "Хочу купить без риска",
+              "text": "Смотрите вещи с Passport, гарантией и понятной ценой выхода до разговора с менеджером.",
+              "badge": "Покупка",
+              "url": "/catalog",
+              "label": "Смотреть витрину"
+            },
+            {
+              "title": "Хочу обновиться",
+              "text": "Выбираете следующую вещь, а свою приносите на открытую оценку и расчёт доплаты.",
+              "badge": "Trade",
+              "url": "/trade",
+              "label": "Рассчитать обновление"
+            },
+            {
+              "title": "Хочу владеть гибко",
+              "text": "Подбираем вещь и сценарий Club: пользоваться, менять, выкупать или возвращать по понятным условиям.",
+              "badge": "Club",
+              "url": "/club",
+              "label": "Посмотреть Club"
+            }
+          ],
+          "steps": [
+            {
+              "title": "Задача",
+              "text": "Телефон на каждый день, рабочий MacBook, подарок или обновление текущей вещи."
+            },
+            {
+              "title": "Состояние",
+              "text": "Сверяем грейд, батарею, гарантию, нюансы и историю вещи в Passport."
+            },
+            {
+              "title": "Выход",
+              "text": "Сразу понимаем, как вещь можно будет передать дальше через Store или Trade."
+            }
+          ]
+        }
+      },
+      {
         "sectionKey": "store_offer",
         "variant": "cards.grid",
         "eyebrow": "Что внутри Store",
         "headline": "Четыре зоны под одной крышей.",
         "body": "Каждая зона решает свою задачу: выбор вещи, открытая проверка, Trade и вход в Club.",
-        "sortOrder": 3,
+        "sortOrder": 4,
         "isActive": true,
         "content": {
           "items": [
@@ -74,7 +122,7 @@
         "variant": "steps",
         "eyebrow": "Как проходит визит",
         "headline": "Четыре спокойных шага.",
-        "sortOrder": 4,
+        "sortOrder": 5,
         "isActive": true,
         "content": {
           "steps": [
@@ -103,7 +151,7 @@
         "eyebrow": "Почему это важно",
         "headline": "Почему это круг, а не случайный рынок.",
         "body": "Разница — в ответственности, которую видно до решения.",
-        "sortOrder": 5,
+        "sortOrder": 6,
         "isActive": true,
         "content": {
           "comparison": {
@@ -120,6 +168,23 @@
         }
       },
       {
+        "sectionKey": "store_curated_catalog",
+        "variant": "catalog.curated",
+        "eyebrow": "Короткий выбор",
+        "headline": "Начните с нескольких вещей, а не со всей витрины.",
+        "body": "Показываем ближайшие проверенные варианты. Полный каталог остаётся отдельной чистой витриной для сравнения.",
+        "primaryCtaLabel": "Открыть весь каталог",
+        "primaryCtaUrl": "/catalog",
+        "secondaryCtaLabel": "Оставить заявку",
+        "secondaryCtaUrl": "/#final",
+        "sortOrder": 7,
+        "isActive": true,
+        "content": {
+          "limit": 3,
+          "cues": ["Память", "Цвет", "Бюджет", "Trade"]
+        }
+      },
+      {
         "sectionKey": "final_cta",
         "variant": "page.cta",
         "headline": "Войдите в круг через Store.",
@@ -128,7 +193,7 @@
         "primaryCtaUrl": "/#final",
         "secondaryCtaLabel": "Смотреть каталог",
         "secondaryCtaUrl": "/catalog",
-        "sortOrder": 6,
+        "sortOrder": 8,
         "isActive": true,
         "content": {}
       }
@@ -189,11 +254,26 @@
         }
       },
       {
+        "sectionKey": "trade_live_example",
+        "variant": "live.example",
+        "eyebrow": "На живом примере",
+        "headline": "Trade начинается с конкретной вещи, а не с абстрактной скидки.",
+        "body": "Берём актуальную карточку Store как цель обновления: видим цену, состояние, гарантию и ориентир выхода, затем считаем зачёт вашей вещи после открытой проверки.",
+        "primaryCtaLabel": "Рассчитать Trade",
+        "primaryCtaUrl": "/#final",
+        "secondaryCtaLabel": "Смотреть вещь",
+        "sortOrder": 3,
+        "isActive": true,
+        "content": {
+          "mode": "trade"
+        }
+      },
+      {
         "sectionKey": "trade_steps",
         "variant": "steps",
         "eyebrow": "Как проходит оценка",
         "headline": "Четыре прозрачных шага.",
-        "sortOrder": 3,
+        "sortOrder": 4,
         "isActive": true,
         "content": {
           "steps": [
@@ -221,7 +301,7 @@
         "variant": "compare",
         "eyebrow": "Почему Trade",
         "headline": "Случайный рынок или Trade в ISVOI.",
-        "sortOrder": 4,
+        "sortOrder": 5,
         "isActive": true,
         "content": {
           "comparison": {
@@ -258,7 +338,7 @@
         "primaryCtaUrl": "/#final",
         "secondaryCtaLabel": "Смотреть каталог",
         "secondaryCtaUrl": "/catalog",
-        "sortOrder": 5,
+        "sortOrder": 6,
         "isActive": true,
         "content": {}
       }
@@ -320,11 +400,26 @@
         }
       },
       {
+        "sectionKey": "passport_live_example",
+        "variant": "live.example",
+        "eyebrow": "Фрагмент живого Passport",
+        "headline": "Один экран должен отвечать на главный вопрос: чему здесь можно доверять.",
+        "body": "Показываем актуальную вещь из Store и несколько фактов, которые помогают принять решение до покупки.",
+        "primaryCtaLabel": "Открыть пример",
+        "secondaryCtaLabel": "Смотреть все вещи",
+        "secondaryCtaUrl": "/catalog",
+        "sortOrder": 3,
+        "isActive": true,
+        "content": {
+          "mode": "passport"
+        }
+      },
+      {
         "sectionKey": "passport_steps",
         "variant": "steps",
         "eyebrow": "Проверка при вас",
         "headline": "Как составляется Passport.",
-        "sortOrder": 3,
+        "sortOrder": 4,
         "isActive": true,
         "content": {
           "steps": [
@@ -346,7 +441,7 @@
         "variant": "faq",
         "eyebrow": "Частые вопросы",
         "headline": "Что обычно спрашивают.",
-        "sortOrder": 4,
+        "sortOrder": 5,
         "isActive": true,
         "content": {
           "items": [
@@ -374,7 +469,7 @@
         "primaryCtaUrl": "/catalog",
         "secondaryCtaLabel": "Записаться на проверку",
         "secondaryCtaUrl": "/#final",
-        "sortOrder": 5,
+        "sortOrder": 6,
         "isActive": true,
         "content": {}
       }
@@ -441,11 +536,26 @@
         }
       },
       {
+        "sectionKey": "club_live_example",
+        "variant": "live.example",
+        "eyebrow": "Как это выглядит на вещи",
+        "headline": "Club строится вокруг конкретного устройства и понятного будущего выхода.",
+        "body": "Вместо абстрактного членства показываем вещь, её Passport и логику владения: пользоваться, проверять, обновлять или передавать дальше.",
+        "primaryCtaLabel": "Узнать условия Club",
+        "primaryCtaUrl": "/#final",
+        "secondaryCtaLabel": "Смотреть вещь",
+        "sortOrder": 3,
+        "isActive": true,
+        "content": {
+          "mode": "club"
+        }
+      },
+      {
         "sectionKey": "club_steps",
         "variant": "steps",
         "eyebrow": "Как работает Club",
         "headline": "Четыре понятных шага.",
-        "sortOrder": 3,
+        "sortOrder": 4,
         "isActive": true,
         "content": {
           "steps": [
@@ -474,7 +584,7 @@
         "eyebrow": "Репутация владельца",
         "headline": "Аккуратность улучшает условия.",
         "body": "Репутация складывается из состояния, сроков и истории проверок.",
-        "sortOrder": 4,
+        "sortOrder": 5,
         "isActive": true,
         "content": {
           "items": [
@@ -501,7 +611,7 @@
         "variant": "compare",
         "eyebrow": "Почему Club",
         "headline": "Покупка навсегда, случайный рынок или Club.",
-        "sortOrder": 5,
+        "sortOrder": 6,
         "isActive": true,
         "content": {
           "comparison": {
@@ -534,7 +644,7 @@
         "primaryCtaUrl": "/#final",
         "secondaryCtaLabel": "Смотреть вещи",
         "secondaryCtaUrl": "/catalog",
-        "sortOrder": 6,
+        "sortOrder": 7,
         "isActive": true,
         "content": {}
       }

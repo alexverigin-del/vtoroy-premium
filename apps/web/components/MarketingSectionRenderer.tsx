@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { PageSection } from "@vtoroy/shared";
-import { CatalogGrid } from "./CatalogGrid";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import type { MarketingSlug } from "@/lib/site-content";
+import { DeviceCard } from "./DeviceCard";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
@@ -12,7 +12,6 @@ type MarketingSectionRendererProps = {
   section: PageSection;
   slug: MarketingSlug;
   devices?: DeviceCardData[];
-  directusEnabled: boolean;
 };
 
 type MarketingCard = {
@@ -145,6 +144,12 @@ function strField(record: Record<string, unknown>, key: string, fallback = ""): 
   return typeof value === "string" ? value : fallback;
 }
 
+function numField(record: Record<string, unknown>, key: string, fallback = 0): number {
+  const value = record[key];
+  const numberValue = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numberValue) ? numberValue : fallback;
+}
+
 function textField(
   record: Record<string, unknown>,
   camelKey: string,
@@ -239,6 +244,33 @@ function stringList(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
     : [];
+}
+
+function normalizedStockStatus(device: DeviceCardData): string {
+  const raw = (device.stockStatus || "available").trim().toLowerCase();
+  if (!raw || raw === "in_stock") return "available";
+  if (raw === "service") return "hidden";
+  return raw;
+}
+
+function marketingDeviceCandidates(devices: DeviceCardData[]): DeviceCardData[] {
+  return [...devices]
+    .filter((device) => normalizedStockStatus(device) !== "hidden")
+    .sort((a, b) => {
+      const aStatus = normalizedStockStatus(a);
+      const bStatus = normalizedStockStatus(b);
+      const aAvailable = aStatus === "available" ? 0 : 1;
+      const bAvailable = bStatus === "available" ? 0 : 1;
+      return aAvailable - bAvailable || Number(a.sort ?? 0) - Number(b.sort ?? 0);
+    });
+}
+
+function marketingExampleDevice(devices: DeviceCardData[]): DeviceCardData | null {
+  return marketingDeviceCandidates(devices)[0] ?? null;
+}
+
+function curatedMarketingDevices(devices: DeviceCardData[], limit: number): DeviceCardData[] {
+  return marketingDeviceCandidates(devices).slice(0, limit);
 }
 
 function visualContent(value: unknown): VisualContent {
@@ -671,6 +703,117 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
   );
 }
 
+function deviceFactList(device: DeviceCardData): string[] {
+  const seen = new Set<string>();
+  return [device.batteryText, device.warrantyText, device.exitText, ...(device.trustFacts ?? [])]
+    .map((value) => value.trim())
+    .filter((value) => {
+      if (!value) return false;
+      const key = value.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 4);
+}
+
+function MarketingLiveExampleSection({
+  section,
+  slug,
+  devices,
+}: {
+  section: PageSection;
+  slug: MarketingSlug;
+  devices: DeviceCardData[];
+}) {
+  const device = marketingExampleDevice(devices);
+  if (!device) return null;
+
+  const mode = strField(section.content, "mode", slug);
+  const facts = deviceFactList(device);
+  const primaryLabel =
+    section.primaryCtaLabel ||
+    (mode === "trade"
+      ? "Рассчитать Trade"
+      : mode === "club"
+        ? "Узнать условия Club"
+        : "Смотреть Passport");
+  const primaryUrl =
+    section.primaryCtaUrl ||
+    (mode === "trade" ? "/trade#final" : mode === "club" ? "/club#final" : `/device/${device.id}`);
+  const secondaryLabel = section.secondaryCtaLabel || "Открыть карточку";
+  const secondaryUrl = section.secondaryCtaUrl || `/device/${device.id}`;
+
+  const modeLabel =
+    mode === "trade"
+      ? "Пример Trade-логики"
+      : mode === "club"
+        ? "Пример Club-сценария"
+        : "Фрагмент Passport";
+  const modeText =
+    mode === "trade"
+      ? "Берём реальную вещь из Store как цель обновления: цена, состояние и ориентир выхода видны до расчёта зачёта вашей вещи."
+      : mode === "club"
+        ? "Один и тот же Passport помогает выбрать вещь, пользоваться с понятными условиями и потом спокойно обновиться через Trade."
+        : "Так выглядит сжатый смысл Passport: не абстрактное обещание, а несколько проверенных фактов до решения.";
+
+  return (
+    <section className="bg-frost py-14 md:py-20">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <SectionHeader section={section} />
+        <div className="mx-auto mt-8 grid max-w-content gap-6 rounded-card border border-hairline bg-white p-5 md:mt-10 md:p-7 lg:grid-cols-2">
+          <div>
+            <p className="text-sm font-semibold leading-snug text-link-blue">{modeLabel}</p>
+            <h3 className="mt-3 text-2xl font-semibold leading-tight text-carbon">
+              {device.title}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-graphite">
+              {device.specs} · {device.color} · грейд {device.grade}
+            </p>
+            <p className="mt-5 text-3xl font-semibold tracking-tight text-carbon">
+              {device.priceText}
+            </p>
+            {device.exitText ? (
+              <p className="mt-2 text-sm leading-relaxed text-ash">{device.exitText}</p>
+            ) : null}
+            <p className="mt-5 text-sm leading-relaxed text-graphite">{modeText}</p>
+          </div>
+          <div className="grid gap-4">
+            {facts.length > 0 ? (
+              <dl className="grid gap-3 sm:grid-cols-2">
+                {facts.map((fact, index) => (
+                  <div key={fact} className="rounded-card border border-hairline bg-ice p-4">
+                    <dt className="text-xs font-medium text-ash">
+                      {index === 0
+                        ? "Состояние"
+                        : index === 1
+                          ? "Гарантия"
+                          : index === 2
+                            ? "Выход"
+                            : "Проверка"}
+                    </dt>
+                    <dd className="mt-1 text-sm font-semibold leading-relaxed text-carbon">
+                      {fact}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href={normalizeSiteUrl(primaryUrl)} className={primaryPillCtaClass}>
+                {primaryLabel}
+              </Link>
+              <Link href={normalizeSiteUrl(secondaryUrl)} className={secondaryPillCtaClass}>
+                {secondaryLabel}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MarketingCardsSection({ section }: { section: PageSection }) {
   const cards = marketingCards(section.content.items ?? section.content.cards);
   if (cards.length === 0) return null;
@@ -712,6 +855,145 @@ function MarketingCardsSection({ section }: { section: PageSection }) {
             </article>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function MarketingDecisionGuideSection({ section }: { section: PageSection }) {
+  const cards = marketingCards(section.content.items ?? section.content.cards);
+  const steps = marketingSteps(section.content.steps);
+  const isWash = section.variant?.includes("wash");
+
+  if (cards.length === 0 && steps.length === 0) return null;
+
+  return (
+    <section className={cn("py-14 md:py-20", isWash ? "bg-frost" : "bg-white")}>
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <SectionHeader section={section} />
+        {cards.length > 0 ? (
+          <div className="mx-auto mt-8 grid max-w-content gap-4 md:mt-10 lg:grid-cols-3">
+            {cards.slice(0, 3).map((card) => (
+              <article
+                key={`${card.badge}-${card.title}`}
+                className="rounded-card border border-hairline bg-white p-5 md:p-6"
+              >
+                {card.badge ? (
+                  <p className="text-sm font-semibold leading-snug text-link-blue">{card.badge}</p>
+                ) : null}
+                {card.title ? (
+                  <h3 className="mt-3 text-xl font-semibold leading-tight text-carbon">
+                    {card.title}
+                  </h3>
+                ) : null}
+                {card.text ? (
+                  <p className="mt-3 text-sm leading-relaxed text-graphite">{card.text}</p>
+                ) : null}
+                {card.url && card.label ? (
+                  <Link
+                    href={card.url}
+                    className="focus-ring mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-link-blue transition hover:text-action"
+                  >
+                    {card.label}
+                  </Link>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : null}
+
+        {steps.length > 0 ? (
+          <div className="mx-auto mt-6 max-w-content rounded-card border border-hairline bg-ice p-5 md:mt-8 md:p-7">
+            <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+              <div>
+                <p className="text-sm font-semibold leading-snug text-link-blue">
+                  Как выбрать вещь
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-graphite">
+                  Сначала задача и горизонт владения, потом состояние, бюджет и сценарий выхода.
+                </p>
+              </div>
+              <ol className="grid gap-3 sm:grid-cols-3">
+                {steps.slice(0, 3).map((step, index) => (
+                  <li key={`${step.title}-${index}`} className="rounded-card bg-white p-4">
+                    <span className="text-xs font-semibold text-link-blue">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {step.title ? (
+                      <h3 className="mt-2 text-base font-semibold leading-tight text-carbon">
+                        {step.title}
+                      </h3>
+                    ) : null}
+                    {step.text ? (
+                      <p className="mt-2 text-sm leading-relaxed text-ash">{step.text}</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function MarketingCuratedCatalogSection({
+  section,
+  devices,
+}: {
+  section: PageSection;
+  devices: DeviceCardData[];
+}) {
+  const limit = Math.max(1, numField(section.content, "limit", 3));
+  const visibleDevices = curatedMarketingDevices(devices, limit);
+  const cues = stringList(section.content.cues);
+
+  if (visibleDevices.length === 0) return null;
+
+  return (
+    <section className="bg-white py-14 md:py-20" id="store-selection">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <SectionHeader section={section} />
+        {cues.length > 0 ? (
+          <ul className="mx-auto mt-6 flex max-w-content flex-wrap justify-center gap-2">
+            {cues.slice(0, 4).map((cue) => (
+              <li
+                key={cue}
+                className="rounded-pill border border-hairline bg-frost px-4 py-2 text-sm font-medium text-graphite"
+              >
+                {cue}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <ul className="mx-auto mt-8 grid max-w-content gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {visibleDevices.map((device, index) => (
+            <li key={device.id}>
+              <DeviceCard device={device} imagePriority={index < 3} />
+            </li>
+          ))}
+        </ul>
+        {section.primaryCtaLabel || section.secondaryCtaLabel ? (
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            {section.primaryCtaLabel ? (
+              <Link
+                href={normalizeSiteUrl(section.primaryCtaUrl || "/catalog")}
+                className={primaryPillCtaClass}
+              >
+                {section.primaryCtaLabel}
+              </Link>
+            ) : null}
+            {section.secondaryCtaLabel ? (
+              <Link
+                href={normalizeSiteUrl(section.secondaryCtaUrl || "/#final")}
+                className={secondaryPillCtaClass}
+              >
+                {section.secondaryCtaLabel}
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -815,7 +1097,20 @@ function isLevelsSection(section: PageSection): boolean {
 
 function isCardsSection(section: PageSection): boolean {
   if (section.variant === "faq" || section.sectionKey === "faq") return false;
+  if (isDecisionGuideSection(section) || isCuratedCatalogSection(section)) return false;
   return Boolean(section.variant === "cards.grid" || section.content.cards);
+}
+
+function isDecisionGuideSection(section: PageSection): boolean {
+  return section.variant === "decision.guide" || section.sectionKey === "store_decision";
+}
+
+function isCuratedCatalogSection(section: PageSection): boolean {
+  return section.variant === "catalog.curated" || section.sectionKey === "store_curated_catalog";
+}
+
+function isLiveExampleSection(section: PageSection): boolean {
+  return section.variant === "live.example" || section.sectionKey.endsWith("_live_example");
 }
 
 function isStepsSection(section: PageSection): boolean {
@@ -834,7 +1129,6 @@ export function MarketingSectionRenderer({
   section,
   slug,
   devices = [],
-  directusEnabled,
 }: MarketingSectionRendererProps) {
   const renderedSection = isHeroSection(section) ? (
     <MarketingHeroSection section={section} slug={slug} />
@@ -844,6 +1138,12 @@ export function MarketingSectionRenderer({
     <MarketingCompareSection section={section} />
   ) : isLevelsSection(section) ? (
     <MarketingLevelsSection section={section} />
+  ) : isDecisionGuideSection(section) ? (
+    <MarketingDecisionGuideSection section={section} />
+  ) : isCuratedCatalogSection(section) ? (
+    <MarketingCuratedCatalogSection section={section} devices={devices} />
+  ) : isLiveExampleSection(section) ? (
+    <MarketingLiveExampleSection section={section} slug={slug} devices={devices} />
   ) : isCardsSection(section) ? (
     <MarketingCardsSection section={section} />
   ) : isStepsSection(section) ? (
@@ -853,15 +1153,6 @@ export function MarketingSectionRenderer({
   ) : isPageCtaSection(section) ? (
     <MarketingPageCtaSection section={section} />
   ) : null;
-
-  if (slug === "store" && section.sectionKey === "final_cta") {
-    return (
-      <>
-        <CatalogGrid devices={devices} directusEnabled={directusEnabled} headingLevel="h2" />
-        {renderedSection}
-      </>
-    );
-  }
 
   return renderedSection;
 }

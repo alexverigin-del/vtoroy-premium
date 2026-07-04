@@ -459,7 +459,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
               className={cn(
                 "mt-6 gap-6",
                 showRelatedPrompt
-                  ? "grid sm:grid-cols-2 lg:flex lg:items-stretch"
+                  ? "grid sm:grid-cols-2 lg:flex lg:items-start"
                   : "grid sm:grid-cols-2 lg:grid-cols-3",
               )}
             >
@@ -469,16 +469,30 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                 </li>
               ))}
               {showRelatedPrompt ? (
-                <li className="flex flex-col justify-center rounded-card border border-hairline bg-white p-6 sm:col-span-2 lg:flex-1">
-                  <h3 className="text-xl font-semibold leading-tight text-carbon">
-                    Больше вариантов в Store
-                  </h3>
-                  <p className="mt-3 max-w-body-copy text-sm leading-relaxed text-graphite">
-                    Если эта вещь не подходит по цвету, памяти или бюджету, каталог покажет соседние
-                    проверенные варианты с Passport и понятной ценой выхода.
-                  </p>
-                  <div className="mt-5">
-                    <CTAButton href="/catalog" label="Открыть каталог" variant="secondary" />
+                <li className="rounded-card border border-hairline bg-white p-5 sm:col-span-2 lg:flex-1 lg:p-6">
+                  <div className="grid h-full gap-5 lg:grid-cols-2 lg:items-center">
+                    <div>
+                      <h3 className="text-xl font-semibold leading-tight text-carbon">
+                        Больше вариантов в Store
+                      </h3>
+                      <p className="mt-3 max-w-body-copy text-sm leading-relaxed text-graphite">
+                        Если эта вещь не подходит, проверьте соседние варианты по практичным
+                        параметрам.
+                      </p>
+                      <div className="mt-5">
+                        <CTAButton href="/catalog" label="Открыть каталог" variant="secondary" />
+                      </div>
+                    </div>
+                    <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                      {["Память", "Цвет", "Бюджет", "Trade"].map((cue) => (
+                        <li
+                          key={cue}
+                          className="rounded-card border border-hairline bg-surface px-3 py-2 text-sm font-medium text-graphite"
+                        >
+                          {cue}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </li>
               ) : null}

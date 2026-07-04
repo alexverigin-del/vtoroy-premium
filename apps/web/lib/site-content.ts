@@ -11,6 +11,12 @@ type SiteChrome = {
 export type MarketingSlug = "store" | "trade" | "passport" | "club";
 
 const marketingSlugs = new Set<MarketingSlug>(["store", "trade", "passport", "club"]);
+const marketingFallbackEnhancementKeys: Record<MarketingSlug, Set<string>> = {
+  store: new Set(["store_decision", "store_curated_catalog"]),
+  trade: new Set(["trade_live_example"]),
+  passport: new Set(["passport_live_example"]),
+  club: new Set(["club_live_example"]),
+};
 
 const defaultSiteSettings: SiteSettings = {
   brandName: "ISVOI",
@@ -289,7 +295,19 @@ function normalizeFallbackSection(raw: Record<string, unknown>): PageSection {
 function marketingSections(slug: MarketingSlug, sections: PageSection[] = []): PageSection[] {
   const active = sections.filter((section) => section.isActive);
   const fallback = getFallbackMarketingPage(slug).sections;
-  return (active.length > 0 ? active : fallback).sort((a, b) => a.sortOrder - b.sortOrder);
+  if (active.length === 0) return fallback.sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const byKey = new Map(active.map((section) => [section.sectionKey, section]));
+  for (const fallbackSection of fallback) {
+    if (
+      marketingFallbackEnhancementKeys[slug].has(fallbackSection.sectionKey) &&
+      !byKey.has(fallbackSection.sectionKey)
+    ) {
+      byKey.set(fallbackSection.sectionKey, fallbackSection);
+    }
+  }
+
+  return [...byKey.values()].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 function homeSections(sections: PageSection[] = []): PageSection[] {

@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { MarketingSectionRenderer } from "@/components/MarketingSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
 import {
-  directusConfig,
   getNavigationItems,
   getPublishedDeviceCards,
   getSitePage,
@@ -68,7 +67,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
     getSitePage(slug),
     getSiteSettings(),
     getNavigationItems(),
-    slug === "store" ? getPublishedDeviceCards() : Promise.resolve([]),
+    getPublishedDeviceCards(),
   ]);
   const chrome = siteChrome(settings, navigation);
   const sections = marketingSectionsForPage(slug, page?.sections);
@@ -82,7 +81,6 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
             section={section}
             slug={slug}
             devices={devices}
-            directusEnabled={directusConfig.enabled}
           />
         ))}
       </main>

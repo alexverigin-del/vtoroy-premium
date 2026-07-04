@@ -699,6 +699,12 @@ new commercial content should use structured collections and Directus Files.
   `website` field via `leadHoneypotClass`; `smoke:prod` checks the homepage and
   device lead forms for that hidden field so the anti-spam guard does not become
   decorative markup.
+- Device detail page layout should read as a verified dossier, not a generic
+  product card stack. The ambiguous "Что входит в карточку" block was removed:
+  concrete condition, warranty/exit-price and Trade details now sit directly
+  under the gallery in the left desktop column, while purchase controls and
+  `ISVOI Passport` form the right column. Keep the mobile order as gallery,
+  purchase action, condition, warranty/Trade, then Passport.
 
 ## Studio Workflow Decisions
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
+import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
@@ -161,21 +162,26 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
 
-        <div className="mt-10 grid gap-3 md:grid-cols-3">
-          {renderedChoices.map((choice) => (
-            <div
-              key={`${choice.title}-${choice.text}`}
-              className="rounded-card border border-hairline bg-frost p-5"
-            >
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-card bg-white text-link-blue">
-                <Icon name={choice.icon} />
-              </span>
-              <div className="mt-6 text-lg font-semibold leading-tight text-carbon">
-                {choice.title}
+        <div className="mt-10 overflow-hidden rounded-card border border-hairline bg-frost">
+          <div className="grid md:grid-cols-3">
+            {renderedChoices.map((choice, index) => (
+              <div
+                key={`${choice.title}-${choice.text}`}
+                className={cn(
+                  "p-5 md:p-6",
+                  index > 0 ? "border-t border-hairline md:border-l md:border-t-0" : "",
+                )}
+              >
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-card bg-white text-link-blue">
+                  <Icon name={choice.icon} />
+                </span>
+                <div className="mt-4 text-lg font-semibold leading-tight text-carbon">
+                  {choice.title}
+                </div>
+                <div className="mt-3 text-sm leading-relaxed text-graphite">{choice.text}</div>
               </div>
-              <div className="mt-3 text-sm leading-relaxed text-graphite">{choice.text}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         <div className="mt-8 rounded-card border border-hairline bg-frost p-5 md:p-6">

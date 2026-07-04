@@ -759,6 +759,11 @@ new commercial content should use structured collections and Directus Files.
   `details/summary`, but render short question lists inside one shared bordered
   surface with internal dividers instead of separate rounded cards for each
   question.
+- Homepage preview blocks should not repeat "three/four cards for the sake of
+  a grid" when each item is only a short fact. `StorePreviewSection` steps,
+  `TradePreviewSection` choices and `PassportPreviewSection` features use one
+  shared compact surface with internal dividers while preserving the same
+  Directus `steps`, `choices` and `features` content shapes.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

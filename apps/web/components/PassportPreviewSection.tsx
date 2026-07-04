@@ -231,11 +231,11 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
 
-          <ul className="mt-8 grid gap-3">
-            {renderedFeatures.map((feature) => (
+          <ul className="mt-8 overflow-hidden rounded-card border border-hairline bg-white">
+            {renderedFeatures.map((feature, index) => (
               <li
                 key={`${feature.title}-${feature.text}`}
-                className="flex gap-4 rounded-card border border-hairline bg-white p-4"
+                className={cn("flex gap-4 p-4", index > 0 ? "border-t border-hairline" : "")}
               >
                 <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-frost text-link-blue">
                   <Icon name={feature.icon} />

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
+import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
@@ -119,23 +120,30 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-3 md:grid-cols-4">
+        <ol className="mt-8 grid overflow-hidden rounded-card border border-hairline bg-white md:grid-cols-2 lg:grid-cols-4">
           {renderedSteps.map((step, index) => {
             const number = String(index + 1).padStart(2, "0");
             return (
-              <div
+              <li
                 key={`${step.title}-${step.text}`}
-                className="rounded-card border border-hairline bg-white p-5"
+                className={cn(
+                  "p-5",
+                  index > 0 ? "border-t border-hairline" : "",
+                  index === 1 ? "md:border-t-0" : "",
+                  index % 2 === 1 ? "md:border-l md:border-hairline" : "",
+                  index > 1 ? "md:border-t md:border-hairline lg:border-t-0" : "",
+                  index > 0 ? "lg:border-l lg:border-hairline" : "",
+                )}
               >
                 <div className="text-sm font-semibold text-link-blue">{number}</div>
-                <div className="mt-6 text-lg font-semibold leading-tight text-carbon">
+                <div className="mt-4 text-lg font-semibold leading-tight text-carbon">
                   {step.title}
                 </div>
                 <div className="mt-3 text-sm leading-relaxed text-graphite">{step.text}</div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (
           <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">

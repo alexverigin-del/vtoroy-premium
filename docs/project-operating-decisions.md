@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-07-03.
+Last updated: 2026-07-04.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -635,6 +635,18 @@ new commercial content should use structured collections and Directus Files.
   sections now pair one or two `DeviceCard` items with a calm catalog prompt
   instead of leaving empty desktop columns. Directus navigation and catalog data
   shapes remain unchanged.
+- Seventeenth local implementation step closed the lead-form interaction-state
+  drift from the repeat audit pass: `ProductLeadForm` and `FinalCtaSection`
+  now share lead field/button presentation constants from
+  `apps/web/components/ui-classes.ts`, product lead fields use the same
+  48px input height, visible focus ring and tokenized success state as the
+  homepage CTA, and both forms expose `aria-busy` during submission. The
+  existing `/lead-intake` payloads, Turnstile handling and Directus `leads`
+  schema remain unchanged.
+- The seventeenth step was released as `5d2d5b4 Unify lead form interaction
+  states` on 2026-07-04. Local and Beget `npm run web:verify` passed, then
+  production passed `npm run smoke:prod`, `npm run smoke:images` and
+  `npm run smoke:visual` after restarting PM2 `isvoi-web`.
 
 ## Studio Workflow Decisions
 

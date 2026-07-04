@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS device_passports (
   condition_notes json,
   defect_photo uuid,
   defect_photo_alt text,
+  story_title varchar(255),
+  story_body text,
+  story_facts json,
   warranty_duration varchar(255),
   warranty_covered text,
   warranty_not_covered text,
@@ -66,6 +69,9 @@ ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS condition_note text;
 ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS condition_notes json;
 ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS defect_photo uuid;
 ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS defect_photo_alt text;
+ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS story_title varchar(255);
+ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS story_body text;
+ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS story_facts json;
 ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS warranty_duration varchar(255);
 ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS warranty_covered text;
 ALTER TABLE device_passports ADD COLUMN IF NOT EXISTS warranty_not_covered text;
@@ -259,7 +265,7 @@ END;
 $$;
 
 -- Device embedded relations.
-SELECT isvoi_upsert_directus_field('devices', 'passport_record', 'list-o2m', NULL, '{"layout":"table","enableCreate":true,"enableSelect":false,"fields":["condition_grade_text","repair","water","warranty_duration","exit_headline"]}'::json, 'full', 92, 'Структурированный Passport. Используйте его вместо legacy JSON-поля passport.', false, 'o2m', 'group_structured', false, false);
+SELECT isvoi_upsert_directus_field('devices', 'passport_record', 'list-o2m', NULL, '{"layout":"table","enableCreate":true,"enableSelect":false,"fields":["condition_grade_text","repair","water","story_title","warranty_duration","exit_headline"]}'::json, 'full', 92, 'Структурированный Passport. Используйте его вместо legacy JSON-поля passport.', false, 'o2m', 'group_structured', false, false);
 SELECT isvoi_upsert_directus_field('devices', 'trade_options', 'list-o2m', NULL, '{"layout":"table","enableCreate":true,"enableSelect":false,"fields":["is_active","sort","label","value"]}'::json, 'full', 93, 'Структурированные варианты Trade/Upgrade. Используйте их вместо legacy JSON-поля trade.', false, 'o2m', 'group_structured', false, false);
 SELECT isvoi_upsert_directus_field('devices', 'passport', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, 'full', 96, 'Legacy JSON Passport. Сайт теперь сначала читает device_passports; это поле оставлено как fallback на время миграции.', true, 'cast-json', 'group_structured', false, false);
 SELECT isvoi_upsert_directus_field('devices', 'trade', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, 'full', 97, 'Legacy JSON Trade. Сайт теперь сначала читает trade_options; это поле оставлено как fallback на время миграции.', true, 'cast-json', 'group_structured', false, false);
@@ -268,6 +274,7 @@ SELECT isvoi_upsert_directus_field('devices', 'trade', 'input-code', NULL, '{"la
 SELECT isvoi_upsert_directus_field('device_passports', 'group_identity', 'group-detail', NULL, '{"headerIcon":"devices","start":"open"}'::json, 'full', 1, 'Связь паспорта с устройством.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'group_summary', 'group-detail', NULL, '{"headerIcon":"fact_check","start":"open"}'::json, 'full', 20, 'Краткая сводка, ремонт, влага и диагностика.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'group_condition', 'group-detail', NULL, '{"headerIcon":"build","start":"open"}'::json, 'full', 50, 'Состояние, грейд, заметки и фото дефекта.', false, 'alias,no-data,group');
+SELECT isvoi_upsert_directus_field('device_passports', 'group_story', 'group-detail', NULL, '{"headerIcon":"history","start":"open"}'::json, 'full', 70, 'Публичная история вещи без персональных данных.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'group_warranty', 'group-detail', NULL, '{"headerIcon":"shield","start":"open"}'::json, 'full', 80, 'Гарантия и цена выхода.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'group_system', 'group-detail', NULL, '{"headerIcon":"settings","start":"closed"}'::json, 'full', 120, 'Системные поля.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'id', 'input', NULL, NULL, 'half', 121, 'Системный ID.', true, 'uuid', 'group_system', false, true);
@@ -282,6 +289,9 @@ SELECT isvoi_upsert_directus_field('device_passports', 'condition_note', 'input-
 SELECT isvoi_upsert_directus_field('device_passports', 'condition_notes', 'list', NULL, NULL, 'full', 53, 'Короткие пункты состояния.', false, 'cast-json', 'group_condition');
 SELECT isvoi_upsert_directus_field('device_passports', 'defect_photo', 'file-image', 'image', '{"folder":"ISVOI Device Photos"}'::json, 'half', 54, 'Фото дефекта из Directus Files. Обычно подтягивается из device_images role=defect.', false, 'm2o', 'group_condition');
 SELECT isvoi_upsert_directus_field('device_passports', 'defect_photo_alt', 'input-multiline', NULL, NULL, 'half', 55, 'Alt-текст фото дефекта.', false, NULL, 'group_condition');
+SELECT isvoi_upsert_directus_field('device_passports', 'story_title', 'input', NULL, NULL, 'half', 71, 'Короткий заголовок истории вещи.', false, NULL, 'group_story');
+SELECT isvoi_upsert_directus_field('device_passports', 'story_body', 'input-multiline', NULL, NULL, 'full', 72, 'Публичная история происхождения/пути вещи. Не указывайте персональные данные без согласия.', false, NULL, 'group_story');
+SELECT isvoi_upsert_directus_field('device_passports', 'story_facts', 'list', NULL, NULL, 'full', 73, 'Короткие факты истории: string[].', false, 'cast-json', 'group_story');
 SELECT isvoi_upsert_directus_field('device_passports', 'warranty_duration', 'input', NULL, NULL, 'half', 81, 'Срок гарантии.', false, NULL, 'group_warranty');
 SELECT isvoi_upsert_directus_field('device_passports', 'warranty_covered', 'input-multiline', NULL, NULL, 'full', 82, 'Что покрывает гарантия.', false, NULL, 'group_warranty');
 SELECT isvoi_upsert_directus_field('device_passports', 'warranty_not_covered', 'input-multiline', NULL, NULL, 'full', 83, 'Что не покрывает гарантия.', false, NULL, 'group_warranty');
@@ -374,6 +384,9 @@ INSERT INTO device_passports (
   condition_notes,
   defect_photo,
   defect_photo_alt,
+  story_title,
+  story_body,
+  story_facts,
   warranty_duration,
   warranty_covered,
   warranty_not_covered,
@@ -395,6 +408,9 @@ SELECT
   (passport_json->'condition'->'notes')::json,
   defect_file,
   passport_json->'condition'->>'defectPhotoAlt',
+  passport_json->'story'->>'title',
+  passport_json->'story'->>'body',
+  (passport_json->'story'->'facts')::json,
   passport_json->'warranty'->>'duration',
   passport_json->'warranty'->>'covered',
   passport_json->'warranty'->>'notCovered',
@@ -415,6 +431,9 @@ ON CONFLICT (device) DO UPDATE SET
   condition_notes = COALESCE(device_passports.condition_notes, EXCLUDED.condition_notes),
   defect_photo = COALESCE(device_passports.defect_photo, EXCLUDED.defect_photo),
   defect_photo_alt = COALESCE(NULLIF(device_passports.defect_photo_alt, ''), EXCLUDED.defect_photo_alt),
+  story_title = COALESCE(NULLIF(device_passports.story_title, ''), EXCLUDED.story_title),
+  story_body = COALESCE(NULLIF(device_passports.story_body, ''), EXCLUDED.story_body),
+  story_facts = COALESCE(device_passports.story_facts, EXCLUDED.story_facts),
   warranty_duration = COALESCE(NULLIF(device_passports.warranty_duration, ''), EXCLUDED.warranty_duration),
   warranty_covered = COALESCE(NULLIF(device_passports.warranty_covered, ''), EXCLUDED.warranty_covered),
   warranty_not_covered = COALESCE(NULLIF(device_passports.warranty_not_covered, ''), EXCLUDED.warranty_not_covered),
@@ -481,14 +500,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'device_passports',
   'read',
-  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,created_at,updated_at',
+  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,created_at,updated_at',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'device_passports',
   'create',
-  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
+  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
   NULL,
   '{"device":{"_nnull":true}}'::json
 );
@@ -496,7 +515,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'device_passports',
   'update',
-  'repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
+  'repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
   NULL
 );
 SELECT isvoi_upsert_permission(
@@ -529,21 +548,21 @@ SELECT isvoi_upsert_permission(
   'ISVOI Importer',
   'device_passports',
   'read',
-  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,created_at,updated_at',
+  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,created_at,updated_at',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Importer',
   'device_passports',
   'create',
-  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
+  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Importer',
   'device_passports',
   'update',
-  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
+  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
   NULL
 );
 SELECT isvoi_upsert_permission(
@@ -573,21 +592,21 @@ SELECT isvoi_upsert_permission(
   'ISVOI Catalog Import',
   'device_passports',
   'read',
-  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,created_at,updated_at',
+  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,created_at,updated_at',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Catalog Import',
   'device_passports',
   'create',
-  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
+  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Catalog Import',
   'device_passports',
   'update',
-  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
+  'device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note',
   NULL
 );
 SELECT isvoi_upsert_permission(
@@ -617,7 +636,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Public Read',
   'device_passports',
   'read',
-  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,updated_at',
+  'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,updated_at',
   '{"_and":[{"device":{"status":{"_eq":"published"}}},{"device":{"stock_status":{"_neq":"hidden"}}},{"device":{"content_status":{"_eq":"ready"}}}]}'::json
 );
 SELECT isvoi_upsert_permission(
@@ -675,7 +694,7 @@ BEGIN
 END;
 $$;
 
-SELECT isvoi_upsert_preset('ISVOI Editor', 'device_passports', 'Все паспорта', 'verified_user', '#dc2626', NULL, '{"tabular":{"sort":["device"],"fields":["device","condition_grade_text","repair","water","warranty_duration","exit_headline"],"page":1}}'::json);
+SELECT isvoi_upsert_preset('ISVOI Editor', 'device_passports', 'Все паспорта', 'verified_user', '#dc2626', NULL, '{"tabular":{"sort":["device"],"fields":["device","condition_grade_text","repair","water","story_title","warranty_duration","exit_headline"],"page":1}}'::json);
 SELECT isvoi_upsert_preset('ISVOI Editor', 'trade_options', 'Активные Trade варианты', 'sync_alt', '#7c3aed', '{"is_active":{"_eq":true}}'::json, '{"tabular":{"sort":["device","sort"],"fields":["device","is_active","sort","label","value"],"page":1}}'::json);
 
 DROP FUNCTION isvoi_upsert_preset(text, varchar, varchar, varchar, varchar, json, json);

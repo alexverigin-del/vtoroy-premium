@@ -85,6 +85,9 @@ One row per device.
 | `condition_notes`   | JSON             | `string[]`.                                      |
 | `defect_photo`      | M2O → directus_files |                                              |
 | `defect_photo_alt`  | string           |                                                  |
+| `story_title`       | string           | Public title for the item's provenance/story.    |
+| `story_body`        | text             | Public story text; no personal data without consent. |
+| `story_facts`       | JSON             | `string[]` short provenance facts.               |
 | `warranty_duration` | string           |                                                  |
 | `warranty_covered`  | text             |                                                  |
 | `warranty_not_covered` | text          |                                                  |
@@ -94,9 +97,11 @@ One row per device.
 | `exit_condition`    | string           |                                                  |
 | `exit_note`         | text             |                                                  |
 
-> The `summary_rows`, `diagnostics_checklist` and `condition_notes` JSON fields
-> mirror the nested arrays in the prototype. They can be promoted to proper
-> related collections later if the admin needs per-row editing UX.
+> The `summary_rows`, `diagnostics_checklist`, `condition_notes` and
+> `story_facts` JSON fields mirror the nested arrays in the prototype. They can
+> be promoted to proper related collections later if the admin needs per-row
+> editing UX. `story_*` fields are the source of truth for the public
+> "История вещи" block on device detail pages.
 
 ## `trade_options`
 

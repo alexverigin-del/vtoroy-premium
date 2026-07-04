@@ -705,6 +705,15 @@ new commercial content should use structured collections and Directus Files.
   under the gallery in the left desktop column, while purchase controls and
   `ISVOI Passport` form the right column. Keep the mobile order as gallery,
   purchase action, condition, warranty/Trade, then Passport.
+- Device provenance copy belongs in Directus `device_passports`, not React
+  hardcode. Use `story_title`, `story_body` and `story_facts` for the public
+  "История вещи" block; do not publish personal owner details without explicit
+  consent. The page should keep `PassportSummary` focused on diagnostics, while
+  condition trust facts, story, warranty duration and exit-price context sit in
+  the main device-detail column. Apply `npm run directus:setup:catalog-structured-data`
+  first when adding the fields to an environment, then use
+  `npm run directus:update-device-stories-sql` to print the Studio-safe content
+  fill SQL.
 
 ## Studio Workflow Decisions
 

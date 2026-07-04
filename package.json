@@ -60,7 +60,8 @@
     "directus:normalize-urls": "node scripts/normalize_directus_site_urls_sql.mjs",
     "directus:setup:leads": "node scripts/setup_directus_leads_sql.mjs",
     "directus:setup:editor": "node scripts/setup_directus_editor_sql.mjs",
-    "directus:update-footer-copy-sql": "node scripts/update_directus_footer_copy_sql.mjs"
+    "directus:update-footer-copy-sql": "node scripts/update_directus_footer_copy_sql.mjs",
+    "directus:update-device-stories-sql": "node scripts/update_directus_device_stories_sql.mjs"
   },
   "engines": {
     "node": ">=20"

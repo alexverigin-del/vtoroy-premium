@@ -62,12 +62,19 @@ export interface ExitPriceInfo {
   note: string;
 }
 
+export interface DeviceStoryInfo {
+  title: string;
+  body: string;
+  facts: string[];
+}
+
 export interface DevicePassport {
   summaryRows: PassportSummaryRow[];
   repair: string;
   water: string;
   diagnostics: Diagnostics;
   condition: ConditionInfo;
+  story: DeviceStoryInfo;
   warranty: WarrantyInfo;
   exitPrice: ExitPriceInfo;
 }

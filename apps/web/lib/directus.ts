@@ -152,6 +152,9 @@ const DEVICE_PASSPORT_FIELDS = [
   "condition_note",
   "condition_notes",
   "defect_photo_alt",
+  "story_title",
+  "story_body",
+  "story_facts",
   "warranty_duration",
   "warranty_covered",
   "warranty_not_covered",
@@ -339,6 +342,7 @@ const EMPTY_PASSPORT: DevicePassport = {
   water: "",
   diagnostics: { status: "", checklist: [] },
   condition: { gradeText: "", note: "", notes: [] },
+  story: { title: "", body: "", facts: [] },
   warranty: { duration: "", covered: "", notCovered: "" },
   exitPrice: { headline: "", buyToday: "", tradeInEstimate: "", condition: "", note: "" },
 };
@@ -363,10 +367,37 @@ function mapPassportFromDirectus(value: unknown): DevicePassport {
     : "";
 
   return {
-    ...passport,
+    summaryRows: passport.summaryRows ?? EMPTY_PASSPORT.summaryRows,
+    repair: passport.repair ?? EMPTY_PASSPORT.repair,
+    water: passport.water ?? EMPTY_PASSPORT.water,
+    diagnostics: {
+      status: passport.diagnostics?.status ?? EMPTY_PASSPORT.diagnostics.status,
+      checklist: passport.diagnostics?.checklist ?? EMPTY_PASSPORT.diagnostics.checklist,
+    },
     condition: {
-      ...passport.condition,
+      gradeText: passport.condition?.gradeText ?? EMPTY_PASSPORT.condition.gradeText,
+      note: passport.condition?.note ?? EMPTY_PASSPORT.condition.note,
+      notes: passport.condition?.notes ?? EMPTY_PASSPORT.condition.notes,
       defectPhoto: defectPhoto || passport.condition?.defectPhoto,
+      defectPhotoAlt: passport.condition?.defectPhotoAlt,
+    },
+    story: {
+      title: passport.story?.title ?? EMPTY_PASSPORT.story.title,
+      body: passport.story?.body ?? EMPTY_PASSPORT.story.body,
+      facts: passport.story?.facts ?? EMPTY_PASSPORT.story.facts,
+    },
+    warranty: {
+      duration: passport.warranty?.duration ?? EMPTY_PASSPORT.warranty.duration,
+      covered: passport.warranty?.covered ?? EMPTY_PASSPORT.warranty.covered,
+      notCovered: passport.warranty?.notCovered ?? EMPTY_PASSPORT.warranty.notCovered,
+    },
+    exitPrice: {
+      headline: passport.exitPrice?.headline ?? EMPTY_PASSPORT.exitPrice.headline,
+      buyToday: passport.exitPrice?.buyToday ?? EMPTY_PASSPORT.exitPrice.buyToday,
+      tradeInEstimate:
+        passport.exitPrice?.tradeInEstimate ?? EMPTY_PASSPORT.exitPrice.tradeInEstimate,
+      condition: passport.exitPrice?.condition ?? EMPTY_PASSPORT.exitPrice.condition,
+      note: passport.exitPrice?.note ?? EMPTY_PASSPORT.exitPrice.note,
     },
   };
 }
@@ -408,30 +439,31 @@ function mapStructuredPassportFromDirectus(
 ): DevicePassport {
   const legacy = mapPassportFromDirectus(legacyValue);
   const defectPhoto = mediaUrl(row.defect_photo, "passport");
+  const summaryRows = passportRowsFromJson(row.summary_rows);
+  const diagnosticsChecklist = diagnosticsChecklistFromJson(row.diagnostics_checklist);
+  const conditionNotes = stringArrayFromJson(row.condition_notes);
+  const storyFacts = stringArrayFromJson(row.story_facts);
 
   return {
-    summaryRows:
-      passportRowsFromJson(row.summary_rows).length > 0
-        ? passportRowsFromJson(row.summary_rows)
-        : legacy.summaryRows,
+    summaryRows: summaryRows.length > 0 ? summaryRows : legacy.summaryRows,
     repair: str(row.repair) || legacy.repair,
     water: str(row.water) || legacy.water,
     diagnostics: {
       status: str(row.diagnostics_status) || legacy.diagnostics.status,
       checklist:
-        diagnosticsChecklistFromJson(row.diagnostics_checklist).length > 0
-          ? diagnosticsChecklistFromJson(row.diagnostics_checklist)
-          : legacy.diagnostics.checklist,
+        diagnosticsChecklist.length > 0 ? diagnosticsChecklist : legacy.diagnostics.checklist,
     },
     condition: {
       gradeText: str(row.condition_grade_text) || legacy.condition.gradeText,
       note: str(row.condition_note) || legacy.condition.note,
-      notes:
-        stringArrayFromJson(row.condition_notes).length > 0
-          ? stringArrayFromJson(row.condition_notes)
-          : legacy.condition.notes,
+      notes: conditionNotes.length > 0 ? conditionNotes : legacy.condition.notes,
       defectPhoto: defectPhoto || legacy.condition.defectPhoto,
       defectPhotoAlt: str(row.defect_photo_alt) || legacy.condition.defectPhotoAlt,
+    },
+    story: {
+      title: str(row.story_title) || legacy.story.title,
+      body: str(row.story_body) || legacy.story.body,
+      facts: storyFacts.length > 0 ? storyFacts : legacy.story.facts,
     },
     warranty: {
       duration: str(row.warranty_duration) || legacy.warranty.duration,

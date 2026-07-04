@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import type { Device } from "@vtoroy/shared";
+import type { Device, DeviceStoryInfo, PassportState } from "@vtoroy/shared";
 import {
   getDeviceBySlug,
   getNavigationItems,
@@ -54,8 +54,45 @@ export async function generateMetadata({
   };
 }
 
-function compact(values: Array<string | undefined | null | false>): string[] {
-  return values.filter(Boolean) as string[];
+function compact<T>(values: Array<T | undefined | null | false>): T[] {
+  return values.filter(Boolean) as T[];
+}
+
+type TrustFact = {
+  label: string;
+  value: string;
+  state?: PassportState;
+};
+
+const trustFactTone: Record<PassportState, string> = {
+  ok: "border-emerald-100 bg-emerald-50 text-emerald-800",
+  warn: "border-amber-100 bg-amber-50 text-amber-800",
+  bad: "border-red-100 bg-red-50 text-red-800",
+};
+
+function passportRow(device: Device, patterns: RegExp[]): TrustFact | null {
+  const row = device.passport.summaryRows.find((item) =>
+    patterns.some((pattern) => pattern.test(item.label)),
+  );
+  return row ? { label: row.label, value: row.value, state: row.state } : null;
+}
+
+function conditionTrustFacts(device: Device): TrustFact[] {
+  const biometric = passportRow(device, [/face id/i, /touch id/i, /биометр/i]);
+  const repair = passportRow(device, [/ремонт/i, /вскры/i]);
+  const water = passportRow(device, [/влаг/i, /water/i]);
+  const facts: Array<TrustFact | null> = [
+    device.passport.condition.gradeText
+      ? { label: "Грейд", value: device.passport.condition.gradeText }
+      : null,
+    device.batteryText ? { label: "Батарея", value: device.batteryText, state: "ok" } : null,
+    repair ??
+      (device.passport.repair ? { label: "Вскрытие", value: device.passport.repair } : null),
+    biometric,
+    water ?? (device.passport.water ? { label: "Влага", value: device.passport.water } : null),
+  ];
+
+  return compact(facts).slice(0, 5);
 }
 
 function normalizedStockStatus(device: Pick<DeviceCardData, "stockStatus">): string {
@@ -170,6 +207,27 @@ function DetailCard({ title, children }: { title: string; children: ReactNode })
   );
 }
 
+function DeviceStoryCard({ story }: { story: DeviceStoryInfo }) {
+  const facts = story.facts ?? [];
+
+  return (
+    <section className="rounded-card bg-ink p-6 text-white shadow-soft">
+      <p className="text-xs font-medium uppercase tracking-eyebrow text-white/55">История вещи</p>
+      <h2 className="mt-3 text-2xl font-semibold tracking-tight">{story.title || "Путь вещи"}</h2>
+      <p className="mt-4 text-sm leading-relaxed text-white/70">{story.body}</p>
+      {facts.length > 0 ? (
+        <ul className="mt-5 grid gap-2 sm:grid-cols-3">
+          {facts.slice(0, 3).map((fact) => (
+            <li key={fact} className="rounded-card border border-white/15 px-3 py-2 text-sm">
+              {fact}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
 export default async function DevicePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [device, devices, settings, navigation] = await Promise.all([
@@ -190,6 +248,8 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
   ]);
   const related = relatedDevices(device, devices);
   const conditionNotes = device.passport.condition.notes ?? [];
+  const trustFacts = conditionTrustFacts(device);
+  const story = device.passport.story;
   const tradeOptions = device.trade.options ?? [];
   const lastUpdated = updatedText(device);
   const leadFormId = "product-lead";
@@ -223,8 +283,26 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   <p className="text-sm leading-relaxed text-muted">
                     {device.passport.condition.note}
                   </p>
+                  {trustFacts.length > 0 ? (
+                    <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                      {trustFacts.map((fact) => (
+                        <div
+                          key={`${fact.label}-${fact.value}`}
+                          className={cn(
+                            "rounded-card border border-hairline bg-surface p-4",
+                            fact.state ? trustFactTone[fact.state] : undefined,
+                          )}
+                        >
+                          <dt className="text-xs font-medium uppercase tracking-wide opacity-70">
+                            {fact.label}
+                          </dt>
+                          <dd className="mt-1 text-base font-semibold">{fact.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
                   {conditionNotes.length > 0 ? (
-                    <ul className="mt-4 grid gap-2 text-sm text-muted sm:grid-cols-2">
+                    <ul className="mt-5 grid gap-2 text-sm text-muted sm:grid-cols-2">
                       {conditionNotes.map((note) => (
                         <li key={note} className="rounded-card border border-hairline px-4 py-3">
                           {note}
@@ -234,30 +312,42 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   ) : null}
                 </DetailCard>
 
+                {story?.body ? <DeviceStoryCard story={story} /> : null}
+
                 <DetailCard title="Гарантия и цена выхода">
                   <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-card border border-hairline bg-surface p-4">
+                      <p className="text-sm font-medium text-muted">Срок гарантии</p>
+                      <p className="mt-1 text-2xl font-semibold">
+                        {device.passport.warranty.duration || device.warranty || "90 дней"}
+                      </p>
+                    </div>
+                    <div className="rounded-card border border-hairline bg-surface p-4">
+                      <p className="text-sm font-medium text-muted">Ориентир выхода</p>
+                      <p className="mt-1 text-2xl font-semibold text-accent">
+                        {device.passport.exitPrice.headline || device.exitText}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="text-sm font-medium">Покрывается</p>
+                      <p className="mt-5 text-sm font-medium">Покрывается</p>
                       <p className="mt-1 text-sm text-muted">
                         {device.passport.warranty.covered ||
                           "Функциональные неисправности в рамках условий Store."}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Не покрывается</p>
+                      <p className="mt-5 text-sm font-medium">Не покрывается</p>
                       <p className="mt-1 text-sm text-muted">
                         {device.passport.warranty.notCovered ||
                           "Механические повреждения после покупки и следы влаги."}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-5 rounded-card bg-surface p-4">
-                    <p className="text-sm font-medium">Ориентир выхода</p>
-                    <p className="mt-1 text-xl font-semibold text-accent">
-                      {device.passport.exitPrice.headline || device.exitText}
-                    </p>
-                    <p className="mt-2 text-sm text-muted">{device.passport.exitPrice.note}</p>
-                  </div>
+                  <p className="mt-5 rounded-card bg-surface p-4 text-sm text-muted">
+                    {device.passport.exitPrice.note}
+                  </p>
                 </DetailCard>
 
                 {tradeOptions.length > 0 ? (

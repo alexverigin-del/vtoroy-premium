@@ -20,6 +20,7 @@
     "smoke:prod": "node scripts/smoke_playwright.mjs",
     "smoke:images": "node scripts/smoke_image_latency.mjs",
     "smoke:visual": "node scripts/smoke_visual_playwright.mjs",
+    "smoke:performance": "node scripts/smoke_performance_playwright.mjs",
     "text:audit": "python scripts/audit_text_encoding.py",
     "legacy:audit": "node scripts/audit_legacy_html.mjs",
     "directus:seed": "python scripts/seed_directus.py",

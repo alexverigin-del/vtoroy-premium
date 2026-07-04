@@ -167,6 +167,7 @@ npm run web:verify
 npm run smoke:prod
 npm run smoke:images
 npm run smoke:visual
+npm run smoke:performance
 ```
 
 `web:verify` is the local pre-deploy web gate. It runs `legacy:audit`,
@@ -188,6 +189,12 @@ Directus asset ids from `/catalog`, `/store` and one device page, then checks
 3-5 Directus transform URLs and matching `/_next/image` optimizer URLs. Defaults
 can be tuned with `IMAGE_SMOKE_LIMIT`, `IMAGE_SMOKE_MIN_ASSETS`,
 `IMAGE_SMOKE_DIRECTUS_BUDGET_MS` and `IMAGE_SMOKE_NEXT_BUDGET_MS`.
+`smoke:performance` is the lightweight Playwright performance gate for `/`,
+`/catalog` and `/store`. It records desktop/mobile LCP through
+`PerformanceObserver`, fails on near-viewport pending or broken images, and
+uses `PERFORMANCE_DESKTOP_LCP_BUDGET_MS`,
+`PERFORMANCE_MOBILE_LCP_BUDGET_MS` and `PERFORMANCE_SMOKE_ROUTES` for scoped
+runs.
 
 `bundle:budget` reads `apps/web/.next/build-manifest.json` and
 `apps/web/.next/app-build-manifest.json` after `next build`, then checks shared
@@ -652,6 +659,18 @@ new commercial content should use structured collections and Directus Files.
   states` on 2026-07-04. Local and Beget `npm run web:verify` passed, then
   production passed `npm run smoke:prod`, `npm run smoke:images` and
   `npm run smoke:visual` after restarting PM2 `isvoi-web`.
+- The 2026-07-04 ISVOI audit follow-up closed the two remaining storefront
+  plan tails. `DeviceCard` now receives compact `trustFacts` built from existing
+  device and Passport data, so catalog cards can show concrete facts such as
+  battery, warranty, Face ID, repair/opening or water-check status instead of a
+  generic `Passport` label. The Directus schema remains unchanged; card reads
+  use only the compact passport fields needed for those facts.
+- The same follow-up added `npm run smoke:performance` through
+  `scripts/smoke_performance_playwright.mjs`. This gate measures desktop/mobile
+  LCP on `/`, `/catalog` and `/store`, fails on near-viewport pending or broken
+  images, and complements `smoke:images` rather than replacing it. Local and
+  live runs on 2026-07-04 passed; live `/store` desktop LCP was 3712ms against
+  the 4500ms budget, so no image `sizes`/`priority` change was needed.
 
 ## Studio Workflow Decisions
 

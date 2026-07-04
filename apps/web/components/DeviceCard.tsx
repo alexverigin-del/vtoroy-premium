@@ -27,9 +27,9 @@ function updatedText(device: DeviceCardData): string {
 }
 
 function trustFacts(device: DeviceCardData): string[] {
-  return [device.batteryText, device.warrantyText, "Passport"]
+  return [...(device.trustFacts ?? []), device.batteryText, device.warrantyText]
     .map((value) => value.trim())
-    .filter(Boolean)
+    .filter((value, index, facts) => value && facts.indexOf(value) === index)
     .slice(0, 3);
 }
 

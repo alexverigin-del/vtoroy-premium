@@ -24,4 +24,6 @@ export type DeviceCardData = Pick<
   | "listingAlt"
   | "ctaLabel"
   | "detailHref"
->;
+> & {
+  trustFacts?: string[];
+};

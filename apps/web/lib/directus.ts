@@ -122,6 +122,7 @@ const DEVICE_CARD_FIELDS = [
   "cta_label",
   "detail_href",
   "listing_file",
+  "passport",
   "updated_at",
   "stock_status",
 ].join(",");
@@ -496,6 +497,62 @@ function mapDeviceImagesFromDirectus(rows: DeviceImageRow[] = []): GalleryImage[
   });
 }
 
+function cleanTrustFact(value: string): string {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/\s+([.,:;])/g, "$1")
+    .trim();
+}
+
+function uniqueTrustFacts(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values.flatMap((value) => {
+    const fact = cleanTrustFact(value);
+    if (!fact) return [];
+    const key = fact.toLowerCase();
+    if (seen.has(key)) return [];
+    seen.add(key);
+    return [fact];
+  });
+}
+
+function passportRowFact(row: DevicePassport["summaryRows"][number]): string {
+  const label = cleanTrustFact(row.label);
+  const value = cleanTrustFact(row.value);
+  if (!label) return value;
+  if (!value) return label;
+  if (value.toLowerCase().includes(label.toLowerCase())) return value;
+  return `${label} ${value}`;
+}
+
+function passportTrustFacts(passport: DevicePassport): string[] {
+  const preferredRows = passport.summaryRows.filter((row) =>
+    /face id|ремонт|вскры|влага/i.test(`${row.label} ${row.value}`),
+  );
+  const fallbackRows = passport.summaryRows.filter(
+    (row) => !/батар|гарант/i.test(`${row.label} ${row.value}`),
+  );
+
+  return uniqueTrustFacts([
+    ...preferredRows.map(passportRowFact),
+    passport.repair ? `Ремонт ${passport.repair}` : "",
+    passport.water ? `Влага ${passport.water}` : "",
+    ...fallbackRows.map(passportRowFact),
+    passport.condition.gradeText ? `Состояние ${passport.condition.gradeText}` : "",
+  ]);
+}
+
+function deviceCardTrustFacts(
+  device: Pick<Device, "batteryText" | "warrantyText">,
+  passport: DevicePassport,
+): string[] {
+  return uniqueTrustFacts([
+    device.batteryText,
+    device.warrantyText,
+    ...passportTrustFacts(passport),
+  ]).slice(0, 3);
+}
+
 function deviceImagesByDevice(rows: DeviceImageRow[] | null): Map<string, DeviceImageRow[]> {
   const grouped = new Map<string, DeviceImageRow[]>();
   for (const row of rows ?? []) {
@@ -518,8 +575,14 @@ function cardImageFromDeviceImages(rows: DeviceImageRow[] = []): string {
 function mapDeviceCardFromDirectus(
   row: Record<string, unknown>,
   imageRows: DeviceImageRow[] = [],
+  passportRow?: DevicePassportRow,
 ): DeviceCardData {
   const stockStatus = normalizeStockStatus(row.stock_status);
+  const passport = passportRow
+    ? mapStructuredPassportFromDirectus(passportRow, row.passport)
+    : mapPassportFromDirectus(row.passport);
+  const batteryText = str(row.battery_text);
+  const warrantyText = str(row.warranty_text);
   return {
     id: str(row.id),
     tags: json<string[]>(row.tags, []),
@@ -532,8 +595,9 @@ function mapDeviceCardFromDirectus(
     price: num(row.price),
     priceText: str(row.price_text),
     grade: str(row.grade),
-    batteryText: str(row.battery_text),
-    warrantyText: str(row.warranty_text),
+    batteryText,
+    warrantyText,
+    trustFacts: deviceCardTrustFacts({ batteryText, warrantyText }, passport),
     exitText: str(row.exit_text),
     stockStatus,
     stockStatusLabel: stockStatusLabel(stockStatus),
@@ -545,6 +609,34 @@ function mapDeviceCardFromDirectus(
     listingAlt: str(row.listing_alt),
     ctaLabel: str(row.cta_label),
     detailHref: str(row.detail_href),
+  };
+}
+
+function mapDeviceCardFromDevice(device: Device): DeviceCardData {
+  return {
+    id: device.id,
+    tags: device.tags,
+    category: device.category,
+    model: device.model,
+    sort: device.sort,
+    title: device.title,
+    specs: device.specs,
+    color: device.color,
+    price: device.price,
+    priceText: device.priceText,
+    grade: device.grade,
+    batteryText: device.batteryText,
+    warrantyText: device.warrantyText,
+    trustFacts: deviceCardTrustFacts(device, device.passport),
+    exitText: device.exitText,
+    stockStatus: device.stockStatus,
+    stockStatusLabel: device.stockStatusLabel,
+    updatedAt: device.updatedAt,
+    updatedText: device.updatedText,
+    listingImage: device.listingImage,
+    listingAlt: device.listingAlt,
+    ctaLabel: device.ctaLabel,
+    detailHref: device.detailHref,
   };
 }
 
@@ -659,13 +751,14 @@ export const getPublishedDevices = cache(async function getPublishedDevices(): P
 
 /**
  * Lightweight published devices for catalog cards, previews, related products
- * and sitemap. This intentionally avoids passport/trade/detail relations so
- * client catalog components do not receive the full product payload.
+ * and sitemap. It reads only compact passport fields needed for card trust facts
+ * and avoids trade/detail relations so client catalog components do not receive
+ * the full product payload.
  */
 export const getPublishedDeviceCards = cache(async function getPublishedDeviceCards(): Promise<
   DeviceCardData[]
 > {
-  const [data, imageRows] = await Promise.all([
+  const [data, imageRows, passportRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
       `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_CARD_FIELDS}&sort=sort,-updated_at`,
       { cache: "no-store" },
@@ -674,15 +767,24 @@ export const getPublishedDeviceCards = cache(async function getPublishedDeviceCa
       `/items/device_images?filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=device,sort`,
       { cache: "no-store" },
     ),
+    directusGet<DevicePassportRow[]>(
+      `/items/device_passports?fields=${DEVICE_PASSPORT_FIELDS}&sort=device`,
+      { cache: "no-store" },
+    ),
   ]);
   if (data && data.length > 0) {
     const images = deviceImagesByDevice(imageRows);
+    const passports = passportsByDevice(passportRows);
     return data
-      .map((row) => mapDeviceCardFromDirectus(row, images.get(str(row.id)) ?? []))
+      .map((row) =>
+        mapDeviceCardFromDirectus(row, images.get(str(row.id)) ?? [], passports.get(str(row.id))),
+      )
       .filter((device) => device.stockStatus !== "hidden");
   }
   return directusConfig.catalogFallbackAllowed
-    ? fallbackDevices.filter((device) => device.stockStatus !== "hidden")
+    ? fallbackDevices
+        .filter((device) => device.stockStatus !== "hidden")
+        .map((device) => mapDeviceCardFromDevice(device))
     : [];
 });
 

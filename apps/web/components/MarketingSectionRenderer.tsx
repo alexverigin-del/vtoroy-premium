@@ -1231,16 +1231,20 @@ function MarketingFaqSection({ section }: { section: PageSection }) {
     <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
-        <div className="mx-auto mt-8 grid max-w-faq gap-3 md:mt-10">
-          {items.map((item) => (
+        <div className="mx-auto mt-8 max-w-faq overflow-hidden rounded-card border border-hairline bg-white md:mt-10">
+          {items.map((item, index) => (
             <details
               key={`${item.badge}-${item.title}`}
-              className="group rounded-card border border-hairline bg-white transition open:border-pebble"
+              className={cn(
+                "group transition",
+                index > 0 ? "border-t border-hairline" : "",
+                "open:bg-frost",
+              )}
             >
               <summary
                 className={cn(
                   "flex min-h-16 cursor-pointer list-none items-start justify-between gap-5",
-                  "rounded-card p-5 text-left outline-none transition marker:hidden",
+                  "p-5 text-left outline-none transition marker:hidden",
                   "focus-visible:shadow-focus md:items-center md:p-6",
                 )}
               >

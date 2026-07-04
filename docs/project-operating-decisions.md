@@ -755,6 +755,10 @@ new commercial content should use structured collections and Directus Files.
   routes in one shared bordered surface with internal dividers and inline CTAs,
   not as three oversized cards when each route is only a short scenario
   description.
+- Marketing FAQ sections follow the compact accordion-surface rule: keep native
+  `details/summary`, but render short question lists inside one shared bordered
+  surface with internal dividers instead of separate rounded cards for each
+  question.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

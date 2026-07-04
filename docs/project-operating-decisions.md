@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-07-04.
+Last updated: 2026-07-05.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -751,6 +751,10 @@ new commercial content should use structured collections and Directus Files.
   Store zones in one shared bordered surface with internal dividers, two columns
   on tablet and four columns on desktop. Do not expand short zone descriptions
   back into four oversized standalone cards.
+- `trade_paths` follows the compact scenario-map rule: render the three Trade
+  routes in one shared bordered surface with internal dividers and inline CTAs,
+  not as three oversized cards when each route is only a short scenario
+  description.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

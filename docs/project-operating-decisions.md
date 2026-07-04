@@ -693,6 +693,12 @@ new commercial content should use structured collections and Directus Files.
   service-facing ProductLeadForm note on `/device/iphone-13-pro`. Keep lead
   form helper text public-reader friendly; do not mention storage systems or
   internal CMS names in serialized client component props.
+- Next lead-form hardening step: the server-side `/lead-intake` honeypot field
+  is `website`, and React forms must pass that field through their JSON submit
+  path. `FinalCtaSection` and `ProductLeadForm` both include the hidden
+  `website` field via `leadHoneypotClass`; `smoke:prod` checks the homepage and
+  device lead forms for that hidden field so the anti-spam guard does not become
+  decorative markup.
 
 ## Studio Workflow Decisions
 

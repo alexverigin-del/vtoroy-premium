@@ -5,7 +5,12 @@ import { useId, useState } from "react";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
-import { homeSectionLabelClass, leadFieldClass, submitButtonClass } from "./ui-classes";
+import {
+  homeSectionLabelClass,
+  leadFieldClass,
+  leadHoneypotClass,
+  submitButtonClass,
+} from "./ui-classes";
 
 type FinalCtaForm = {
   scenarioLabel: string;
@@ -88,6 +93,8 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const website = String(formData.get("website") || "");
     if (!contact.trim()) {
       markError();
       return;
@@ -98,6 +105,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
       device,
       contact,
       source: "home_final_cta",
+      website,
     });
 
     if (!submitted) return;
@@ -194,7 +202,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
               autoComplete="off"
               tabIndex={-1}
               aria-hidden="true"
-              className="absolute left-[-9999px] h-px w-px opacity-0"
+              className={leadHoneypotClass}
             />
 
             {turnstileRequired ? (

@@ -26,6 +26,8 @@ export const leadFieldClass =
 export const leadTextareaClass =
   "mt-2 min-h-24 w-full resize-none rounded-input border border-hairline bg-white px-4 py-3 text-carbon outline-none transition focus:border-link-blue focus:ring-2 focus:ring-link-blue/15";
 
+export const leadHoneypotClass = "absolute left-[-9999px] h-px w-px opacity-0";
+
 export const deviceBackLinkClass =
   "inline-flex min-h-touch items-center rounded-sm pr-2 text-sm font-medium text-link-blue hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link-blue";
 

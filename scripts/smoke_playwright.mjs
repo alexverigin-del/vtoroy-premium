@@ -106,6 +106,26 @@ async function assertDirectusImages(page, label, minCount) {
   );
 }
 
+async function assertLeadHoneypot(form, label) {
+  const honeypot = form.locator("input[name='website'][aria-hidden='true'][tabindex='-1']");
+  const count = await honeypot.count();
+  assert(count > 0, `${label}: expected hidden website honeypot field`);
+}
+
+async function smokeHome(page, baseUrl) {
+  const url = joinUrl(baseUrl, "/");
+  await gotoOk(page, url);
+
+  const leadForm = page.locator("form:has(input[name='contact'])");
+  const leadForms = await leadForm.count();
+  if (leadForms > 0) {
+    await leadForm.first().waitFor({ state: "visible", timeout: 10_000 });
+    await assertLeadHoneypot(leadForm.first(), "home");
+  }
+
+  return { route: "/", leadForms };
+}
+
 async function smokeCatalog(page, baseUrl) {
   const url = joinUrl(baseUrl, "/catalog");
   await gotoOk(page, url);
@@ -143,6 +163,7 @@ async function smokeDevice(page, baseUrl, devicePath) {
   await leadForm.first().waitFor({ state: "visible", timeout: 10_000 });
   const submitButtons = await leadForm.locator("button[type='submit']").count();
   assert(submitButtons > 0, "device: expected lead form submit button");
+  await assertLeadHoneypot(leadForm.first(), "device");
 
   return {
     route: devicePath,
@@ -160,6 +181,7 @@ async function main() {
 
   try {
     const results = [];
+    results.push(await smokeHome(page, baseUrl));
     results.push(await smokeCatalog(page, baseUrl));
     results.push(await smokeStore(page, baseUrl));
     results.push(await smokeDevice(page, baseUrl, devicePath));

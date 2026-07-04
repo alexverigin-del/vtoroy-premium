@@ -2,7 +2,12 @@
 
 import { FormEvent, useId, useState } from "react";
 import { cn } from "../lib/cn";
-import { leadFieldClass, leadTextareaClass, submitButtonClass } from "./ui-classes";
+import {
+  leadFieldClass,
+  leadHoneypotClass,
+  leadTextareaClass,
+  submitButtonClass,
+} from "./ui-classes";
 import { useLeadIntake } from "./useLeadIntake";
 
 type ProductLeadMode = {
@@ -98,6 +103,8 @@ export function ProductLeadForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const website = String(formData.get("website") || "");
     if (!contact.trim()) {
       markError();
       return;
@@ -117,6 +124,7 @@ export function ProductLeadForm({
       device_id: deviceId,
       contact,
       message: leadMessage,
+      website,
     });
 
     if (!submitted) {
@@ -170,6 +178,14 @@ export function ProductLeadForm({
       {turnstileRequired ? (
         <div ref={turnstileElementRef} className="mt-4 min-h-turnstile" />
       ) : null}
+      <input
+        name="website"
+        type="text"
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden="true"
+        className={leadHoneypotClass}
+      />
       <button
         type="submit"
         disabled={state === "submitting" || !turnstileReady}

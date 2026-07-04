@@ -735,6 +735,11 @@ new commercial content should use structured collections and Directus Files.
   `I СВОИ · Club`. Render these labels with the shared
   `brandZoneEyebrowClass` text treatment, not as pill/breadcrumb badges. Avoid
   reverting these labels to service breadcrumbs such as `Главная / Store`.
+- Short marketing fact lists should not be expanded into large empty cards.
+  `passport_explainer` is the reference compact pattern: one shared bordered
+  surface, compact numbered rows and internal dividers. Use this treatment when
+  each item is only a title plus one short line; reserve large cards for product
+  entities, choices, pricing, CTAs or richer fact groups.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

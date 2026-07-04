@@ -61,6 +61,9 @@ New chat rules:
   - `реализуй` means edit locally and verify.
   - `реализуй и задеплой` / `пушь и деплой` means push to GitHub and apply on
     Beget after checks.
+  - `выкат` means the full release routine: update operating memory when the
+    change creates a durable project rule, commit, push to GitHub, deploy on
+    Beget, then run the relevant live smoke checks.
   - `только объясни` means answer without code or infrastructure changes.
 - Pushes, external deploys and live infrastructure changes require explicit
   wording from the user. Local commits are acceptable for completed repo work.
@@ -740,6 +743,10 @@ new commercial content should use structured collections and Directus Files.
   surface, compact numbered rows and internal dividers. Use this treatment when
   each item is only a title plus one short line; reserve large cards for product
   entities, choices, pricing, CTAs or richer fact groups.
+- `club_rating` follows the same density rule for reputation factors: one
+  shared bordered surface with compact columns and internal dividers, not three
+  oversized cards for short text. Use this as the reference pattern for
+  reputation or condition-factor groups.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

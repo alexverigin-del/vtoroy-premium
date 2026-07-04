@@ -729,6 +729,11 @@ new commercial content should use structured collections and Directus Files.
   scenarios, a short choosing guide, proof/trust context and only a curated
   device preview before the final lead action. Do not reinsert the full
   filterable `CatalogGrid` into `/store`.
+- Page-level commercial eyebrows use the brand-zone pattern `I СВОИ · ...`.
+  Keep `/catalog` as `I СВОИ · Каталог`; keep marketing page heroes as
+  `I СВОИ · Store`, `I СВОИ · Passport`, `I СВОИ · Trade` and
+  `I СВОИ · Club`. Avoid reverting these labels to service breadcrumbs such as
+  `Главная / Store`.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

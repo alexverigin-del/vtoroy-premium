@@ -139,6 +139,13 @@ const DEFAULT_HERO_HIGHLIGHTS: Record<MarketingSlug, MarketingHeroHighlight[]> =
   ],
 };
 
+const MARKETING_HERO_EYEBROWS: Record<MarketingSlug, string> = {
+  store: "I СВОИ · Store",
+  trade: "I СВОИ · Trade",
+  passport: "I СВОИ · Passport",
+  club: "I СВОИ · Club",
+};
+
 function strField(record: Record<string, unknown>, key: string, fallback = ""): string {
   const value = record[key];
   return typeof value === "string" ? value : fallback;
@@ -201,6 +208,13 @@ function heroHighlights(value: unknown, slug: MarketingSlug): MarketingHeroHighl
   });
 
   return highlights.length > 0 ? highlights.slice(0, 3) : DEFAULT_HERO_HIGHLIGHTS[slug];
+}
+
+function marketingHeroEyebrow(section: PageSection, slug: MarketingSlug): string {
+  const eyebrow = section.eyebrow?.trim();
+  const brandedEyebrow = MARKETING_HERO_EYEBROWS[slug];
+  if (!eyebrow) return brandedEyebrow;
+  return /^Главная\s*\/\s*(Store|Trade|Passport|Club)$/i.test(eyebrow) ? brandedEyebrow : eyebrow;
 }
 
 function comparisonRows(value: unknown): ComparisonRow[] {
@@ -438,6 +452,7 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
   const secondaryLabel = section.secondaryCtaLabel || "Смотреть каталог";
   const secondaryUrl = normalizeSiteUrl(section.secondaryCtaUrl || "/catalog");
   const hasButtons = section.primaryCtaLabel || section.secondaryCtaLabel;
+  const eyebrow = marketingHeroEyebrow(section, slug);
   const highlights = heroHighlights(
     section.content.highlights ?? section.content.hero_highlights ?? section.content.facts,
     slug,
@@ -445,9 +460,9 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
 
   return (
     <section className="mx-auto max-w-page px-4 pb-14 pt-14 text-center md:px-6 md:pb-16 md:pt-20">
-      {section.eyebrow ? (
+      {eyebrow ? (
         <div className="mx-auto inline-flex min-h-9 items-center rounded-pill border border-hairline bg-frost px-4 text-xs font-semibold text-ash">
-          {section.eyebrow}
+          {eyebrow}
         </div>
       ) : null}
       {section.headline ? (

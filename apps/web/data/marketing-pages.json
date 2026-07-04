@@ -8,7 +8,7 @@
       {
         "sectionKey": "store_hero",
         "variant": "page.hero",
-        "eyebrow": "Главная / Store",
+        "eyebrow": "I СВОИ · Store",
         "headline": "Доверенная витрина круга.",
         "body": "Store — место, где хорошие вещи проходят дальше через своих. Вещь можно увидеть, проверить и забрать с Passport, гарантией и понятной ценой выхода.",
         "primaryCtaLabel": "Смотреть вещи",
@@ -208,7 +208,7 @@
       {
         "sectionKey": "trade_hero",
         "variant": "page.hero",
-        "eyebrow": "Главная / Trade",
+        "eyebrow": "I СВОИ · Trade",
         "headline": "Передайте вещь дальше. Через своих.",
         "body": "Без объявлений, торга и встреч с незнакомцами. После открытой проверки — понятный маршрут: выкуп, комиссия или обновление на следующую вещь.",
         "primaryCtaLabel": "Оценить вещь",
@@ -353,7 +353,7 @@
       {
         "sectionKey": "passport_hero",
         "variant": "page.hero",
-        "eyebrow": "Главная / Passport",
+        "eyebrow": "I СВОИ · Passport",
         "headline": "Сначала история. Потом решение.",
         "body": "ISVOI Passport рассказывает историю вещи: состояние, проверку, гарантию и цену выхода простым языком. Не «как новая», а честно проверенная.",
         "primaryCtaLabel": "Смотреть вещи с Passport",
@@ -484,7 +484,7 @@
       {
         "sectionKey": "club_hero",
         "variant": "page.hero",
-        "eyebrow": "Главная / Club",
+        "eyebrow": "I СВОИ · Club",
         "headline": "Владеть ценным проще среди своих.",
         "body": "ISVOI Club — спокойный круг владения: пользоваться, менять, выкупать или возвращать вещь через своих. Вы заранее знаете условия каждого шага.",
         "primaryCtaLabel": "Войти в Club",

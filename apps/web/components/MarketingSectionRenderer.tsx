@@ -953,6 +953,58 @@ function MarketingClubReputationSection({ section }: { section: PageSection }) {
   );
 }
 
+function MarketingStoreServiceMapSection({ section }: { section: PageSection }) {
+  const cards = marketingCards(section.content.items ?? section.content.cards);
+  if (cards.length === 0) return null;
+
+  return (
+    <section className="bg-white py-14 md:py-20">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <SectionHeader section={section} />
+        <div className="mx-auto mt-8 max-w-content overflow-hidden rounded-card border border-hairline bg-white md:mt-10">
+          <dl className="grid md:grid-cols-2 lg:grid-cols-4">
+            {cards.map((card, index) => (
+              <div
+                key={`${card.badge}-${card.title}`}
+                className={cn(
+                  "p-5 md:p-6",
+                  index > 0 ? "border-t border-hairline" : "",
+                  index === 1 ? "md:border-t-0" : "",
+                  index % 2 === 1 ? "md:border-l md:border-hairline" : "",
+                  index > 1 ? "md:border-t md:border-hairline lg:border-t-0" : "",
+                  index > 0 ? "lg:border-l lg:border-hairline" : "",
+                )}
+              >
+                <dt>
+                  <span className="block text-sm font-semibold leading-snug text-link-blue">
+                    {card.badge || String(index + 1).padStart(2, "0")}
+                  </span>
+                  {card.title ? (
+                    <span className="mt-3 block text-base font-semibold leading-tight text-carbon">
+                      {card.title}
+                    </span>
+                  ) : null}
+                </dt>
+                {card.text ? (
+                  <dd className="mt-3 text-sm leading-relaxed text-ash">{card.text}</dd>
+                ) : null}
+                {card.url && card.label ? (
+                  <Link
+                    href={card.url}
+                    className="focus-ring mt-5 inline-flex text-sm font-semibold text-link-blue transition hover:text-action"
+                  >
+                    {card.label}
+                  </Link>
+                ) : null}
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MarketingDecisionGuideSection({ section }: { section: PageSection }) {
   const cards = marketingCards(section.content.items ?? section.content.cards);
   const steps = marketingSteps(section.content.steps);
@@ -1192,6 +1244,7 @@ function isCardsSection(section: PageSection): boolean {
   if (section.variant === "faq" || section.sectionKey === "faq") return false;
   if (isPassportModulesSection(section)) return false;
   if (isClubReputationSection(section)) return false;
+  if (isStoreServiceMapSection(section)) return false;
   if (isDecisionGuideSection(section) || isCuratedCatalogSection(section)) return false;
   return Boolean(section.variant === "cards.grid" || section.content.cards);
 }
@@ -1202,6 +1255,10 @@ function isPassportModulesSection(section: PageSection): boolean {
 
 function isClubReputationSection(section: PageSection): boolean {
   return section.sectionKey === "club_rating";
+}
+
+function isStoreServiceMapSection(section: PageSection): boolean {
+  return section.sectionKey === "store_offer";
 }
 
 function isDecisionGuideSection(section: PageSection): boolean {
@@ -1251,6 +1308,8 @@ export function MarketingSectionRenderer({
     <MarketingPassportModulesSection section={section} />
   ) : isClubReputationSection(section) ? (
     <MarketingClubReputationSection section={section} />
+  ) : isStoreServiceMapSection(section) ? (
+    <MarketingStoreServiceMapSection section={section} />
   ) : isCardsSection(section) ? (
     <MarketingCardsSection section={section} />
   ) : isStepsSection(section) ? (

@@ -747,6 +747,10 @@ new commercial content should use structured collections and Directus Files.
   shared bordered surface with compact columns and internal dividers, not three
   oversized cards for short text. Use this as the reference pattern for
   reputation or condition-factor groups.
+- `store_offer` follows the same compact service-map rule: render the four
+  Store zones in one shared bordered surface with internal dividers, two columns
+  on tablet and four columns on desktop. Do not expand short zone descriptions
+  back into four oversized standalone cards.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

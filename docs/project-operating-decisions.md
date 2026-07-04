@@ -713,7 +713,9 @@ new commercial content should use structured collections and Directus Files.
   the main device-detail column. Apply `npm run directus:setup:catalog-structured-data`
   first when adding the fields to an environment, then use
   `npm run directus:update-device-stories-sql` to print the Studio-safe content
-  fill SQL.
+  fill SQL. Keep `directus:setup:public-permissions` in sync with `story_*`
+  field reads, and use `npm run directus:update-device-public-copy-sql` if
+  production device availability copy still contains prototype-era wording.
 
 ## Studio Workflow Decisions
 

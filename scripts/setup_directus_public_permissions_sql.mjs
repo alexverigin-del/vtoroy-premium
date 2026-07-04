@@ -148,7 +148,7 @@ BEGIN
     p_policy_name,
     'device_passports',
     'read',
-    'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,updated_at',
+    'id,device,repair,water,summary_rows,diagnostics_status,diagnostics_checklist,condition_grade_text,condition_note,condition_notes,defect_photo,defect_photo_alt,story_title,story_body,story_facts,warranty_duration,warranty_covered,warranty_not_covered,exit_headline,exit_buy_today,exit_trade_in_estimate,exit_condition,exit_note,updated_at',
     '{"_and":[{"device":{"status":{"_eq":"published"}}},{"device":{"stock_status":{"_neq":"hidden"}}},{"device":{"content_status":{"_eq":"ready"}}}]}'::json
   );
 

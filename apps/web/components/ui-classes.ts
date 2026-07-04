@@ -18,7 +18,13 @@ export const homeSectionLabelClass = "text-sm font-semibold leading-snug text-li
 export const homeDarkSectionLabelClass = "text-sm font-semibold leading-snug text-white/65";
 
 export const submitButtonClass =
-  "mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-action-blue disabled:cursor-wait disabled:opacity-70";
+  "focus-ring mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-pill bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-action-blue active:bg-action-hover disabled:cursor-wait disabled:opacity-70";
+
+export const leadFieldClass =
+  "mt-2 h-12 w-full rounded-input border border-hairline bg-white px-4 text-carbon outline-none transition focus:border-link-blue focus:ring-2 focus:ring-link-blue/15";
+
+export const leadTextareaClass =
+  "mt-2 min-h-24 w-full resize-none rounded-input border border-hairline bg-white px-4 py-3 text-carbon outline-none transition focus:border-link-blue focus:ring-2 focus:ring-link-blue/15";
 
 export const deviceBackLinkClass =
   "inline-flex min-h-touch items-center rounded-sm pr-2 text-sm font-medium text-link-blue hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link-blue";

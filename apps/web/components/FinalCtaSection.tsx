@@ -5,7 +5,7 @@ import { useId, useState } from "react";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
-import { homeSectionLabelClass, submitButtonClass } from "./ui-classes";
+import { homeSectionLabelClass, leadFieldClass, submitButtonClass } from "./ui-classes";
 
 type FinalCtaForm = {
   scenarioLabel: string;
@@ -137,6 +137,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
 
           <form
             onSubmit={handleSubmit}
+            aria-busy={state === "submitting"}
             className="rounded-card border border-hairline bg-frost p-4 md:p-5"
           >
             <label className="block text-sm font-medium text-carbon" htmlFor={scenarioId}>
@@ -147,7 +148,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
                 aria-label={form.scenarioAriaLabel}
                 value={scenario}
                 onChange={(event) => setScenario(event.target.value)}
-                className="mt-2 h-12 w-full rounded-input border border-hairline bg-white px-4 text-carbon outline-none transition focus:border-link-blue focus:ring-2 focus:ring-link-blue/15"
+                className={leadFieldClass}
               >
                 {form.scenarioOptions.map((option) => (
                   <option key={option}>{option}</option>
@@ -165,7 +166,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
                 value={device}
                 onChange={(event) => setDevice(event.target.value)}
                 placeholder={form.devicePlaceholder}
-                className="mt-2 h-12 w-full rounded-input border border-hairline bg-white px-4 text-carbon outline-none transition focus:border-link-blue focus:ring-2 focus:ring-link-blue/15"
+                className={leadFieldClass}
               />
             </label>
 
@@ -181,7 +182,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
                 value={contact}
                 onChange={(event) => setContact(event.target.value)}
                 placeholder={form.contactPlaceholder}
-                className="mt-2 h-12 w-full rounded-input border border-hairline bg-white px-4 text-carbon outline-none transition focus:border-link-blue focus:ring-2 focus:ring-link-blue/15"
+                className={leadFieldClass}
               />
             </label>
 

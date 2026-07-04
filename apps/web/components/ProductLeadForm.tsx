@@ -2,6 +2,7 @@
 
 import { FormEvent, useId, useState } from "react";
 import { cn } from "../lib/cn";
+import { leadFieldClass, leadTextareaClass, submitButtonClass } from "./ui-classes";
 import { useLeadIntake } from "./useLeadIntake";
 
 type ProductLeadMode = {
@@ -131,6 +132,7 @@ export function ProductLeadForm({
       id={formId}
       onSubmit={handleSubmit}
       className="mt-8 scroll-mt-24 rounded-card bg-surface p-4"
+      aria-busy={state === "submitting"}
       data-component="ProductLeadForm"
     >
       <p className="text-sm font-semibold">{mode.title}</p>
@@ -147,7 +149,7 @@ export function ProductLeadForm({
           aria-describedby={statusId}
           aria-invalid={state === "error"}
           placeholder={mode.contactPlaceholder}
-          className="mt-1 w-full rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
+          className={leadFieldClass}
         />
       </label>
       <label className="mt-3 block text-sm" htmlFor={messageId}>
@@ -160,7 +162,7 @@ export function ProductLeadForm({
           aria-label="Комментарий к заявке"
           rows={3}
           placeholder={mode.messagePlaceholder}
-          className="mt-1 w-full resize-none rounded-card border border-hairline bg-white px-4 py-3 text-ink outline-none transition focus:border-accent"
+          className={leadTextareaClass}
         />
       </label>
       {turnstileRequired ? (
@@ -169,7 +171,7 @@ export function ProductLeadForm({
       <button
         type="submit"
         disabled={state === "submitting" || !turnstileReady}
-        className="mt-4 inline-flex w-full items-center justify-center rounded-pill bg-accent px-7 py-3 font-medium text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-70"
+        className={submitButtonClass}
       >
         {state === "submitting" ? mode.submittingLabel : mode.submitLabel}
       </button>
@@ -178,7 +180,7 @@ export function ProductLeadForm({
         aria-live="polite"
         className={cn(
           "mt-3 text-xs",
-          state === "success" ? "text-emerald-700" : "text-muted",
+          state === "success" ? "text-success" : "text-muted",
           state === "error" ? "text-red-600" : "",
         )}
       >

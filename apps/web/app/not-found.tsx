@@ -1,8 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteShell } from "@/components/SiteShell";
 import { notFoundPrimaryLinkClass, notFoundSecondaryLinkClass } from "@/components/ui-classes";
 import { getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
+
+export const metadata: Metadata = {
+  title: "Страница не найдена — ISVOI",
+  description: "Страница не найдена. Вернитесь в Store ISVOI или на главную страницу.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function NotFoundPage() {
   const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigationItems()]);

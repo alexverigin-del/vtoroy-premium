@@ -90,6 +90,11 @@ decisions in this repo rather than relying on chat memory.
 - Use simple local PowerShell commands for local file/git inspection.
 - Avoid long inline chains like PowerShell -> SSH -> bash -> SQL. For complex
   remote work, use a heredoc/runner script passed to SSH or a committed script.
+- Avoid quote acrobatics in PowerShell. Prefer existing npm scripts, checked-in
+  helper scripts, temp files, or simple `Start-Process -ArgumentList @(...)`
+  calls over nested `node -e`, SSH, bash and JavaScript strings. If logs are
+  needed, write stdout and stderr to separate files because `Start-Process`
+  rejects one shared redirect target.
 - Prefer `rg` for repository search.
 - Use `apply_patch` for text edits. Use shell deletion only for binary files or
   other cases where patch tooling cannot safely read the file, after verifying

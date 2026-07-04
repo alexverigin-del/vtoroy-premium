@@ -179,6 +179,8 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
                 aria-label={form.contactLabel}
                 aria-describedby={statusId}
                 aria-invalid={state === "error"}
+                autoComplete="tel"
+                required
                 value={contact}
                 onChange={(event) => setContact(event.target.value)}
                 placeholder={form.contactPlaceholder}

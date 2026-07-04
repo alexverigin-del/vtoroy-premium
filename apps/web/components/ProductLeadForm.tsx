@@ -148,6 +148,8 @@ export function ProductLeadForm({
           aria-label="Контакт для ответа"
           aria-describedby={statusId}
           aria-invalid={state === "error"}
+          autoComplete="tel"
+          required
           placeholder={mode.contactPlaceholder}
           className={leadFieldClass}
         />

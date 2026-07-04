@@ -82,6 +82,7 @@ export function SiteHeader({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const mobileNavId = "site-mobile-navigation";
   const headerItems = sortNavigation(
     navigation.filter(
       (item) => item.location === "header" && !item.parent && item.itemRole !== "cta",
@@ -117,6 +118,7 @@ export function SiteHeader({
             type="button"
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-card text-carbon outline-none transition focus-visible:shadow-focus md:hidden"
             aria-label={open ? "Закрыть меню" : "Открыть меню"}
+            aria-controls={mobileNavId}
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
           >
@@ -136,7 +138,11 @@ export function SiteHeader({
 
       {open ? (
         <div className="border-t border-hairline bg-white px-5 py-3 md:hidden">
-          <nav className="mx-auto grid max-w-shell gap-1" aria-label="Мобильная навигация">
+          <nav
+            id={mobileNavId}
+            className="mx-auto grid max-w-shell gap-1"
+            aria-label="Мобильная навигация"
+          >
             {headerItems.map((item) => (
               <NavLink
                 key={item.id}

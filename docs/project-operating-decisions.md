@@ -168,6 +168,7 @@ npm run smoke:prod
 npm run smoke:images
 npm run smoke:visual
 npm run smoke:performance
+npm run smoke:copy
 ```
 
 `web:verify` is the local pre-deploy web gate. It runs `legacy:audit`,
@@ -195,6 +196,10 @@ can be tuned with `IMAGE_SMOKE_LIMIT`, `IMAGE_SMOKE_MIN_ASSETS`,
 uses `PERFORMANCE_DESKTOP_LCP_BUDGET_MS`,
 `PERFORMANCE_MOBILE_LCP_BUDGET_MS` and `PERFORMANCE_SMOKE_ROUTES` for scoped
 runs.
+`smoke:copy` is the public HTML copy gate for `/`, `/catalog`, `/store`,
+`/trade`, `/passport`, `/club` and one device page. It fails on production-facing
+prototype/concept/Directus wording and should run after global content edits or
+before deploy when public copy changed.
 
 `bundle:budget` reads `apps/web/.next/build-manifest.json` and
 `apps/web/.next/app-build-manifest.json` after `next build`, then checks shared
@@ -671,6 +676,19 @@ new commercial content should use structured collections and Directus Files.
   images, and complements `smoke:images` rather than replacing it. Local and
   live runs on 2026-07-04 passed; live `/store` desktop LCP was 3712ms against
   the 4500ms budget, so no image `sizes`/`priority` change was needed.
+- The repeat audit after `84b55f7` found production `site_settings` still
+  contained prototype footer wording. Use
+  `npm run directus:update-footer-copy-sql` to generate the idempotent SQL for
+  `site_settings.footer_note`, `footer_legal` and `footer_copyright`, then run
+  `npm run smoke:copy` against production to prove the public HTML is clean.
+- The repeat-audit cleanup package was implemented on 2026-07-04:
+  `npm run smoke:copy` now checks public HTML for prototype/concept/technical
+  wording, `npm run directus:update-footer-copy-sql` generates the safe footer
+  content update SQL, `/catalog` and `/store` use a balanced sparse catalog
+  layout for 1-4 visible devices, and full catalog views include the calm
+  "Не нашли свою модель?" selection CTA. Production footer copy was updated in
+  Directus before release; after PM2 restart, verify with `npm run smoke:copy`
+  plus the standard live smoke gates.
 
 ## Studio Workflow Decisions
 

@@ -64,7 +64,7 @@ export function CatalogPreviewSection({
 
         <CatalogDeviceList
           devices={visibleDevices}
-          emptyMessage="Каталог пока пуст. Добавьте опубликованные устройства в Directus или измените фильтры."
+          emptyMessage="Каталог пока пуст. Измените фильтры или вернитесь позже."
         />
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (

@@ -47,8 +47,9 @@ export function CatalogGrid({
 
         <CatalogDeviceList
           devices={visibleDevices}
-          emptyMessage="Подходящих устройств пока нет. Измените фильтры или добавьте опубликованные устройства в Directus."
+          emptyMessage="Подходящих устройств пока нет. Измените фильтры или вернитесь позже."
           priorityImages
+          showSelectionCta
         />
       </div>
     </section>

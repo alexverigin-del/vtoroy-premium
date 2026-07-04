@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { cn } from "../lib/cn";
 import { DeviceCard } from "./DeviceCard";
+import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
 export type CatalogFilterOption = {
   label: string;
@@ -239,22 +241,64 @@ export function CatalogDeviceList({
   devices,
   emptyMessage,
   priorityImages = false,
+  showSelectionCta = false,
+  selectionCtaHref = "/store#final",
 }: {
   devices: DeviceCardData[];
   emptyMessage: string;
   priorityImages?: boolean;
+  showSelectionCta?: boolean;
+  selectionCtaHref?: string;
 }) {
-  return devices.length > 0 ? (
-    <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {devices.map((device, index) => (
-        <li key={device.id}>
-          <DeviceCard device={device} imagePriority={priorityImages && index < 3} />
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <div className="mt-8 rounded-card border border-hairline bg-frost p-8 text-center text-graphite">
-      {emptyMessage}
-    </div>
+  if (devices.length === 0) {
+    return (
+      <div className="mt-8 rounded-card border border-hairline bg-frost p-8 text-center text-graphite">
+        {emptyMessage}
+      </div>
+    );
+  }
+
+  const sparseCatalog = devices.length <= 4;
+  const singleDevice = devices.length === 1;
+
+  return (
+    <>
+      <ul
+        className={cn(
+          "mt-8 grid gap-6 sm:grid-cols-2",
+          sparseCatalog
+            ? cn(
+                "lg:mx-auto",
+                singleDevice ? "lg:max-w-overlay-wide lg:grid-cols-1" : "lg:max-w-copy-wide",
+              )
+            : "lg:grid-cols-3",
+        )}
+      >
+        {devices.map((device, index) => (
+          <li key={device.id}>
+            <DeviceCard device={device} imagePriority={priorityImages && index < 3} />
+          </li>
+        ))}
+      </ul>
+      {showSelectionCta ? (
+        <div className="mx-auto mt-10 max-w-copy rounded-card border border-hairline bg-ice p-5 text-center md:p-7">
+          <h2 className="text-2xl font-semibold leading-tight tracking-normal text-carbon">
+            Не нашли свою модель?
+          </h2>
+          <p className="mx-auto mt-3 max-w-prose-narrow text-sm leading-relaxed text-graphite md:text-copy">
+            Оставьте контакт и задачу. Мы проверим ближайшие поступления, предложим похожую вещь или
+            подскажем спокойный сценарий Trade.
+          </p>
+          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href={selectionCtaHref} className={primaryPillCtaClass}>
+              Оставить заявку
+            </Link>
+            <Link href="/trade" className={secondaryPillCtaClass}>
+              Рассчитать Trade
+            </Link>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

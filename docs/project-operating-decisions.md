@@ -716,6 +716,13 @@ new commercial content should use structured collections and Directus Files.
   fill SQL. Keep `directus:setup:public-permissions` in sync with `story_*`
   field reads, and use `npm run directus:update-device-public-copy-sql` if
   production device availability copy still contains prototype-era wording.
+- Desktop device detail layout uses paired dossier rows rather than two
+  independent columns. Keep the left column as gallery, condition, story and
+  warranty/exit; keep the right column as purchase, Passport diagnostics and
+  Trade. A small desktop-only offset on the condition card may be used to align
+  the story block with Passport, but avoid large hardcoded spacing that would
+  break with different product copy. Mobile should stay linear: purchase first,
+  then condition/story/warranty, Trade and Passport.
 
 ## Studio Workflow Decisions
 

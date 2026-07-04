@@ -198,9 +198,17 @@ function jsonLdScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-function DetailCard({ title, children }: { title: string; children: ReactNode }) {
+function DetailCard({
+  title,
+  children,
+  className,
+}: {
+  title: string;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <section className="card p-6">
+    <section className={cn("card p-6", className)}>
       <h2 className="text-lg font-semibold">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
@@ -225,6 +233,23 @@ function DeviceStoryCard({ story }: { story: DeviceStoryInfo }) {
         </ul>
       ) : null}
     </section>
+  );
+}
+
+function TradeUpdateCard({ options }: { options: Device["trade"]["options"] }) {
+  if (options.length === 0) return null;
+
+  return (
+    <DetailCard title="Обновление через Trade">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        {options.slice(0, 4).map((option) => (
+          <div key={option.label} className="rounded-card border border-hairline p-4">
+            <p className="text-sm text-muted">{option.label}</p>
+            <p className="mt-1 font-semibold">зачет до {option.value.toLocaleString("ru-RU")} ₽</p>
+          </div>
+        ))}
+      </div>
+    </DetailCard>
   );
 }
 
@@ -279,7 +304,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
               </div>
 
               <div className="order-3 grid gap-6 lg:order-none">
-                <DetailCard title="Состояние и нюансы">
+                <DetailCard title="Состояние и нюансы" className="lg:mt-6">
                   <p className="text-sm leading-relaxed text-muted">
                     {device.passport.condition.note}
                   </p>
@@ -349,21 +374,6 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                     {device.passport.exitPrice.note}
                   </p>
                 </DetailCard>
-
-                {tradeOptions.length > 0 ? (
-                  <DetailCard title="Обновление через Trade">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {tradeOptions.slice(0, 4).map((option) => (
-                        <div key={option.label} className="rounded-card border border-hairline p-4">
-                          <p className="text-sm text-muted">{option.label}</p>
-                          <p className="mt-1 font-semibold">
-                            зачет до {option.value.toLocaleString("ru-RU")} ₽
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </DetailCard>
-                ) : null}
               </div>
             </div>
 
@@ -419,9 +429,15 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                 </p>
               </aside>
 
-              <div className="order-4 lg:order-none">
+              <div className="order-5 lg:order-none">
                 <PassportSummary passport={device.passport} />
               </div>
+
+              {tradeOptions.length > 0 ? (
+                <div className="order-4 lg:order-none">
+                  <TradeUpdateCard options={tradeOptions} />
+                </div>
+              ) : null}
             </div>
           </div>
         </section>

@@ -17,6 +17,8 @@ export const homeSectionLabelClass = "text-sm font-semibold leading-snug text-li
 
 export const homeDarkSectionLabelClass = "text-sm font-semibold leading-snug text-white/65";
 
+export const brandZoneEyebrowClass = "text-sm font-semibold leading-snug text-link-blue";
+
 export const submitButtonClass =
   "focus-ring mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-pill bg-action px-6 py-3 text-sm font-semibold text-white transition hover:bg-action-blue active:bg-action-hover disabled:cursor-wait disabled:opacity-70";
 

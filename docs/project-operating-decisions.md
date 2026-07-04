@@ -732,8 +732,9 @@ new commercial content should use structured collections and Directus Files.
 - Page-level commercial eyebrows use the brand-zone pattern `I СВОИ · ...`.
   Keep `/catalog` as `I СВОИ · Каталог`; keep marketing page heroes as
   `I СВОИ · Store`, `I СВОИ · Passport`, `I СВОИ · Trade` and
-  `I СВОИ · Club`. Avoid reverting these labels to service breadcrumbs such as
-  `Главная / Store`.
+  `I СВОИ · Club`. Render these labels with the shared
+  `brandZoneEyebrowClass` text treatment, not as pill/breadcrumb badges. Avoid
+  reverting these labels to service breadcrumbs such as `Главная / Store`.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

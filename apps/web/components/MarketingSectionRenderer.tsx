@@ -6,7 +6,7 @@ import type { MarketingSlug } from "@/lib/site-content";
 import { DeviceCard } from "./DeviceCard";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
-import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
+import { brandZoneEyebrowClass, primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
 type MarketingSectionRendererProps = {
   section: PageSection;
@@ -460,11 +460,7 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
 
   return (
     <section className="mx-auto max-w-page px-4 pb-14 pt-14 text-center md:px-6 md:pb-16 md:pt-20">
-      {eyebrow ? (
-        <div className="mx-auto inline-flex min-h-9 items-center rounded-pill border border-hairline bg-frost px-4 text-xs font-semibold text-ash">
-          {eyebrow}
-        </div>
-      ) : null}
+      {eyebrow ? <div className={cn("mx-auto", brandZoneEyebrowClass)}>{eyebrow}</div> : null}
       {section.headline ? (
         <h1 className="mx-auto mt-6 max-w-copy-wide text-5xl font-semibold leading-display tracking-normal text-carbon md:text-7xl">
           {section.headline}

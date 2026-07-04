@@ -9,6 +9,7 @@ import {
   useCatalogControls,
   useVisibleCatalogDevices,
 } from "./CatalogClientControls";
+import { brandZoneEyebrowClass } from "./ui-classes";
 
 export function CatalogGrid({
   devices,
@@ -27,7 +28,7 @@ export function CatalogGrid({
     <section className="bg-white py-16" id="catalog" data-component="CatalogGrid">
       <div className="mx-auto max-w-shell px-5">
         <div className="mx-auto max-w-copy-wide text-center">
-          <div className="text-sm font-semibold leading-snug text-link-blue">I СВОИ · Каталог</div>
+          <div className={brandZoneEyebrowClass}>I СВОИ · Каталог</div>
           <Heading className="mt-3 text-4xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
             Вещи в кругу — сейчас в наличии.
           </Heading>

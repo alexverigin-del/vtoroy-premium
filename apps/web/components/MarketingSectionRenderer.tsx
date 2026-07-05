@@ -1187,9 +1187,9 @@ function MarketingCuratedCatalogSection({
           </ul>
         ) : null}
         <ul className="mx-auto mt-8 grid max-w-content gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleDevices.map((device, index) => (
+          {visibleDevices.map((device) => (
             <li key={device.id}>
-              <DeviceCard device={device} imagePriority={index < 3} />
+              <DeviceCard device={device} />
             </li>
           ))}
         </ul>

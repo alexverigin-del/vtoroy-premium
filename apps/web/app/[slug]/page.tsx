@@ -17,7 +17,7 @@ import {
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type MarketingPageProps = {
   params: Promise<{

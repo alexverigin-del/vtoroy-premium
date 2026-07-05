@@ -14,7 +14,7 @@ import {
   DEFAULT_SOCIAL_IMAGE,
 } from "./site-metadata";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getSitePage("home");

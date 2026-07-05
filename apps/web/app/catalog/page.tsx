@@ -31,9 +31,8 @@ export const metadata = {
   },
 };
 
-// Keep Directus catalog edits visible immediately while inventory is being filled.
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Public catalog content is ISR-cached; Directus Studio edits refresh on the next 5-minute revalidation.
+export const revalidate = 300;
 
 export default async function CatalogPage() {
   const [settings, navigation, devices] = await Promise.all([

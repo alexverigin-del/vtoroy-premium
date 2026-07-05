@@ -22,9 +22,8 @@ import { cn } from "@/lib/cn";
 import { siteChrome } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 
-// Keep Directus device edits visible immediately while inventory is being filled.
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Public device content is ISR-cached; Directus Studio edits refresh on the next 5-minute revalidation.
+export const revalidate = 300;
 
 // Pre-render known device pages at build time; others render on demand.
 export async function generateStaticParams() {

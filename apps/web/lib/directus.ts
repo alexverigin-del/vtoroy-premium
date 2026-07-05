@@ -746,19 +746,15 @@ export const getPublishedDevices = cache(async function getPublishedDevices(): P
   const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
       `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_FIELDS}&sort=sort,-updated_at`,
-      { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
       `/items/device_images?filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=device,sort`,
-      { cache: "no-store" },
     ),
     directusGet<DevicePassportRow[]>(
       `/items/device_passports?fields=${DEVICE_PASSPORT_FIELDS}&sort=device`,
-      { cache: "no-store" },
     ),
     directusGet<TradeOptionRow[]>(
       `/items/trade_options?filter[is_active][_eq]=true&fields=${TRADE_OPTION_FIELDS}&sort=device,sort`,
-      { cache: "no-store" },
     ),
   ]);
   if (data && data.length > 0) {
@@ -793,15 +789,12 @@ export const getPublishedDeviceCards = cache(async function getPublishedDeviceCa
   const [data, imageRows, passportRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
       `/items/devices?filter[status][_eq]=published&filter[stock_status][_neq]=hidden&fields=${DEVICE_CARD_FIELDS}&sort=sort,-updated_at`,
-      { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
       `/items/device_images?filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=device,sort`,
-      { cache: "no-store" },
     ),
     directusGet<DevicePassportRow[]>(
       `/items/device_passports?fields=${DEVICE_PASSPORT_FIELDS}&sort=device`,
-      { cache: "no-store" },
     ),
   ]);
   if (data && data.length > 0) {
@@ -832,19 +825,15 @@ export const getDeviceBySlug = cache(async function getDeviceBySlug(
   const [data, imageRows, passportRows, tradeRows] = await Promise.all([
     directusGet<Record<string, unknown>[]>(
       `/items/devices?filter[id][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_FIELDS}&limit=1`,
-      { cache: "no-store" },
     ),
     directusGet<DeviceImageRow[]>(
       `/items/device_images?filter[device][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=${DEVICE_IMAGE_FIELDS}&sort=sort`,
-      { cache: "no-store" },
     ),
     directusGet<DevicePassportRow[]>(
       `/items/device_passports?filter[device][_eq]=${encodeURIComponent(slug)}&fields=${DEVICE_PASSPORT_FIELDS}&limit=1`,
-      { cache: "no-store" },
     ),
     directusGet<TradeOptionRow[]>(
       `/items/trade_options?filter[device][_eq]=${encodeURIComponent(slug)}&filter[is_active][_eq]=true&fields=${TRADE_OPTION_FIELDS}&sort=sort`,
-      { cache: "no-store" },
     ),
   ]);
   if (data && data.length > 0) {
@@ -975,7 +964,6 @@ function faqItemsForSection(
 async function getActiveFaqItems(): Promise<FaqItem[]> {
   const data = await directusGet<Record<string, unknown>[]>(
     "/items/faq_items?filter[is_active][_eq]=true&fields=*&sort=category,sort",
-    { cache: "no-store" },
   );
   return data?.map(mapFaqItemFromDirectus) ?? [];
 }
@@ -1089,13 +1077,11 @@ export const getSitePage = cache(async function getSitePage(
 ): Promise<SitePage | null> {
   const data = await directusGet<Record<string, unknown>[]>(
     `/items/site_pages?filter[slug][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*&limit=1`,
-    { cache: "no-store" },
   );
   if (data && data.length > 0) {
     const page = mapSitePageFromDirectus(data[0]);
     const sections = await directusGet<Record<string, unknown>[]>(
       `/items/page_sections?filter[page][_eq]=${encodeURIComponent(str(data[0].id))}&filter[is_active][_eq]=true&fields=*&sort=sort_order`,
-      { cache: "no-store" },
     );
     const mappedSections = sections?.map(mapPageSectionFromDirectus) ?? [];
     return {
@@ -1120,7 +1106,6 @@ export const getSiteSettings = cache(
   async function getSiteSettings(): Promise<SiteSettings | null> {
     const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
       "/items/site_settings?limit=1",
-      { cache: "no-store" },
     );
     const row = Array.isArray(data) ? data[0] : data;
     return row ? mapSiteSettingsFromDirectus(row) : null;
@@ -1133,7 +1118,6 @@ export const getNavigationItems = cache(async function getNavigationItems(): Pro
 > {
   const data = await directusGet<Record<string, unknown>[]>(
     "/items/navigation_items?filter[is_active][_eq]=true&fields=*,page.slug&sort=location,sort",
-    { cache: "no-store" },
   );
   return data?.map(mapNavigationItemFromDirectus).filter((item) => item.label && item.url) ?? [];
 });

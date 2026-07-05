@@ -211,7 +211,7 @@ const ASSET_TRANSFORMS = {
     format: "auto",
     withoutEnlargement: true,
   },
-  section: { width: 1600, quality: 86, format: "auto", withoutEnlargement: true },
+  section: { width: 1200, quality: 80, format: "auto", withoutEnlargement: true },
 } satisfies Record<string, AssetTransform>;
 
 type MediaVariant = keyof typeof ASSET_TRANSFORMS;

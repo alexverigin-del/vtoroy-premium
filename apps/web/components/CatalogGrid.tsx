@@ -49,7 +49,7 @@ export function CatalogGrid({
         <CatalogDeviceList
           devices={visibleDevices}
           emptyMessage="Подходящих устройств пока нет. Измените фильтры или вернитесь позже."
-          priorityImages
+          priorityImageCount={1}
           showSelectionCta
         />
       </div>

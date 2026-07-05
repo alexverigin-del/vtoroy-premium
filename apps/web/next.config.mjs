@@ -56,6 +56,9 @@ const nextConfig = {
   },
   // Allow optimized <Image> only from the production Directus asset host.
   images: {
+    deviceSizes: [384, 640, 750, 828, 1080, 1200],
+    imageSizes: [128, 256, 384, 512],
+    minimumCacheTTL: 86400,
     remotePatterns: [
       {
         protocol: "https",

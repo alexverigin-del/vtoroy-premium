@@ -309,6 +309,23 @@ function visualContent(value: unknown): VisualContent {
   };
 }
 
+function lcpDirectusImageSrc(src: string): string {
+  if (!src) return "";
+  try {
+    const url = new URL(src);
+    if (url.hostname !== "api.isvoi.ru" || !url.pathname.startsWith("/assets/")) return src;
+    url.searchParams.set("width", "1200");
+    url.searchParams.set("quality", "80");
+    url.searchParams.set("format", "auto");
+    url.searchParams.set("withoutEnlargement", "true");
+    url.searchParams.delete("height");
+    url.searchParams.delete("fit");
+    return url.toString();
+  } catch {
+    return src;
+  }
+}
+
 function clubLevels(value: unknown): ClubLevel[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -416,7 +433,8 @@ function MarketingVisualBandSection({
   priority?: boolean;
 }) {
   const visual = visualContent(section.content.visual);
-  const imageSrc = section.image || visual.imageSrc;
+  const rawImageSrc = section.image || visual.imageSrc;
+  const imageSrc = priority ? lcpDirectusImageSrc(rawImageSrc) : rawImageSrc;
   const captionTitle = visual.captionTitle || section.headline || "";
   const captionText = visual.captionText || section.body || "";
 

@@ -240,14 +240,14 @@ export function CatalogToolbar({
 export function CatalogDeviceList({
   devices,
   emptyMessage,
-  priorityImages = false,
+  priorityImageCount = 0,
   showSelectionCta = false,
   selectionCtaHref = "/store#final",
   layout = "balanced",
 }: {
   devices: DeviceCardData[];
   emptyMessage: string;
-  priorityImages?: boolean;
+  priorityImageCount?: number;
   showSelectionCta?: boolean;
   selectionCtaHref?: string;
   layout?: "balanced" | "four-up";
@@ -281,7 +281,7 @@ export function CatalogDeviceList({
       >
         {devices.map((device, index) => (
           <li key={device.id}>
-            <DeviceCard device={device} imagePriority={priorityImages && index < 3} />
+            <DeviceCard device={device} imagePriority={index < priorityImageCount} />
           </li>
         ))}
       </ul>

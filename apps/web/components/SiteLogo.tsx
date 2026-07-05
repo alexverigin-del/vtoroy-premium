@@ -1,5 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
 import type { SiteSettings } from "@vtoroy/shared";
-import Image from "next/image";
 import { boundedLogoSize, logoSizeStyle, normalizeSiteUrl } from "./site-chrome-utils";
 
 function LogoMark() {
@@ -40,14 +40,14 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
         style={logoSizeStyle(settings)}
       >
         {settings.logoFile ? (
-          <Image
+          <img
             className="h-[var(--logo-height,22px)] w-[var(--logo-width,34px)] object-contain"
             src={settings.logoFile}
             alt={settings.logoAlt || settings.brandName}
             width={logoWidth}
             height={logoHeight}
-            unoptimized
             loading="eager"
+            decoding="async"
           />
         ) : (
           <LogoMark />

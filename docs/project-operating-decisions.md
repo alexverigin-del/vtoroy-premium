@@ -678,7 +678,23 @@ new commercial content should use structured collections and Directus Files.
   LCP on `/`, `/catalog` and `/store`, fails on near-viewport pending or broken
   images, and complements `smoke:images` rather than replacing it. Local and
   live runs on 2026-07-04 passed; live `/store` desktop LCP was 3712ms against
-  the 4500ms budget, so no image `sizes`/`priority` change was needed.
+  the 4500ms budget.
+- The 2026-07-05 SEO/structure release `bfd349c Improve storefront SEO
+  structure` closed the repeat Impeccable audit tails for semantic heading
+  order, structured data and `/store` LCP comfort. Device pages now put the
+  purchase/H1 block first in DOM after the back link, while CSS grid placement
+  keeps the desktop visual layout as left dossier details and right purchase /
+  Passport / Trade. Marketing pages pass `priority` only to the first
+  near-viewport `visual.band` image. Production `smoke:performance` after
+  deploy reported `/store` desktop LCP at 2792-2924ms, below the ~3200ms comfort
+  target and the 4500ms budget.
+- Structured data is centralized in `apps/web/lib/structured-data.ts`.
+  `app/layout.tsx` emits global `Organization` and `WebSite` JSON-LD;
+  `/catalog`, marketing routes and device pages emit `BreadcrumbList`;
+  `/catalog` emits `ItemList`; device pages keep their existing Product
+  JSON-LD. `smoke:prod` now parses every `application/ld+json` script, checks
+  expected schema types, verifies canonical/title/description/OG metadata and
+  fails when any `H2` appears before the first `H1`.
 - The repeat audit after `84b55f7` found production `site_settings` still
   contained prototype footer wording. Use
   `npm run directus:update-footer-copy-sql` to generate the idempotent SQL for
@@ -933,8 +949,15 @@ new commercial content should use structured collections and Directus Files.
 - Current public routes are `/`, `/catalog`, `/store`, `/passport`, `/trade`,
   `/club`, `/device/[slug]` and POST-only `/lead-intake`.
 - `robots.txt` and `sitemap.xml` are Next metadata routes.
-- Device pages include Product JSON-LD.
-- Page metadata should use canonical URLs and OpenGraph data.
+- JSON-LD scripts should be emitted through `apps/web/lib/structured-data.ts`
+  and serialized with `jsonLdScript()` to keep raw script usage reviewed and
+  auditable.
+- Public pages include global `Organization` and `WebSite` JSON-LD from the root
+  layout. `/catalog`, marketing pages and device pages include
+  `BreadcrumbList`; `/catalog` also includes `ItemList`; device pages include
+  Product JSON-LD.
+- Page metadata should use canonical URLs and OpenGraph title, description and
+  image data. `smoke:prod` enforces these fields on the public route set.
 
 ## Documentation Map
 

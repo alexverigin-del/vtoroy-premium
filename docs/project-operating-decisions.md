@@ -764,6 +764,11 @@ new commercial content should use structured collections and Directus Files.
   `TradePreviewSection` choices and `PassportPreviewSection` features use one
   shared compact surface with internal dividers while preserving the same
   Directus `steps`, `choices` and `features` content shapes.
+- Homepage `catalog_preview` is a vitrine preview, not the full catalog. When it
+  shows exactly four devices, use the explicit `CatalogDeviceList`
+  `layout="four-up"` mode so desktop reads as one curated line. Keep the
+  balanced sparse 1-4 item layout for `/catalog` and `/store`, where avoiding a
+  loose commercial grid is more important than a single preview row.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

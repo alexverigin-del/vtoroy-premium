@@ -243,12 +243,14 @@ export function CatalogDeviceList({
   priorityImages = false,
   showSelectionCta = false,
   selectionCtaHref = "/store#final",
+  layout = "balanced",
 }: {
   devices: DeviceCardData[];
   emptyMessage: string;
   priorityImages?: boolean;
   showSelectionCta?: boolean;
   selectionCtaHref?: string;
+  layout?: "balanced" | "four-up";
 }) {
   if (devices.length === 0) {
     return (
@@ -260,18 +262,21 @@ export function CatalogDeviceList({
 
   const sparseCatalog = devices.length <= 4;
   const singleDevice = devices.length === 1;
+  const fourUp = layout === "four-up" && devices.length === 4;
 
   return (
     <>
       <ul
         className={cn(
           "mt-8 grid gap-6 sm:grid-cols-2",
-          sparseCatalog
-            ? cn(
-                "lg:mx-auto",
-                singleDevice ? "lg:max-w-overlay-wide lg:grid-cols-1" : "lg:max-w-copy-wide",
-              )
-            : "lg:grid-cols-3",
+          fourUp
+            ? "lg:grid-cols-4"
+            : sparseCatalog
+              ? cn(
+                  "lg:mx-auto",
+                  singleDevice ? "lg:max-w-overlay-wide lg:grid-cols-1" : "lg:max-w-copy-wide",
+                )
+              : "lg:grid-cols-3",
         )}
       >
         {devices.map((device, index) => (

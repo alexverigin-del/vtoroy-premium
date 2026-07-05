@@ -65,6 +65,7 @@ export function CatalogPreviewSection({
         <CatalogDeviceList
           devices={visibleDevices}
           emptyMessage="Каталог пока пуст. Измените фильтры или вернитесь позже."
+          layout="four-up"
         />
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (

@@ -54,14 +54,18 @@ export function CatalogPreviewSection({
             <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
           ) : null}
         </div>
+      </div>
 
+      <div className="mx-auto max-w-shell px-5">
         <CatalogToolbar
           categories={categories}
           statuses={statuses}
           controls={controls}
           categoryLabel={section.subheadline || "Фильтры каталога"}
         />
+      </div>
 
+      <div className="mx-auto max-w-page px-4 md:px-6">
         <CatalogDeviceList
           devices={visibleDevices}
           emptyMessage="Каталог пока пуст. Измените фильтры или вернитесь позже."

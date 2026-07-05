@@ -769,6 +769,9 @@ new commercial content should use structured collections and Directus Files.
   `layout="four-up"` mode so desktop reads as one curated line. Keep the
   balanced sparse 1-4 item layout for `/catalog` and `/store`, where avoiding a
   loose commercial grid is more important than a single preview row.
+- Homepage `catalog_preview` toolbar should use the same wide `max-w-shell`
+  rhythm as `/catalog` so filters read as a full-width control surface. Keep the
+  heading and four-up device preview in their narrower `max-w-page` rhythm.
 - Homepage `trust` is a four-fact strip under the hero visual when editors
   enable it. Keep the desktop layout as four equal columns so the fourth fact
   does not drop into a lonely second row; mobile may stay a single readable

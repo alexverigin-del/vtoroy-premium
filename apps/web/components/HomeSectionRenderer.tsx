@@ -229,6 +229,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
           alt={visual.imageAlt}
           fill
           priority
+          fetchPriority="high"
           unoptimized={isCriticalLocalImageSrc(imageSrc)}
           sizes="(min-width: 1180px) 1040px, 92vw"
           className="object-cover"

@@ -435,6 +435,7 @@ function MarketingVisualBandSection({
               fill
               sizes="(min-width: 1180px) 1120px, 92vw"
               priority={priority}
+              fetchPriority={priority ? "high" : undefined}
               unoptimized={isCriticalLocalImageSrc(imageSrc)}
               className="object-cover"
             />

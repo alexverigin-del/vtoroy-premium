@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { SiteSettings } from "@vtoroy/shared";
+import { chromeImageSrc } from "../lib/critical-images";
 import { boundedLogoSize, logoSizeStyle, normalizeSiteUrl } from "./site-chrome-utils";
 
 function LogoMark() {
@@ -29,6 +30,7 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
   const href = normalizeSiteUrl(settings.logoHref || "/");
   const logoWidth = boundedLogoSize(settings.logoWidth, 28, 360) ?? 34;
   const logoHeight = boundedLogoSize(settings.logoHeight, 16, 120) ?? 22;
+  const logoSrc = chromeImageSrc(settings.logoFile || "");
   return (
     <a
       href={href}
@@ -39,10 +41,10 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
         className="flex min-h-[var(--logo-height,22px)] shrink-0 items-center gap-1 text-carbon"
         style={logoSizeStyle(settings)}
       >
-        {settings.logoFile ? (
+        {logoSrc ? (
           <img
             className="h-[var(--logo-height,22px)] w-[var(--logo-width,34px)] object-contain"
-            src={settings.logoFile}
+            src={logoSrc}
             alt={settings.logoAlt || settings.brandName}
             width={logoWidth}
             height={logoHeight}

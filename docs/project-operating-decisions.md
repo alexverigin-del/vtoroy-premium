@@ -688,6 +688,26 @@ new commercial content should use structured collections and Directus Files.
   near-viewport `visual.band` image. Production `smoke:performance` after
   deploy reported `/store` desktop LCP at 2792-2924ms, below the ~3200ms comfort
   target and the 4500ms budget.
+- The 2026-07-05 LCP optimization release spans `c6f1416 Optimize LCP image
+  delivery`, `dc4dbcb Cache public pages for faster LCP`, `f2967a3 Serve
+  critical hero images locally` and `5450195 Prioritize critical chrome
+  assets`. Public storefront pages now use 5-minute ISR for Directus-backed
+  content, the first hero images on `/` and `/store` use local critical WebP
+  overrides for the current Directus asset ids, and the current header/footer
+  logo has a tiny local critical override. These overrides are intentionally
+  asset-id scoped: if editors replace the image or logo in Directus Studio, the
+  site falls back to the new Directus asset after revalidation. Keep
+  `site_settings.logo_width`, `site_settings.logo_height` and
+  `site_settings.logo_caption` as the source of truth for menu/logo
+  presentation; the local logo override must not remove editor control of logo
+  size or caption.
+- After that LCP release, production `smoke:prod`, `smoke:images`,
+  `smoke:copy`, `smoke:visual` and the normal 4500ms-budget
+  `smoke:performance` passed. A strict 2500ms desktop LCP smoke still failed
+  on `/` from the Codex runner at about 3100ms, while server-side curl showed
+  Beget/Next serving `/`, `/store` and the critical static assets with
+  millisecond-level TTFB. Treat the remaining 2500ms gap as a network/CDN or
+  first-viewport composition question, not a Directus schema issue.
 - Structured data is centralized in `apps/web/lib/structured-data.ts`.
   `app/layout.tsx` emits global `Organization` and `WebSite` JSON-LD;
   `/catalog`, marketing routes and device pages emit `BreadcrumbList`;
@@ -900,6 +920,12 @@ new commercial content should use structured collections and Directus Files.
   the small catalog, where Directus produces transformed asset URLs and Next
   Image serves them through `/_next/image` with its cache. This is the stable
   deployed baseline and is covered by `smoke:prod` plus `smoke:images`.
+- Exception as of 2026-07-05: LCP-critical local WebP overrides may live in
+  `apps/web/public/assets/` only for current, explicitly mapped Directus asset
+  ids in `apps/web/lib/critical-images.ts`. This is a performance bridge for
+  first-viewport hero/chrome assets, not a general media workflow. New editorial
+  and product media still belongs in Directus Files; replacing an asset in
+  Directus should safely bypass the old local override.
 - Strategic target for a larger catalog is Directus-first image delivery:
   Directus asset transforms own resize/crop/format/focal-point behavior, Next
   Image becomes layout/lazy-loading only with `unoptimized`, and

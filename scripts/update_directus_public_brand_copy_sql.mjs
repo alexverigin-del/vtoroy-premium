@@ -35,7 +35,7 @@ BEGIN;
 
 UPDATE site_settings
 SET brand_name = 'I СВОИ'
-WHERE brand_name = 'ISVOI';
+WHERE brand_name IS DISTINCT FROM 'I СВОИ';
 
 DO $$
 DECLARE

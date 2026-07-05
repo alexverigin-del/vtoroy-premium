@@ -286,7 +286,7 @@ function TrustSection({ section }: { section: PageSection }) {
       className="border-y border-hairline bg-white py-8"
       aria-label={section.eyebrow || "Принципы клуба"}
     >
-      <div className="mx-auto grid max-w-page gap-px px-4 md:grid-cols-3 md:px-6">
+      <div className="mx-auto grid max-w-page gap-px px-4 md:grid-cols-4 md:px-6">
         {items.map((item) => (
           <div
             key={`${item.title}-${item.text}`}

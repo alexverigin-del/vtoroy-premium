@@ -769,6 +769,10 @@ new commercial content should use structured collections and Directus Files.
   `layout="four-up"` mode so desktop reads as one curated line. Keep the
   balanced sparse 1-4 item layout for `/catalog` and `/store`, where avoiding a
   loose commercial grid is more important than a single preview row.
+- Homepage `trust` is a four-fact strip under the hero visual when editors
+  enable it. Keep the desktop layout as four equal columns so the fourth fact
+  does not drop into a lonely second row; mobile may stay a single readable
+  column.
 - Passport, Trade and Club marketing pages should include one live fragment
   from current catalog data when devices are available. These examples should
   reuse existing device/card fields and disappear when the catalog is empty

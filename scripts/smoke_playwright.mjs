@@ -11,6 +11,7 @@ import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs"
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
+const MARKETING_ROUTES = ["/store", "/trade", "/passport", "/club"];
 const DIRECTUS_ASSET_RE = /(https:\/\/api\.isvoi\.ru\/assets\/|api\.isvoi\.ru%2fassets%2f)/i;
 const DIRECTUS_ASSET_SOURCE = "api.isvoi.ru/assets/";
 
@@ -21,6 +22,11 @@ function normalizeBaseUrl(value) {
 function joinUrl(baseUrl, path) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   return `${baseUrl}${cleanPath}`;
+}
+
+function shouldRequireDirectusAssets(baseUrl) {
+  if (process.env.SMOKE_REQUIRE_DIRECTUS_ASSETS === "false") return false;
+  return !/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?$/i.test(baseUrl);
 }
 
 function assert(condition, message) {
@@ -91,7 +97,32 @@ async function waitForDirectusImages(page, minCount) {
   );
 }
 
-async function assertDirectusImages(page, label, minCount) {
+async function waitForLoadedImages(page, minCount) {
+  await page.waitForFunction(
+    (count) =>
+      Array.from(document.images).filter(
+        (image) => image.complete && image.naturalWidth > 0 && image.naturalHeight > 0,
+      ).length >= count,
+    minCount,
+    { timeout: 10_000 },
+  );
+}
+
+async function assertImages(page, label, minCount, requireDirectusAssets) {
+  if (!requireDirectusAssets) {
+    const loaded = await page.evaluate(
+      () =>
+        Array.from(document.images).filter(
+          (image) => image.complete && image.naturalWidth > 0 && image.naturalHeight > 0,
+        ).length,
+    );
+    assert(
+      loaded >= minCount,
+      `${label}: expected at least ${minCount} loaded images, got ${loaded}`,
+    );
+    return;
+  }
+
   const html = await page.content();
   const refs = (html.toLowerCase().match(new RegExp(DIRECTUS_ASSET_RE.source, "gi")) || []).length;
   assert(
@@ -112,9 +143,75 @@ async function assertLeadHoneypot(form, label) {
   assert(count > 0, `${label}: expected hidden website honeypot field`);
 }
 
+function structuredTypes(value) {
+  if (!value || typeof value !== "object") return [];
+  if (Array.isArray(value)) return value.flatMap(structuredTypes);
+  const graph = Array.isArray(value["@graph"]) ? value["@graph"].flatMap(structuredTypes) : [];
+  const type = value["@type"];
+  const ownTypes = Array.isArray(type) ? type : type ? [type] : [];
+  return [...ownTypes, ...graph];
+}
+
+async function assertSeoAndStructuredData(page, label, expectedTypes) {
+  const report = await page.evaluate(() => {
+    const meta = (name) =>
+      document.querySelector(`meta[name="${name}"]`)?.getAttribute("content") || "";
+    const prop = (name) =>
+      document.querySelector(`meta[property="${name}"]`)?.getAttribute("content") || "";
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3")).map((heading) => ({
+      tag: heading.tagName,
+      text: heading.textContent?.trim().replace(/\s+/g, " ") || "",
+    }));
+    const scripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(
+      (script) => script.textContent || "",
+    );
+
+    return {
+      title: document.title,
+      description: meta("description"),
+      canonical: document.querySelector('link[rel="canonical"]')?.href || "",
+      ogTitle: prop("og:title"),
+      ogDescription: prop("og:description"),
+      ogImage: prop("og:image"),
+      headings,
+      jsonLdScripts: scripts,
+    };
+  });
+
+  assert(report.title.trim().length > 0, `${label}: expected document title`);
+  assert(report.description.trim().length > 0, `${label}: expected meta description`);
+  assert(report.canonical.startsWith("https://isvoi.ru"), `${label}: expected canonical URL`);
+  assert(report.ogTitle.trim().length > 0, `${label}: expected og:title`);
+  assert(report.ogDescription.trim().length > 0, `${label}: expected og:description`);
+  assert(report.ogImage.trim().length > 0, `${label}: expected og:image`);
+
+  const h1Count = report.headings.filter((heading) => heading.tag === "H1").length;
+  assert(h1Count === 1, `${label}: expected exactly one H1, got ${h1Count}`);
+  const firstHeading = report.headings[0]?.tag;
+  assert(firstHeading === "H1", `${label}: expected first heading to be H1, got ${firstHeading}`);
+
+  const parsedJsonLd = report.jsonLdScripts.map((script, index) => {
+    try {
+      return JSON.parse(script);
+    } catch (error) {
+      throw new Error(`${label}: JSON-LD script ${index + 1} is invalid: ${error.message}`);
+    }
+  });
+  const types = parsedJsonLd.flatMap(structuredTypes);
+  for (const type of expectedTypes) {
+    assert(
+      types.includes(type),
+      `${label}: expected JSON-LD type ${type}, got ${types.join(", ")}`,
+    );
+  }
+
+  return { h1Count, jsonLdTypes: types };
+}
+
 async function smokeHome(page, baseUrl) {
   const url = joinUrl(baseUrl, "/");
   await gotoOk(page, url);
+  const seo = await assertSeoAndStructuredData(page, "home", ["Organization", "WebSite"]);
 
   const leadForm = page.locator("form:has(input[name='contact'])");
   const leadForms = await leadForm.count();
@@ -123,38 +220,86 @@ async function smokeHome(page, baseUrl) {
     await assertLeadHoneypot(leadForm.first(), "home");
   }
 
-  return { route: "/", leadForms };
+  return { route: "/", leadForms, jsonLdTypes: seo.jsonLdTypes.length };
 }
 
-async function smokeCatalog(page, baseUrl) {
+async function smokeCatalog(page, baseUrl, requireDirectusAssets) {
   const url = joinUrl(baseUrl, "/catalog");
   await gotoOk(page, url);
-  await waitForDirectusImages(page, 1);
-  await assertDirectusImages(page, "catalog", 1);
+  const seo = await assertSeoAndStructuredData(page, "catalog", [
+    "Organization",
+    "WebSite",
+    "BreadcrumbList",
+    "ItemList",
+  ]);
+  if (requireDirectusAssets) {
+    await waitForDirectusImages(page, 1);
+  } else {
+    await waitForLoadedImages(page, 1);
+  }
+  await assertImages(page, "catalog", 1, requireDirectusAssets);
 
   const cardCount = await page.locator("a[href^='/device/'], a[href*='/device/']").count();
-  assert(cardCount > 0, "catalog: expected at least one device link");
+  if (requireDirectusAssets) {
+    assert(cardCount > 0, "catalog: expected at least one device link");
+  }
   return {
     route: "/catalog",
     directusImages: await countLoadedDirectusImages(page),
     deviceLinks: cardCount,
+    jsonLdTypes: seo.jsonLdTypes.length,
   };
 }
 
-async function smokeStore(page, baseUrl) {
+async function smokeStore(page, baseUrl, requireDirectusAssets) {
   const url = joinUrl(baseUrl, "/store");
   await gotoOk(page, url);
-  await waitForDirectusImages(page, 1);
-  await assertDirectusImages(page, "store", 1);
+  const seo = await assertSeoAndStructuredData(page, "store", [
+    "Organization",
+    "WebSite",
+    "BreadcrumbList",
+  ]);
+  if (requireDirectusAssets) {
+    await waitForDirectusImages(page, 1);
+  } else {
+    await waitForLoadedImages(page, 1);
+  }
+  await assertImages(page, "store", 1, requireDirectusAssets);
 
-  return { route: "/store", directusImages: await countLoadedDirectusImages(page) };
+  return {
+    route: "/store",
+    directusImages: await countLoadedDirectusImages(page),
+    jsonLdTypes: seo.jsonLdTypes.length,
+  };
 }
 
-async function smokeDevice(page, baseUrl, devicePath) {
+async function smokeMarketing(page, baseUrl, route) {
+  const url = joinUrl(baseUrl, route);
+  await gotoOk(page, url);
+  const seo = await assertSeoAndStructuredData(page, route, [
+    "Organization",
+    "WebSite",
+    "BreadcrumbList",
+  ]);
+
+  return { route, jsonLdTypes: seo.jsonLdTypes.length };
+}
+
+async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
   const url = joinUrl(baseUrl, devicePath);
   await gotoOk(page, url);
-  await waitForDirectusImages(page, 1);
-  await assertDirectusImages(page, "device", 1);
+  const seo = await assertSeoAndStructuredData(page, "device", [
+    "Organization",
+    "WebSite",
+    "BreadcrumbList",
+    "Product",
+  ]);
+  if (requireDirectusAssets) {
+    await waitForDirectusImages(page, 1);
+  } else {
+    await waitForLoadedImages(page, 1);
+  }
+  await assertImages(page, "device", 1, requireDirectusAssets);
 
   const passportBlocks = await page.locator("text=I СВОИ Passport").count();
   assert(passportBlocks > 0, "device: expected I СВОИ Passport block");
@@ -170,21 +315,26 @@ async function smokeDevice(page, baseUrl, devicePath) {
     directusImages: await countLoadedDirectusImages(page),
     passportBlocks,
     leadForms: await leadForm.count(),
+    jsonLdTypes: seo.jsonLdTypes.length,
   };
 }
 
 async function main() {
   const baseUrl = normalizeBaseUrl(process.env.SMOKE_BASE_URL);
   const devicePath = process.env.SMOKE_DEVICE_PATH || DEFAULT_DEVICE_PATH;
+  const requireDirectusAssets = shouldRequireDirectusAssets(baseUrl);
   const browser = await launchChromium({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
 
   try {
     const results = [];
     results.push(await smokeHome(page, baseUrl));
-    results.push(await smokeCatalog(page, baseUrl));
-    results.push(await smokeStore(page, baseUrl));
-    results.push(await smokeDevice(page, baseUrl, devicePath));
+    results.push(await smokeCatalog(page, baseUrl, requireDirectusAssets));
+    results.push(await smokeStore(page, baseUrl, requireDirectusAssets));
+    for (const route of MARKETING_ROUTES.filter((route) => route !== "/store")) {
+      results.push(await smokeMarketing(page, baseUrl, route));
+    }
+    results.push(await smokeDevice(page, baseUrl, devicePath, requireDirectusAssets));
 
     for (const result of results) {
       console.log(`ok ${result.route} ${JSON.stringify(result)}`);

@@ -14,6 +14,7 @@ import {
   marketingSectionsForPage,
   siteChrome,
 } from "@/lib/site-content";
+import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
 export const dynamic = "force-dynamic";
@@ -71,16 +72,30 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
   ]);
   const chrome = siteChrome(settings, navigation);
   const sections = marketingSectionsForPage(slug, page?.sections);
+  const currentPage = page ?? getFallbackMarketingPage(slug);
+  const firstVisualBandSection = sections.find((section) => section.variant === "visual.band");
 
   return (
     <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
       <main id="top" className="bg-white">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(
+              breadcrumbJsonLd([
+                { name: "Главная", path: "/" },
+                { name: currentPage.title, path: `/${slug}` },
+              ]),
+            ),
+          }}
+        />
         {sections.map((section) => (
           <MarketingSectionRenderer
             key={section.id || section.sectionKey}
             section={section}
             slug={slug}
             devices={devices}
+            priorityVisual={section === firstVisualBandSection}
           />
         ))}
       </main>

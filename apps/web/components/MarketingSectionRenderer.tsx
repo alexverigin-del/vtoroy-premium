@@ -12,6 +12,7 @@ type MarketingSectionRendererProps = {
   section: PageSection;
   slug: MarketingSlug;
   devices?: DeviceCardData[];
+  priorityVisual?: boolean;
 };
 
 type MarketingCard = {
@@ -407,7 +408,13 @@ function ChevronIcon() {
   );
 }
 
-function MarketingVisualBandSection({ section }: { section: PageSection }) {
+function MarketingVisualBandSection({
+  section,
+  priority = false,
+}: {
+  section: PageSection;
+  priority?: boolean;
+}) {
   const visual = visualContent(section.content.visual);
   const imageSrc = section.image || visual.imageSrc;
   const captionTitle = visual.captionTitle || section.headline || "";
@@ -425,6 +432,7 @@ function MarketingVisualBandSection({ section }: { section: PageSection }) {
               alt={visual.imageAlt || section.headline || ""}
               fill
               sizes="(min-width: 1180px) 1120px, 92vw"
+              priority={priority}
               className="object-cover"
             />
           ) : null}
@@ -1346,11 +1354,12 @@ export function MarketingSectionRenderer({
   section,
   slug,
   devices = [],
+  priorityVisual = false,
 }: MarketingSectionRendererProps) {
   const renderedSection = isHeroSection(section) ? (
     <MarketingHeroSection section={section} slug={slug} />
   ) : isVisualBandSection(section) ? (
-    <MarketingVisualBandSection section={section} />
+    <MarketingVisualBandSection section={section} priority={priorityVisual} />
   ) : isCompareSection(section) ? (
     <MarketingCompareSection section={section} />
   ) : isLevelsSection(section) ? (

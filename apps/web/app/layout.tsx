@@ -5,6 +5,7 @@ import {
   DEFAULT_SITE_TITLE,
   DEFAULT_SOCIAL_IMAGE,
 } from "./site-metadata";
+import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -46,6 +47,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(websiteJsonLd()) }}
+        />
         {children}
         {turnstileEnabled ? (
           <Script

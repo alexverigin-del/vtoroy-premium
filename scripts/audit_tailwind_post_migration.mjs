@@ -19,7 +19,6 @@ const tailwindConfigs = [
 ];
 const rootLayout = path.join(webRoot, "app", "layout.tsx");
 const globalsCss = path.join(webRoot, "app", "globals.css");
-const devicePage = path.join(webRoot, "app", "device", "[slug]", "page.tsx");
 const classCompositionHelper = path.join(webRoot, "lib", "cn.ts");
 const siteLogoComponent = path.join(webRoot, "components", "SiteLogo.tsx");
 const siteChromeUtils = path.join(webRoot, "components", "site-chrome-utils.ts");
@@ -37,8 +36,7 @@ const riskyPatterns = [
 
 const classComposerImportPattern =
   /(?:from\s+["'](?:clsx|tailwind-merge)["']|require\(["'](?:clsx|tailwind-merge)["']\))/g;
-const cssImportPattern =
-  /(?:import\s+["']([^"']+\.css)["']|require\(["']([^"']+\.css)["']\))/g;
+const cssImportPattern = /(?:import\s+["']([^"']+\.css)["']|require\(["']([^"']+\.css)["']\))/g;
 const moduleImportPattern =
   /(?:from\s+["']([^"']+)["']|import\(["']([^"']+)["']\)|require\(["']([^"']+)["']\))/g;
 const clientEnvPattern = /process\.env\.([A-Z0-9_]+)/g;
@@ -130,6 +128,12 @@ function forbiddenClientImportReason(specifier) {
   return "";
 }
 
+function reviewedJsonLdUsage(source, index) {
+  if (!source.includes("@/lib/structured-data")) return false;
+  const snippet = source.slice(Math.max(0, index - 250), index + 500);
+  return snippet.includes('type="application/ld+json"') && snippet.includes("jsonLdScript(");
+}
+
 const errors = [];
 
 for (const file of forbiddenFiles) {
@@ -188,7 +192,8 @@ for (const file of scanRoots.flatMap(walk)) {
   const source = fs.readFileSync(file, "utf8");
   for (const match of source.matchAll(/style=\{/g)) {
     const allowedLogoSizeStyle =
-      file === siteLogoComponent && lineText(source, match.index).includes("style={logoSizeStyle(settings)}");
+      file === siteLogoComponent &&
+      lineText(source, match.index).includes("style={logoSizeStyle(settings)}");
     if (!allowedLogoSizeStyle) {
       errors.push(
         `${rel(file)}:${lineNumber(source, match.index)} uses inline style. Tailwind-first UI should use utilities or a reviewed CSS-variable helper.`,
@@ -267,23 +272,17 @@ for (const file of scanRoots.flatMap(walk)) {
   }
 
   for (const match of source.matchAll(/<script\b/g)) {
-    const jsonLdException =
-      file === devicePage &&
-      source.includes('type="application/ld+json"') &&
-      source.includes("jsonLdScript(productJsonLd(device))");
-    if (!jsonLdException) {
+    if (!reviewedJsonLdUsage(source, match.index)) {
       errors.push(
-        `${rel(file)}:${lineNumber(source, match.index)} renders a raw <script>. Only reviewed JSON-LD on product pages is currently allowed.`,
+        `${rel(file)}:${lineNumber(source, match.index)} renders a raw <script>. Only reviewed JSON-LD via apps/web/lib/structured-data.ts is currently allowed.`,
       );
     }
   }
 
   for (const match of source.matchAll(/dangerouslySetInnerHTML/g)) {
-    const jsonLdException =
-      file === devicePage && source.includes("jsonLdScript(productJsonLd(device))");
-    if (!jsonLdException) {
+    if (!reviewedJsonLdUsage(source, match.index)) {
       errors.push(
-        `${rel(file)}:${lineNumber(source, match.index)} uses dangerouslySetInnerHTML outside the reviewed product JSON-LD path.`,
+        `${rel(file)}:${lineNumber(source, match.index)} uses dangerouslySetInnerHTML outside the reviewed structured-data JSON-LD path.`,
       );
     }
   }

@@ -20,6 +20,7 @@ import { SiteShell } from "@/components/SiteShell";
 import { deviceBackLinkClass } from "@/components/ui-classes";
 import { cn } from "@/lib/cn";
 import { siteChrome } from "@/lib/site-content";
+import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 
 // Keep Directus device edits visible immediately while inventory is being filled.
 export const dynamic = "force-dynamic";
@@ -194,10 +195,6 @@ function productJsonLd(device: Device) {
   };
 }
 
-function jsonLdScript(value: unknown): string {
-  return JSON.stringify(value).replace(/</g, "\\u003c");
-}
-
 function DetailCard({
   title,
   children,
@@ -292,14 +289,89 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(device)) }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(
+              breadcrumbJsonLd([
+                { name: "Главная", path: "/" },
+                { name: "Каталог", path: "/catalog" },
+                { name: device.title, path: `/device/${device.id}` },
+              ]),
+            ),
+          }}
+        />
         <section className="mx-auto max-w-content px-6 py-10 md:py-14">
           <Link href="/catalog" className={deviceBackLinkClass}>
             ← Store
           </Link>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-product lg:items-start lg:gap-8">
-            <div className="contents lg:grid lg:gap-6">
-              <div className="order-1 lg:order-none">
+            <div className="contents lg:col-start-2 lg:row-start-1 lg:grid lg:gap-6 lg:self-start">
+              <aside className="card order-1 p-6 lg:order-none">
+                <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
+                  {device.category}
+                </p>
+                <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
+                  {device.headline || device.title}
+                </h1>
+                <p className="mt-4 text-muted">{device.shortDescription}</p>
+
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <span className="text-3xl font-semibold">{device.priceText}</span>
+                  <span className="rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">
+                    грейд {device.grade}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-muted">{device.availability}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted">
+                  <span className="rounded-pill bg-surface px-3 py-1 font-medium">
+                    {stockStatusLabel(device)}
+                  </span>
+                  {lastUpdated ? (
+                    <span className="rounded-pill bg-surface px-3 py-1">{lastUpdated}</span>
+                  ) : null}
+                </div>
+
+                <div className="mt-6 grid gap-2">
+                  {facts.map((fact) => (
+                    <div key={fact} className="flex items-center gap-2 text-sm text-muted">
+                      <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                      {fact}
+                    </div>
+                  ))}
+                </div>
+
+                <ProductLeadForm
+                  deviceId={device.id}
+                  deviceTitle={device.title}
+                  formId={leadFormId}
+                  stockStatus={device.stockStatus}
+                  stockStatusLabel={stockStatusLabel(device)}
+                />
+
+                <div className="mt-3">
+                  <CTAButton href="/trade" label="Рассчитать Trade" variant="secondary" />
+                </div>
+
+                <p className="mt-5 text-xs leading-relaxed text-muted">
+                  Цена и условия действуют после подтверждения наличия и финальной проверки в Store.
+                </p>
+              </aside>
+
+              <div className="order-5 lg:order-none">
+                <PassportSummary passport={device.passport} />
+              </div>
+
+              {tradeOptions.length > 0 ? (
+                <div className="order-4 lg:order-none">
+                  <TradeUpdateCard options={tradeOptions} />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="contents lg:col-start-1 lg:row-start-1 lg:grid lg:gap-6">
+              <div className="order-2 lg:order-none">
                 <DeviceGallery images={device.gallery} />
               </div>
 
@@ -375,69 +447,6 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   </p>
                 </DetailCard>
               </div>
-            </div>
-
-            <div className="contents lg:grid lg:gap-6 lg:self-start">
-              <aside className="card order-2 p-6 lg:order-none">
-                <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
-                  {device.category}
-                </p>
-                <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
-                  {device.headline || device.title}
-                </h1>
-                <p className="mt-4 text-muted">{device.shortDescription}</p>
-
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <span className="text-3xl font-semibold">{device.priceText}</span>
-                  <span className="rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">
-                    грейд {device.grade}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-muted">{device.availability}</p>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted">
-                  <span className="rounded-pill bg-surface px-3 py-1 font-medium">
-                    {stockStatusLabel(device)}
-                  </span>
-                  {lastUpdated ? (
-                    <span className="rounded-pill bg-surface px-3 py-1">{lastUpdated}</span>
-                  ) : null}
-                </div>
-
-                <div className="mt-6 grid gap-2">
-                  {facts.map((fact) => (
-                    <div key={fact} className="flex items-center gap-2 text-sm text-muted">
-                      <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                      {fact}
-                    </div>
-                  ))}
-                </div>
-
-                <ProductLeadForm
-                  deviceId={device.id}
-                  deviceTitle={device.title}
-                  formId={leadFormId}
-                  stockStatus={device.stockStatus}
-                  stockStatusLabel={stockStatusLabel(device)}
-                />
-
-                <div className="mt-3">
-                  <CTAButton href="/trade" label="Рассчитать Trade" variant="secondary" />
-                </div>
-
-                <p className="mt-5 text-xs leading-relaxed text-muted">
-                  Цена и условия действуют после подтверждения наличия и финальной проверки в Store.
-                </p>
-              </aside>
-
-              <div className="order-5 lg:order-none">
-                <PassportSummary passport={device.passport} />
-              </div>
-
-              {tradeOptions.length > 0 ? (
-                <div className="order-4 lg:order-none">
-                  <TradeUpdateCard options={tradeOptions} />
-                </div>
-              ) : null}
             </div>
           </div>
         </section>

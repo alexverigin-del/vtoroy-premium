@@ -5,6 +5,7 @@ import type { DeviceCardData } from "@/lib/device-card-data";
 import type { MarketingSlug } from "@/lib/site-content";
 import { DeviceCard } from "./DeviceCard";
 import { cn } from "../lib/cn";
+import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { brandZoneEyebrowClass, primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
@@ -309,23 +310,6 @@ function visualContent(value: unknown): VisualContent {
   };
 }
 
-function lcpDirectusImageSrc(src: string): string {
-  if (!src) return "";
-  try {
-    const url = new URL(src);
-    if (url.hostname !== "api.isvoi.ru" || !url.pathname.startsWith("/assets/")) return src;
-    url.searchParams.set("width", "1200");
-    url.searchParams.set("quality", "80");
-    url.searchParams.set("format", "auto");
-    url.searchParams.set("withoutEnlargement", "true");
-    url.searchParams.delete("height");
-    url.searchParams.delete("fit");
-    return url.toString();
-  } catch {
-    return src;
-  }
-}
-
 function clubLevels(value: unknown): ClubLevel[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -434,7 +418,7 @@ function MarketingVisualBandSection({
 }) {
   const visual = visualContent(section.content.visual);
   const rawImageSrc = section.image || visual.imageSrc;
-  const imageSrc = priority ? lcpDirectusImageSrc(rawImageSrc) : rawImageSrc;
+  const imageSrc = priority ? priorityImageSrc(rawImageSrc) : rawImageSrc;
   const captionTitle = visual.captionTitle || section.headline || "";
   const captionText = visual.captionText || section.body || "";
 
@@ -451,6 +435,7 @@ function MarketingVisualBandSection({
               fill
               sizes="(min-width: 1180px) 1120px, 92vw"
               priority={priority}
+              unoptimized={isCriticalLocalImageSrc(imageSrc)}
               className="object-cover"
             />
           ) : null}

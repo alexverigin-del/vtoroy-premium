@@ -10,6 +10,7 @@ import { PassportPreviewSection } from "./PassportPreviewSection";
 import { StorePreviewSection } from "./StorePreviewSection";
 import { TradePreviewSection } from "./TradePreviewSection";
 import { cn } from "../lib/cn";
+import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import {
   heroPassportCardClass,
@@ -173,7 +174,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   const assurance = stringList(section.content.assurance);
   const visual = heroVisualContent(section.content.visual);
   const passport = heroPassportContent(section.content.passport);
-  const imageSrc = section.image || visual.imageSrc;
+  const imageSrc = priorityImageSrc(section.image || visual.imageSrc);
   const primaryLabel = section.primaryCtaLabel || "Войти в круг";
   const primaryUrl = normalizeSiteUrl(section.primaryCtaUrl || "#final");
   const secondaryLabel = section.secondaryCtaLabel || "Смотреть Store";
@@ -228,6 +229,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
           alt={visual.imageAlt}
           fill
           priority
+          unoptimized={isCriticalLocalImageSrc(imageSrc)}
           sizes="(min-width: 1180px) 1040px, 92vw"
           className="object-cover"
         />

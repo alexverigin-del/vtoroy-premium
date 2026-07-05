@@ -46,7 +46,7 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
             alt={settings.logoAlt || settings.brandName}
             width={logoWidth}
             height={logoHeight}
-            loading="lazy"
+            loading="eager"
             decoding="async"
             fetchPriority="low"
           />

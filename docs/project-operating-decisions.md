@@ -738,6 +738,14 @@ new commercial content should use structured collections and Directus Files.
   `I СВОИ · Club`. Render these labels with the shared
   `brandZoneEyebrowClass` text treatment, not as pill/breadcrumb badges. Avoid
   reverting these labels to service breadcrumbs such as `Главная / Store`.
+- Public-facing site copy uses the brand spelling `I СВОИ`. This includes UI
+  labels, SEO/OG metadata, JSON-LD fallbacks, Directus public content seeds,
+  FAQ/device story copy and footer text. Keep `ISVOI` only for stable technical
+  identifiers such as repository/workspace names, Directus roles, policies,
+  file folders, Studio/project branding, shell scripts and runbooks. When live
+  CMS copy may still contain old public `ISVOI` wording, use
+  `npm run directus:update-public-brand-copy-sql` and apply the generated SQL
+  on Beget before or during deploy.
 - Short marketing fact lists should not be expanded into large empty cards.
   `passport_explainer` is the reference compact pattern: one shared bordered
   surface, compact numbered rows and internal dividers. Use this treatment when

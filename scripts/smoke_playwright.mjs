@@ -156,8 +156,8 @@ async function smokeDevice(page, baseUrl, devicePath) {
   await waitForDirectusImages(page, 1);
   await assertDirectusImages(page, "device", 1);
 
-  const passportBlocks = await page.locator("text=ISVOI Passport").count();
-  assert(passportBlocks > 0, "device: expected ISVOI Passport block");
+  const passportBlocks = await page.locator("text=I СВОИ Passport").count();
+  assert(passportBlocks > 0, "device: expected I СВОИ Passport block");
 
   const leadForm = page.locator("form:has(input[name='contact']):has(textarea[name='message'])");
   await leadForm.first().waitFor({ state: "visible", timeout: 10_000 });

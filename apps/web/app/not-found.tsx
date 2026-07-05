@@ -6,8 +6,8 @@ import { getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 
 export const metadata: Metadata = {
-  title: "Страница не найдена — ISVOI",
-  description: "Страница не найдена. Вернитесь в Store ISVOI или на главную страницу.",
+  title: "Страница не найдена — I СВОИ",
+  description: "Страница не найдена. Вернитесь в Store I СВОИ или на главную страницу.",
   robots: {
     index: false,
     follow: false,
@@ -29,7 +29,7 @@ export default async function NotFoundPage() {
             </h1>
             <p className="mx-auto mt-5 max-w-body-copy text-copy leading-relaxed text-graphite md:text-lg">
               Страница могла переехать, карточку могли снять с витрины или ссылка оказалась старой.
-              Вернитесь в Store: там видны вещи, которые сейчас проходят через ISVOI.
+              Вернитесь в Store: там видны вещи, которые сейчас проходят через I СВОИ.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link href="/catalog" className={notFoundPrimaryLinkClass}>

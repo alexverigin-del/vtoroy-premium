@@ -1013,7 +1013,7 @@ async function enrichFaqSections(
 function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings {
   const logoFile = directusFileId(row.logo_file);
   return {
-    brandName: str(row.brand_name, "ISVOI"),
+    brandName: str(row.brand_name, "I СВОИ"),
     tagline: str(row.tagline),
     city: str(row.city),
     logoFile: logoFile ? directusAssetUrl(logoFile) : "",

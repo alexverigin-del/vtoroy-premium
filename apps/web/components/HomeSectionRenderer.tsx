@@ -117,7 +117,7 @@ function heroPassportContent(value: unknown): HeroPassport {
   const rows = passportRows(record.rows);
 
   return {
-    ariaLabel: textField(record, "ariaLabel", "aria_label", "ISVOI Passport вещи"),
+    ariaLabel: textField(record, "ariaLabel", "aria_label", "I СВОИ Passport вещи"),
     device: textField(record, "device", "device", "iPhone 13 Pro"),
     sub: textField(record, "sub", "sub", "256 GB · Графитовый"),
     grade: textField(record, "grade", "grade", "A-"),

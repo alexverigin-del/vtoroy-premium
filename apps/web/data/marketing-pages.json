@@ -2,8 +2,8 @@
   "store": {
     "slug": "store",
     "template": "store",
-    "title": "ISVOI Store — доверенная витрина круга",
-    "metaDescription": "ISVOI Store в Северодвинске: доверенная витрина, открытая проверка, Passport, Trade и Club без случайного рынка.",
+    "title": "I СВОИ Store — доверенная витрина круга",
+    "metaDescription": "I СВОИ Store в Северодвинске: доверенная витрина, открытая проверка, Passport, Trade и Club без случайного рынка.",
     "sections": [
       {
         "sectionKey": "store_hero",
@@ -157,7 +157,7 @@
           "comparison": {
             "label_header": "Что сравниваем",
             "bad_header": "Случайный рынок",
-            "good_header": "ISVOI Store",
+            "good_header": "I СВОИ Store",
             "rows": [
               { "label": "История вещи", "bad": "неизвестна", "good": "зафиксирована в Passport" },
               { "label": "Проверка", "bad": "со слов продавца", "good": "открытая, при вас" },
@@ -202,8 +202,8 @@
   "trade": {
     "slug": "trade",
     "template": "trade",
-    "title": "ISVOI Trade — передать вещь дальше",
-    "metaDescription": "ISVOI Trade: выкуп, комиссия или обновление. Ваша вещь идёт дальше через своих после открытой проверки.",
+    "title": "I СВОИ Trade — передать вещь дальше",
+    "metaDescription": "I СВОИ Trade: выкуп, комиссия или обновление. Ваша вещь идёт дальше через своих после открытой проверки.",
     "sections": [
       {
         "sectionKey": "trade_hero",
@@ -300,14 +300,14 @@
         "sectionKey": "trade_compare",
         "variant": "compare",
         "eyebrow": "Почему Trade",
-        "headline": "Случайный рынок или Trade в ISVOI.",
+        "headline": "Случайный рынок или Trade в I СВОИ.",
         "sortOrder": 5,
         "isActive": true,
         "content": {
           "comparison": {
             "label_header": "Что сравниваем",
             "bad_header": "Объявления",
-            "good_header": "Trade в ISVOI",
+            "good_header": "Trade в I СВОИ",
             "rows": [
               {
                 "label": "Покупатель",
@@ -347,15 +347,15 @@
   "passport": {
     "slug": "passport",
     "template": "passport",
-    "title": "ISVOI Passport — история вещи",
-    "metaDescription": "ISVOI Passport — стандарт доверия: история вещи, состояние, гарантия и цена выхода простым языком.",
+    "title": "I СВОИ Passport — история вещи",
+    "metaDescription": "I СВОИ Passport — стандарт доверия: история вещи, состояние, гарантия и цена выхода простым языком.",
     "sections": [
       {
         "sectionKey": "passport_hero",
         "variant": "page.hero",
         "eyebrow": "I СВОИ · Passport",
         "headline": "Сначала история. Потом решение.",
-        "body": "ISVOI Passport рассказывает историю вещи: состояние, проверку, гарантию и цену выхода простым языком. Не «как новая», а честно проверенная.",
+        "body": "I СВОИ Passport рассказывает историю вещи: состояние, проверку, гарантию и цену выхода простым языком. Не «как новая», а честно проверенная.",
         "primaryCtaLabel": "Смотреть вещи с Passport",
         "primaryCtaUrl": "/catalog",
         "secondaryCtaLabel": "Оценить свою вещь",
@@ -464,7 +464,7 @@
         "sectionKey": "final_cta",
         "variant": "page.cta",
         "headline": "Выбирайте вещь с Passport.",
-        "body": "Каждая вещь в ISVOI проходит проверку и получает понятную историю.",
+        "body": "Каждая вещь в I СВОИ проходит проверку и получает понятную историю.",
         "primaryCtaLabel": "Смотреть каталог",
         "primaryCtaUrl": "/catalog",
         "secondaryCtaLabel": "Записаться на проверку",
@@ -478,15 +478,15 @@
   "club": {
     "slug": "club",
     "template": "club",
-    "title": "ISVOI Club — владеть ценным проще среди своих",
-    "metaDescription": "ISVOI Club — круг разумного владения: пользоваться, менять, выкупать или возвращать вещь среди своих.",
+    "title": "I СВОИ Club — владеть ценным проще среди своих",
+    "metaDescription": "I СВОИ Club — круг разумного владения: пользоваться, менять, выкупать или возвращать вещь среди своих.",
     "sections": [
       {
         "sectionKey": "club_hero",
         "variant": "page.hero",
         "eyebrow": "I СВОИ · Club",
         "headline": "Владеть ценным проще среди своих.",
-        "body": "ISVOI Club — спокойный круг владения: пользоваться, менять, выкупать или возвращать вещь через своих. Вы заранее знаете условия каждого шага.",
+        "body": "I СВОИ Club — спокойный круг владения: пользоваться, менять, выкупать или возвращать вещь через своих. Вы заранее знаете условия каждого шага.",
         "primaryCtaLabel": "Войти в Club",
         "primaryCtaUrl": "/#final",
         "secondaryCtaLabel": "Смотреть вещи",
@@ -617,7 +617,7 @@
           "comparison": {
             "label_header": "Что сравниваем",
             "bad_header": "Случайный рынок",
-            "good_header": "Club в ISVOI",
+            "good_header": "Club в I СВОИ",
             "rows": [
               { "label": "Цена выхода", "bad": "непредсказуема", "good": "известна заранее" },
               {

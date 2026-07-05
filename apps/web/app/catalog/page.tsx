@@ -10,22 +10,22 @@ import { siteChrome } from "@/lib/site-content";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
 export const metadata = {
-  title: "ISVOI Store — вещи в кругу",
+  title: "I СВОИ Store — вещи в кругу",
   description:
-    "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу ISVOI.",
+    "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу I СВОИ.",
   alternates: {
     canonical: "/catalog",
   },
   openGraph: {
-    title: "ISVOI Store — вещи в кругу",
-    description: "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода.",
+    title: "I СВОИ Store — вещи в кругу",
+    description: "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода.",
     url: "/catalog",
     images: [DEFAULT_SOCIAL_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ISVOI Store — вещи в кругу",
-    description: "Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода.",
+    title: "I СВОИ Store — вещи в кругу",
+    description: "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода.",
     images: [DEFAULT_SOCIAL_IMAGE],
   },
 };

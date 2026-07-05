@@ -103,7 +103,7 @@ SAMPLE = {
     "exit": "до 68 000 ₽",
     "exit_text": "Выход до 68 000 ₽",
     "availability": "В наличии в Москве",
-    "short_description": "Чистый корпус, полный ISVOI Passport.",
+    "short_description": "Чистый корпус, полный I СВОИ Passport.",
     "headline": "iPhone 15 Pro с понятной историей",
     "listing_alt": "iPhone 15 Pro Blue Titanium",
     "cta_label": "Смотреть паспорт",

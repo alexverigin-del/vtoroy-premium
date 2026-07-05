@@ -19,7 +19,7 @@ const marketingFallbackEnhancementKeys: Record<MarketingSlug, Set<string>> = {
 };
 
 const defaultSiteSettings: SiteSettings = {
-  brandName: "ISVOI",
+  brandName: "I СВОИ",
   tagline: "Хорошие вещи проходят через своих.",
   city: "Северодвинск",
   logoHref: "/",
@@ -28,10 +28,10 @@ const defaultSiteSettings: SiteSettings = {
   headerCtaLabel: "Войти в круг",
   headerCtaUrl: "/#final",
   footerNote:
-    "ISVOI — клуб разумного владения: проверенные вещи проходят дальше через своих. Наличие, цены, грейды, гарантия и условия выхода подтверждаются перед сделкой. Названия и товарные знаки принадлежат их правообладателям.",
+    "I СВОИ — клуб разумного владения: проверенные вещи проходят дальше через своих. Наличие, цены, грейды, гарантия и условия выхода подтверждаются перед сделкой. Названия и товарные знаки принадлежат их правообладателям.",
   footerBrandText: "Клуб разумного владения. Хорошие вещи проходят через своих. Северодвинск.",
   footerLegal: "Хорошие вещи проходят через своих.",
-  footerCopyright: "© 2026 ISVOI.",
+  footerCopyright: "© 2026 I СВОИ.",
 };
 
 const defaultNavigationItems: NavigationItem[] = [
@@ -89,7 +89,7 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-club-passport",
-    label: "ISVOI Passport",
+    label: "I СВОИ Passport",
     url: "/passport",
     location: "footer",
     parent: "footer-club",
@@ -172,7 +172,7 @@ const defaultCatalogPreviewSection: PageSection = {
   id: "catalog-preview-fallback",
   sectionKey: "catalog_preview",
   variant: "catalog.grid",
-  eyebrow: "Store · сейчас в ISVOI",
+  eyebrow: "Store · сейчас в I СВОИ",
   headline: "Вещи в кругу — сейчас в наличии.",
   subheadline: "Фильтры каталога",
   body: "Каждая карточка показывает не только цену, но и историю вещи: грейд, батарею, проверку и цену выхода. Это вещи, которые прошли через своих.",
@@ -197,9 +197,9 @@ const defaultHeroSection: PageSection = {
   id: "hero-fallback",
   sectionKey: "hero",
   variant: "hero.static",
-  eyebrow: "ISVOI · клуб разумного владения · Северодвинск",
+  eyebrow: "I СВОИ · клуб разумного владения · Северодвинск",
   headline: "Хорошие вещи проходят через своих.",
-  body: "ISVOI — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
+  body: "I СВОИ — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
   primaryCtaLabel: "Войти в круг",
   primaryCtaUrl: "#final",
   secondaryCtaLabel: "Смотреть Store",
@@ -213,7 +213,7 @@ const defaultHeroSection: PageSection = {
       image_alt: "Премиальный графитовый смартфон на светло-серой студийной поверхности",
     },
     passport: {
-      aria_label: "ISVOI Passport вещи",
+      aria_label: "I СВОИ Passport вещи",
       device: "iPhone 13 Pro",
       sub: "256 GB · Графитовый",
       grade: "A−",
@@ -386,7 +386,7 @@ export function getFallbackMarketingPage(slug: MarketingSlug): SitePage {
     slug,
     template: strField(raw, "template", slug),
     status: "published",
-    title: strField(raw, "title", "ISVOI"),
+    title: strField(raw, "title", "I СВОИ"),
     metaDescription: strField(raw, "metaDescription"),
     sections: sections
       .filter(

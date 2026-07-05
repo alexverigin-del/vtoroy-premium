@@ -73,16 +73,16 @@ function comparisonContent(value: unknown): ComparisonContent {
       record,
       "ariaLabel",
       "aria_label",
-      "Сравнение случайного рынка и круга ISVOI",
+      "Сравнение случайного рынка и круга I СВОИ",
     ),
     labelHeader: textField(record, "labelHeader", "label_header", "Что вы получаете"),
     badHeader: textField(record, "badHeader", "bad_header", "Случайный рынок"),
-    goodHeader: textField(record, "goodHeader", "good_header", "Круг ISVOI"),
+    goodHeader: textField(record, "goodHeader", "good_header", "Круг I СВОИ"),
     rows:
       rows.length > 0
         ? rows
         : [
-            { label: "История вещи", bad: "неизвестна", good: "ISVOI Passport" },
+            { label: "История вещи", bad: "неизвестна", good: "I СВОИ Passport" },
             { label: "Через кого вещь", bad: "через незнакомца", good: "через своих" },
             { label: "Цена", bad: "только сегодня", good: "цена выхода известна" },
             { label: "Состояние", bad: "вера на слово", good: "проверка при вас" },

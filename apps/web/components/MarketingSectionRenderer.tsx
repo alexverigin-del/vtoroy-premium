@@ -234,10 +234,10 @@ function comparisonContent(value: unknown): ComparisonContent {
   const rows = comparisonRows(record.rows);
 
   return {
-    ariaLabel: textField(record, "ariaLabel", "aria_label", "Сравнение сценариев ISVOI"),
+    ariaLabel: textField(record, "ariaLabel", "aria_label", "Сравнение сценариев I СВОИ"),
     labelHeader: textField(record, "labelHeader", "label_header", "Что сравниваем"),
     badHeader: textField(record, "badHeader", "bad_header", "Случайный рынок"),
-    goodHeader: textField(record, "goodHeader", "good_header", "ISVOI"),
+    goodHeader: textField(record, "goodHeader", "good_header", "I СВОИ"),
     rows,
   };
 }

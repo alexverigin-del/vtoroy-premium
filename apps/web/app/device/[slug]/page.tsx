@@ -38,15 +38,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const device = await getDeviceBySlug(slug);
-  if (!device) return { title: "Вещь не найдена — ISVOI" };
+  if (!device) return { title: "Вещь не найдена — I СВОИ" };
   return {
-    title: `${device.title} — ISVOI`,
+    title: `${device.title} — I СВОИ`,
     description: device.shortDescription,
     alternates: {
       canonical: `/device/${slug}`,
     },
     openGraph: {
-      title: `${device.title} — ISVOI`,
+      title: `${device.title} — I СВОИ`,
       description: device.shortDescription,
       url: `/device/${slug}`,
       images: device.listingImage ? [{ url: device.listingImage }] : undefined,
@@ -180,7 +180,7 @@ function productJsonLd(device: Device) {
     sku: device.id,
     brand: {
       "@type": "Brand",
-      name: device.model || device.category || "ISVOI",
+      name: device.model || device.category || "I СВОИ",
     },
     image: [device.listingImage, ...device.gallery.map((image) => image.src)].filter(Boolean),
     offers: {

@@ -38,6 +38,7 @@
     "directus:audit-navigation": "node scripts/audit_directus_navigation_sql.mjs",
     "directus:audit-images": "node scripts/audit_directus_image_refs_sql.mjs",
     "directus:audit-catalog": "node scripts/audit_directus_catalog_sql.mjs",
+    "directus:audit-studio": "node scripts/audit_directus_studio_sql.mjs",
     "directus:audit-legacy-fallback": "node scripts/audit_directus_legacy_fallback_sql.mjs",
     "directus:restore-rehearsal": "bash scripts/restore_rehearsal_from_offsite.sh",
     "directus:setup:file-folders": "node scripts/setup_directus_file_folders_sql.mjs",

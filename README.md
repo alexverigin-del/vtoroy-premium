@@ -63,6 +63,7 @@ npm run web:verify
 npm run smoke:prod
 npm run smoke:images
 npm run smoke:visual
+npm run directus:audit-studio
 ```
 
 `web:verify` runs the local pre-deploy web gate: legacy runtime audit, Tailwind
@@ -112,6 +113,11 @@ docker compose exec -T database psql \
   -v ON_ERROR_STOP=1 \
   < /tmp/isvoi_directus_setup.sql
 ```
+
+Directus audit scripts also print SQL. Use `directus:audit-schema`,
+`directus:audit-catalog`, `directus:audit-images`, `directus:audit-navigation`
+and `directus:audit-studio` as read-only production checks after Studio,
+permission or content-workflow changes.
 
 ## Production
 

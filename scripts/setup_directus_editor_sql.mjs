@@ -221,7 +221,30 @@ BEGIN
 END;
 $$;
 
--- Editor: manual catalog work and lead processing. No delete on devices.
+CREATE OR REPLACE FUNCTION isvoi_delete_permission(
+  p_policy_name text,
+  p_collection varchar,
+  p_action varchar
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_policy uuid;
+BEGIN
+  SELECT id INTO v_policy FROM directus_policies WHERE name = p_policy_name LIMIT 1;
+  IF v_policy IS NULL THEN
+    RETURN;
+  END IF;
+
+  DELETE FROM directus_permissions
+  WHERE policy = v_policy
+    AND collection = p_collection
+    AND action = p_action;
+END;
+$$;
+
+-- Editor: manual catalog work and lead processing. No physical delete on
+-- catalog rows; use status/archive fields so production history is recoverable.
 SELECT isvoi_upsert_permission('ISVOI Editor', 'devices', 'read', '*', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
@@ -258,11 +281,11 @@ SELECT isvoi_upsert_permission(
   NULL,
   '{"role":{"_in":["card","main","screen","body","defect","other"]},"status":{"_in":["draft","published","archived"]},"shot_status":{"_in":["needs_review","approved","rejected"]}}'::json
 );
-SELECT isvoi_upsert_permission('ISVOI Editor', 'device_images', 'delete', '*', NULL);
+SELECT isvoi_delete_permission('ISVOI Editor', 'device_images', 'delete');
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'read', 'id,filename_download,title,description,type,width,height,focal_point_x,focal_point_y,folder,uploaded_on,modified_on', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'create', 'title,description,folder,file,tags', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'update', 'title,description,folder,tags,focal_point_x,focal_point_y', NULL);
-SELECT isvoi_upsert_permission('ISVOI Editor', 'leads', 'read', '*', NULL);
+SELECT isvoi_upsert_permission('ISVOI Editor', 'leads', 'read', 'id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'leads',
@@ -271,7 +294,7 @@ SELECT isvoi_upsert_permission(
   NULL,
   '{"status":{"_in":["new","in_progress","waiting","won","closed"]},"priority":{"_in":["normal","high"]}}'::json
 );
-SELECT isvoi_upsert_permission('ISVOI Editor', 'lead_comments', 'read', '*', NULL);
+SELECT isvoi_upsert_permission('ISVOI Editor', 'lead_comments', 'read', 'id,lead,created_at,updated_at,created_by,outcome,next_action_at,comment', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'lead_comments',
@@ -289,7 +312,8 @@ SELECT isvoi_upsert_permission(
   '{"comment":{"_nnull":true}}'::json
 );
 
--- Importer: automation/import work. Can delete media rows to replace import batches, but not leads.
+-- Importer: operator Studio access for import work. The service policy
+-- ISVOI Catalog Import owns destructive replacement operations.
 SELECT isvoi_upsert_permission('ISVOI Importer', 'devices', 'read', '*', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Importer',
@@ -319,7 +343,7 @@ SELECT isvoi_upsert_permission(
   '{"status":"published","shot_status":"approved"}'::json
 );
 SELECT isvoi_upsert_permission('ISVOI Importer', 'device_images', 'update', '*', NULL);
-SELECT isvoi_upsert_permission('ISVOI Importer', 'device_images', 'delete', '*', NULL);
+SELECT isvoi_delete_permission('ISVOI Importer', 'device_images', 'delete');
 SELECT isvoi_upsert_permission('ISVOI Importer', 'directus_files', 'read', '*', NULL);
 SELECT isvoi_upsert_permission('ISVOI Importer', 'directus_files', 'create', '*', NULL);
 SELECT isvoi_upsert_permission('ISVOI Importer', 'directus_files', 'update', '*', NULL);
@@ -459,6 +483,7 @@ SELECT isvoi_upsert_directus_field('device_images', 'updated_at', 'datetime', 'd
 
 DROP FUNCTION isvoi_upsert_directus_field(varchar, varchar, varchar, varchar, json, varchar, integer, text, boolean, varchar, varchar, boolean, json, text, boolean);
 DROP FUNCTION isvoi_upsert_permission(text, varchar, varchar, text, json, json, json);
+DROP FUNCTION isvoi_delete_permission(text, varchar, varchar);
 DROP FUNCTION isvoi_upsert_collection_metadata(varchar, varchar, text, varchar, varchar, varchar);
 DROP FUNCTION isvoi_bind_policy_to_role(text, text);
 DROP FUNCTION isvoi_policy_id(text, text, text, boolean);

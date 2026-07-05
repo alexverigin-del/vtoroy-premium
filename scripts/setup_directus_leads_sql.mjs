@@ -427,7 +427,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'leads',
   'read',
-  '*',
+  'id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent',
   NULL
 );
 SELECT isvoi_upsert_permission(
@@ -438,7 +438,7 @@ SELECT isvoi_upsert_permission(
   NULL,
   '{"status":{"_in":["new","in_progress","waiting_client","contacted","won","lost","archived"]},"priority":{"_in":["normal","high"]}}'::json
 );
-SELECT isvoi_upsert_permission('ISVOI Editor', 'lead_comments', 'read', '*', NULL);
+SELECT isvoi_upsert_permission('ISVOI Editor', 'lead_comments', 'read', 'id,lead,created_at,updated_at,created_by,outcome,next_action_at,comment', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'lead_comments',
@@ -745,7 +745,15 @@ BEGIN
       AND collection = 'leads'
       AND "user" IS NULL
       AND bookmark IS NOT NULL
-      AND bookmark NOT IN ('Обработка заявок', 'Новые заявки', 'В работе', 'Закрытые заявки');
+      AND bookmark NOT IN (
+        'Обработка заявок',
+        'Новые заявки',
+        'В работе',
+        'Без ответственного',
+        'Просрочены',
+        'Без источника',
+        'Закрытые заявки'
+      );
   END IF;
 END;
 $$;
@@ -770,6 +778,27 @@ SELECT isvoi_upsert_simple_lead_preset(
   '#f59e0b',
   '{"status":{"_in":["in_progress","waiting"]}}'::json,
   '["created_at","status","priority","contact","kind","assigned_to","next_action_at","manager_note"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'Без ответственного',
+  'person_off',
+  '#ef4444',
+  '{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"assigned_to":{"_null":true}}]}'::json,
+  '["created_at","status","priority","contact","kind","device_id","next_action_at","source_path"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'Просрочены',
+  'event_busy',
+  '#dc2626',
+  '{"_and":[{"status":{"_in":["in_progress","waiting"]}},{"next_action_at":{"_lt":"$NOW"}}]}'::json,
+  '["next_action_at","created_at","status","priority","contact","kind","assigned_to","manager_note"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'Без источника',
+  'travel_explore',
+  '#8b5cf6',
+  '{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"_or":[{"source_path":{"_null":true}},{"source_url":{"_null":true}}]}]}'::json,
+  '["created_at","status","contact","kind","device_id","source_path","source_url"]'::json
 );
 SELECT isvoi_upsert_simple_lead_preset(
   'Закрытые заявки',

@@ -256,14 +256,12 @@ const updates = [
   ["ISVOI Editor", "catalog_import_batches", "read", fields.catalogImportBatchesRead],
   ["ISVOI Editor", "devices", "read", fields.devices],
   ["ISVOI Editor", "device_images", "read", fields.deviceImages],
-  ["ISVOI Editor", "device_images", "delete", fields.deviceImageDelete],
   ["ISVOI Editor", "device_passports", "read", fields.devicePassports],
   ["ISVOI Editor", "device_passports", "create", fields.devicePassportsWrite],
   ["ISVOI Editor", "device_passports", "update", fields.devicePassportsWrite],
   ["ISVOI Editor", "trade_options", "read", fields.tradeOptions],
   ["ISVOI Editor", "trade_options", "create", fields.tradeOptionsWrite],
   ["ISVOI Editor", "trade_options", "update", fields.tradeOptionsWrite],
-  ["ISVOI Editor", "trade_options", "delete", fields.tradeOptionsDelete],
   ["ISVOI Editor", "directus_folders", "read", fields.directusFolders],
   ["ISVOI Editor", "faq_items", "read", fields.faqItems],
   ["ISVOI Editor", "lead_comments", "read", fields.leadComments],
@@ -282,14 +280,12 @@ const updates = [
   ["ISVOI Importer", "device_images", "read", fields.deviceImages],
   ["ISVOI Importer", "device_images", "create", fields.deviceImages],
   ["ISVOI Importer", "device_images", "update", fields.deviceImages],
-  ["ISVOI Importer", "device_images", "delete", fields.deviceImageDelete],
   ["ISVOI Importer", "device_passports", "read", fields.devicePassports],
   ["ISVOI Importer", "device_passports", "create", fields.devicePassportsWrite],
   ["ISVOI Importer", "device_passports", "update", fields.devicePassportsWrite],
   ["ISVOI Importer", "trade_options", "read", fields.tradeOptions],
   ["ISVOI Importer", "trade_options", "create", fields.tradeOptionsWrite],
   ["ISVOI Importer", "trade_options", "update", fields.tradeOptionsWrite],
-  ["ISVOI Importer", "trade_options", "delete", fields.tradeOptionsDelete],
   ["ISVOI Importer", "directus_files", "read", fields.directusFilesRead],
   ["ISVOI Importer", "directus_files", "create", fields.directusFilesCreate],
   ["ISVOI Importer", "directus_files", "update", fields.directusFilesUpdate],
@@ -349,15 +345,50 @@ const lines = [
   "END;",
   "$$;",
   "",
+  "CREATE OR REPLACE FUNCTION isvoi_delete_permission(",
+  "  p_policy_name text,",
+  "  p_collection varchar,",
+  "  p_action varchar",
+  ") RETURNS void",
+  "LANGUAGE plpgsql",
+  "AS $$",
+  "DECLARE",
+  "  v_policy uuid;",
+  "BEGIN",
+  "  SELECT id INTO v_policy FROM directus_policies WHERE name = p_policy_name LIMIT 1;",
+  "  IF v_policy IS NULL THEN",
+  "    RETURN;",
+  "  END IF;",
+  "",
+  "  DELETE FROM directus_permissions",
+  "  WHERE policy = v_policy",
+  "    AND collection = p_collection",
+  "    AND action = p_action;",
+  "END;",
+  "$$;",
+  "",
 ];
 
 for (const [policy, collection, action, fieldList] of updates) {
   lines.push(`SELECT isvoi_set_permission_fields(${sql(policy)}, ${sql(collection)}, ${sql(action)}, ${sql(fieldList)});`);
 }
 
+const destructiveStudioDeletes = [
+  ["ISVOI Editor", "device_images", "delete"],
+  ["ISVOI Editor", "trade_options", "delete"],
+  ["ISVOI Importer", "device_images", "delete"],
+  ["ISVOI Importer", "trade_options", "delete"],
+];
+
+lines.push("");
+for (const [policy, collection, action] of destructiveStudioDeletes) {
+  lines.push(`SELECT isvoi_delete_permission(${sql(policy)}, ${sql(collection)}, ${sql(action)});`);
+}
+
 lines.push(
   "",
   "DROP FUNCTION isvoi_set_permission_fields(text, varchar, varchar, text);",
+  "DROP FUNCTION isvoi_delete_permission(text, varchar, varchar);",
   "",
   "SELECT 'technical_permissions.non_admin_wildcards' AS check_name, count(*)::text AS value",
   "FROM directus_permissions pe",

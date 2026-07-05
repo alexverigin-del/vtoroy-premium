@@ -496,6 +496,28 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION isvoi_delete_permission(
+  p_policy_name text,
+  p_collection varchar,
+  p_action varchar
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_policy uuid;
+BEGIN
+  SELECT id INTO v_policy FROM directus_policies WHERE name = p_policy_name LIMIT 1;
+  IF v_policy IS NULL THEN
+    RETURN;
+  END IF;
+
+  DELETE FROM directus_permissions
+  WHERE policy = v_policy
+    AND collection = p_collection
+    AND action = p_action;
+END;
+$$;
+
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'device_passports',
@@ -542,7 +564,7 @@ SELECT isvoi_upsert_permission(
   NULL,
   '{"label":{"_nnull":true}}'::json
 );
-SELECT isvoi_upsert_permission('ISVOI Editor', 'trade_options', 'delete', 'id,device,label', NULL);
+SELECT isvoi_delete_permission('ISVOI Editor', 'trade_options', 'delete');
 
 SELECT isvoi_upsert_permission(
   'ISVOI Importer',
@@ -586,7 +608,7 @@ SELECT isvoi_upsert_permission(
   'device,value,label,sort,is_active',
   NULL
 );
-SELECT isvoi_upsert_permission('ISVOI Importer', 'trade_options', 'delete', 'id,device,label', NULL);
+SELECT isvoi_delete_permission('ISVOI Importer', 'trade_options', 'delete');
 
 SELECT isvoi_upsert_permission(
   'ISVOI Catalog Import',
@@ -648,6 +670,7 @@ SELECT isvoi_upsert_permission(
 );
 
 DROP FUNCTION isvoi_upsert_permission(text, varchar, varchar, text, json, json, json);
+DROP FUNCTION isvoi_delete_permission(text, varchar, varchar);
 
 CREATE OR REPLACE FUNCTION isvoi_upsert_preset(
   p_role_name text,

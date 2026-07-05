@@ -235,6 +235,7 @@ npm run directus:audit-schema
 npm run directus:audit-navigation
 npm run directus:audit-catalog
 npm run directus:audit-images
+npm run directus:audit-studio
 npm run directus:audit-legacy-fallback
 ```
 
@@ -840,11 +841,27 @@ new commercial content should use structured collections and Directus Files.
 - Marketing pages are edited through `site_pages` and owned `page_sections`.
   Editors should use existing safe sections and documented variants rather than
   creating arbitrary component data structures.
+- `docs/directus-editor-operations-index.md` is the single first-read guide for
+  non-developer Studio work. Keep it aligned with the detailed catalog, page,
+  global content, lead, import and Files guides whenever Studio workflows
+  change.
 - FAQ is managed through `faq_items`, either linked by `page` or referenced by
   keys in a FAQ section.
 - Editor-facing collections should keep bookmarks/presets for normal workflows:
   header menu, footer links, page sections, FAQ, catalog review, leads and
   import batches.
+- `npm run directus:audit-studio` is the editor-workflow audit. It checks
+  collection UX metadata, field notes, required bookmarks, page-section JSON
+  guardrails, import batch readiness, destructive editor permissions, Files
+  governance and lead source context. Run it with the other Directus audits
+  before and after Studio-related production changes.
+- As of 2026-07-05, production `directus:audit-studio` has zero blockers:
+  collection UX metadata, field notes, bookmarks, page-section local assets,
+  destructive editor permissions, Files folders, device image alt/label and
+  open lead source context are clean. Expected follow-up counters are 4
+  `page_sections.content.direct_asset_urls.warning`, 8 files in
+  `ISVOI File Review`, and 0 import batches until the first real operator
+  batch is created.
 - Completed menu/header work points 1 and 2 before the 2026-06-28 hardening
   pass: homepage metadata uses Directus-managed content, and logo sizing plus
   optional logo caption are edited through `site_settings` in Studio. Keep
@@ -890,6 +907,10 @@ new commercial content should use structured collections and Directus Files.
   device id and current stock status context.
 - Lead states are processed in Directus Studio; `lead_comments` should hold
   durable manager notes and follow-up history.
+- Lead Studio bookmarks include `Новые заявки`, `В работе`,
+  `Без ответственного`, `Просрочены`, `Без источника` and `Закрытые заявки`.
+  Keep these views in `directus:audit-studio` so managers can process leads
+  without Telegram.
 - Product lead behavior:
   - `available` creates a purchase/reservation-style lead.
   - `reserved` creates a waitlist lead.
@@ -999,6 +1020,7 @@ new commercial content should use structured collections and Directus Files.
   `directus/schema/collections.md`, `directus/catalog-workflow.md`,
   `docs/catalog-workflow.md`, `docs/catalog-operator-guide.md`
 - Studio editor guides:
+  `docs/directus-editor-operations-index.md`,
   `docs/site-content-editor-guide.md`, `docs/site-pages-workflow.md`,
   `docs/catalog-studio-editor-guide.md`,
   `docs/global-content-editor-guide.md`,

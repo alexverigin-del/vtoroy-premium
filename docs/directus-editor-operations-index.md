@@ -1,0 +1,109 @@
+# ISVOI Directus: editor operations index
+
+This is the first page to open before changing content in Directus Studio.
+
+Studio URL:
+
+```text
+https://api.isvoi.ru/admin/
+```
+
+## Catalog
+
+Use `Устройства` (`devices`) as the main entry point.
+
+- Start with bookmarks: `Нужны фото`, `Нужен текст`, `На проверке`,
+  `Готово к публикации`.
+- Product photos are added through `Фото устройства` (`device_images`), not by
+  pasting URLs into JSON or legacy fields.
+- Keep `status`, `stock_status` and `content_status` separate: publication,
+  availability and editorial readiness are different decisions.
+
+Detailed guide: `docs/catalog-studio-editor-guide.md`.
+
+## Pages And Sections
+
+Use `Страницы сайта` (`site_pages`) first.
+
+- Open the page, then edit its owned `Секции страницы`.
+- Do not change `Ключ блока`, `Тип блока` or JSON settings without a developer
+  review.
+- For images, use `Главное изображение блока`; it points to Directus Files and
+  lets the site optimize the asset.
+
+Detailed guides: `docs/site-content-editor-guide.md` and
+`docs/site-pages-workflow.md`.
+
+## Menu, CTA And Logo
+
+Use global content collections.
+
+- Header/footer/mobile links: `Навигация` (`navigation_items`).
+- Brand name, logo, logo caption, header CTA and footer text:
+  `Настройки сайта` (`site_settings`).
+- For temporary menu changes, turn off `Показывать` instead of deleting rows.
+
+Detailed guide: `docs/global-content-editor-guide.md`.
+
+## FAQ
+
+Use `FAQ` (`faq_items`).
+
+- Start with bookmarks by page/category.
+- Hide old questions with `Показывать на сайте = false`; do not delete them
+  during normal editing.
+- Keep `Ключ` stable if a page section references a fixed FAQ list.
+
+Detailed guide: `docs/global-content-editor-guide.md`.
+
+## Leads
+
+Use `Заявки` (`leads`).
+
+- Start from `Новые заявки`.
+- Move active work to `В работе` or `Ждем ответа`.
+- Keep manager notes in `Заметка менеджера` or `История обработки`.
+- Telegram is intentionally deferred; the Studio table must remain enough for
+  everyday processing.
+
+Detailed guide: `docs/leads-workflow-editor-guide.md`.
+
+## Catalog Imports
+
+Use `Импорт каталога` (`catalog_import_batches`) for bulk catalog updates.
+
+- Upload `stock.xlsx` and the photo ZIP.
+- Run the check Flow first.
+- Run the import Flow only after a successful check.
+- New products should normally enter as `draft` and be reviewed in Studio before
+  publication.
+
+Detailed guide: `docs/catalog-operator-guide.md`.
+
+## Files
+
+Use Directus Files folders as the source of truth.
+
+- `ISVOI Device Photos`: product photos linked through `device_images`.
+- `ISVOI Site Assets`: page, logo and social images.
+- `ISVOI Editorial`: future editorial/guides assets.
+- `ISVOI Catalog Imports`: import workbooks and ZIP archives.
+- `ISVOI File Review`: files that need sorting or deletion after review.
+
+Detailed guide: `docs/directus-files-cleanup.md`.
+
+## Health Check For Developers
+
+Before and after Studio-related releases, generate and run the SQL audits:
+
+```bash
+npm run directus:audit-schema
+npm run directus:audit-navigation
+npm run directus:audit-catalog
+npm run directus:audit-images
+npm run directus:audit-studio
+npm run directus:audit-legacy-fallback
+```
+
+The audits print SQL. On production, pipe the generated SQL into the Directus
+PostgreSQL container from `/opt/isvoi/infra/directus-beget`.

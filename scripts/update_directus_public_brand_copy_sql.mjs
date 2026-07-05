@@ -15,6 +15,7 @@
 
 const publicTables = [
   "site_settings",
+  "navigation_items",
   "site_pages",
   "page_sections",
   "faq_items",

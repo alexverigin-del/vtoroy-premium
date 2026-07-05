@@ -706,7 +706,7 @@ new commercial content should use structured collections and Directus Files.
   product card stack. The ambiguous "Что входит в карточку" block was removed:
   concrete condition, warranty/exit-price and Trade details now sit directly
   under the gallery in the left desktop column, while purchase controls and
-  `ISVOI Passport` form the right column. Keep the mobile order as gallery,
+  `I СВОИ Passport` form the right column. Keep the mobile order as gallery,
   purchase action, condition, warranty/Trade, then Passport.
 - Device provenance copy belongs in Directus `device_passports`, not React
   hardcode. Use `story_title`, `story_body` and `story_facts` for the public

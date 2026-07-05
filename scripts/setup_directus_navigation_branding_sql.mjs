@@ -460,8 +460,14 @@ WHERE p.location = 'footer' AND p.parent IS NULL AND p.label IN ('Клуб', 'Н
 LIMIT 1;
 
 UPDATE navigation_items
-SET link_type = 'page', page = (SELECT id FROM site_pages WHERE slug = 'passport' LIMIT 1), custom_url = NULL, url = '/passport', sort = 3, item_role = 'link'
-WHERE location = 'footer' AND label = 'ISVOI Passport';
+SET label = 'I СВОИ Passport',
+  link_type = 'page',
+  page = (SELECT id FROM site_pages WHERE slug = 'passport' LIMIT 1),
+  custom_url = NULL,
+  url = '/passport',
+  sort = 3,
+  item_role = 'link'
+WHERE location = 'footer' AND label IN ('ISVOI Passport', 'I СВОИ Passport');
 
 UPDATE navigation_items
 SET link_type = 'page', page = (SELECT id FROM site_pages WHERE slug = 'trade' LIMIT 1), custom_url = NULL, url = '/trade', sort = 1, item_role = 'link'

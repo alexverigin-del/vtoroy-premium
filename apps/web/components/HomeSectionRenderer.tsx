@@ -38,6 +38,20 @@ type HeroPassport = {
   warrantyStrong: string;
 };
 
+type ComparisonRow = {
+  label: string;
+  bad: string;
+  good: string;
+};
+
+type ComparisonContent = {
+  ariaLabel: string;
+  labelHeader: string;
+  badHeader: string;
+  goodHeader: string;
+  rows: ComparisonRow[];
+};
+
 function stringList(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
@@ -66,6 +80,31 @@ function sectionItemList(value: unknown): { title: string; text: string }[] {
     const text = typeof record.text === "string" ? record.text : "";
     return title || text ? [{ title, text }] : [];
   });
+}
+
+function comparisonRows(value: unknown): ComparisonRow[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const label = typeof record.label === "string" ? record.label : "";
+    const bad = typeof record.bad === "string" ? record.bad : "";
+    const good = typeof record.good === "string" ? record.good : "";
+    return label || bad || good ? [{ label, bad, good }] : [];
+  });
+}
+
+function comparisonContent(value: unknown): ComparisonContent {
+  const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const rows = comparisonRows(record.rows);
+
+  return {
+    ariaLabel: textField(record, "ariaLabel", "aria_label", "Сравнение случайного рынка и I СВОИ"),
+    labelHeader: textField(record, "labelHeader", "label_header", "Что решает покупатель"),
+    badHeader: textField(record, "badHeader", "bad_header", "Случайный рынок"),
+    goodHeader: textField(record, "goodHeader", "good_header", "I СВОИ"),
+    rows,
+  };
 }
 
 function pathCardList(
@@ -132,7 +171,7 @@ function heroPassportContent(value: unknown): HeroPassport {
             { label: "Face ID", value: "работает", state: "ok" },
             { label: "Влага", value: "следов нет", state: "ok" },
           ],
-    exitLabel: textField(record, "exitLabel", "exit_label", "Цена выхода через 6 мес"),
+    exitLabel: textField(record, "exitLabel", "exit_label", "Ориентир выхода через 6 мес"),
     exitValue: textField(record, "exitValue", "exit_value", "до 42 000 ₽"),
     warranty: textField(record, "warranty", "warranty", "Гарантия"),
     warrantyStrong: textField(record, "warrantyStrong", "warranty_strong", "90 дней"),
@@ -175,10 +214,10 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   const visual = heroVisualContent(section.content.visual);
   const passport = heroPassportContent(section.content.passport);
   const imageSrc = priorityImageSrc(section.image || visual.imageSrc);
-  const primaryLabel = section.primaryCtaLabel || "Войти в круг";
-  const primaryUrl = normalizeSiteUrl(section.primaryCtaUrl || "#final");
-  const secondaryLabel = section.secondaryCtaLabel || "Смотреть Store";
-  const secondaryUrl = normalizeSiteUrl(section.secondaryCtaUrl || "/catalog");
+  const primaryLabel = section.primaryCtaLabel || "Подобрать проверенную вещь";
+  const primaryUrl = normalizeSiteUrl(section.primaryCtaUrl || "/catalog");
+  const secondaryLabel = section.secondaryCtaLabel || "Оценить свою вещь";
+  const secondaryUrl = normalizeSiteUrl(section.secondaryCtaUrl || "/trade");
   const assuranceItems =
     assurance.length > 0
       ? assurance
@@ -280,6 +319,112 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   );
 }
 
+function MarketTensionSection({ section }: { section: PageSection }) {
+  const comparison = comparisonContent(section.content.comparison);
+  if (comparison.rows.length === 0) return null;
+
+  return (
+    <section
+      className="border-y border-hairline bg-white py-12 md:py-16"
+      aria-label={comparison.ariaLabel}
+    >
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+          <div className="max-w-copy">
+            {section.eyebrow ? (
+              <div className={homeSectionLabelClass}>{section.eyebrow}</div>
+            ) : null}
+            {section.headline ? (
+              <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+                {section.headline}
+              </h2>
+            ) : null}
+            {section.body ? (
+              <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+            ) : null}
+          </div>
+
+          <div className="overflow-hidden rounded-card border border-hairline bg-frost">
+            <div className="grid grid-cols-3 border-b border-hairline bg-white text-xs font-semibold text-ash">
+              <div className="p-3 md:p-4">{comparison.labelHeader}</div>
+              <div className="border-l border-hairline p-3 text-red-700 md:p-4">
+                {comparison.badHeader}
+              </div>
+              <div className="border-l border-hairline p-3 text-success md:p-4">
+                {comparison.goodHeader}
+              </div>
+            </div>
+            <dl>
+              {comparison.rows.map((row, index) => (
+                <div
+                  key={`${row.label}-${row.bad}-${row.good}`}
+                  className={cn(
+                    "grid grid-cols-3 text-sm",
+                    index > 0 ? "border-t border-hairline" : "",
+                  )}
+                >
+                  <dt className="bg-white p-3 font-semibold leading-snug text-carbon md:p-4">
+                    {row.label}
+                  </dt>
+                  <dd className="border-l border-hairline bg-white p-3 leading-relaxed text-graphite md:p-4">
+                    {row.bad}
+                  </dd>
+                  <dd className="border-l border-hairline bg-ice p-3 font-medium leading-relaxed text-carbon md:p-4">
+                    {row.good}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CircleRulesSection({ section }: { section: PageSection }) {
+  const items = sectionItemList(section.content.items);
+  if (items.length === 0) return null;
+
+  return (
+    <section className="bg-frost py-14 md:py-20" aria-label={section.eyebrow || "Правила круга"}>
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
+          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
+          {section.headline ? (
+            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+              {section.headline}
+            </h2>
+          ) : null}
+          {section.body ? (
+            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+          ) : null}
+        </div>
+        <ol className="mx-auto mt-8 grid max-w-content gap-3 md:mt-10 md:grid-cols-4">
+          {items.slice(0, 4).map((item, index) => (
+            <li
+              key={`${item.title}-${item.text}`}
+              className="rounded-card border border-hairline bg-white p-5"
+            >
+              <span className="text-sm font-semibold text-link-blue">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              {item.title ? (
+                <h3 className="mt-4 text-lg font-semibold leading-tight text-carbon">
+                  {item.title}
+                </h3>
+              ) : null}
+              {item.text ? (
+                <p className="mt-3 text-sm leading-relaxed text-graphite">{item.text}</p>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
 function TrustSection({ section }: { section: PageSection }) {
   const items = sectionItemList(section.content.items);
   if (items.length === 0) return null;
@@ -358,6 +503,8 @@ function PathRouterSection({ section }: { section: PageSection }) {
 
 export function HomeSectionRenderer({ section, devices = [] }: HomeSectionRendererProps) {
   if (section.sectionKey === "hero") return <HomeHeroSection section={section} />;
+  if (section.sectionKey === "market_tension") return <MarketTensionSection section={section} />;
+  if (section.sectionKey === "circle_rules") return <CircleRulesSection section={section} />;
   if (section.sectionKey === "trust") return <TrustSection section={section} />;
   if (section.sectionKey === "path_router") return <PathRouterSection section={section} />;
   if (section.sectionKey === "catalog_preview")

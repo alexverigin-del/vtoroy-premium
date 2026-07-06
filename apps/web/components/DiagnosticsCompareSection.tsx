@@ -84,7 +84,7 @@ function comparisonContent(value: unknown): ComparisonContent {
         : [
             { label: "История вещи", bad: "неизвестна", good: "I СВОИ Passport" },
             { label: "Через кого вещь", bad: "через незнакомца", good: "через своих" },
-            { label: "Цена", bad: "только сегодня", good: "цена выхода известна" },
+            { label: "Цена", bad: "только сегодня", good: "ориентир выхода понятен" },
             { label: "Состояние", bad: "вера на слово", good: "проверка при вас" },
           ],
   };

@@ -25,7 +25,7 @@ const defaultSiteSettings: SiteSettings = {
   logoHref: "/",
   logoHeight: 22,
   showBrandName: true,
-  headerCtaLabel: "Войти в круг",
+  headerCtaLabel: "Оставить заявку",
   headerCtaUrl: "/#final",
   footerNote:
     "I СВОИ — клуб разумного владения: проверенные вещи проходят дальше через своих. Наличие, цены, грейды, гарантия и условия выхода подтверждаются перед сделкой. Названия и товарные знаки принадлежат их правообладателям.",
@@ -199,15 +199,15 @@ const defaultHeroSection: PageSection = {
   variant: "hero.static",
   eyebrow: "I СВОИ · клуб разумного владения · Северодвинск",
   headline: "Хорошие вещи проходят через своих.",
-  body: "I СВОИ — клуб разумного владения. Здесь ценная вещь не теряется после первого владельца, а переходит дальше — с понятной историей, проверенным состоянием и честной ценой выхода. Не рынок, а круг, где вещам доверяют.",
-  primaryCtaLabel: "Войти в круг",
-  primaryCtaUrl: "#final",
-  secondaryCtaLabel: "Смотреть Store",
-  secondaryCtaUrl: "/catalog",
+  body: "На случайном рынке вы покупаете не только устройство, но и чужую неизвестность. В I СВОИ вещь проходит дальше с проверенной историей, открытым состоянием и понятным ориентиром выхода.",
+  primaryCtaLabel: "Подобрать проверенную вещь",
+  primaryCtaUrl: "/catalog",
+  secondaryCtaLabel: "Оценить свою вещь",
+  secondaryCtaUrl: "/trade",
   sortOrder: 1,
   isActive: true,
   content: {
-    assurance: ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"],
+    assurance: ["История до покупки", "Проверка при вас", "Ориентир выхода"],
     visual: {
       image_src: "/assets/hero-apple-like-single-phone-clean.webp",
       image_alt: "Премиальный графитовый смартфон на светло-серой студийной поверхности",
@@ -224,11 +224,77 @@ const defaultHeroSection: PageSection = {
         { label: "Face ID", value: "работает", state: "ok" },
         { label: "Влага", value: "следов нет", state: "ok" },
       ],
-      exit_label: "Цена выхода через 6 мес",
+      exit_label: "Ориентир выхода через 6 мес",
       exit_value: "до 42 000 ₽",
       warranty: "Гарантия",
       warranty_strong: "90 дней",
     },
+  },
+};
+
+const defaultMarketTensionSection: PageSection = {
+  id: "market-tension-fallback",
+  sectionKey: "market_tension",
+  variant: "compare",
+  eyebrow: "Не просто витрина",
+  headline: "Покупка начинается с ответа: чему здесь можно доверять?",
+  body: "Мы показываем разницу до карточки товара: не обещание «как новая», а проверка, нюансы, гарантия и понятный следующий шаг.",
+  sortOrder: 2,
+  isActive: true,
+  content: {
+    comparison: {
+      label_header: "Что решает покупатель",
+      bad_header: "Случайный рынок",
+      good_header: "I СВОИ",
+      rows: [
+        {
+          label: "История вещи",
+          bad: "зависит от слов продавца",
+          good: "собрана в Passport до решения",
+        },
+        {
+          label: "Состояние",
+          bad: "нюансы всплывают после встречи",
+          good: "фиксируется открыто, включая дефекты",
+        },
+        {
+          label: "После покупки",
+          bad: "дальше вы снова одни",
+          good: "есть гарантия, Trade и ориентир выхода",
+        },
+      ],
+    },
+  },
+};
+
+const defaultCircleRulesSection: PageSection = {
+  id: "circle-rules-fallback",
+  sectionKey: "circle_rules",
+  variant: "trust.strip",
+  eyebrow: "Правила круга",
+  headline: "Доверие держится на проверяемых вещах.",
+  body: "Каждое правило должно быть видно в карточке, в Store и в разговоре перед сделкой.",
+  sortOrder: 3,
+  isActive: true,
+  content: {
+    items: [
+      {
+        title: "Открытая проверка",
+        text: "Экран, корпус, аккумулятор, связь, камеры и следы влаги проверяются при вас.",
+      },
+      {
+        title: "Фиксация нюансов",
+        text: "Дефекты и следы использования не прячутся: они влияют на грейд и цену.",
+      },
+      {
+        title: "Письменная гарантия",
+        text: "Условия гарантии показываются до покупки и остаются частью сделки.",
+      },
+      {
+        title: "Ориентир выхода",
+        text: "Ориентир выхода помогает планировать обновление, но подтверждается повторной проверкой.",
+      },
+    ],
   },
 };
 
@@ -317,6 +383,12 @@ function homeSections(sections: PageSection[] = []): PageSection[] {
   if (!byKey.has("hero")) {
     byKey.set("hero", defaultHeroSection);
   }
+  if (!byKey.has("market_tension")) {
+    byKey.set("market_tension", defaultMarketTensionSection);
+  }
+  if (!byKey.has("circle_rules")) {
+    byKey.set("circle_rules", defaultCircleRulesSection);
+  }
   if (!byKey.has("catalog_preview")) {
     byKey.set("catalog_preview", defaultCatalogPreviewSection);
   }
@@ -351,7 +423,7 @@ export function siteChrome(
       headerCtaLabel: textField(
         settings,
         "headerCtaLabel",
-        defaultSiteSettings.headerCtaLabel ?? "Войти в круг",
+        defaultSiteSettings.headerCtaLabel ?? "Оставить заявку",
       ),
       headerCtaUrl: textField(
         settings,

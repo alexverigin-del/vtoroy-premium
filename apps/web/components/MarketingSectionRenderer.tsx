@@ -459,7 +459,7 @@ function MarketingVisualBandSection({
 }
 
 function MarketingHeroSection({ section, slug }: { section: PageSection; slug: MarketingSlug }) {
-  const primaryLabel = section.primaryCtaLabel || "Войти в круг";
+  const primaryLabel = section.primaryCtaLabel || "Оставить заявку";
   const primaryUrl = normalizeSiteUrl(section.primaryCtaUrl || "/#final");
   const secondaryLabel = section.secondaryCtaLabel || "Смотреть каталог";
   const secondaryUrl = normalizeSiteUrl(section.secondaryCtaUrl || "/catalog");

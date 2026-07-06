@@ -52,7 +52,7 @@ function leadMode(stockStatus: string): ProductLeadMode {
     return {
       kind: "selection",
       scenario: "Подобрать похожее устройство",
-      title: "Подобрать похожее устройство",
+      title: "Подобрать альтернативу",
       contactPlaceholder: "Телефон или Telegram",
       messagePlaceholder: "Например, хочу похожий iPhone с таким же объёмом памяти",
       submitLabel: "Подобрать альтернативу",
@@ -66,11 +66,11 @@ function leadMode(stockStatus: string): ProductLeadMode {
 
   return {
     kind: "purchase",
-    scenario: "Забронировать устройство",
-    title: "Забронировать или уточнить",
+    scenario: "Записаться на просмотр",
+    title: "Проверить наличие и записаться",
     contactPlaceholder: "Телефон или Telegram",
     messagePlaceholder: "Например, хочу посмотреть сегодня после 18:00",
-    submitLabel: "Отправить заявку",
+    submitLabel: "Записаться на просмотр",
     submittingLabel: "Отправляем...",
     idleNote: "Заявка будет привязана к этой карточке и текущим условиям.",
     successNote: "Заявка принята. Мы свяжемся и подтвердим наличие.",

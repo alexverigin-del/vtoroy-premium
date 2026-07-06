@@ -133,8 +133,8 @@ function mobileLeadCta(device: Device): { label: string; ariaLabel: string } {
       };
     default:
       return {
-        label: "Заявка",
-        ariaLabel: `Оставить заявку по ${device.title}`,
+        label: "Просмотр",
+        ariaLabel: `Записаться на просмотр ${device.title}`,
       };
   }
 }
@@ -410,7 +410,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
 
                 {story?.body ? <DeviceStoryCard story={story} /> : null}
 
-                <DetailCard title="Гарантия и цена выхода">
+                <DetailCard title="Гарантия и ориентир выхода">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-card border border-hairline bg-surface p-4">
                       <p className="text-sm font-medium text-muted">Срок гарантии</p>

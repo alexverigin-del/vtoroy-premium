@@ -62,6 +62,7 @@
     "directus:setup:leads": "node scripts/setup_directus_leads_sql.mjs",
     "directus:setup:editor": "node scripts/setup_directus_editor_sql.mjs",
     "directus:update-public-brand-copy-sql": "node scripts/update_directus_public_brand_copy_sql.mjs",
+    "directus:update-audit-v1-copy-sql": "node scripts/update_directus_audit_v1_copy_sql.mjs",
     "directus:update-footer-copy-sql": "node scripts/update_directus_footer_copy_sql.mjs",
     "directus:update-device-stories-sql": "node scripts/update_directus_device_stories_sql.mjs",
     "directus:update-device-public-copy-sql": "node scripts/update_directus_device_public_copy_sql.mjs"

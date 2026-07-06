@@ -62,7 +62,7 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
     ),
     contactLabel: text("contactLabel", "contact_label", "Контакт для ответа"),
     contactPlaceholder: text("contactPlaceholder", "contact_placeholder", "Телефон или Telegram"),
-    submitLabel: text("submitLabel", "submit_label", "Войти в круг"),
+    submitLabel: text("submitLabel", "submit_label", "Оставить заявку"),
     note: text("note", "note", "Оставьте контакт, и мы предложим спокойный следующий шаг."),
   };
 }

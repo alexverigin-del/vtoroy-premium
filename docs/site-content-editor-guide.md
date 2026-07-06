@@ -1,13 +1,13 @@
 # Site Content Editor Guide
 
 This guide is for Directus Studio editors who manage non-product pages:
-home, store, trade, passport and club.
+home, catalog, store, trade, passport and club.
 
 ## Where To Edit
 
 Start from `Страницы сайта` (`site_pages`), not from raw section rows.
 
-1. Open the page, for example `home` or `store`.
+1. Open the page, for example `home`, `catalog` or `store`.
 2. Edit SEO fields if needed: title, meta description, social image.
 3. Open `Секции страницы`.
 4. Edit the needed section text, button labels, links and main image.
@@ -16,6 +16,11 @@ Start from `Страницы сайта` (`site_pages`), not from raw section ro
 
 `Секции страниц` (`page_sections`) is still visible for bulk review, sorting and
 troubleshooting, but the normal editor workflow is page-first.
+
+For `/catalog`, edit the page row `catalog` and the section
+`catalog_page_live`. This controls SEO, hero copy, filter/sort labels, empty
+state and CTA. Product cards are not edited here; they come from the catalog
+collections (`devices`, `device_images`, `device_passports`, `trade_options`).
 
 ## Non-Product Images
 
@@ -69,6 +74,7 @@ Apply the Studio metadata and relations with:
 
 ```bash
 npm run directus:setup:site-content
+npm run directus:setup:catalog-page
 ```
 
 On production this script should be piped into the Directus PostgreSQL database

@@ -27,6 +27,9 @@ Before assuming the state of the project, compare local git, GitHub and
 production:
 
 ```powershell
+Set-Location C:\Users\1\Documents\ISVOI
+git fetch --all --prune
+git pull --ff-only origin master
 git status --short
 git log -6 --oneline
 git status -sb
@@ -38,6 +41,16 @@ New chat rules:
 
 - Use `C:\Users\1\Documents\ISVOI` as the primary local workspace. The older
   Codex export/work path should not be treated as the default working copy.
+- If the current Codex cwd is
+  `C:\Users\1\Documents\Codex\2026-06-17\files-mentioned-by-the-user-isvoi` or
+  `work\github-vtoroy-premium`, treat it as a temporary/export copy unless the
+  user explicitly selects it. First fast-forward `C:\Users\1\Documents\ISVOI`
+  and continue from there.
+- After any deploy that was prepared from another local copy, fast-forward
+  `C:\Users\1\Documents\ISVOI` before planning the next change. On 2026-07-06
+  `work\github-vtoroy-premium`, GitHub and Beget were already on `7708552`,
+  while `C:\Users\1\Documents\ISVOI` was still on `b1a584c`; this must be
+  treated as a sync failure to correct before more implementation work.
 - Do not assume local commits are pushed or deployed until GitHub and Beget are
   checked.
 - Do not assume production is on the same commit as the local workspace.
@@ -1049,6 +1062,32 @@ new commercial content should use structured collections and Directus Files.
   `docs/directus-schema-snapshot-audit.md`
 
 ## Current Recommended Roadmap
+
+### Content Editing Priority
+
+`/catalog` is now managed through `site_pages.slug = catalog` and the
+`catalog_page_live` / `catalog.grid` section. Do not keep it in the “next
+content ownership” queue.
+
+Next content-editing priorities:
+
+1. Move product page shell copy into a managed model: breadcrumbs/back link,
+   section labels, warranty/passport headings, related-device copy, mobile CTA
+   labels and JSON-LD fallback labels. Product data itself already comes from
+   `devices`, `device_images`, `device_passports` and `trade_options`.
+2. Move product lead form microcopy into Directus: variants for
+   `available/reserved/sold`, placeholders, success/error/submitting copy and
+   manager-facing source labels. Keep `/lead-intake` as the server endpoint.
+3. Remove remaining image URLs from `page_sections.content` where possible:
+   prefer `page_sections.image` / Directus Files relations for editorial images.
+   Nested JSON image URLs should be treated as advanced exceptions and audited.
+4. Add a `directus:audit-content-ownership` check that flags new public-facing
+   Russian copy in React/server components unless it is explicitly approved as
+   system/accessibility/fallback text.
+5. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
+   lower-priority decisions unless business copy needs frequent editor changes.
+
+### Production Operations Priority
 
 1. Configure real production `isvoi-backups` rclone credentials, run a real
    off-server backup upload and run `npm run directus:restore-rehearsal`.

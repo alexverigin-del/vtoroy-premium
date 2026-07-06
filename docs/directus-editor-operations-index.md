@@ -21,6 +21,24 @@ Use `Устройства` (`devices`) as the main entry point.
 
 Detailed guide: `docs/catalog-studio-editor-guide.md`.
 
+## Catalog Page Copy
+
+Use `Страницы сайта` (`site_pages`) -> `catalog` for the public `/catalog`
+page wrapper.
+
+- SEO title, meta description and social image live on the `catalog` page row.
+- Hero label, headline, intro text, filter/sort labels, empty state and CTA
+  live in the `catalog_page_live` section.
+- Device cards themselves still come from `devices`, `device_images`,
+  `device_passports` and `trade_options`.
+
+Run the setup/audit path after moving this workflow between environments:
+
+```bash
+npm run directus:setup:catalog-page
+npm run directus:audit-studio
+```
+
 ## Pages And Sections
 
 Use `Страницы сайта` (`site_pages`) first.

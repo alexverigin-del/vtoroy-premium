@@ -128,7 +128,8 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
 - `faq` → `{ "faq_keys": string[] }` (references `faq_items.key`) **or** leave
   empty and attach `faq_items` by `page`.
 - `trade_calculator_intro` → `{ "note": string, "disclaimer": string }`
-- `catalog_preview` → `{ "limit": number, "filter": string, "filters": [{ "label": string, "value": string }] }`
+- `catalog_preview` → `{ "limit": number, "filter": string, "filters": [{ "label": string, "value": string }], "statusFilters": [{ "label": string, "value": string }], "sortOptions": [{ "label": string, "value": string }] }`
+- `catalog_page_live` → `{ "headingTag": "h1", "filters": [{ "label": string, "value": string }], "statusFilters": [{ "label": string, "value": string }], "filterAriaLabel": string, "statusFilterLabel": string, "sortLabel": string, "sortAriaLabel": string, "sortOptions": [{ "label": string, "value": string }], "emptyState": { "headline": string, "body": string, "ctaLabel": string, "ctaUrl": string } }`
 - `store_preview` → `{ "visual": { "image_src": string, "image_alt": string, "caption_title": string, "caption_text": string }, "steps": [{ "title": string, "text": string }] }`
 - `passport_preview` → `{ "features": [{ "title": string, "text": string, "icon": "device" | "shield" | "clock" | "chart" }], "passport": { "device": string, "sub": string, "grade": string, "grade_label": string, "rows": [{ "label": string, "value": string, "state": "ok" | "warn" | "bad" }], "exit_label": string, "exit_value": string, "warranty": string, "warranty_strong": string } }`
 - `trade_preview` → `{ "choices": [{ "title": string, "text": string, "icon": "money" | "chart" | "swap" }], "valuation": { "heading": string, "from_device": string, "from_note": string, "to_device": string, "to_note": string, "label": string, "amount": string } }`
@@ -176,7 +177,7 @@ Templates are fixed in code; this is the canonical mapping editors work within.
 | Page slug  | Template      | `section_key`s (in order)                                                        |
 | ---------- | ------------- | -------------------------------------------------------------------------------- |
 | `home`     | `home`        | `hero`, `trust`, `path_router`, `catalog_preview`, `passport_preview`, `store_preview`, `trade_preview`, `club_preview`, `diagnostics_compare`, `final_cta` |
-| `catalog`  | `catalog`     | `catalog_hero`, `catalog_grid` (grid is data-driven from `devices`)              |
+| `catalog`  | `catalog`     | `catalog_page_live` (`catalog.grid`; SEO, hero copy, filter/sort labels, empty state and CTA are page-managed; device cards are data-driven from `devices`) |
 | `store`    | `store`       | `store_hero`, `store_offer`, `store_location`, `final_cta`                       |
 | `trade`    | `trade`       | `trade_hero`, `trade_calculator_intro`, `trade_steps`, `faq`, `final_cta`        |
 | `club`     | `club`        | `club_hero`, `club_levels`, `club_rating`, `faq`, `final_cta`                    |

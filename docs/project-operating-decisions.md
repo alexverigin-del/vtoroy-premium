@@ -332,7 +332,10 @@ Live deploy checks should include:
   image may be a complete logo lockup (`I СВОИ` plus descriptor) or just the
   main mark/name with `logo_caption` providing the second line.
 - `navigation_items` owns header/footer/mobile/utility navigation.
-- `site_pages` and `page_sections` own managed marketing pages.
+- `site_pages` and `page_sections` own managed marketing/catalog pages. The
+  `/catalog` route uses `site_pages.slug = catalog` and a `catalog.grid`
+  section (`catalog_page_live`) for SEO, hero copy, filter/sort labels, empty
+  state and CTA.
 - `faq_items` owns reusable FAQ content.
 - `devices` owns product records and stock/content status.
 - `device_images` owns product photo variants.

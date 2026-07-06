@@ -28,7 +28,7 @@ export const DEFAULT_STATUS_FILTERS: CatalogFilterOption[] = [
   { label: "Продано", value: "sold" },
 ];
 
-const SORT_OPTIONS: CatalogFilterOption[] = [
+export const DEFAULT_SORT_OPTIONS: CatalogFilterOption[] = [
   { label: "По рекомендации", value: "default" },
   { label: "Сначала обновленные", value: "updated-desc" },
   { label: "По статусу", value: "status" },
@@ -174,12 +174,20 @@ export function CatalogToolbar({
   statuses,
   controls,
   categoryLabel = "Фильтры каталога",
+  statusLabel = "Статус устройства",
+  sortLabel = "Сортировка",
+  sortAriaLabel = "Сортировка каталога",
+  sortOptions = DEFAULT_SORT_OPTIONS,
   inactiveSurface,
 }: {
   categories: CatalogFilterOption[];
   statuses: CatalogFilterOption[];
   controls: CatalogControls;
   categoryLabel?: string;
+  statusLabel?: string;
+  sortLabel?: string;
+  sortAriaLabel?: string;
+  sortOptions?: CatalogFilterOption[];
   inactiveSurface?: "transparent" | "white";
 }) {
   return (
@@ -204,7 +212,7 @@ export function CatalogToolbar({
         <div
           className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0"
           data-allow-horizontal-scroll="true"
-          aria-label="Статус устройства"
+          aria-label={statusLabel}
         >
           {statuses.map((filter) => (
             <FilterChip
@@ -218,14 +226,14 @@ export function CatalogToolbar({
           ))}
         </div>
         <label className="flex min-h-11 w-full items-center justify-between gap-2 rounded-pill border border-hairline bg-white px-4 text-sm text-graphite sm:w-fit">
-          <span>Сортировка</span>
+          <span>{sortLabel}</span>
           <select
-            aria-label="Сортировка каталога"
+            aria-label={sortAriaLabel}
             className="min-h-11 min-w-0 bg-transparent font-medium text-carbon outline-none"
             value={controls.sort}
             onChange={(event) => controls.setSort(event.target.value)}
           >
-            {SORT_OPTIONS.map((option) => (
+            {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -240,6 +248,9 @@ export function CatalogToolbar({
 export function CatalogDeviceList({
   devices,
   emptyMessage,
+  emptyHeadline,
+  emptyCtaLabel,
+  emptyCtaHref = "/#final",
   priorityImageCount = 0,
   showSelectionCta = false,
   selectionCtaHref = "/store#final",
@@ -247,6 +258,9 @@ export function CatalogDeviceList({
 }: {
   devices: DeviceCardData[];
   emptyMessage: string;
+  emptyHeadline?: string;
+  emptyCtaLabel?: string;
+  emptyCtaHref?: string;
   priorityImageCount?: number;
   showSelectionCta?: boolean;
   selectionCtaHref?: string;
@@ -255,7 +269,21 @@ export function CatalogDeviceList({
   if (devices.length === 0) {
     return (
       <div className="mt-8 rounded-card border border-hairline bg-frost p-8 text-center text-graphite">
-        {emptyMessage}
+        {emptyHeadline ? (
+          <h2 className="text-2xl font-semibold leading-tight tracking-normal text-carbon">
+            {emptyHeadline}
+          </h2>
+        ) : null}
+        <p className={emptyHeadline ? "mx-auto mt-3 max-w-prose text-sm leading-relaxed" : ""}>
+          {emptyMessage}
+        </p>
+        {emptyCtaLabel ? (
+          <div className="mt-5">
+            <Link href={emptyCtaHref} className={primaryPillCtaClass}>
+              {emptyCtaLabel}
+            </Link>
+          </div>
+        ) : null}
       </div>
     );
   }

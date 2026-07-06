@@ -1,41 +1,64 @@
+import type { Metadata } from "next";
 import { CatalogGrid } from "@/components/CatalogGrid";
 import { SiteShell } from "@/components/SiteShell";
 import {
   directusConfig,
   getNavigationItems,
   getPublishedDeviceCards,
+  getSitePage,
   getSiteSettings,
 } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 import { breadcrumbJsonLd, catalogItemListJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
-export const metadata = {
-  title: "I СВОИ Store — вещи в кругу",
-  description:
-    "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу I СВОИ.",
-  alternates: {
-    canonical: "/catalog",
-  },
-  openGraph: {
-    title: "I СВОИ Store — вещи в кругу",
-    description: "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода.",
-    url: "/catalog",
-    images: [DEFAULT_SOCIAL_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "I СВОИ Store — вещи в кругу",
-    description: "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода.",
-    images: [DEFAULT_SOCIAL_IMAGE],
-  },
-};
+const fallbackTitle = "I СВОИ Store — вещи в кругу";
+const fallbackDescription =
+  "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу I СВОИ.";
+
+function catalogSection(page: Awaited<ReturnType<typeof getSitePage>>) {
+  return (
+    page?.sections.find(
+      (section) =>
+        section.isActive &&
+        (section.sectionKey === "catalog_page_live" || section.variant === "catalog.grid"),
+    ) ?? null
+  );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getSitePage("catalog");
+  const title = page?.title || fallbackTitle;
+  const description = page?.metaDescription || fallbackDescription;
+  const image = page?.ogImage || DEFAULT_SOCIAL_IMAGE;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: "/catalog",
+    },
+    openGraph: {
+      title,
+      description,
+      url: "/catalog",
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
 
 // Public catalog content is ISR-cached; Directus Studio edits refresh on the next 5-minute revalidation.
 export const revalidate = 300;
 
 export default async function CatalogPage() {
-  const [settings, navigation, devices] = await Promise.all([
+  const [page, settings, navigation, devices] = await Promise.all([
+    getSitePage("catalog"),
     getSiteSettings(),
     getNavigationItems(),
     getPublishedDeviceCards(),
@@ -60,7 +83,11 @@ export default async function CatalogPage() {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript(catalogItemListJsonLd(devices)) }}
         />
-        <CatalogGrid devices={devices} directusEnabled={directusConfig.enabled} />
+        <CatalogGrid
+          devices={devices}
+          directusEnabled={directusConfig.enabled}
+          section={catalogSection(page)}
+        />
       </main>
     </SiteShell>
   );

@@ -74,6 +74,16 @@ export interface SectionContent {
   limit?: number;
   filter?: string;
   filters?: { label: string; value: string }[];
+  statusFilters?: { label: string; value: string }[];
+  sortLabel?: string;
+  sortAriaLabel?: string;
+  sortOptions?: { label: string; value: string }[];
+  emptyState?: {
+    headline?: string;
+    body?: string;
+    ctaLabel?: string;
+    ctaUrl?: string;
+  };
   visual?: {
     imageSrc?: string;
     image_src?: string;

@@ -45,6 +45,7 @@
     "directus:setup:files-cleanup": "node scripts/setup_directus_files_cleanup_sql.mjs",
     "directus:setup:site-content": "node scripts/setup_directus_site_content_sql.mjs",
     "directus:setup:site-pages-workflow": "node scripts/setup_directus_site_pages_workflow_sql.mjs",
+    "directus:setup:catalog-page": "node scripts/setup_directus_catalog_page_sql.mjs",
     "directus:setup:catalog-studio": "node scripts/setup_directus_catalog_studio_sql.mjs",
     "directus:setup:global-content": "node scripts/setup_directus_global_content_sql.mjs",
     "directus:setup:navigation-branding": "node scripts/setup_directus_navigation_branding_sql.mjs",

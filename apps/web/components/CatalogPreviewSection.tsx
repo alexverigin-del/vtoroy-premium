@@ -7,6 +7,7 @@ import {
   CatalogDeviceList,
   CatalogToolbar,
   DEFAULT_CATEGORY_FILTERS,
+  DEFAULT_SORT_OPTIONS,
   DEFAULT_STATUS_FILTERS,
   catalogFilterList,
   useCatalogControls,
@@ -24,6 +25,7 @@ export function CatalogPreviewSection({
 }) {
   const categoryFilters = catalogFilterList(section.content.filters);
   const statusFilters = catalogFilterList(section.content.statusFilters);
+  const sortOptions = catalogFilterList(section.content.sortOptions);
   const controls = useCatalogControls();
   const headingTag = section.content.headingTag === "h1" ? "h1" : "h2";
   const limit =
@@ -32,6 +34,7 @@ export function CatalogPreviewSection({
       : 6;
   const categories = categoryFilters.length > 0 ? categoryFilters : DEFAULT_CATEGORY_FILTERS;
   const statuses = statusFilters.length > 0 ? statusFilters : DEFAULT_STATUS_FILTERS;
+  const sorts = sortOptions.length > 0 ? sortOptions : DEFAULT_SORT_OPTIONS;
   const visibleDevices = useVisibleCatalogDevices({ devices, limit, ...controls });
 
   const Heading = headingTag;
@@ -62,6 +65,20 @@ export function CatalogPreviewSection({
           statuses={statuses}
           controls={controls}
           categoryLabel={section.subheadline || "Фильтры каталога"}
+          statusLabel={
+            typeof section.content.statusFilterLabel === "string"
+              ? section.content.statusFilterLabel
+              : "Статус устройства"
+          }
+          sortLabel={
+            typeof section.content.sortLabel === "string" ? section.content.sortLabel : "Сортировка"
+          }
+          sortAriaLabel={
+            typeof section.content.sortAriaLabel === "string"
+              ? section.content.sortAriaLabel
+              : "Сортировка каталога"
+          }
+          sortOptions={sorts}
         />
       </div>
 

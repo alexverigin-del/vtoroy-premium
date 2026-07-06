@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-07-05.
+Last updated: 2026-07-06.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -709,6 +709,18 @@ new commercial content should use structured collections and Directus Files.
   Beget/Next serving `/`, `/store` and the critical static assets with
   millisecond-level TTFB. Treat the remaining 2500ms gap as a network/CDN or
   first-viewport composition question, not a Directus schema issue.
+- The 2026-07-06 audit-v1 positioning release was deployed as `e72f103
+  Strengthen ISVOI audit v1 positioning`. It added the homepage
+  `market_tension` and `circle_rules` proof sections, changed global/header CTA
+  copy to concrete actions, reframed "цена выхода" as "ориентир выхода", and
+  introduced `scripts/update_directus_audit_v1_copy_sql.mjs` plus
+  `npm run directus:update-audit-v1-copy-sql` for production Directus content
+  sync. Deployment followed the full routine: Directus backup
+  `/opt/isvoi/backups/directus/20260706T143708Z`, GitHub push, Beget
+  `git pull --ff-only`, Beget `npm run web:verify`, Directus SQL apply, PM2
+  restart and live `smoke:prod`, `smoke:images`, `smoke:performance`,
+  `smoke:visual` and `smoke:copy`. Production desktop home LCP was 4244ms
+  against the 4500ms budget, so it passed but should stay watched.
 - Structured data is centralized in `apps/web/lib/structured-data.ts`.
   `app/layout.tsx` emits global `Organization` and `WebSite` JSON-LD;
   `/catalog`, marketing routes and device pages emit `BreadcrumbList`;

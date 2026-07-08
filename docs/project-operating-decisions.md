@@ -1104,6 +1104,13 @@ contact/comment placeholders, submit/submitting labels, status note, idle note,
 success note and error note. Per-device data remains in `devices`,
 `device_images`, `device_passports` and `trade_options`.
 
+`directus:audit-content-ownership` is now the repo-level guardrail for the
+content ownership boundary. It scans React/Next code for Russian strings and
+compares them with `scripts/content_ownership_baseline.json`; new strings must
+either move to Directus or be intentionally reviewed by updating the baseline.
+It also checks JSON files for direct asset URLs and legacy `image_src/imageSrc`
+keys. The audit is included in `web:verify`.
+
 Next content-editing priorities:
 
 1. Keep media hygiene at zero: `studio.files.review_folder_count = 0`,
@@ -1112,10 +1119,7 @@ Next content-editing priorities:
    `studio.page_sections.content.image_src_keys = 0`. New editorial section
    images should use `page_sections.image` / Directus Files relations; nested
    JSON image URLs are no longer part of the content model.
-2. Add a `directus:audit-content-ownership` check that flags new public-facing
-   Russian copy in React/server components unless it is explicitly approved as
-   system/accessibility/fallback text.
-3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
+2. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 
 ### Production Operations Priority

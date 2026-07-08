@@ -108,6 +108,11 @@ unexpected table after a backup/review.
 metadata, field notes, bookmarks, page-section JSON guardrails, import batches,
 Files hygiene, destructive permissions and lead source context.
 
+`directus:audit-content-ownership` checks the repo boundary around editable
+content: new Russian strings in React/Next code must be reviewed against
+`scripts/content_ownership_baseline.json`, and JSON files must not contain
+direct asset URLs or legacy `image_src/imageSrc` keys.
+
 Blockers should be `0`:
 
 - `studio.collections.missing_ux_metadata`

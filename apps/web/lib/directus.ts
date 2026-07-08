@@ -1145,14 +1145,8 @@ function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): Device
       kind: kind === "selection" ? "selection" : "purchase",
       scenario: str(row[`${prefix}scenario`], fallback.scenario),
       title: str(row[`${prefix}title`], fallback.title),
-      contactPlaceholder: str(
-        row[`${prefix}contact_placeholder`],
-        fallback.contactPlaceholder,
-      ),
-      messagePlaceholder: str(
-        row[`${prefix}message_placeholder`],
-        fallback.messagePlaceholder,
-      ),
+      contactPlaceholder: str(row[`${prefix}contact_placeholder`], fallback.contactPlaceholder),
+      messagePlaceholder: str(row[`${prefix}message_placeholder`], fallback.messagePlaceholder),
       submitLabel: str(row[`${prefix}submit_label`], fallback.submitLabel),
       submittingLabel: str(row[`${prefix}submitting_label`], fallback.submittingLabel),
       idleNote: str(row[`${prefix}idle_note`], fallback.idleNote),

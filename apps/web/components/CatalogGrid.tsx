@@ -26,10 +26,7 @@ function catalogEmptyState(section?: PageSection | null) {
 
   return {
     headline: text(record.headline, ""),
-    body: text(
-      record.body,
-      "Подходящих устройств пока нет. Измените фильтры или вернитесь позже.",
-    ),
+    body: text(record.body, "Подходящих устройств пока нет. Измените фильтры или вернитесь позже."),
     ctaLabel: text(record.ctaLabel, ""),
     ctaUrl: text(record.ctaUrl, "/#final"),
   };
@@ -64,7 +61,10 @@ export function CatalogGrid({
       ? "В наличии только проверенные вещи: фото, грейд, гарантия и ориентир выхода обновляются после проверки."
       : "Показаны демонстрационные карточки: они помогают оценить формат Store до подключения живого каталога.",
   );
-  const categoryLabel = text(section?.subheadline, text(section?.content.filterAriaLabel, "Фильтры каталога"));
+  const categoryLabel = text(
+    section?.subheadline,
+    text(section?.content.filterAriaLabel, "Фильтры каталога"),
+  );
   const statusLabel = text(section?.content.statusFilterLabel, "Статус устройства");
   const sortLabel = text(section?.content.sortLabel, "Сортировка");
   const sortAriaLabel = text(section?.content.sortAriaLabel, "Сортировка каталога");
@@ -77,9 +77,7 @@ export function CatalogGrid({
           <Heading className="mt-3 text-4xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
             {headline}
           </Heading>
-          <p className="mx-auto mt-4 max-w-prose text-copy leading-relaxed text-graphite">
-            {body}
-          </p>
+          <p className="mx-auto mt-4 max-w-prose text-copy leading-relaxed text-graphite">{body}</p>
         </div>
 
         <CatalogToolbar

@@ -50,7 +50,6 @@ type FaqItem = {
 };
 
 type VisualContent = {
-  imageSrc: string;
   imageAlt: string;
   captionTitle: string;
   captionText: string;
@@ -293,7 +292,6 @@ function visualContent(value: unknown): VisualContent {
   const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
   return {
-    imageSrc: textField(record, "imageSrc", "image_src", "/assets/store-real-premium-hero.webp"),
     imageAlt: textField(
       record,
       "imageAlt",
@@ -417,7 +415,7 @@ function MarketingVisualBandSection({
   priority?: boolean;
 }) {
   const visual = visualContent(section.content.visual);
-  const rawImageSrc = section.image || visual.imageSrc;
+  const rawImageSrc = section.image || "/assets/store-real-premium-hero.webp";
   const imageSrc = priority ? priorityImageSrc(rawImageSrc) : rawImageSrc;
   const captionTitle = visual.captionTitle || section.headline || "";
   const captionText = visual.captionText || section.body || "";

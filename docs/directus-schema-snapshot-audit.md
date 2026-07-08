@@ -117,6 +117,7 @@ Blockers should be `0`:
 - `studio.bookmarks.missing`
 - `studio.page_sections.advanced_json_editable_by_editor`
 - `studio.page_sections.content.local_assets`
+- `studio.page_sections.content.image_src_keys`
 - `studio.import_batches.missing_files`
 - `studio.import_batches.invalid_last_run_status`
 - `studio.import_batches.failed_without_log`

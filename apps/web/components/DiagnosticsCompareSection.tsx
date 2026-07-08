@@ -3,7 +3,6 @@ import type { PageSection } from "@vtoroy/shared";
 import { homeSectionLabelClass } from "./ui-classes";
 
 type DiagnosticsContent = {
-  imageSrc: string;
   imageAlt: string;
   noteLabel: string;
   noteText: string;
@@ -40,7 +39,6 @@ function diagnosticsContent(value: unknown): DiagnosticsContent {
   const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
   return {
-    imageSrc: textField(record, "imageSrc", "image_src", "/assets/generated-diagnostics.webp"),
     imageAlt: textField(
       record,
       "imageAlt",
@@ -123,7 +121,7 @@ function CheckIcon() {
 export function DiagnosticsCompareSection({ section }: { section: PageSection }) {
   const diagnostics = diagnosticsContent(section.content.diagnostics);
   const comparison = comparisonContent(section.content.comparison);
-  const imageSrc = section.image || diagnostics.imageSrc;
+  const imageSrc = section.image || "/assets/generated-diagnostics.webp";
 
   return (
     <section className="bg-white py-16 md:py-20" id="diagnostics">

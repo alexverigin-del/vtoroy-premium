@@ -34,6 +34,31 @@ AS $$
   WHERE jsonb_typeof(node) = 'string';
 $$;
 
+CREATE OR REPLACE FUNCTION pg_temp.isvoi_json_keys(p_value jsonb)
+RETURNS TABLE(key text)
+LANGUAGE sql
+STABLE
+AS $$
+  WITH RECURSIVE walk(node) AS (
+    SELECT p_value
+    UNION ALL
+    SELECT child.value
+    FROM walk
+    CROSS JOIN LATERAL (
+      SELECT e.value
+      FROM jsonb_each(CASE WHEN jsonb_typeof(walk.node) = 'object' THEN walk.node ELSE '{}'::jsonb END) AS e
+      UNION ALL
+      SELECT a.value
+      FROM jsonb_array_elements(CASE WHEN jsonb_typeof(walk.node) = 'array' THEN walk.node ELSE '[]'::jsonb END) AS a
+    ) AS child
+  )
+  SELECT e.key
+  FROM walk
+  CROSS JOIN LATERAL jsonb_each(
+    CASE WHEN jsonb_typeof(walk.node) = 'object' THEN walk.node ELSE '{}'::jsonb END
+  ) AS e;
+$$;
+
 WITH expected_collections(collection) AS (
   VALUES
     ('devices'),
@@ -197,6 +222,14 @@ WHERE EXISTS (
   SELECT 1
   FROM pg_temp.isvoi_json_string_values(ps.content::jsonb) s
   WHERE s.value LIKE '%api.isvoi.ru/assets/%'
+)
+UNION ALL
+SELECT 'studio.page_sections.content.image_src_keys', count(*)::text
+FROM page_sections ps
+WHERE EXISTS (
+  SELECT 1
+  FROM pg_temp.isvoi_json_keys(ps.content::jsonb) k
+  WHERE lower(k.key) IN ('image_src', 'imagesrc')
 )
 UNION ALL
 SELECT 'studio.import_batches.count', count(*)::text

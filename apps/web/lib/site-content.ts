@@ -206,10 +206,10 @@ const defaultHeroSection: PageSection = {
   secondaryCtaUrl: "/trade",
   sortOrder: 1,
   isActive: true,
+  image: "/assets/hero-apple-like-single-phone-clean.webp",
   content: {
     assurance: ["История до покупки", "Проверка при вас", "Ориентир выхода"],
     visual: {
-      image_src: "/assets/hero-apple-like-single-phone-clean.webp",
       image_alt: "Премиальный графитовый смартфон на светло-серой студийной поверхности",
     },
     passport: {

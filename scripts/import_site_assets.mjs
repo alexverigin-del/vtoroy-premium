@@ -33,21 +33,18 @@ const SECTION_ASSETS = [
     title: "isvoi:site:home:hero",
     page: "home",
     section: "hero",
-    contentPath: ["visual", "image_src"],
   },
   {
     file: "store-real-premium-hero.webp",
     title: "isvoi:site:home:store-preview",
     page: "home",
     section: "store_preview",
-    contentPath: ["visual", "image_src"],
   },
   {
     file: "generated-diagnostics.webp",
     title: "isvoi:site:home:diagnostics",
     page: "home",
     section: "diagnostics_compare",
-    contentPath: ["diagnostics", "image_src"],
   },
 ];
 
@@ -85,11 +82,10 @@ function parseArgs(argv) {
 function loadConfig() {
   const url = (process.env.DIRECTUS_URL || "").replace(/\/+$/, "");
   const token = process.env.DIRECTUS_TOKEN || "";
-  const publicUrl = (process.env.NEXT_PUBLIC_DIRECTUS_URL || url).replace(/\/+$/, "");
   if (!url || !token) {
     throw new Error("DIRECTUS_URL and DIRECTUS_TOKEN must be set.");
   }
-  return { url, token, publicUrl };
+  return { url, token };
 }
 
 function headers(cfg, contentType = "application/json") {
@@ -127,7 +123,10 @@ async function filesByTitle(cfg) {
 
 async function ensureFolder(cfg, name, dryRun) {
   try {
-    const existing = await findOne(cfg, `/folders?filter[name][_eq]=${encodeURIComponent(name)}&fields=id,name&limit=1`);
+    const existing = await findOne(
+      cfg,
+      `/folders?filter[name][_eq]=${encodeURIComponent(name)}&fields=id,name&limit=1`,
+    );
     if (existing?.id) return existing.id;
     if (dryRun) {
       console.log(`[dry-run] create folder ${name}`);
@@ -137,19 +136,11 @@ async function ensureFolder(cfg, name, dryRun) {
     console.log(`[create] folder ${name}`);
     return created.id;
   } catch (error) {
-    console.log(`[info] folder lookup skipped (${error.message}); Directus default folder will be used`);
+    console.log(
+      `[info] folder lookup skipped (${error.message}); Directus default folder will be used`,
+    );
     return null;
   }
-}
-
-function siteAssetUrl(cfg, fileId) {
-  const params = new URLSearchParams({
-    width: "1600",
-    quality: "86",
-    format: "auto",
-    withoutEnlargement: "true",
-  });
-  return `${cfg.publicUrl}/assets/${fileId}?${params.toString()}`;
 }
 
 async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun }) {
@@ -193,22 +184,6 @@ async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun 
   return json.data.id;
 }
 
-function setNestedContentValue(content, keyPath, value) {
-  if (!keyPath?.length) return content;
-  const next = content && typeof content === "object" && !Array.isArray(content) ? { ...content } : {};
-  let cursor = next;
-  for (let i = 0; i < keyPath.length - 1; i += 1) {
-    const key = keyPath[i];
-    const valueAtKey = cursor[key];
-    cursor[key] = valueAtKey && typeof valueAtKey === "object" && !Array.isArray(valueAtKey)
-      ? { ...valueAtKey }
-      : {};
-    cursor = cursor[key];
-  }
-  cursor[keyPath[keyPath.length - 1]] = value;
-  return next;
-}
-
 async function patchSectionImage(cfg, asset, fileId, { dryRun, replace }) {
   if (!asset.page || !asset.section || !fileId) return;
   const page = await findOne(
@@ -223,12 +198,8 @@ async function patchSectionImage(cfg, asset, fileId, { dryRun, replace }) {
   );
   if (!section?.id) throw new Error(`Page section not found: ${asset.page}/${asset.section}`);
 
-  const assetUrl = siteAssetUrl(cfg, fileId);
   const payload = {};
   if (!section.image || replace) payload.image = fileId;
-  if (asset.contentPath) {
-    payload.content = setNestedContentValue(section.content, asset.contentPath, assetUrl);
-  }
 
   if (Object.keys(payload).length === 0) {
     console.log(`[skip] page_sections ${asset.section} already has image`);

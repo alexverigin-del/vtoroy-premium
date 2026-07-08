@@ -983,6 +983,12 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   existing `store-real-premium-hero.webp` Directus file through that relation.
   The web fallback JSON and content-model examples no longer seed direct asset
   URLs inside section JSON.
+- Page section image JSON cleanup on 2026-07-08: production
+  `page_sections.content` has no `image_src` / `imageSrc` keys. React renderers
+  no longer read editorial image URLs from section JSON; they use
+  `page_sections.image` and only keep local static images as code-level local
+  fallback for development/migration. `import_site_assets.mjs` now wires
+  homepage editorial images through `page_sections.image` only.
 - Directus asset transforms should be used for delivery instead of committing
   multiple generated derivatives.
 - Image optimization policy as of 2026-07-01: keep the current dual layer for
@@ -1101,11 +1107,11 @@ success note and error note. Per-device data remains in `devices`,
 Next content-editing priorities:
 
 1. Keep media hygiene at zero: `studio.files.review_folder_count = 0`,
-   `studio.page_sections.content.local_assets = 0` and
-   `studio.page_sections.content.direct_asset_urls.warning = 0`. New editorial
-   section images should use `page_sections.image` / Directus Files relations;
-   nested JSON image URLs are advanced exceptions and should be audited before
-   deploy.
+   `studio.page_sections.content.local_assets = 0`,
+   `studio.page_sections.content.direct_asset_urls.warning = 0` and
+   `studio.page_sections.content.image_src_keys = 0`. New editorial section
+   images should use `page_sections.image` / Directus Files relations; nested
+   JSON image URLs are no longer part of the content model.
 2. Add a `directus:audit-content-ownership` check that flags new public-facing
    Russian copy in React/server components unless it is explicitly approved as
    system/accessibility/fallback text.

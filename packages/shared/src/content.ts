@@ -78,8 +78,6 @@ export interface SectionContent {
     ctaUrl?: string;
   };
   visual?: {
-    imageSrc?: string;
-    image_src?: string;
     imageAlt?: string;
     image_alt?: string;
     captionTitle?: string;
@@ -110,8 +108,6 @@ export interface SectionContent {
     featured?: boolean;
   }[];
   diagnostics?: {
-    imageSrc?: string;
-    image_src?: string;
     imageAlt?: string;
     image_alt?: string;
     noteLabel?: string;

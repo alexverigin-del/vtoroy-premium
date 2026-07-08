@@ -34,8 +34,9 @@ For page sections, use the field `Главное изображение блок
 relation to `directus_files`; the React page layer turns it into an optimized
 Directus asset URL with resize and `format=auto`.
 
-Avoid adding `/assets/...` paths into JSON. If a complex block still needs a
-nested image URL inside `JSON-настройки блока`, use a Directus asset URL.
+Do not add `image_src`, `imageSrc`, `/assets/...`, `api.isvoi.ru/assets/...` or
+other image URLs inside `JSON-настройки блока`. If a section needs an editorial
+image, attach it through `Главное изображение блока`.
 
 ## JSON Field
 

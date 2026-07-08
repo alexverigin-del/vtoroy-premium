@@ -122,15 +122,9 @@ function pathCardList(
   });
 }
 
-function heroVisualContent(value: unknown): { imageSrc: string; imageAlt: string } {
+function heroVisualContent(value: unknown): { imageAlt: string } {
   const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
   return {
-    imageSrc: textField(
-      record,
-      "imageSrc",
-      "image_src",
-      "/assets/hero-apple-like-single-phone-clean.webp",
-    ),
     imageAlt: textField(
       record,
       "imageAlt",
@@ -213,7 +207,9 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   const assurance = stringList(section.content.assurance);
   const visual = heroVisualContent(section.content.visual);
   const passport = heroPassportContent(section.content.passport);
-  const imageSrc = priorityImageSrc(section.image || visual.imageSrc);
+  const imageSrc = priorityImageSrc(
+    section.image || "/assets/hero-apple-like-single-phone-clean.webp",
+  );
   const primaryLabel = section.primaryCtaLabel || "Подобрать проверенную вещь";
   const primaryUrl = normalizeSiteUrl(section.primaryCtaUrl || "/catalog");
   const secondaryLabel = section.secondaryCtaLabel || "Оценить свою вещь";

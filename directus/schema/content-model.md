@@ -138,9 +138,9 @@ stable `section_key`, rendered by a fixed component chosen via `variant`.
 | `content`             | JSON                 | Section-specific typed data (see per-section shapes below).   |
 
 For section imagery, use the `image` M2O relation to Directus Files. Do not put
-`/assets/...` or `https://api.isvoi.ru/assets/...` URLs into `content` JSON.
-Legacy `content.*.image_src` keys are treated as advanced fallbacks and are
-flagged by the Studio audit.
+`image_src`, `imageSrc`, `/assets/...` or `https://api.isvoi.ru/assets/...`
+values into `content` JSON. JSON image keys are legacy data and are flagged by
+the Studio audit.
 
 ### `content` JSON shapes (per `section_key`)
 

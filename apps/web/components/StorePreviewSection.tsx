@@ -11,7 +11,6 @@ type StepItem = {
 };
 
 type VisualContent = {
-  imageSrc: string;
   imageAlt: string;
   captionTitle: string;
   captionText: string;
@@ -64,7 +63,6 @@ function visualContent(value: unknown): VisualContent {
   const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
   return {
-    imageSrc: textField(record, "imageSrc", "image_src", "/assets/store-real-premium-hero.webp"),
     imageAlt: textField(
       record,
       "imageAlt",
@@ -85,7 +83,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
   const visual = visualContent(section.content.visual);
   const steps = stepList(section.content.steps);
   const renderedSteps = steps.length > 0 ? steps : DEFAULT_STEPS;
-  const imageSrc = section.image || visual.imageSrc;
+  const imageSrc = section.image || "/assets/store-real-premium-hero.webp";
 
   return (
     <section className="bg-frost py-16 md:py-20" id="store">

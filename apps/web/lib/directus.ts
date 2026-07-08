@@ -8,6 +8,7 @@ import type {
   NavigationItem,
   FaqItem,
   TradeInfo,
+  DevicePageSettings,
 } from "@vtoroy/shared";
 import { cache } from "react";
 import type { DeviceCardData } from "@/lib/device-card-data";
@@ -34,6 +35,67 @@ const ALLOW_CATALOG_FALLBACK = ["1", "true", "yes"].includes(
   (process.env.ALLOW_CATALOG_FALLBACK ?? "").toLowerCase(),
 );
 const catalogFallbackAllowed = ALLOW_CATALOG_FALLBACK || process.env.NODE_ENV !== "production";
+
+export const fallbackDevicePageSettings: DevicePageSettings = {
+  breadcrumbs: {
+    homeLabel: "Главная",
+    homeHref: "/",
+    catalogLabel: "Каталог",
+    catalogHref: "/catalog",
+    backLabel: "← Store",
+  },
+  labels: {
+    gradePrefix: "грейд",
+    updatedPrefix: "Обновлено",
+    available: "В наличии",
+    reserved: "Бронь",
+    sold: "Продано",
+    priceNote: "Цена и условия действуют после подтверждения наличия и финальной проверки в Store.",
+  },
+  sections: {
+    conditionTitle: "Состояние и нюансы",
+    storyEyebrow: "История вещи",
+    storyFallbackTitle: "Путь вещи",
+    warrantyTitle: "Гарантия и ориентир выхода",
+    warrantyDurationLabel: "Срок гарантии",
+    exitPriceLabel: "Ориентир выхода",
+    warrantyCoveredLabel: "Покрывается",
+    warrantyNotCoveredLabel: "Не покрывается",
+    warrantyCoveredFallback: "Функциональные неисправности в рамках условий Store.",
+    warrantyNotCoveredFallback: "Механические повреждения после покупки и следы влаги.",
+    warrantyDurationFallback: "90 дней",
+    tradeTitle: "Обновление через Trade",
+    tradeValuePrefix: "зачет до",
+    tradeCtaLabel: "Рассчитать Trade",
+    tradeCtaHref: "/trade",
+    relatedEyebrow: "Еще в Store",
+    relatedTitle: "Похожие устройства",
+    relatedCtaLabel: "Весь каталог",
+    relatedCtaHref: "/catalog",
+    relatedPromptTitle: "Больше вариантов в Store",
+    relatedPromptBody:
+      "Если эта вещь не подходит, проверьте соседние варианты по практичным параметрам.",
+    relatedPromptCtaLabel: "Открыть каталог",
+    relatedPromptCtaHref: "/catalog",
+    relatedPromptCues: ["Память", "Цвет", "Бюджет", "Trade"],
+  },
+  passport: {
+    eyebrow: "I СВОИ Passport",
+    title: "Проверка вещи",
+    body: "Чеклист функций, которые были проверены перед публикацией.",
+    diagnosticsTitle: "Диагностика",
+    statusPrefix: "Статус:",
+    statusFallback: "зафиксирована",
+    verifiedLabel: "Проверено",
+  },
+  mobile: {
+    reservedLabel: "Очередь",
+    soldLabel: "Подобрать",
+    availableLabel: "Просмотр",
+    tradeLabel: "Trade",
+    navAriaLabel: "Действия по товару",
+  },
+};
 
 export const directusConfig = {
   /** Server-preferred base URL (falls back to the public one). */
@@ -1025,6 +1087,93 @@ function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings
   };
 }
 
+function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): DevicePageSettings {
+  const defaults = fallbackDevicePageSettings;
+  const relatedPromptCues = stringList(row.related_prompt_cues);
+
+  return {
+    breadcrumbs: {
+      homeLabel: str(row.breadcrumb_home_label, defaults.breadcrumbs.homeLabel),
+      homeHref: str(row.breadcrumb_home_href, defaults.breadcrumbs.homeHref),
+      catalogLabel: str(row.breadcrumb_catalog_label, defaults.breadcrumbs.catalogLabel),
+      catalogHref: str(row.breadcrumb_catalog_href, defaults.breadcrumbs.catalogHref),
+      backLabel: str(row.back_label, defaults.breadcrumbs.backLabel),
+    },
+    labels: {
+      gradePrefix: str(row.grade_prefix, defaults.labels.gradePrefix),
+      updatedPrefix: str(row.updated_prefix, defaults.labels.updatedPrefix),
+      available: str(row.available_label, defaults.labels.available),
+      reserved: str(row.reserved_label, defaults.labels.reserved),
+      sold: str(row.sold_label, defaults.labels.sold),
+      priceNote: str(row.price_note, defaults.labels.priceNote),
+    },
+    sections: {
+      conditionTitle: str(row.condition_title, defaults.sections.conditionTitle),
+      storyEyebrow: str(row.story_eyebrow, defaults.sections.storyEyebrow),
+      storyFallbackTitle: str(row.story_fallback_title, defaults.sections.storyFallbackTitle),
+      warrantyTitle: str(row.warranty_title, defaults.sections.warrantyTitle),
+      warrantyDurationLabel: str(
+        row.warranty_duration_label,
+        defaults.sections.warrantyDurationLabel,
+      ),
+      exitPriceLabel: str(row.exit_price_label, defaults.sections.exitPriceLabel),
+      warrantyCoveredLabel: str(row.warranty_covered_label, defaults.sections.warrantyCoveredLabel),
+      warrantyNotCoveredLabel: str(
+        row.warranty_not_covered_label,
+        defaults.sections.warrantyNotCoveredLabel,
+      ),
+      warrantyCoveredFallback: str(
+        row.warranty_covered_fallback,
+        defaults.sections.warrantyCoveredFallback,
+      ),
+      warrantyNotCoveredFallback: str(
+        row.warranty_not_covered_fallback,
+        defaults.sections.warrantyNotCoveredFallback,
+      ),
+      warrantyDurationFallback: str(
+        row.warranty_duration_fallback,
+        defaults.sections.warrantyDurationFallback,
+      ),
+      tradeTitle: str(row.trade_title, defaults.sections.tradeTitle),
+      tradeValuePrefix: str(row.trade_value_prefix, defaults.sections.tradeValuePrefix),
+      tradeCtaLabel: str(row.trade_cta_label, defaults.sections.tradeCtaLabel),
+      tradeCtaHref: str(row.trade_cta_href, defaults.sections.tradeCtaHref),
+      relatedEyebrow: str(row.related_eyebrow, defaults.sections.relatedEyebrow),
+      relatedTitle: str(row.related_title, defaults.sections.relatedTitle),
+      relatedCtaLabel: str(row.related_cta_label, defaults.sections.relatedCtaLabel),
+      relatedCtaHref: str(row.related_cta_href, defaults.sections.relatedCtaHref),
+      relatedPromptTitle: str(row.related_prompt_title, defaults.sections.relatedPromptTitle),
+      relatedPromptBody: str(row.related_prompt_body, defaults.sections.relatedPromptBody),
+      relatedPromptCtaLabel: str(
+        row.related_prompt_cta_label,
+        defaults.sections.relatedPromptCtaLabel,
+      ),
+      relatedPromptCtaHref: str(
+        row.related_prompt_cta_href,
+        defaults.sections.relatedPromptCtaHref,
+      ),
+      relatedPromptCues:
+        relatedPromptCues.length > 0 ? relatedPromptCues : defaults.sections.relatedPromptCues,
+    },
+    passport: {
+      eyebrow: str(row.passport_eyebrow, defaults.passport.eyebrow),
+      title: str(row.passport_title, defaults.passport.title),
+      body: str(row.passport_body, defaults.passport.body),
+      diagnosticsTitle: str(row.passport_diagnostics_title, defaults.passport.diagnosticsTitle),
+      statusPrefix: str(row.passport_status_prefix, defaults.passport.statusPrefix),
+      statusFallback: str(row.passport_status_fallback, defaults.passport.statusFallback),
+      verifiedLabel: str(row.passport_verified_label, defaults.passport.verifiedLabel),
+    },
+    mobile: {
+      reservedLabel: str(row.mobile_reserved_label, defaults.mobile.reservedLabel),
+      soldLabel: str(row.mobile_sold_label, defaults.mobile.soldLabel),
+      availableLabel: str(row.mobile_available_label, defaults.mobile.availableLabel),
+      tradeLabel: str(row.mobile_trade_label, defaults.mobile.tradeLabel),
+      navAriaLabel: str(row.mobile_nav_aria_label, defaults.mobile.navAriaLabel),
+    },
+  };
+}
+
 function navPageSlug(value: unknown): string {
   if (!value) return "";
   if (typeof value === "string") return value;
@@ -1109,6 +1258,17 @@ export const getSiteSettings = cache(
     );
     const row = Array.isArray(data) ? data[0] : data;
     return row ? mapSiteSettingsFromDirectus(row) : null;
+  },
+);
+
+/** Shared product detail page template copy. */
+export const getDevicePageSettings = cache(
+  async function getDevicePageSettings(): Promise<DevicePageSettings> {
+    const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
+      "/items/device_page_settings?limit=1",
+    );
+    const row = Array.isArray(data) ? data[0] : data;
+    return row ? mapDevicePageSettingsFromDirectus(row) : fallbackDevicePageSettings;
   },
 );
 

@@ -17,54 +17,70 @@ Field types use Directus terms. `M2O` = many-to-one, `O2M` = one-to-many.
 
 Global, site-wide values. Configure as a **singleton** in Directus.
 
-| Field                | Type                 | Notes                                  |
-| -------------------- | -------------------- | -------------------------------------- |
-| `id`                 | integer (PK)         | Always 1 (singleton).                  |
-| `brand_name`         | string               | `ISVOI`.                               |
-| `tagline`            | string               | `Хорошие вещи проходят через своих.`   |
-| `city`               | string               | `Северодвинск`.                        |
-| `logo_file`          | M2O → directus_files | Header/footer logo from `ISVOI Site Assets`. |
-| `logo_alt`           | string               | Accessible alt text for the logo.      |
-| `logo_href`          | string               | Usually `/`.                           |
-| `logo_width`         | integer              | Optional rendered logo width in px. Leave empty to keep image proportions. |
-| `logo_height`        | integer              | Rendered logo height in px. Default header height is `22`. |
-| `logo_caption`       | string               | Optional text shown under the logo image. Leave empty when the uploaded logo already includes the caption. |
-| `show_brand_name`    | boolean              | Show text next to the logo.            |
-| `header_cta_label`   | string               | Right-side header CTA label.           |
-| `header_cta_url`     | string               | Right-side header CTA URL.             |
-| `phone`              | string               |                                        |
-| `telegram`           | string               | `@handle` or URL.                      |
-| `email`              | string               |                                        |
-| `address`            | text                 |                                        |
-| `default_og_image`   | M2O → directus_files | Social share fallback.                 |
-| `footer_note`        | text                 | Long disclaimer above footer columns.  |
-| `footer_brand_text`  | text                 | Short brand text next to the logo.     |
-| `footer_legal`       | text                 | `© 2025 ISVOI. …`                      |
-| `footer_copyright`   | string               | First line in footer legal row.        |
-| `maintenance_mode`   | boolean              | Optional kill-switch for the public site. |
+| Field               | Type                 | Notes                                                                                                      |
+| ------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `id`                | integer (PK)         | Always 1 (singleton).                                                                                      |
+| `brand_name`        | string               | `ISVOI`.                                                                                                   |
+| `tagline`           | string               | `Хорошие вещи проходят через своих.`                                                                       |
+| `city`              | string               | `Северодвинск`.                                                                                            |
+| `logo_file`         | M2O → directus_files | Header/footer logo from `ISVOI Site Assets`.                                                               |
+| `logo_alt`          | string               | Accessible alt text for the logo.                                                                          |
+| `logo_href`         | string               | Usually `/`.                                                                                               |
+| `logo_width`        | integer              | Optional rendered logo width in px. Leave empty to keep image proportions.                                 |
+| `logo_height`       | integer              | Rendered logo height in px. Default header height is `22`.                                                 |
+| `logo_caption`      | string               | Optional text shown under the logo image. Leave empty when the uploaded logo already includes the caption. |
+| `show_brand_name`   | boolean              | Show text next to the logo.                                                                                |
+| `header_cta_label`  | string               | Right-side header CTA label.                                                                               |
+| `header_cta_url`    | string               | Right-side header CTA URL.                                                                                 |
+| `phone`             | string               |                                                                                                            |
+| `telegram`          | string               | `@handle` or URL.                                                                                          |
+| `email`             | string               |                                                                                                            |
+| `address`           | text                 |                                                                                                            |
+| `default_og_image`  | M2O → directus_files | Social share fallback.                                                                                     |
+| `footer_note`       | text                 | Long disclaimer above footer columns.                                                                      |
+| `footer_brand_text` | text                 | Short brand text next to the logo.                                                                         |
+| `footer_legal`      | text                 | `© 2025 ISVOI. …`                                                                                          |
+| `footer_copyright`  | string               | First line in footer legal row.                                                                            |
+| `maintenance_mode`  | boolean              | Optional kill-switch for the public site.                                                                  |
+
+## `device_page_settings` (singleton)
+
+Shared product detail page copy. Product facts still come from `devices`,
+`device_images`, `device_passports` and `trade_options`; this singleton controls
+the page template around those facts.
+
+| Field group      | Notes                                                                  |
+| ---------------- | ---------------------------------------------------------------------- |
+| Navigation       | Breadcrumb labels/hrefs and the visible back link.                     |
+| Status and price | Grade prefix, updated-date prefix, stock labels and price note.        |
+| Sections         | Condition, story, warranty, exit-price and warranty fallback labels.   |
+| Trade            | Trade section title, value prefix and CTA label/href.                  |
+| Passport         | Passport widget eyebrow, title, body, diagnostics and verified labels. |
+| Related devices  | Related block heading, CTA and prompt card copy/cues.                  |
+| Mobile CTA       | Sticky mobile action labels and ARIA label.                            |
 
 ## `navigation_items`
 
 Header / footer links. Self-referencing for optional dropdowns.
 
-| Field            | Type                    | Notes                                       |
-| ---------------- | ----------------------- | ------------------------------------------- |
-| `id`             | uuid (PK)               |                                             |
-| `label`          | string                  | `Каталог`, `Store`, …                       |
-| `label_short`    | string                  | Optional compact/mobile label.              |
-| `aria_label`     | string                  | Optional accessibility label.               |
-| `link_type`      | enum                    | `page` / `section` / `external` / `custom`. |
-| `page`           | M2O → `site_pages`      | Preferred for managed pages.                |
-| `section_anchor` | string                  | Anchor without `#`, e.g. `final`.           |
-| `custom_url`     | string                  | Manual URL, e.g. `/catalog` or `/store#diagnostics`. |
-| `url`            | string                  | Legacy fallback URL.                        |
-| `location`       | string (enum)           | `header` / `footer` / `mobile` / `utility`. |
-| `item_role`      | enum                    | `link` / `cta` / `group`.                   |
-| `icon`           | string                  | Optional future UI icon key.                |
-| `parent`         | M2O → `navigation_items`| For nested menus (optional).                |
-| `sort`           | integer                 | Order within `location`.                    |
-| `is_active`      | boolean                 | Hide without deleting.                      |
-| `open_in_new`    | boolean                 | `target="_blank"`.                          |
+| Field            | Type                     | Notes                                                |
+| ---------------- | ------------------------ | ---------------------------------------------------- |
+| `id`             | uuid (PK)                |                                                      |
+| `label`          | string                   | `Каталог`, `Store`, …                                |
+| `label_short`    | string                   | Optional compact/mobile label.                       |
+| `aria_label`     | string                   | Optional accessibility label.                        |
+| `link_type`      | enum                     | `page` / `section` / `external` / `custom`.          |
+| `page`           | M2O → `site_pages`       | Preferred for managed pages.                         |
+| `section_anchor` | string                   | Anchor without `#`, e.g. `final`.                    |
+| `custom_url`     | string                   | Manual URL, e.g. `/catalog` or `/store#diagnostics`. |
+| `url`            | string                   | Legacy fallback URL.                                 |
+| `location`       | string (enum)            | `header` / `footer` / `mobile` / `utility`.          |
+| `item_role`      | enum                     | `link` / `cta` / `group`.                            |
+| `icon`           | string                   | Optional future UI icon key.                         |
+| `parent`         | M2O → `navigation_items` | For nested menus (optional).                         |
+| `sort`           | integer                  | Order within `location`.                             |
+| `is_active`      | boolean                  | Hide without deleting.                               |
+| `open_in_new`    | boolean                  | `target="_blank"`.                                   |
 
 Recommended header: `Каталог` → `/catalog`, `Store` → `/store`,
 `Passport` → `/passport`, `Trade` → `/trade`, `Club` → `/club`, with the CTA
@@ -75,44 +91,44 @@ controlled by `site_settings.header_cta_*`. Footer URLs should be absolute
 
 One row per template-backed page. SEO + which page owns which sections.
 
-| Field             | Type                 | Notes                                                        |
-| ----------------- | -------------------- | ------------------------------------------------------------ |
-| `id`              | uuid (PK)            |                                                              |
-| `slug`            | string (unique)      | `home`, `catalog`, `store`, `trade`, `club`, `passport`, `product`. |
-| `template`        | string (enum)        | Code template key (see "Pages & sections" below).            |
-| `status`          | string (enum)        | `draft` / `published` / `archived`.                          |
-| `title`           | string               | `<title>` / H1 fallback.                                     |
-| `meta_description`| text                 | SEO.                                                         |
-| `og_image`        | M2O → directus_files | Per-page social image (falls back to `site_settings`).       |
-| `sections`        | O2M → `page_sections`| Ordered sections owned by this page.                         |
+| Field              | Type                  | Notes                                                               |
+| ------------------ | --------------------- | ------------------------------------------------------------------- |
+| `id`               | uuid (PK)             |                                                                     |
+| `slug`             | string (unique)       | `home`, `catalog`, `store`, `trade`, `club`, `passport`, `product`. |
+| `template`         | string (enum)         | Code template key (see "Pages & sections" below).                   |
+| `status`           | string (enum)         | `draft` / `published` / `archived`.                                 |
+| `title`            | string                | `<title>` / H1 fallback.                                            |
+| `meta_description` | text                  | SEO.                                                                |
+| `og_image`         | M2O → directus_files  | Per-page social image (falls back to `site_settings`).              |
+| `sections`         | O2M → `page_sections` | Ordered sections owned by this page.                                |
 
 > `product` is a **template**, not a single page — individual products come from
-> the `devices` collection. The `product` row in `site_pages` holds shared
-> product-template copy (e.g. the passport disclaimer, section labels).
+> the `devices` collection. Shared product-template copy is controlled by
+> `device_page_settings`, not by per-device records.
 
 ## `page_sections`
 
 Structured content blocks. **Not** free-form HTML. A section is identified by a
 stable `section_key`, rendered by a fixed component chosen via `variant`.
 
-| Field                | Type                  | Notes                                                        |
-| -------------------- | --------------------- | ------------------------------------------------------------ |
-| `id`                 | uuid (PK)             |                                                              |
-| `page`               | M2O → `site_pages`    | Owning page.                                                 |
-| `section_key`        | string                | Stable id, e.g. `hero`, `trust`, `store_preview` (see table).|
-| `variant`            | string (enum)         | Layout variant the component supports (e.g. `hero.split`).   |
-| `eyebrow`            | string                | Small kicker above the headline.                             |
-| `headline`           | string                |                                                              |
-| `subheadline`        | string                |                                                              |
-| `body`               | text                  | Rich text / markdown for the paragraph.                      |
-| `primary_cta_label`  | string                |                                                              |
-| `primary_cta_url`    | string                |                                                              |
-| `secondary_cta_label`| string                |                                                              |
-| `secondary_cta_url`  | string                |                                                              |
-| `image`              | M2O → directus_files  | Section image (e.g. hero photo).                             |
-| `sort_order`         | integer               | Order within the page.                                       |
-| `is_active`          | boolean               | Hide without deleting.                                       |
-| `content`            | JSON                  | Section-specific typed data (see per-section shapes below).  |
+| Field                 | Type                 | Notes                                                         |
+| --------------------- | -------------------- | ------------------------------------------------------------- |
+| `id`                  | uuid (PK)            |                                                               |
+| `page`                | M2O → `site_pages`   | Owning page.                                                  |
+| `section_key`         | string               | Stable id, e.g. `hero`, `trust`, `store_preview` (see table). |
+| `variant`             | string (enum)        | Layout variant the component supports (e.g. `hero.split`).    |
+| `eyebrow`             | string               | Small kicker above the headline.                              |
+| `headline`            | string               |                                                               |
+| `subheadline`         | string               |                                                               |
+| `body`                | text                 | Rich text / markdown for the paragraph.                       |
+| `primary_cta_label`   | string               |                                                               |
+| `primary_cta_url`     | string               |                                                               |
+| `secondary_cta_label` | string               |                                                               |
+| `secondary_cta_url`   | string               |                                                               |
+| `image`               | M2O → directus_files | Section image (e.g. hero photo).                              |
+| `sort_order`          | integer              | Order within the page.                                        |
+| `is_active`           | boolean              | Hide without deleting.                                        |
+| `content`             | JSON                 | Section-specific typed data (see per-section shapes below).   |
 
 For section imagery, prefer the `image` M2O relation to Directus Files. Legacy
 `content.*.image_src` values are fallback hints only and should point to
@@ -160,13 +176,13 @@ Use only if the same CTA repeats across many sections and should be edited once.
 Otherwise the inline `*_cta_*` fields on `page_sections` are enough — prefer not
 to overbuild.
 
-| Field      | Type            | Notes                          |
-| ---------- | --------------- | ------------------------------ |
-| `id`       | uuid (PK)       |                                |
-| `key`      | string (unique) | `get-selection`, `evaluate`.   |
-| `label`    | string          |                                |
-| `url`      | string          |                                |
-| `style`    | string (enum)   | `primary` / `secondary` / `ghost`. |
+| Field   | Type            | Notes                              |
+| ------- | --------------- | ---------------------------------- |
+| `id`    | uuid (PK)       |                                    |
+| `key`   | string (unique) | `get-selection`, `evaluate`.       |
+| `label` | string          |                                    |
+| `url`   | string          |                                    |
+| `style` | string (enum)   | `primary` / `secondary` / `ghost`. |
 
 ---
 
@@ -174,21 +190,22 @@ to overbuild.
 
 Templates are fixed in code; this is the canonical mapping editors work within.
 
-| Page slug  | Template      | `section_key`s (in order)                                                        |
-| ---------- | ------------- | -------------------------------------------------------------------------------- |
-| `home`     | `home`        | `hero`, `trust`, `path_router`, `catalog_preview`, `passport_preview`, `store_preview`, `trade_preview`, `club_preview`, `diagnostics_compare`, `final_cta` |
-| `catalog`  | `catalog`     | `catalog_page_live` (`catalog.grid`; SEO, hero copy, filter/sort labels, empty state and CTA are page-managed; device cards are data-driven from `devices`) |
-| `store`    | `store`       | `store_hero`, `store_offer`, `store_location`, `final_cta`                       |
-| `trade`    | `trade`       | `trade_hero`, `trade_calculator_intro`, `trade_steps`, `faq`, `final_cta`        |
-| `club`     | `club`        | `club_hero`, `club_levels`, `club_rating`, `faq`, `final_cta`                    |
-| `passport` | `passport`    | `passport_hero`, `passport_explainer`, `passport_disclaimer`, `faq`              |
-| `product`  | `product`     | shared copy: `passport_disclaimer`, section labels (per-device data from `devices`) |
+| Page slug  | Template   | `section_key`s (in order)                                                                                                                                   |
+| ---------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `home`     | `home`     | `hero`, `trust`, `path_router`, `catalog_preview`, `passport_preview`, `store_preview`, `trade_preview`, `club_preview`, `diagnostics_compare`, `final_cta` |
+| `catalog`  | `catalog`  | `catalog_page_live` (`catalog.grid`; SEO, hero copy, filter/sort labels, empty state and CTA are page-managed; device cards are data-driven from `devices`) |
+| `store`    | `store`    | `store_hero`, `store_offer`, `store_location`, `final_cta`                                                                                                  |
+| `trade`    | `trade`    | `trade_hero`, `trade_calculator_intro`, `trade_steps`, `faq`, `final_cta`                                                                                   |
+| `club`     | `club`     | `club_hero`, `club_levels`, `club_rating`, `faq`, `final_cta`                                                                                               |
+| `passport` | `passport` | `passport_hero`, `passport_explainer`, `passport_disclaimer`, `faq`                                                                                         |
+| `product`  | `product`  | shared copy from `device_page_settings`; per-device data from `devices`                                                                                     |
 
 ---
 
 ## Example records
 
 ### `site_pages` — homepage
+
 ```json
 {
   "slug": "home",
@@ -200,6 +217,7 @@ Templates are fixed in code; this is the canonical mapping editors work within.
 ```
 
 ### `page_sections` — homepage hero
+
 ```json
 {
   "page": "<home page id>",
@@ -224,6 +242,7 @@ Hero renderer also accepts optional `content.assurance`, `content.visual`, and
 floating Passport card from Directus.
 
 ### `page_sections` — homepage store preview
+
 ```json
 {
   "page": "<home page id>",
@@ -268,6 +287,7 @@ floating Passport card from Directus.
 ```
 
 ### `page_sections` — homepage passport preview
+
 ```json
 {
   "page": "<home page id>",
@@ -327,6 +347,7 @@ floating Passport card from Directus.
 ```
 
 ### `page_sections` — homepage trade preview
+
 ```json
 {
   "page": "<home page id>",
@@ -373,6 +394,7 @@ floating Passport card from Directus.
 ```
 
 ### `page_sections` — homepage club preview
+
 ```json
 {
   "page": "<home page id>",
@@ -393,21 +415,33 @@ floating Passport card from Directus.
         "badge": "Care",
         "name": "Care",
         "tag": "Спокойное владение с защитой и приоритетным сервисом.",
-        "features": ["Продлённая гарантия", "Приоритетная диагностика", "Зафиксированная цена выкупа"],
+        "features": [
+          "Продлённая гарантия",
+          "Приоритетная диагностика",
+          "Зафиксированная цена выкупа"
+        ],
         "featured": false
       },
       {
         "badge": "Популярный",
         "name": "Upgrade",
         "tag": "Плановое обновление на следующую вещь без потери в цене.",
-        "features": ["Всё из уровня Care", "Обновление по известной цене выхода", "Ранний доступ к новым лотам в кругу"],
+        "features": [
+          "Всё из уровня Care",
+          "Обновление по известной цене выхода",
+          "Ранний доступ к новым лотам в кругу"
+        ],
         "featured": true
       },
       {
         "badge": "Flex",
         "name": "Flex",
         "tag": "Максимум гибкости: пользуйтесь, выкупайте или возвращайте.",
-        "features": ["Всё из уровня Upgrade", "Право возврата устройства", "Выкуп в собственность в любой момент"],
+        "features": [
+          "Всё из уровня Upgrade",
+          "Право возврата устройства",
+          "Выкуп в собственность в любой момент"
+        ],
         "featured": false
       }
     ]
@@ -416,6 +450,7 @@ floating Passport card from Directus.
 ```
 
 ### `page_sections` — homepage diagnostics compare
+
 ```json
 {
   "page": "<home page id>",
@@ -450,6 +485,7 @@ floating Passport card from Directus.
 ```
 
 ### `page_sections` — homepage final CTA
+
 ```json
 {
   "page": "<home page id>",
@@ -465,7 +501,12 @@ floating Passport card from Directus.
     "form": {
       "scenario_label": "Что хотите сделать?",
       "scenario_aria_label": "Сценарий обращения",
-      "scenario_options": ["Найти вещь в кругу", "Передать свою вещь дальше", "Обновиться на следующую", "Узнать про Club"],
+      "scenario_options": [
+        "Найти вещь в кругу",
+        "Передать свою вещь дальше",
+        "Обновиться на следующую",
+        "Узнать про Club"
+      ],
       "device_label": "Какая вещь интересна?",
       "device_placeholder": "Например, iPhone 13 Pro или MacBook Air",
       "contact_label": "Контакт для ответа",
@@ -479,6 +520,7 @@ floating Passport card from Directus.
 ```
 
 ### `page_sections` — trade calculator intro
+
 ```json
 {
   "page": "<trade page id>",
@@ -497,6 +539,7 @@ floating Passport card from Directus.
 ```
 
 ### `faq_items` — passport
+
 ```json
 {
   "key": "passport-what",
@@ -514,18 +557,21 @@ floating Passport card from Directus.
 
 - **Administrator** — full access.
 - **Editor** — CRUD on `site_settings`, `navigation_items`, `site_pages`,
-  `page_sections`, `faq_items`, `cta_links`. No user/role management.
+  `page_sections`, `device_page_settings`, `faq_items`, `cta_links`. No
+  user/role management.
 - **Public (read token)** — read-only, and only "live" content:
   - `site_pages` where `status = published`
   - `page_sections` / `faq_items` / `navigation_items` where `is_active = true`
   - `site_settings` (the singleton)
+  - `device_page_settings` (the singleton)
   - `cta_links` (all)
-  Used by the Next.js site via a least-privilege static token. Never expose the
-  admin token.
+    Used by the Next.js site via a least-privilege static token. Never expose the
+    admin token.
 
 ## Keeping types in sync
 
 When these collections change:
+
 1. Update this file.
 2. Update `packages/shared/src/content.ts` to match.
 3. Update the mapping in `apps/web/lib/directus.ts`.

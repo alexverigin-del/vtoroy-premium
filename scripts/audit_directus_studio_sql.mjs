@@ -43,6 +43,7 @@ WITH expected_collections(collection) AS (
     ('site_pages'),
     ('page_sections'),
     ('site_settings'),
+    ('device_page_settings'),
     ('navigation_items'),
     ('faq_items'),
     ('leads'),
@@ -142,6 +143,18 @@ SELECT 'studio.site_settings.singleton_not_one', (
       WHERE collection = 'site_settings' AND coalesce(singleton, false) = true
     )
     AND (SELECT count(*) FROM site_settings) = 1
+    THEN '0'
+    ELSE '1'
+  END
+)
+UNION ALL
+SELECT 'studio.device_page_settings.singleton_not_one', (
+  CASE
+    WHEN EXISTS (
+      SELECT 1 FROM directus_collections
+      WHERE collection = 'device_page_settings' AND coalesce(singleton, false) = true
+    )
+    AND (SELECT count(*) FROM device_page_settings) = 1
     THEN '0'
     ELSE '1'
   END

@@ -110,6 +110,7 @@ BEGIN
   PERFORM isvoi_delete_permission('$t:public_label', 'site_pages', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'page_sections', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'site_settings', 'read');
+  PERFORM isvoi_delete_permission('$t:public_label', 'device_page_settings', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'navigation_items', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'faq_items', 'read');
 
@@ -189,6 +190,14 @@ BEGIN
     'site_settings',
     'read',
     'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+    NULL
+  );
+
+  PERFORM isvoi_upsert_permission(
+    p_policy_name,
+    'device_page_settings',
+    'read',
+    'id,singleton_key,breadcrumb_home_label,breadcrumb_home_href,breadcrumb_catalog_label,breadcrumb_catalog_href,back_label,grade_prefix,updated_prefix,available_label,reserved_label,sold_label,price_note,condition_title,story_eyebrow,story_fallback_title,warranty_title,warranty_duration_label,exit_price_label,warranty_covered_label,warranty_not_covered_label,warranty_covered_fallback,warranty_not_covered_fallback,warranty_duration_fallback,trade_title,trade_value_prefix,trade_cta_label,trade_cta_href,related_eyebrow,related_title,related_cta_label,related_cta_href,related_prompt_title,related_prompt_body,related_prompt_cta_label,related_prompt_cta_href,related_prompt_cues,passport_eyebrow,passport_title,passport_body,passport_diagnostics_title,passport_status_prefix,passport_status_fallback,passport_verified_label,mobile_reserved_label,mobile_sold_label,mobile_available_label,mobile_trade_label,mobile_nav_aria_label',
     NULL
   );
 

@@ -681,7 +681,7 @@ new commercial content should use structured collections and Directus Files.
   existing `/lead-intake` payloads, Turnstile handling and Directus `leads`
   schema remain unchanged.
 - The seventeenth step was released as `5d2d5b4 Unify lead form interaction
-  states` on 2026-07-04. Local and Beget `npm run web:verify` passed, then
+states` on 2026-07-04. Local and Beget `npm run web:verify` passed, then
   production passed `npm run smoke:prod`, `npm run smoke:images` and
   `npm run smoke:visual` after restarting PM2 `isvoi-web`.
 - The 2026-07-04 ISVOI audit follow-up closed the two remaining storefront
@@ -697,7 +697,7 @@ new commercial content should use structured collections and Directus Files.
   live runs on 2026-07-04 passed; live `/store` desktop LCP was 3712ms against
   the 4500ms budget.
 - The 2026-07-05 SEO/structure release `bfd349c Improve storefront SEO
-  structure` closed the repeat Impeccable audit tails for semantic heading
+structure` closed the repeat Impeccable audit tails for semantic heading
   order, structured data and `/store` LCP comfort. Device pages now put the
   purchase/H1 block first in DOM after the back link, while CSS grid placement
   keeps the desktop visual layout as left dossier details and right purchase /
@@ -706,9 +706,9 @@ new commercial content should use structured collections and Directus Files.
   deploy reported `/store` desktop LCP at 2792-2924ms, below the ~3200ms comfort
   target and the 4500ms budget.
 - The 2026-07-05 LCP optimization release spans `c6f1416 Optimize LCP image
-  delivery`, `dc4dbcb Cache public pages for faster LCP`, `f2967a3 Serve
-  critical hero images locally` and `5450195 Prioritize critical chrome
-  assets`. Public storefront pages now use 5-minute ISR for Directus-backed
+delivery`, `dc4dbcb Cache public pages for faster LCP`, `f2967a3 Serve
+critical hero images locally` and `5450195 Prioritize critical chrome
+assets`. Public storefront pages now use 5-minute ISR for Directus-backed
   content, the first hero images on `/` and `/store` use local critical WebP
   overrides for the current Directus asset ids, and the current header/footer
   logo has a tiny local critical override. These overrides are intentionally
@@ -726,7 +726,7 @@ new commercial content should use structured collections and Directus Files.
   millisecond-level TTFB. Treat the remaining 2500ms gap as a network/CDN or
   first-viewport composition question, not a Directus schema issue.
 - The 2026-07-06 audit-v1 positioning release was deployed as `e72f103
-  Strengthen ISVOI audit v1 positioning`. It added the homepage
+Strengthen ISVOI audit v1 positioning`. It added the homepage
   `market_tension` and `circle_rules` proof sections, changed global/header CTA
   copy to concrete actions, reframed "цена выхода" as "ориентир выхода", and
   introduced `scripts/update_directus_audit_v1_copy_sql.mjs` plus
@@ -1069,22 +1069,24 @@ new commercial content should use structured collections and Directus Files.
 `catalog_page_live` / `catalog.grid` section. Do not keep it in the “next
 content ownership” queue.
 
+`/device/[slug]` now uses `device_page_settings` as the shared product page
+template singleton. It controls breadcrumbs/back link, section labels,
+warranty/passport/Trade copy, related-device prompt copy and mobile CTA labels.
+Per-device data remains in `devices`, `device_images`, `device_passports` and
+`trade_options`.
+
 Next content-editing priorities:
 
-1. Move product page shell copy into a managed model: breadcrumbs/back link,
-   section labels, warranty/passport headings, related-device copy, mobile CTA
-   labels and JSON-LD fallback labels. Product data itself already comes from
-   `devices`, `device_images`, `device_passports` and `trade_options`.
-2. Move product lead form microcopy into Directus: variants for
+1. Move product lead form microcopy into Directus: variants for
    `available/reserved/sold`, placeholders, success/error/submitting copy and
    manager-facing source labels. Keep `/lead-intake` as the server endpoint.
-3. Remove remaining image URLs from `page_sections.content` where possible:
+2. Remove remaining image URLs from `page_sections.content` where possible:
    prefer `page_sections.image` / Directus Files relations for editorial images.
    Nested JSON image URLs should be treated as advanced exceptions and audited.
-4. Add a `directus:audit-content-ownership` check that flags new public-facing
+3. Add a `directus:audit-content-ownership` check that flags new public-facing
    Russian copy in React/server components unless it is explicitly approved as
    system/accessibility/fallback text.
-5. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
+4. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 
 ### Production Operations Priority

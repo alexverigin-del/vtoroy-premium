@@ -1,4 +1,4 @@
-import type { DevicePassport, PassportState } from "@vtoroy/shared";
+import type { DevicePageSettings, DevicePassport, PassportState } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 
 const stateDot: Record<PassportState, string> = {
@@ -7,21 +7,37 @@ const stateDot: Record<PassportState, string> = {
   bad: "bg-red-500",
 };
 
-export function PassportSummary({ passport }: { passport: DevicePassport }) {
+type PassportCopy = DevicePageSettings["passport"];
+
+const defaultPassportCopy: PassportCopy = {
+  eyebrow: "I СВОИ Passport",
+  title: "Проверка вещи",
+  body: "Чеклист функций, которые были проверены перед публикацией.",
+  diagnosticsTitle: "Диагностика",
+  statusPrefix: "Статус:",
+  statusFallback: "зафиксирована",
+  verifiedLabel: "Проверено",
+};
+
+export function PassportSummary({
+  copy = defaultPassportCopy,
+  passport,
+}: {
+  copy?: PassportCopy;
+  passport: DevicePassport;
+}) {
   const checklist = passport.diagnostics.checklist ?? [];
 
   return (
     <aside className="card overflow-hidden" data-component="PassportSummary">
       <div className="border-b border-hairline bg-ink px-6 py-5 text-white">
         <p className="text-xs font-medium uppercase tracking-eyebrow text-white/60">
-          I СВОИ Passport
+          {copy.eyebrow}
         </p>
         <div className="mt-2 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Проверка вещи</h2>
-            <p className="mt-1 text-sm text-white/65">
-              Чеклист функций, которые были проверены перед публикацией.
-            </p>
+            <h2 className="text-2xl font-semibold tracking-tight">{copy.title}</h2>
+            <p className="mt-1 text-sm text-white/65">{copy.body}</p>
           </div>
         </div>
       </div>
@@ -30,13 +46,13 @@ export function PassportSummary({ passport }: { passport: DevicePassport }) {
         <section className="rounded-card border border-hairline p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="font-semibold">Диагностика</h3>
+              <h3 className="font-semibold">{copy.diagnosticsTitle}</h3>
               <p className="mt-1 text-sm text-muted">
-                Статус: {passport.diagnostics.status || "зафиксирована"}
+                {copy.statusPrefix} {passport.diagnostics.status || copy.statusFallback}
               </p>
             </div>
             <span className="rounded-pill bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-              Проверено
+              {copy.verifiedLabel}
             </span>
           </div>
 

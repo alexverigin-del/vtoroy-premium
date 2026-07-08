@@ -30,7 +30,9 @@ docker compose exec -T database psql \
 
 - `directus_files`: только файлы из папок `ISVOI Device Photos`, `ISVOI Site Assets`, `ISVOI Editorial`.
 
-Anonymous Public не должен читать `devices`, `device_images`, `site_pages`, `page_sections`, `site_settings`, `navigation_items` и `faq_items` напрямую через `/items/*`.
+Anonymous Public не должен читать `devices`, `device_images`, `site_pages`,
+`page_sections`, `site_settings`, `device_page_settings`, `navigation_items` и
+`faq_items` напрямую через `/items/*`.
 
 ## Что читает Next.js service token
 
@@ -41,6 +43,7 @@ Anonymous Public не должен читать `devices`, `device_images`, `sit
 - `navigation_items`: только `is_active=true`.
 - `faq_items`: только `is_active=true`.
 - `site_settings`: только публичные поля бренда, контактов и footer.
+- `device_page_settings`: публичные подписи шаблона товарной страницы.
 - `directus_files`: только файлы из папок `ISVOI Device Photos`, `ISVOI Site Assets`, `ISVOI Editorial`.
 
 ## Что закрыто

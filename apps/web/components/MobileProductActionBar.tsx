@@ -13,12 +13,16 @@ export function MobileProductActionBar({
   leadFormId,
   primaryAriaLabel,
   primaryLabel,
+  tradeLabel = "Trade",
   tradeAriaLabel,
+  navAriaLabel = "Действия по товару",
 }: {
   leadFormId: string;
   primaryAriaLabel: string;
   primaryLabel: string;
+  tradeLabel?: string;
   tradeAriaLabel: string;
+  navAriaLabel?: string;
 }) {
   const [visible, setVisible] = useState(false);
 
@@ -35,7 +39,7 @@ export function MobileProductActionBar({
   if (!visible) return null;
 
   return (
-    <nav className={mobileProductCtaBarClass} aria-label="Действия по товару">
+    <nav className={mobileProductCtaBarClass} aria-label={navAriaLabel}>
       <div className={mobileProductCtaInnerClass}>
         <Link
           href={`#${leadFormId}`}
@@ -45,7 +49,7 @@ export function MobileProductActionBar({
           {primaryLabel}
         </Link>
         <Link href="/trade" className={mobileProductSecondaryCtaClass} aria-label={tradeAriaLabel}>
-          Trade
+          {tradeLabel}
         </Link>
       </div>
     </nav>

@@ -39,6 +39,26 @@ npm run directus:setup:catalog-page
 npm run directus:audit-studio
 ```
 
+## Product Page Template
+
+Use `Шаблон товарной страницы` (`device_page_settings`) for copy that is shared
+by all `/device/...` pages.
+
+- Breadcrumbs/back link, stock labels, updated-date prefix and the price note
+  live here.
+- Warranty, Passport, Trade, related-device and mobile sticky CTA labels live
+  here.
+- Product-specific facts, price, photos, Passport rows and Trade values still
+  live in `devices`, `device_images`, `device_passports` and `trade_options`.
+
+Run the setup/audit path after moving this workflow between environments:
+
+```bash
+npm run directus:setup:device-page-settings
+npm run directus:setup:technical-permissions
+npm run directus:audit-studio
+```
+
 ## Pages And Sections
 
 Use `Страницы сайта` (`site_pages`) first.

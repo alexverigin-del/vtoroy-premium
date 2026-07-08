@@ -6,14 +6,7 @@
 
 export type PublishStatus = "draft" | "published" | "archived";
 
-export type PageSlug =
-  | "home"
-  | "catalog"
-  | "store"
-  | "trade"
-  | "club"
-  | "passport"
-  | "product";
+export type PageSlug = "home" | "catalog" | "store" | "trade" | "club" | "passport" | "product";
 
 export interface SiteSettings {
   brandName: string;
@@ -217,6 +210,66 @@ export interface SitePage {
   metaDescription?: string;
   ogImage?: string;
   sections: PageSection[];
+}
+
+export interface DevicePageSettings {
+  breadcrumbs: {
+    homeLabel: string;
+    homeHref: string;
+    catalogLabel: string;
+    catalogHref: string;
+    backLabel: string;
+  };
+  labels: {
+    gradePrefix: string;
+    updatedPrefix: string;
+    available: string;
+    reserved: string;
+    sold: string;
+    priceNote: string;
+  };
+  sections: {
+    conditionTitle: string;
+    storyEyebrow: string;
+    storyFallbackTitle: string;
+    warrantyTitle: string;
+    warrantyDurationLabel: string;
+    exitPriceLabel: string;
+    warrantyCoveredLabel: string;
+    warrantyNotCoveredLabel: string;
+    warrantyCoveredFallback: string;
+    warrantyNotCoveredFallback: string;
+    warrantyDurationFallback: string;
+    tradeTitle: string;
+    tradeValuePrefix: string;
+    tradeCtaLabel: string;
+    tradeCtaHref: string;
+    relatedEyebrow: string;
+    relatedTitle: string;
+    relatedCtaLabel: string;
+    relatedCtaHref: string;
+    relatedPromptTitle: string;
+    relatedPromptBody: string;
+    relatedPromptCtaLabel: string;
+    relatedPromptCtaHref: string;
+    relatedPromptCues: string[];
+  };
+  passport: {
+    eyebrow: string;
+    title: string;
+    body: string;
+    diagnosticsTitle: string;
+    statusPrefix: string;
+    statusFallback: string;
+    verifiedLabel: string;
+  };
+  mobile: {
+    reservedLabel: string;
+    soldLabel: string;
+    availableLabel: string;
+    tradeLabel: string;
+    navAriaLabel: string;
+  };
 }
 
 export interface FaqItem {

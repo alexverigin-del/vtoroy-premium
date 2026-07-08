@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import type { Device, DeviceStoryInfo, PassportState } from "@vtoroy/shared";
+import type { Device, DevicePageSettings, DeviceStoryInfo, PassportState } from "@vtoroy/shared";
 import {
   getDeviceBySlug,
+  getDevicePageSettings,
   getNavigationItems,
   getPublishedDeviceCards,
   getSiteSettings,
@@ -107,44 +108,47 @@ function isActionableDevice(device: DeviceCardData): boolean {
   return status !== "hidden" && status !== "sold";
 }
 
-function stockStatusLabel(device: Device): string {
+function stockStatusLabel(device: Device, settings: DevicePageSettings): string {
   if (device.stockStatusLabel) return device.stockStatusLabel;
   switch (normalizedStockStatus(device)) {
     case "reserved":
-      return "Бронь";
+      return settings.labels.reserved;
     case "sold":
-      return "Продано";
+      return settings.labels.sold;
     default:
-      return "В наличии";
+      return settings.labels.available;
   }
 }
 
-function mobileLeadCta(device: Device): { label: string; ariaLabel: string } {
+function mobileLeadCta(
+  device: Device,
+  settings: DevicePageSettings,
+): { label: string; ariaLabel: string } {
   switch (normalizedStockStatus(device)) {
     case "reserved":
       return {
-        label: "Очередь",
+        label: settings.mobile.reservedLabel,
         ariaLabel: `Встать в лист ожидания по ${device.title}`,
       };
     case "sold":
       return {
-        label: "Подобрать",
+        label: settings.mobile.soldLabel,
         ariaLabel: `Подобрать похожее устройство вместо ${device.title}`,
       };
     default:
       return {
-        label: "Просмотр",
+        label: settings.mobile.availableLabel,
         ariaLabel: `Записаться на просмотр ${device.title}`,
       };
   }
 }
 
-function updatedText(device: Device): string {
+function updatedText(device: Device, settings: DevicePageSettings): string {
   if (device.updatedText) return device.updatedText;
   if (!device.updatedAt) return "";
   const date = new Date(device.updatedAt);
   if (Number.isNaN(date.getTime())) return "";
-  return `Обновлено ${new Intl.DateTimeFormat("ru-RU", {
+  return `${settings.labels.updatedPrefix} ${new Intl.DateTimeFormat("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -211,13 +215,23 @@ function DetailCard({
   );
 }
 
-function DeviceStoryCard({ story }: { story: DeviceStoryInfo }) {
+function DeviceStoryCard({
+  settings,
+  story,
+}: {
+  settings: DevicePageSettings;
+  story: DeviceStoryInfo;
+}) {
   const facts = story.facts ?? [];
 
   return (
     <section className="rounded-card bg-ink p-6 text-white shadow-soft">
-      <p className="text-xs font-medium uppercase tracking-eyebrow text-white/55">История вещи</p>
-      <h2 className="mt-3 text-2xl font-semibold tracking-tight">{story.title || "Путь вещи"}</h2>
+      <p className="text-xs font-medium uppercase tracking-eyebrow text-white/55">
+        {settings.sections.storyEyebrow}
+      </p>
+      <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+        {story.title || settings.sections.storyFallbackTitle}
+      </h2>
       <p className="mt-4 text-sm leading-relaxed text-white/70">{story.body}</p>
       {facts.length > 0 ? (
         <ul className="mt-5 grid gap-2 sm:grid-cols-3">
@@ -232,16 +246,24 @@ function DeviceStoryCard({ story }: { story: DeviceStoryInfo }) {
   );
 }
 
-function TradeUpdateCard({ options }: { options: Device["trade"]["options"] }) {
+function TradeUpdateCard({
+  options,
+  settings,
+}: {
+  options: Device["trade"]["options"];
+  settings: DevicePageSettings;
+}) {
   if (options.length === 0) return null;
 
   return (
-    <DetailCard title="Обновление через Trade">
+    <DetailCard title={settings.sections.tradeTitle}>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
         {options.slice(0, 4).map((option) => (
           <div key={option.label} className="rounded-card border border-hairline p-4">
             <p className="text-sm text-muted">{option.label}</p>
-            <p className="mt-1 font-semibold">зачет до {option.value.toLocaleString("ru-RU")} ₽</p>
+            <p className="mt-1 font-semibold">
+              {settings.sections.tradeValuePrefix} {option.value.toLocaleString("ru-RU")} ₽
+            </p>
           </div>
         ))}
       </div>
@@ -251,11 +273,12 @@ function TradeUpdateCard({ options }: { options: Device["trade"]["options"] }) {
 
 export default async function DevicePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [device, devices, settings, navigation] = await Promise.all([
+  const [device, devices, settings, navigation, devicePageSettings] = await Promise.all([
     getDeviceBySlug(slug),
     getPublishedDeviceCards(),
     getSiteSettings(),
     getNavigationItems(),
+    getDevicePageSettings(),
   ]);
   if (!device) notFound();
 
@@ -272,9 +295,9 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
   const trustFacts = conditionTrustFacts(device);
   const story = device.passport.story;
   const tradeOptions = device.trade.options ?? [];
-  const lastUpdated = updatedText(device);
+  const lastUpdated = updatedText(device, devicePageSettings);
   const leadFormId = "product-lead";
-  const mobileCta = mobileLeadCta(device);
+  const mobileCta = mobileLeadCta(device, devicePageSettings);
   const showRelatedPrompt = related.length > 0 && related.length < 3;
 
   return (
@@ -293,16 +316,22 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
           dangerouslySetInnerHTML={{
             __html: jsonLdScript(
               breadcrumbJsonLd([
-                { name: "Главная", path: "/" },
-                { name: "Каталог", path: "/catalog" },
+                {
+                  name: devicePageSettings.breadcrumbs.homeLabel,
+                  path: devicePageSettings.breadcrumbs.homeHref,
+                },
+                {
+                  name: devicePageSettings.breadcrumbs.catalogLabel,
+                  path: devicePageSettings.breadcrumbs.catalogHref,
+                },
                 { name: device.title, path: `/device/${device.id}` },
               ]),
             ),
           }}
         />
         <section className="mx-auto max-w-content px-6 py-10 md:py-14">
-          <Link href="/catalog" className={deviceBackLinkClass}>
-            ← Store
+          <Link href={devicePageSettings.breadcrumbs.catalogHref} className={deviceBackLinkClass}>
+            {devicePageSettings.breadcrumbs.backLabel}
           </Link>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-product lg:items-start lg:gap-8">
@@ -319,13 +348,13 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                   <span className="text-3xl font-semibold">{device.priceText}</span>
                   <span className="rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">
-                    грейд {device.grade}
+                    {devicePageSettings.labels.gradePrefix} {device.grade}
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-muted">{device.availability}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted">
                   <span className="rounded-pill bg-surface px-3 py-1 font-medium">
-                    {stockStatusLabel(device)}
+                    {stockStatusLabel(device, devicePageSettings)}
                   </span>
                   {lastUpdated ? (
                     <span className="rounded-pill bg-surface px-3 py-1">{lastUpdated}</span>
@@ -346,25 +375,29 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   deviceTitle={device.title}
                   formId={leadFormId}
                   stockStatus={device.stockStatus}
-                  stockStatusLabel={stockStatusLabel(device)}
+                  stockStatusLabel={stockStatusLabel(device, devicePageSettings)}
                 />
 
                 <div className="mt-3">
-                  <CTAButton href="/trade" label="Рассчитать Trade" variant="secondary" />
+                  <CTAButton
+                    href={devicePageSettings.sections.tradeCtaHref}
+                    label={devicePageSettings.sections.tradeCtaLabel}
+                    variant="secondary"
+                  />
                 </div>
 
                 <p className="mt-5 text-xs leading-relaxed text-muted">
-                  Цена и условия действуют после подтверждения наличия и финальной проверки в Store.
+                  {devicePageSettings.labels.priceNote}
                 </p>
               </aside>
 
               <div className="order-5 lg:order-none">
-                <PassportSummary passport={device.passport} />
+                <PassportSummary copy={devicePageSettings.passport} passport={device.passport} />
               </div>
 
               {tradeOptions.length > 0 ? (
                 <div className="order-4 lg:order-none">
-                  <TradeUpdateCard options={tradeOptions} />
+                  <TradeUpdateCard options={tradeOptions} settings={devicePageSettings} />
                 </div>
               ) : null}
             </div>
@@ -375,7 +408,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
               </div>
 
               <div className="order-3 grid gap-6 lg:order-none">
-                <DetailCard title="Состояние и нюансы" className="lg:mt-6">
+                <DetailCard title={devicePageSettings.sections.conditionTitle} className="lg:mt-6">
                   <p className="text-sm leading-relaxed text-muted">
                     {device.passport.condition.note}
                   </p>
@@ -408,18 +441,26 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   ) : null}
                 </DetailCard>
 
-                {story?.body ? <DeviceStoryCard story={story} /> : null}
+                {story?.body ? (
+                  <DeviceStoryCard settings={devicePageSettings} story={story} />
+                ) : null}
 
-                <DetailCard title="Гарантия и ориентир выхода">
+                <DetailCard title={devicePageSettings.sections.warrantyTitle}>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-card border border-hairline bg-surface p-4">
-                      <p className="text-sm font-medium text-muted">Срок гарантии</p>
+                      <p className="text-sm font-medium text-muted">
+                        {devicePageSettings.sections.warrantyDurationLabel}
+                      </p>
                       <p className="mt-1 text-2xl font-semibold">
-                        {device.passport.warranty.duration || device.warranty || "90 дней"}
+                        {device.passport.warranty.duration ||
+                          device.warranty ||
+                          devicePageSettings.sections.warrantyDurationFallback}
                       </p>
                     </div>
                     <div className="rounded-card border border-hairline bg-surface p-4">
-                      <p className="text-sm font-medium text-muted">Ориентир выхода</p>
+                      <p className="text-sm font-medium text-muted">
+                        {devicePageSettings.sections.exitPriceLabel}
+                      </p>
                       <p className="mt-1 text-2xl font-semibold text-accent">
                         {device.passport.exitPrice.headline || device.exitText}
                       </p>
@@ -427,17 +468,21 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="mt-5 text-sm font-medium">Покрывается</p>
+                      <p className="mt-5 text-sm font-medium">
+                        {devicePageSettings.sections.warrantyCoveredLabel}
+                      </p>
                       <p className="mt-1 text-sm text-muted">
                         {device.passport.warranty.covered ||
-                          "Функциональные неисправности в рамках условий Store."}
+                          devicePageSettings.sections.warrantyCoveredFallback}
                       </p>
                     </div>
                     <div>
-                      <p className="mt-5 text-sm font-medium">Не покрывается</p>
+                      <p className="mt-5 text-sm font-medium">
+                        {devicePageSettings.sections.warrantyNotCoveredLabel}
+                      </p>
                       <p className="mt-1 text-sm text-muted">
                         {device.passport.warranty.notCovered ||
-                          "Механические повреждения после покупки и следы влаги."}
+                          devicePageSettings.sections.warrantyNotCoveredFallback}
                       </p>
                     </div>
                   </div>
@@ -455,12 +500,18 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
-                  Еще в Store
+                  {devicePageSettings.sections.relatedEyebrow}
                 </p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Похожие устройства</h2>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  {devicePageSettings.sections.relatedTitle}
+                </h2>
               </div>
               {!showRelatedPrompt ? (
-                <CTAButton href="/catalog" label="Весь каталог" variant="secondary" />
+                <CTAButton
+                  href={devicePageSettings.sections.relatedCtaHref}
+                  label={devicePageSettings.sections.relatedCtaLabel}
+                  variant="secondary"
+                />
               ) : null}
             </div>
             <ul
@@ -481,18 +532,21 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   <div className="grid h-full gap-5 lg:grid-cols-2 lg:items-center">
                     <div>
                       <h3 className="text-xl font-semibold leading-tight text-carbon">
-                        Больше вариантов в Store
+                        {devicePageSettings.sections.relatedPromptTitle}
                       </h3>
                       <p className="mt-3 max-w-body-copy text-sm leading-relaxed text-graphite">
-                        Если эта вещь не подходит, проверьте соседние варианты по практичным
-                        параметрам.
+                        {devicePageSettings.sections.relatedPromptBody}
                       </p>
                       <div className="mt-5">
-                        <CTAButton href="/catalog" label="Открыть каталог" variant="secondary" />
+                        <CTAButton
+                          href={devicePageSettings.sections.relatedPromptCtaHref}
+                          label={devicePageSettings.sections.relatedPromptCtaLabel}
+                          variant="secondary"
+                        />
                       </div>
                     </div>
                     <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                      {["Память", "Цвет", "Бюджет", "Trade"].map((cue) => (
+                      {devicePageSettings.sections.relatedPromptCues.map((cue) => (
                         <li
                           key={cue}
                           className="rounded-card border border-hairline bg-surface px-3 py-2 text-sm font-medium text-graphite"
@@ -512,7 +566,9 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
           leadFormId={leadFormId}
           primaryAriaLabel={mobileCta.ariaLabel}
           primaryLabel={mobileCta.label}
-          tradeAriaLabel={`Рассчитать Trade для ${device.title}`}
+          tradeAriaLabel={`${devicePageSettings.sections.tradeCtaLabel} для ${device.title}`}
+          tradeLabel={devicePageSettings.mobile.tradeLabel}
+          navAriaLabel={devicePageSettings.mobile.navAriaLabel}
         />
       </main>
     </SiteShell>

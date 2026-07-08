@@ -71,6 +71,19 @@ ISVOI: импортировать партию каталога
 
 После импорта проверьте товары в `devices` и фотографии в `device_images`.
 
+Для первой production-проверки создайте одну небольшую demo/real партию с 1-2
+устройствами и архивом фото. После проверки и импорта разработчик или
+ответственный оператор запускает:
+
+```powershell
+npm run directus:audit-import
+npm run directus:audit:prod
+```
+
+`import_batches.demo_or_real_batches.warning = 1` означает, что в Studio ещё не
+было ни одной партии. Это не блокирует сайт, но массовое наполнение каталога
+лучше начинать только после одной успешной партии.
+
 Важно: товарные фото на сайте должны появляться только через `device_images`
 или fallback-поле `devices.listing_file`. Не вставляйте фото вручную в
 `devices.gallery`, `devices.listing_image`, JSON-поля, `/assets/...`,

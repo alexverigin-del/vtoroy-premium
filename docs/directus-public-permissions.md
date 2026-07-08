@@ -56,11 +56,12 @@ Anonymous Public не должен читать `devices`, `device_images`, `sit
 
 ## Проверка после применения
 
-1. Открыть сайт и каталог: `https://isvoi.ru/catalog`.
-2. Открыть карточку с фото: `https://isvoi.ru/device/iphone-13-pro/index.html`.
-3. Проверить Directus Studio: `https://api.isvoi.ru/admin/`.
-4. Проверить, что anonymous `/items/devices` возвращает `403`.
-5. Проверить, что anonymous `/assets/{file-id}?width=32&height=32&fit=cover&format=auto` возвращает изображение.
+1. Запустить `npm run directus:audit-api-policy`.
+2. Открыть сайт и каталог: `https://isvoi.ru/catalog`.
+3. Открыть карточку с фото: `https://isvoi.ru/device/iphone-13-pro/index.html`.
+4. Проверить Directus Studio: `https://api.isvoi.ru/admin/`.
+5. Проверить, что anonymous `/items/devices` возвращает `403`.
+6. Проверить, что anonymous `/assets/{file-id}?width=32&height=32&fit=cover&format=auto` возвращает изображение.
 
 ## Technical Role Field Allowlists
 

@@ -104,6 +104,11 @@ unexpected table after a backup/review.
 
 ## Studio Audit Shape
 
+Use `npm run directus:audit:prod` for the full production gate. It executes the
+SQL audit generators through production psql and then runs API policy, ops and
+content ownership checks. The generator-only commands are kept with the `:sql`
+suffix, for example `directus:audit-schema:sql`.
+
 `directus:audit-studio` checks the editor layer around the schema: collection
 metadata, field notes, bookmarks, page-section JSON guardrails, import batches,
 Files hygiene, destructive permissions and lead source context.
@@ -112,6 +117,10 @@ Files hygiene, destructive permissions and lead source context.
 content: new Russian strings in React/Next code must be reviewed against
 `scripts/content_ownership_baseline.json`, and JSON files must not contain
 direct asset URLs or legacy `image_src/imageSrc` keys.
+
+`directus:audit-api-policy` verifies the chosen API ownership model: anonymous
+content collection reads should return `403`; the Next.js app reads editable
+Directus content server-side through the project service token.
 
 Blockers should be `0`:
 
@@ -133,6 +142,33 @@ Blockers should be `0`:
 - `studio.leads.open_without_source_context`
 - `studio.destructive_editor_permissions`
 - `studio.leads.invalid_status`
+- `page_sections.unknown_variants`
+- `page_sections.content.unknown_keys`
+- `page_sections.content.local_assets`
+- `page_sections.content.direct_asset_urls`
+- `page_sections.content.legacy_image_keys`
+- `page_sections.cta.empty_label_with_url`
+- `page_sections.cta.label_without_url`
+- `page_sections.required_image_missing`
+- `page_sections.inactive_page_active_sections`
+- `leads.open_without_source_context`
+- `leads.invalid_status`
+- `leads.waiting_without_next_action`
+- `leads.in_progress_without_assignee`
+- `leads.closed_without_manager_note`
+- `leads.device_slug_without_relation`
+- `files.review_folder_count`
+- `files.used_without_folder`
+- `files.device_non_images`
+- `files.site_non_images`
+- `files.editorial_non_images`
+- `files.device_originals_over_10mb`
+- `files.duplicate_isvoi_titles`
+- `import_batches.missing_files`
+- `import_batches.invalid_last_run_status`
+- `import_batches.failed_without_log`
+- `import_batches.flows_missing`
+- `import_batches.importer_missing_permissions`
 
 Expected or informational non-zero values:
 
@@ -142,3 +178,9 @@ Expected or informational non-zero values:
   `studio.files.device_originals_over_10mb.warning` and
   `studio.leads.in_progress_without_assignee.warning` are review prompts, not
   automatic deploy blockers.
+- `files.orphan_isvoi_files.warning` can be non-zero while editorial archive
+  files are intentionally kept for reuse.
+- `files.hero_editorial_missing_focal_point.warning` should trend to `0` before
+  traffic/media scale, but does not block deploy today.
+- `import_batches.demo_or_real_batches.warning = 1` means the operator import
+  workflow has not yet been proven by a real or demo batch.

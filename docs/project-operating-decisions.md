@@ -1111,6 +1111,14 @@ either move to Directus or be intentionally reviewed by updating the baseline.
 It also checks JSON files for direct asset URLs and legacy `image_src/imageSrc`
 keys. The audit is included in `web:verify`.
 
+`directus:audit:prod` is now the operational Directus gate. It executes the SQL
+audit generators against production instead of only printing SQL, then runs API
+policy, ops and content-ownership checks. Anonymous content API reads are
+intentionally fail-closed (`403` for editable collections); the public site reads
+Directus server-side through the least-privilege service token. The SQL
+generators remain available as `directus:audit-*:sql` scripts for manual
+inspection.
+
 Next content-editing priorities:
 
 1. Keep media hygiene at zero: `studio.files.review_folder_count = 0`,
@@ -1119,7 +1127,11 @@ Next content-editing priorities:
    `studio.page_sections.content.image_src_keys = 0`. New editorial section
    images should use `page_sections.image` / Directus Files relations; nested
    JSON image URLs are no longer part of the content model.
-2. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
+2. Keep `directus:audit:prod` blocker metrics green. Current non-blocking
+   warnings are: `files.orphan_isvoi_files.warning = 7`,
+   `files.hero_editorial_missing_focal_point.warning = 11` and
+   `import_batches.demo_or_real_batches.warning = 1`.
+3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 
 ### Production Operations Priority
@@ -1132,7 +1144,12 @@ Next content-editing priorities:
    near lead forms and footer, and include those routes in copy/visual smoke
    checks before release. Do not publish placeholder consent UI.
 4. Continue growing the catalog through the operator import workflow.
-5. Keep reducing legacy fallback fields after Directus content reaches full
+5. Create and run one real or demo `catalog_import_batches` item with workbook
+   and photo archive before mass catalog filling. The import audit currently
+   treats missing batches as a warning, not a deploy blocker.
+6. Set focal points for editorial/site hero images or explicitly archive unused
+   editorial files before tightening Files governance warnings into blockers.
+7. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.
-6. Keep auditing for legacy fallback data and obsolete docs/scripts now that
+8. Keep auditing for legacy fallback data and obsolete docs/scripts now that
    public routes no longer depend on legacy HTML/CSS/JS runtime files.

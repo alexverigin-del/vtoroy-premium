@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useId, useState } from "react";
+import type { DevicePageSettings, ProductLeadFormMode } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import {
   leadFieldClass,
@@ -10,61 +11,10 @@ import {
 } from "./ui-classes";
 import { useLeadIntake } from "./useLeadIntake";
 
-type ProductLeadMode = {
-  kind: "purchase" | "selection";
-  scenario: string;
-  title: string;
-  contactPlaceholder: string;
-  messagePlaceholder: string;
-  submitLabel: string;
-  submittingLabel: string;
-  idleNote: string;
-  successNote: string;
-  statusNote: string;
-};
+type ProductLeadCopy = DevicePageSettings["leadForm"];
 
-function normalizeStockStatus(value: string): string {
-  const status = value.trim().toLowerCase();
-  if (!status || status === "in_stock") return "available";
-  if (status === "service") return "hidden";
-  return status;
-}
-
-function leadMode(stockStatus: string): ProductLeadMode {
-  if (stockStatus === "reserved") {
-    return {
-      kind: "purchase",
-      scenario: "Встать в лист ожидания по брони",
-      title: "Встать в лист ожидания",
-      contactPlaceholder: "Телефон или Telegram",
-      messagePlaceholder: "Например, если бронь освободится, готов посмотреть сегодня",
-      submitLabel: "Встать в лист ожидания",
-      submittingLabel: "Отправляем...",
-      idleNote: "Заявка будет привязана к этой карточке и текущему статусу.",
-      successNote:
-        "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
-      statusNote:
-        "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
-    };
-  }
-
-  if (stockStatus === "sold") {
-    return {
-      kind: "selection",
-      scenario: "Подобрать похожее устройство",
-      title: "Подобрать альтернативу",
-      contactPlaceholder: "Телефон или Telegram",
-      messagePlaceholder: "Например, хочу похожий iPhone с таким же объёмом памяти",
-      submitLabel: "Подобрать альтернативу",
-      submittingLabel: "Отправляем...",
-      idleNote: "Заявка сохранит контекст этой карточки, чтобы подбор был точнее.",
-      successNote:
-        "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
-      statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
-    };
-  }
-
-  return {
+const fallbackLeadCopy: ProductLeadCopy = {
+  available: {
     kind: "purchase",
     scenario: "Записаться на просмотр",
     title: "Проверить наличие и записаться",
@@ -74,8 +24,57 @@ function leadMode(stockStatus: string): ProductLeadMode {
     submittingLabel: "Отправляем...",
     idleNote: "Заявка будет привязана к этой карточке и текущим условиям.",
     successNote: "Заявка принята. Мы свяжемся и подтвердим наличие.",
+    errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
     statusNote: "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
-  };
+  },
+  reserved: {
+    kind: "purchase",
+    scenario: "Встать в лист ожидания по брони",
+    title: "Встать в лист ожидания",
+    contactPlaceholder: "Телефон или Telegram",
+    messagePlaceholder: "Например, если бронь освободится, готов посмотреть сегодня",
+    submitLabel: "Встать в лист ожидания",
+    submittingLabel: "Отправляем...",
+    idleNote: "Заявка будет привязана к этой карточке и текущему статусу.",
+    successNote:
+      "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
+    errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+    statusNote:
+      "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
+  },
+  sold: {
+    kind: "selection",
+    scenario: "Подобрать похожее устройство",
+    title: "Подобрать альтернативу",
+    contactPlaceholder: "Телефон или Telegram",
+    messagePlaceholder: "Например, хочу похожий iPhone с таким же объёмом памяти",
+    submitLabel: "Подобрать альтернативу",
+    submittingLabel: "Отправляем...",
+    idleNote: "Заявка сохранит контекст этой карточки, чтобы подбор был точнее.",
+    successNote:
+      "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
+    errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+    statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
+  },
+};
+
+function normalizeStockStatus(value: string): string {
+  const status = value.trim().toLowerCase();
+  if (!status || status === "in_stock") return "available";
+  if (status === "service") return "hidden";
+  return status;
+}
+
+function leadMode(stockStatus: string, copy: ProductLeadCopy): ProductLeadFormMode {
+  if (stockStatus === "reserved") {
+    return copy.reserved;
+  }
+
+  if (stockStatus === "sold") {
+    return copy.sold;
+  }
+
+  return copy.available;
 }
 
 export function ProductLeadForm({
@@ -84,12 +83,14 @@ export function ProductLeadForm({
   formId,
   stockStatus = "available",
   stockStatusLabel = "В наличии",
+  leadCopy = fallbackLeadCopy,
 }: {
   deviceId: string;
   deviceTitle: string;
   formId?: string;
   stockStatus?: string;
   stockStatusLabel?: string;
+  leadCopy?: ProductLeadCopy;
 }) {
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
@@ -99,7 +100,7 @@ export function ProductLeadForm({
   const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
     useLeadIntake();
   const normalizedStockStatus = normalizeStockStatus(stockStatus);
-  const mode = leadMode(normalizedStockStatus);
+  const mode = leadMode(normalizedStockStatus, leadCopy);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -205,7 +206,7 @@ export function ProductLeadForm({
         {state === "success"
           ? mode.successNote
           : state === "error"
-            ? "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз."
+            ? mode.errorNote
             : mode.idleNote}
       </p>
     </form>

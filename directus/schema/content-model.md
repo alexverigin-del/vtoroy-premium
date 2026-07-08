@@ -58,6 +58,13 @@ the page template around those facts.
 | Passport         | Passport widget eyebrow, title, body, diagnostics and verified labels. |
 | Related devices  | Related block heading, CTA and prompt card copy/cues.                  |
 | Mobile CTA       | Sticky mobile action labels and ARIA label.                            |
+| Lead form        | Product lead copy for `available`, `reserved` and `sold` states.       |
+
+The Lead form groups are structured fields, not JSON. Each stock-state variant
+controls `kind`, manager-facing `scenario`, title, contact/comment
+placeholders, submit/submitting labels, status note, idle note, success note and
+error note. The public form still posts only to `/lead-intake`; Directus owns
+copy, not submission logic.
 
 ## `navigation_items`
 

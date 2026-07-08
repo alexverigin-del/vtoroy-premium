@@ -1091,25 +1091,25 @@ content ownership” queue.
 
 `/device/[slug]` now uses `device_page_settings` as the shared product page
 template singleton. It controls breadcrumbs/back link, section labels,
-warranty/passport/Trade copy, related-device prompt copy and mobile CTA labels.
-Per-device data remains in `devices`, `device_images`, `device_passports` and
-`trade_options`.
+warranty/passport/Trade copy, related-device prompt copy, mobile CTA labels and
+product lead form copy. Lead form variants are structured fields for
+`available`, `reserved` and `sold`: `kind`, manager-facing `scenario`, title,
+contact/comment placeholders, submit/submitting labels, status note, idle note,
+success note and error note. Per-device data remains in `devices`,
+`device_images`, `device_passports` and `trade_options`.
 
 Next content-editing priorities:
 
-1. Move product lead form microcopy into Directus: variants for
-   `available/reserved/sold`, placeholders, success/error/submitting copy and
-   manager-facing source labels. Keep `/lead-intake` as the server endpoint.
-2. Keep media hygiene at zero: `studio.files.review_folder_count = 0`,
+1. Keep media hygiene at zero: `studio.files.review_folder_count = 0`,
    `studio.page_sections.content.local_assets = 0` and
    `studio.page_sections.content.direct_asset_urls.warning = 0`. New editorial
    section images should use `page_sections.image` / Directus Files relations;
    nested JSON image URLs are advanced exceptions and should be audited before
    deploy.
-3. Add a `directus:audit-content-ownership` check that flags new public-facing
+2. Add a `directus:audit-content-ownership` check that flags new public-facing
    Russian copy in React/server components unless it is explicitly approved as
    system/accessibility/fallback text.
-4. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
+3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 
 ### Production Operations Priority

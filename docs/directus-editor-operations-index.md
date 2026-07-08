@@ -48,6 +48,9 @@ by all `/device/...` pages.
   live here.
 - Warranty, Passport, Trade, related-device and mobile sticky CTA labels live
   here.
+- Product lead form copy lives here too: use the three groups `Форма заявки: В
+  наличии`, `Форма заявки: Бронь` and `Форма заявки: Продано` for title,
+  placeholders, submit/success/error/status texts and manager-facing scenario.
 - Product-specific facts, price, photos, Passport rows and Trade values still
   live in `devices`, `device_images`, `device_passports` and `trade_options`.
 

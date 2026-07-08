@@ -9,6 +9,203 @@
  *   docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 < /tmp/isvoi_device_page_settings.sql
  */
 
+const leadModeDefaults = {
+  available: {
+    label: "В наличии",
+    groupSort: 150,
+    kind: "purchase",
+    scenario: "Записаться на просмотр",
+    title: "Проверить наличие и записаться",
+    contactPlaceholder: "Телефон или Telegram",
+    messagePlaceholder: "Например, хочу посмотреть сегодня после 18:00",
+    submitLabel: "Записаться на просмотр",
+    submittingLabel: "Отправляем...",
+    idleNote: "Заявка будет привязана к этой карточке и текущим условиям.",
+    successNote: "Заявка принята. Мы свяжемся и подтвердим наличие.",
+    errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+    statusNote: "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
+  },
+  reserved: {
+    label: "Бронь",
+    groupSort: 170,
+    kind: "purchase",
+    scenario: "Встать в лист ожидания по брони",
+    title: "Встать в лист ожидания",
+    contactPlaceholder: "Телефон или Telegram",
+    messagePlaceholder: "Например, если бронь освободится, готов посмотреть сегодня",
+    submitLabel: "Встать в лист ожидания",
+    submittingLabel: "Отправляем...",
+    idleNote: "Заявка будет привязана к этой карточке и текущему статусу.",
+    successNote:
+      "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
+    errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+    statusNote:
+      "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
+  },
+  sold: {
+    label: "Продано",
+    groupSort: 190,
+    kind: "selection",
+    scenario: "Подобрать похожее устройство",
+    title: "Подобрать альтернативу",
+    contactPlaceholder: "Телефон или Telegram",
+    messagePlaceholder: "Например, хочу похожий iPhone с таким же объёмом памяти",
+    submitLabel: "Подобрать альтернативу",
+    submittingLabel: "Отправляем...",
+    idleNote: "Заявка сохранит контекст этой карточки, чтобы подбор был точнее.",
+    successNote:
+      "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
+    errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+    statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
+  },
+};
+
+const leadFieldSpecs = [
+  {
+    suffix: "kind",
+    db: "varchar",
+    interface: "select-dropdown",
+    width: "half",
+    note: "Тип заявки, который попадёт в leads.kind.",
+    translation: "Тип заявки",
+    options: `{"choices":[{"text":"Покупка / бронь","value":"purchase"},{"text":"Подбор","value":"selection"}]}`,
+  },
+  {
+    suffix: "scenario",
+    db: "varchar",
+    interface: "input",
+    width: "half",
+    note: "Сценарий заявки, который попадёт менеджеру в leads.scenario.",
+    translation: "Сценарий",
+  },
+  {
+    suffix: "title",
+    db: "varchar",
+    interface: "input",
+    width: "half",
+    note: "Заголовок формы на товарной странице.",
+    translation: "Заголовок формы",
+  },
+  {
+    suffix: "contact_placeholder",
+    db: "varchar",
+    interface: "input",
+    width: "half",
+    note: "Placeholder поля контакта.",
+    translation: "Placeholder контакта",
+  },
+  {
+    suffix: "message_placeholder",
+    db: "text",
+    interface: "input-multiline",
+    width: "full",
+    note: "Placeholder поля комментария.",
+    translation: "Placeholder комментария",
+  },
+  {
+    suffix: "submit_label",
+    db: "varchar",
+    interface: "input",
+    width: "half",
+    note: "Текст кнопки отправки.",
+    translation: "Кнопка",
+  },
+  {
+    suffix: "submitting_label",
+    db: "varchar",
+    interface: "input",
+    width: "half",
+    note: "Текст кнопки во время отправки.",
+    translation: "Кнопка при отправке",
+  },
+  {
+    suffix: "status_note",
+    db: "text",
+    interface: "input-multiline",
+    width: "full",
+    note: "Пояснение под заголовком формы для текущего статуса устройства.",
+    translation: "Статусный текст",
+  },
+  {
+    suffix: "idle_note",
+    db: "text",
+    interface: "input-multiline",
+    width: "full",
+    note: "Текст под формой до отправки.",
+    translation: "Текст до отправки",
+  },
+  {
+    suffix: "success_note",
+    db: "text",
+    interface: "input-multiline",
+    width: "full",
+    note: "Текст успешной отправки.",
+    translation: "Успешная отправка",
+  },
+  {
+    suffix: "error_note",
+    db: "text",
+    interface: "input-multiline",
+    width: "full",
+    note: "Текст ошибки отправки.",
+    translation: "Ошибка отправки",
+  },
+];
+
+function sqlLiteral(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function leadColumnName(mode, suffix) {
+  return `lead_${mode}_${suffix}`;
+}
+
+const leadTextFields = Object.keys(leadModeDefaults).flatMap((mode) =>
+  leadFieldSpecs.map((spec) => leadColumnName(mode, spec.suffix)),
+);
+
+const leadCreateColumns = Object.entries(leadModeDefaults)
+  .flatMap(([mode, values]) =>
+    leadFieldSpecs.map((spec) => {
+      const valueKey = spec.suffix.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      return `  ${leadColumnName(mode, spec.suffix)} ${spec.db} DEFAULT ${sqlLiteral(values[valueKey])}`;
+    }),
+  )
+  .join(",\n");
+
+const leadAlterColumns = Object.entries(leadModeDefaults)
+  .flatMap(([mode, values]) =>
+    leadFieldSpecs.map((spec) => {
+      const valueKey = spec.suffix.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      return `  ADD COLUMN IF NOT EXISTS ${leadColumnName(mode, spec.suffix)} ${spec.db} DEFAULT ${sqlLiteral(values[valueKey])}`;
+    }),
+  )
+  .join(",\n");
+
+const leadSeedAssignments = Object.entries(leadModeDefaults)
+  .flatMap(([mode, values]) =>
+    leadFieldSpecs.map((spec) => {
+      const valueKey = spec.suffix.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      const column = leadColumnName(mode, spec.suffix);
+      return `  ${column} = coalesce(nullif(${column}, ''), ${sqlLiteral(values[valueKey])})`;
+    }),
+  )
+  .join(",\n");
+
+const leadFieldSql = Object.entries(leadModeDefaults)
+  .map(([mode, values]) => {
+    const group = `group_lead_${mode}`;
+    const fields = leadFieldSpecs.map((spec, index) => {
+      const options = spec.options ? `'${spec.options}'::json` : "NULL";
+      return `SELECT isvoi_upsert_directus_field('device_page_settings', '${leadColumnName(mode, spec.suffix)}', '${spec.interface}', NULL, ${options}, '${spec.width}', ${values.groupSort + index + 1}, '${spec.note}', false, NULL, '${group}', false, false, '${spec.translation}');`;
+    });
+    return [
+      `SELECT isvoi_upsert_directus_field('device_page_settings', '${group}', 'group-detail', NULL, '{"headerIcon":"edit_note","start":"closed"}'::json, 'full', ${values.groupSort}, 'Тексты формы заявки для stock_status=${mode}. Эти поля управляют сайтом и тем, что видит менеджер в сценарии заявки.', false, 'alias,no-data,group', NULL, false, false, 'Форма заявки: ${values.label}');`,
+      ...fields,
+    ].join("\n");
+  })
+  .join("\n");
+
 const textFields = [
   "breadcrumb_home_label",
   "breadcrumb_home_href",
@@ -56,6 +253,7 @@ const textFields = [
   "mobile_available_label",
   "mobile_trade_label",
   "mobile_nav_aria_label",
+  ...leadTextFields,
 ];
 
 const readFields = ["id", "singleton_key", ...textFields, "related_prompt_cues"].join(",");
@@ -117,6 +315,7 @@ CREATE TABLE IF NOT EXISTS device_page_settings (
   mobile_available_label varchar DEFAULT 'Просмотр',
   mobile_trade_label varchar DEFAULT 'Trade',
   mobile_nav_aria_label varchar DEFAULT 'Действия по товару',
+${leadCreateColumns},
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -170,12 +369,17 @@ ALTER TABLE device_page_settings
   ADD COLUMN IF NOT EXISTS mobile_available_label varchar DEFAULT 'Просмотр',
   ADD COLUMN IF NOT EXISTS mobile_trade_label varchar DEFAULT 'Trade',
   ADD COLUMN IF NOT EXISTS mobile_nav_aria_label varchar DEFAULT 'Действия по товару',
+${leadAlterColumns},
   ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now(),
   ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 
 INSERT INTO device_page_settings (singleton_key)
 VALUES ('default')
 ON CONFLICT (singleton_key) DO NOTHING;
+
+UPDATE device_page_settings
+SET
+${leadSeedAssignments};
 
 INSERT INTO directus_collections (
   collection, icon, note, display_template, hidden, singleton, accountability, archive_app_filter
@@ -317,6 +521,8 @@ SELECT isvoi_upsert_directus_field('device_page_settings', 'mobile_sold_label', 
 SELECT isvoi_upsert_directus_field('device_page_settings', 'mobile_available_label', 'input', NULL, NULL, 'third', 133, 'Кнопка для устройства в наличии.', false, NULL, 'group_mobile', false, false, 'В наличии');
 SELECT isvoi_upsert_directus_field('device_page_settings', 'mobile_trade_label', 'input', NULL, NULL, 'half', 134, 'Короткая подпись второй кнопки.', false, NULL, 'group_mobile', false, false, 'Trade');
 SELECT isvoi_upsert_directus_field('device_page_settings', 'mobile_nav_aria_label', 'input', NULL, NULL, 'half', 135, 'ARIA label мобильной панели.', false, NULL, 'group_mobile', false, false, 'ARIA панели');
+
+${leadFieldSql}
 
 DROP FUNCTION isvoi_upsert_directus_field(varchar, varchar, varchar, varchar, json, varchar, integer, text, boolean, varchar, varchar, boolean, boolean, text);
 

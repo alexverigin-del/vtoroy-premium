@@ -212,6 +212,22 @@ export interface SitePage {
   sections: PageSection[];
 }
 
+export type ProductLeadKind = "purchase" | "selection";
+
+export interface ProductLeadFormMode {
+  kind: ProductLeadKind;
+  scenario: string;
+  title: string;
+  contactPlaceholder: string;
+  messagePlaceholder: string;
+  submitLabel: string;
+  submittingLabel: string;
+  idleNote: string;
+  successNote: string;
+  errorNote: string;
+  statusNote: string;
+}
+
 export interface DevicePageSettings {
   breadcrumbs: {
     homeLabel: string;
@@ -269,6 +285,11 @@ export interface DevicePageSettings {
     availableLabel: string;
     tradeLabel: string;
     navAriaLabel: string;
+  };
+  leadForm: {
+    available: ProductLeadFormMode;
+    reserved: ProductLeadFormMode;
+    sold: ProductLeadFormMode;
   };
 }
 

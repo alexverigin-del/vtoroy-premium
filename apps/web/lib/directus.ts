@@ -95,6 +95,51 @@ export const fallbackDevicePageSettings: DevicePageSettings = {
     tradeLabel: "Trade",
     navAriaLabel: "Действия по товару",
   },
+  leadForm: {
+    available: {
+      kind: "purchase",
+      scenario: "Записаться на просмотр",
+      title: "Проверить наличие и записаться",
+      contactPlaceholder: "Телефон или Telegram",
+      messagePlaceholder: "Например, хочу посмотреть сегодня после 18:00",
+      submitLabel: "Записаться на просмотр",
+      submittingLabel: "Отправляем...",
+      idleNote: "Заявка будет привязана к этой карточке и текущим условиям.",
+      successNote: "Заявка принята. Мы свяжемся и подтвердим наличие.",
+      errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+      statusNote:
+        "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
+    },
+    reserved: {
+      kind: "purchase",
+      scenario: "Встать в лист ожидания по брони",
+      title: "Встать в лист ожидания",
+      contactPlaceholder: "Телефон или Telegram",
+      messagePlaceholder: "Например, если бронь освободится, готов посмотреть сегодня",
+      submitLabel: "Встать в лист ожидания",
+      submittingLabel: "Отправляем...",
+      idleNote: "Заявка будет привязана к этой карточке и текущему статусу.",
+      successNote:
+        "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
+      errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+      statusNote:
+        "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
+    },
+    sold: {
+      kind: "selection",
+      scenario: "Подобрать похожее устройство",
+      title: "Подобрать альтернативу",
+      contactPlaceholder: "Телефон или Telegram",
+      messagePlaceholder: "Например, хочу похожий iPhone с таким же объёмом памяти",
+      submitLabel: "Подобрать альтернативу",
+      submittingLabel: "Отправляем...",
+      idleNote: "Заявка сохранит контекст этой карточки, чтобы подбор был точнее.",
+      successNote:
+        "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
+      errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+      statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
+    },
+  },
 };
 
 export const directusConfig = {
@@ -1090,6 +1135,32 @@ function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings
 function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): DevicePageSettings {
   const defaults = fallbackDevicePageSettings;
   const relatedPromptCues = stringList(row.related_prompt_cues);
+  const leadMode = (
+    key: keyof DevicePageSettings["leadForm"],
+  ): DevicePageSettings["leadForm"][typeof key] => {
+    const prefix = `lead_${key}_`;
+    const fallback = defaults.leadForm[key];
+    const kind = str(row[`${prefix}kind`], fallback.kind);
+    return {
+      kind: kind === "selection" ? "selection" : "purchase",
+      scenario: str(row[`${prefix}scenario`], fallback.scenario),
+      title: str(row[`${prefix}title`], fallback.title),
+      contactPlaceholder: str(
+        row[`${prefix}contact_placeholder`],
+        fallback.contactPlaceholder,
+      ),
+      messagePlaceholder: str(
+        row[`${prefix}message_placeholder`],
+        fallback.messagePlaceholder,
+      ),
+      submitLabel: str(row[`${prefix}submit_label`], fallback.submitLabel),
+      submittingLabel: str(row[`${prefix}submitting_label`], fallback.submittingLabel),
+      idleNote: str(row[`${prefix}idle_note`], fallback.idleNote),
+      successNote: str(row[`${prefix}success_note`], fallback.successNote),
+      errorNote: str(row[`${prefix}error_note`], fallback.errorNote),
+      statusNote: str(row[`${prefix}status_note`], fallback.statusNote),
+    };
+  };
 
   return {
     breadcrumbs: {
@@ -1170,6 +1241,11 @@ function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): Device
       availableLabel: str(row.mobile_available_label, defaults.mobile.availableLabel),
       tradeLabel: str(row.mobile_trade_label, defaults.mobile.tradeLabel),
       navAriaLabel: str(row.mobile_nav_aria_label, defaults.mobile.navAriaLabel),
+    },
+    leadForm: {
+      available: leadMode("available"),
+      reserved: leadMode("reserved"),
+      sold: leadMode("sold"),
     },
   };
 }

@@ -376,6 +376,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   formId={leadFormId}
                   stockStatus={device.stockStatus}
                   stockStatusLabel={stockStatusLabel(device, devicePageSettings)}
+                  leadCopy={devicePageSettings.leadForm}
                 />
 
                 <div className="mt-3">

@@ -245,13 +245,23 @@ def local_directus_file_insert(path: Path, *, title: str, folder: str, mime: str
     if not compose_file.exists() or not uploads_dir.exists():
         return ""
 
+    existing_id = local_psql_scalar(
+        f"""
+SELECT id
+FROM directus_files
+WHERE title = {sql_literal(title)}
+ORDER BY created_on DESC
+LIMIT 1;
+"""
+    )
+    if existing_id:
+        return existing_id
+
     file_id = str(uuid4())
     filename_disk = f"{file_id}{path.suffix}"
     target = uploads_dir / filename_disk
     shutil.copyfile(path, target)
 
-    db_user = os.environ.get("DB_USER", "isvoi")
-    db_name = os.environ.get("DB_DATABASE", "isvoi")
     filesize = target.stat().st_size
     sql = f"""
 INSERT INTO directus_files (
@@ -269,12 +279,22 @@ INSERT INTO directus_files (
 )
 RETURNING id;
 """
+    inserted_id = local_psql_scalar(sql)
+    if not inserted_id:
+        target.unlink(missing_ok=True)
+        raise RuntimeError("Local Directus file insert failed: no id returned")
+    return inserted_id
+
+
+def local_psql_scalar(sql: str) -> str:
+    db_user = os.environ.get("DB_USER", "isvoi")
+    db_name = os.environ.get("DB_DATABASE", "isvoi")
     result = subprocess.run(
         [
             "docker",
             "compose",
             "-f",
-            str(compose_file),
+            "infra/directus-beget/docker-compose.yml",
             "exec",
             "-T",
             "database",
@@ -293,9 +313,12 @@ RETURNING id;
         check=False,
     )
     if result.returncode != 0:
-        target.unlink(missing_ok=True)
         raise RuntimeError(f"Local Directus file insert failed: {result.stderr or result.stdout}")
-    return result.stdout.strip().splitlines()[-1]
+    for line in result.stdout.strip().splitlines():
+        value = line.strip()
+        if len(value) == 36 and value.count("-") == 4:
+            return value
+    return ""
 
 
 def upsert_batch(

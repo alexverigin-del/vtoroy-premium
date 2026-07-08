@@ -1130,7 +1130,8 @@ Next content-editing priorities:
 2. Keep `directus:audit:prod` blocker metrics green. Current non-blocking
    warnings are: `files.orphan_isvoi_files.warning = 7`,
    `files.hero_editorial_missing_focal_point.warning = 11` and
-   `import_batches.demo_or_real_batches.warning = 1`.
+   `import_batches.demo_or_real_batches.warning = 1` until the first demo/real
+   batch is run.
 3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 
@@ -1145,8 +1146,9 @@ Next content-editing priorities:
    checks before release. Do not publish placeholder consent UI.
 4. Continue growing the catalog through the operator import workflow.
 5. Create and run one real or demo `catalog_import_batches` item with workbook
-   and photo archive before mass catalog filling. The import audit currently
-   treats missing batches as a warning, not a deploy blocker.
+   and photo archive before mass catalog filling. Use
+   `npm run directus:catalog:demo-batch` for a safe `draft` / `hidden` demo
+   device that does not appear on the public site.
 6. Set focal points for editorial/site hero images or explicitly archive unused
    editorial files before tightening Files governance warnings into blockers.
 7. Keep reducing legacy fallback fields after Directus content reaches full

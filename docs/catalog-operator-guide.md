@@ -76,6 +76,7 @@ ISVOI: импортировать партию каталога
 ответственный оператор запускает:
 
 ```powershell
+npm run directus:catalog:demo-batch
 npm run directus:audit-import
 npm run directus:audit:prod
 ```
@@ -83,6 +84,9 @@ npm run directus:audit:prod
 `import_batches.demo_or_real_batches.warning = 1` означает, что в Studio ещё не
 было ни одной партии. Это не блокирует сайт, но массовое наполнение каталога
 лучше начинать только после одной успешной партии.
+
+Demo batch создаёт служебное устройство в `draft` / `hidden`; оно не появляется
+на сайте и нужно только для проверки маршрута workbook → ZIP → Files → import.
 
 Важно: товарные фото на сайте должны появляться только через `device_images`
 или fallback-поле `devices.listing_file`. Не вставляйте фото вручную в

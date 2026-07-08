@@ -93,11 +93,13 @@ $$;
 DO $$
 DECLARE
   v_device_folder uuid;
+  v_import_folder uuid;
   v_site_folder uuid;
   v_editorial_folder uuid;
   v_review_folder uuid;
 BEGIN
   v_device_folder := isvoi_file_folder_id('ISVOI Device Photos');
+  v_import_folder := isvoi_file_folder_id('ISVOI Catalog Imports');
   v_site_folder := isvoi_file_folder_id('ISVOI Site Assets', 'ISVOI Site Images');
   v_editorial_folder := isvoi_file_folder_id('ISVOI Editorial');
   v_review_folder := isvoi_file_folder_id('ISVOI File Review');
@@ -106,7 +108,12 @@ BEGIN
   SET folder = v_device_folder
   WHERE title LIKE 'isvoi:%'
     AND title NOT LIKE 'isvoi:site:%'
+    AND title NOT LIKE 'isvoi:catalog-import:%'
     AND title NOT LIKE 'isvoi:editorial:%';
+
+  UPDATE directus_files
+  SET folder = v_import_folder
+  WHERE title LIKE 'isvoi:catalog-import:%';
 
   UPDATE directus_files
   SET folder = v_site_folder
@@ -118,7 +125,7 @@ BEGIN
   WHERE title LIKE 'isvoi:editorial:%';
 END $$;
 
-SELECT isvoi_upsert_permission('ISVOI Catalog Import', 'directus_folders', 'read', '*', NULL);
+SELECT isvoi_upsert_permission('ISVOI Catalog Import', 'directus_folders', 'read', 'id,name,parent', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Catalog Import',
   'directus_folders',
@@ -129,7 +136,7 @@ SELECT isvoi_upsert_permission(
 );
 SELECT isvoi_upsert_permission('ISVOI Catalog Import', 'directus_folders', 'update', 'name,parent', NULL);
 
-SELECT isvoi_upsert_permission('ISVOI Importer', 'directus_folders', 'read', '*', NULL);
+SELECT isvoi_upsert_permission('ISVOI Importer', 'directus_folders', 'read', 'id,name,parent', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Importer',
   'directus_folders',
@@ -140,7 +147,7 @@ SELECT isvoi_upsert_permission(
 );
 SELECT isvoi_upsert_permission('ISVOI Importer', 'directus_folders', 'update', 'name,parent', NULL);
 
-SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_folders', 'read', '*', NULL);
+SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_folders', 'read', 'id,name,parent', NULL);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'directus_folders',
@@ -158,7 +165,13 @@ COMMIT;
 
 SELECT 'file_folders' AS check_name, count(*)::text AS value
 FROM directus_folders
-WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI File Review')
+WHERE name IN (
+  'ISVOI Device Photos',
+  'ISVOI Catalog Imports',
+  'ISVOI Site Assets',
+  'ISVOI Editorial',
+  'ISVOI File Review'
+)
 UNION ALL
 SELECT 'device_files_in_folder', count(*)::text
 FROM directus_files f
@@ -166,7 +179,14 @@ JOIN directus_folders d ON d.id = f.folder
 WHERE d.name = 'ISVOI Device Photos'
   AND f.title LIKE 'isvoi:%'
   AND f.title NOT LIKE 'isvoi:site:%'
+  AND f.title NOT LIKE 'isvoi:catalog-import:%'
   AND f.title NOT LIKE 'isvoi:editorial:%'
+UNION ALL
+SELECT 'catalog_import_files_in_folder', count(*)::text
+FROM directus_files f
+JOIN directus_folders d ON d.id = f.folder
+WHERE d.name = 'ISVOI Catalog Imports'
+  AND f.title LIKE 'isvoi:catalog-import:%'
 UNION ALL
 SELECT 'site_files_in_folder', count(*)::text
 FROM directus_files f

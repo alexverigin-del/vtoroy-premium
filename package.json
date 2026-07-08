@@ -29,7 +29,7 @@
     "directus:catalog:batch": "bash scripts/run_catalog_import_batch.sh",
     "directus:catalog:operator": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/operator_catalog_import.ps1",
     "directus:catalog:template": "python scripts/create_catalog_import_template.py",
-    "directus:catalog:demo-batch": "python scripts/create_catalog_demo_batch.py",
+    "directus:catalog:demo-batch": "bash -lc 'if [ -x .venv/bin/python ]; then .venv/bin/python scripts/create_catalog_demo_batch.py; else python3 scripts/create_catalog_demo_batch.py; fi'",
     "directus:media": "node scripts/import_device_media.mjs",
     "directus:site-assets": "node scripts/import_site_assets.mjs",
     "directus:normalize-images": "node scripts/normalize_directus_image_refs.mjs",

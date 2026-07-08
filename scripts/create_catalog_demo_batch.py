@@ -211,7 +211,12 @@ def upload_file(url: str, token: str, path: Path, *, title: str, folder: str) ->
             files={"file": (path.name, fh, mime)},
             timeout=120,
         )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as error:
+        raise RuntimeError(
+            f"Upload {path.name} failed: {response.status_code} {response.text[:1000]}"
+        ) from error
     return str(response.json()["data"]["id"])
 
 

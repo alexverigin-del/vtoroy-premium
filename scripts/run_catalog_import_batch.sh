@@ -92,6 +92,11 @@ if [ -f apps/web/.env.local ]; then
   set +a
 fi
 
+if [ -n "${CATALOG_IMPORT_DIRECTUS_TOKEN:-}" ]; then
+  DIRECTUS_TOKEN="$CATALOG_IMPORT_DIRECTUS_TOKEN"
+  export DIRECTUS_TOKEN
+fi
+
 if [ -z "${DIRECTUS_TOKEN:-}" ] && command -v docker >/dev/null 2>&1 && [ -f infra/directus-beget/docker-compose.yml ]; then
   DIRECTUS_TOKEN="$(
     printf "%s\n" "select token from directus_users where email = 'catalog-import@isvoi.local' limit 1;" \

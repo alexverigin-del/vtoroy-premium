@@ -52,7 +52,6 @@ const fields = {
     "gallery",
     "passport",
     "trade",
-    "images",
     "source_system",
     "source_id",
     "import_batch",

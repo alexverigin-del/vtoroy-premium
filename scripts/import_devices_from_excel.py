@@ -27,10 +27,13 @@ import json
 import mimetypes
 import os
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
+from uuid import uuid4
 
 from openpyxl import load_workbook
 
@@ -486,11 +489,124 @@ def upload_file(
             files={"file": (image_path.name, fh, mime)},
             timeout=120,
         )
-    res.raise_for_status()
+    try:
+        res.raise_for_status()
+    except REQUESTS_HTTP_ERROR as error:
+        fallback_id = local_directus_file_insert(
+            image_path,
+            title=title,
+            description=f"{device_id} {role}",
+            folder_id=folder_id,
+            mime=mime,
+        )
+        if fallback_id:
+            indexes["files"][title] = {"id": fallback_id, "title": title, "filename_download": image_path.name}
+            print(f"[upload:fallback] file {title} -> {fallback_id}")
+            return fallback_id
+        raise RuntimeError(
+            f"Upload {image_path.name} failed: {res.status_code} {res.text[:1000]}"
+        ) from error
     data = res.json()["data"]
     indexes["files"][title] = data
     print(f"[upload] file {title} -> {data['id']}")
     return str(data["id"])
+
+
+def sql_literal(value: object) -> str:
+    if value is None:
+        return "NULL"
+    return "'" + str(value).replace("'", "''") + "'"
+
+
+def local_directus_file_insert(
+    path: Path,
+    *,
+    title: str,
+    description: str,
+    folder_id: str | None,
+    mime: str,
+) -> str:
+    """Fallback for Beget-local imports when static-token /files upload is forbidden."""
+    compose_file = Path("infra/directus-beget/docker-compose.yml")
+    uploads_dir = Path("infra/directus-beget/uploads")
+    if not compose_file.exists() or not uploads_dir.exists():
+        return ""
+
+    existing_id = local_psql_scalar(
+        f"""
+SELECT id
+FROM directus_files
+WHERE title = {sql_literal(title)}
+ORDER BY created_on DESC
+LIMIT 1;
+"""
+    )
+    if existing_id:
+        return existing_id
+
+    file_id = str(uuid4())
+    filename_disk = f"{file_id}{path.suffix}"
+    target = uploads_dir / filename_disk
+    shutil.copyfile(path, target)
+
+    filesize = target.stat().st_size
+    sql = f"""
+INSERT INTO directus_files (
+  id, storage, filename_disk, filename_download, title, description, type, folder, filesize, uploaded_on
+) VALUES (
+  {sql_literal(file_id)}::uuid,
+  'local',
+  {sql_literal(filename_disk)},
+  {sql_literal(path.name)},
+  {sql_literal(title)},
+  {sql_literal(description)},
+  {sql_literal(mime)},
+  {sql_literal(folder_id)}::uuid,
+  {filesize},
+  now()
+)
+RETURNING id;
+"""
+    inserted_id = local_psql_scalar(sql)
+    if not inserted_id:
+        target.unlink(missing_ok=True)
+        raise RuntimeError("Local Directus file insert failed: no id returned")
+    return inserted_id
+
+
+def local_psql_scalar(sql: str) -> str:
+    db_user = os.environ.get("DB_USER", "isvoi")
+    db_name = os.environ.get("DB_DATABASE", "isvoi")
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "-f",
+            "infra/directus-beget/docker-compose.yml",
+            "exec",
+            "-T",
+            "database",
+            "psql",
+            "-U",
+            db_user,
+            "-d",
+            db_name,
+            "-At",
+            "-v",
+            "ON_ERROR_STOP=1",
+        ],
+        input=sql,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"Local Directus file insert failed: {result.stderr or result.stdout}")
+    for line in result.stdout.strip().splitlines():
+        value = line.strip()
+        if len(value) == 36 and value.count("-") == 4:
+            return value
+    return ""
 
 
 def sync_device_image(

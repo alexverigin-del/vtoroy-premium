@@ -127,6 +127,8 @@ const fields = {
   tradeOptionsDelete: "id,device,label",
   directusFilesRead: [
     "id",
+    "storage",
+    "filename_disk",
     "filename_download",
     "title",
     "description",

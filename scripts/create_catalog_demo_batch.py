@@ -205,7 +205,7 @@ def upload_file(url: str, token: str, path: Path, *, title: str, folder: str) ->
     mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
     with path.open("rb") as fh:
         response = requests.post(
-            f"{url}/files",
+            f"{url}/files?fields=id",
             headers=auth(token),
             data={"title": title, "folder": folder},
             files={"file": (path.name, fh, mime)},

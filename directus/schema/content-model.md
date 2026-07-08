@@ -130,9 +130,10 @@ stable `section_key`, rendered by a fixed component chosen via `variant`.
 | `is_active`           | boolean              | Hide without deleting.                                        |
 | `content`             | JSON                 | Section-specific typed data (see per-section shapes below).   |
 
-For section imagery, prefer the `image` M2O relation to Directus Files. Legacy
-`content.*.image_src` values are fallback hints only and should point to
-Directus asset URLs after migration, not to `/assets/...` bundle paths.
+For section imagery, use the `image` M2O relation to Directus Files. Do not put
+`/assets/...` or `https://api.isvoi.ru/assets/...` URLs into `content` JSON.
+Legacy `content.*.image_src` keys are treated as advanced fallbacks and are
+flagged by the Studio audit.
 
 ### `content` JSON shapes (per `section_key`)
 
@@ -146,11 +147,11 @@ edit JSON behind a typed interface (Directus JSON field with a schema hint).
 - `trade_calculator_intro` → `{ "note": string, "disclaimer": string }`
 - `catalog_preview` → `{ "limit": number, "filter": string, "filters": [{ "label": string, "value": string }], "statusFilters": [{ "label": string, "value": string }], "sortOptions": [{ "label": string, "value": string }] }`
 - `catalog_page_live` → `{ "headingTag": "h1", "filters": [{ "label": string, "value": string }], "statusFilters": [{ "label": string, "value": string }], "filterAriaLabel": string, "statusFilterLabel": string, "sortLabel": string, "sortAriaLabel": string, "sortOptions": [{ "label": string, "value": string }], "emptyState": { "headline": string, "body": string, "ctaLabel": string, "ctaUrl": string } }`
-- `store_preview` → `{ "visual": { "image_src": string, "image_alt": string, "caption_title": string, "caption_text": string }, "steps": [{ "title": string, "text": string }] }`
+- `store_preview` → `{ "visual": { "image_alt": string, "caption_title": string, "caption_text": string }, "steps": [{ "title": string, "text": string }] }` plus `page_sections.image`.
 - `passport_preview` → `{ "features": [{ "title": string, "text": string, "icon": "device" | "shield" | "clock" | "chart" }], "passport": { "device": string, "sub": string, "grade": string, "grade_label": string, "rows": [{ "label": string, "value": string, "state": "ok" | "warn" | "bad" }], "exit_label": string, "exit_value": string, "warranty": string, "warranty_strong": string } }`
 - `trade_preview` → `{ "choices": [{ "title": string, "text": string, "icon": "money" | "chart" | "swap" }], "valuation": { "heading": string, "from_device": string, "from_note": string, "to_device": string, "to_note": string, "label": string, "amount": string } }`
 - `club_preview` → `{ "levels": [{ "badge": string, "name": string, "tag": string, "features": string[], "featured": boolean }] }`
-- `diagnostics_compare` → `{ "diagnostics": { "image_src": string, "image_alt": string, "note_label": string, "note_text": string }, "comparison": { "aria_label": string, "label_header": string, "bad_header": string, "good_header": string, "rows": [{ "label": string, "bad": string, "good": string }] } }`
+- `diagnostics_compare` → `{ "diagnostics": { "image_alt": string, "note_label": string, "note_text": string }, "comparison": { "aria_label": string, "label_header": string, "bad_header": string, "good_header": string, "rows": [{ "label": string, "bad": string, "good": string }] } }` plus `page_sections.image`.
 - `final_cta` → `{ "proof": string[], "form": { "scenario_label": string, "scenario_aria_label": string, "scenario_options": string[], "device_label": string, "device_placeholder": string, "contact_label": string, "contact_placeholder": string, "submit_label": string, "note": string }, "footer_note": string }`
 - `passport_disclaimer` → `{ "text": string }`
 - everything else → `{}` (uses only the flat text/CTA fields).
@@ -259,7 +260,6 @@ floating Passport card from Directus.
   "is_active": true,
   "content": {
     "visual": {
-      "image_src": "/assets/store-real-premium-hero.webp",
       "image_alt": "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
       "caption_title": "Store как точка доверия.",
       "caption_text": "Чистая витрина, видимая ответственность и спокойная консультация без давления."
@@ -463,7 +463,6 @@ floating Passport card from Directus.
   "is_active": true,
   "content": {
     "diagnostics": {
-      "image_src": "/assets/generated-diagnostics.webp",
       "image_alt": "Открытая диагностика смартфона на чистом белом столе в премиальной сервисной зоне",
       "note_label": "Открытая проверка",
       "note_text": "Состояние видно до решения о покупке."

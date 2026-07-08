@@ -975,6 +975,14 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   `home.hero.content.visual.image_src`. It was removed because `home.hero`
   already has a managed `page_sections.image` Directus Files relation. The
   durable audit-v1 copy script no longer reseeds that local `image_src`.
+- Direct asset URL cleanup on 2026-07-08: the three production
+  `page_sections.content` values pointing to `https://api.isvoi.ru/assets/...`
+  were removed from `home.diagnostics_compare`,
+  `home.store_preview` and `store.store_location`. Editorial section images
+  now use `page_sections.image`; `store.store_location` is linked to the
+  existing `store-real-premium-hero.webp` Directus file through that relation.
+  The web fallback JSON and content-model examples no longer seed direct asset
+  URLs inside section JSON.
 - Directus asset transforms should be used for delivery instead of committing
   multiple generated derivatives.
 - Image optimization policy as of 2026-07-01: keep the current dual layer for
@@ -1092,12 +1100,12 @@ Next content-editing priorities:
 1. Move product lead form microcopy into Directus: variants for
    `available/reserved/sold`, placeholders, success/error/submitting copy and
    manager-facing source labels. Keep `/lead-intake` as the server endpoint.
-2. Remove remaining image URLs from `page_sections.content` where possible:
-   prefer `page_sections.image` / Directus Files relations for editorial images.
-   Nested JSON image URLs should be treated as advanced exceptions and audited.
-   After the File Review and local asset cleanup, the known media hygiene
-   warning is `studio.page_sections.content.direct_asset_urls.warning = 3`;
-   `studio.page_sections.content.local_assets = 0`.
+2. Keep media hygiene at zero: `studio.files.review_folder_count = 0`,
+   `studio.page_sections.content.local_assets = 0` and
+   `studio.page_sections.content.direct_asset_urls.warning = 0`. New editorial
+   section images should use `page_sections.image` / Directus Files relations;
+   nested JSON image URLs are advanced exceptions and should be audited before
+   deploy.
 3. Add a `directus:audit-content-ownership` check that flags new public-facing
    Russian copy in React/server components unless it is explicitly approved as
    system/accessibility/fallback text.

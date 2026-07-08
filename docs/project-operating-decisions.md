@@ -883,13 +883,16 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   guardrails, import batch readiness, destructive editor permissions, Files
   governance and lead source context. Run it with the other Directus audits
   before and after Studio-related production changes.
-- As of 2026-07-05, production `directus:audit-studio` has zero blockers:
+- As of 2026-07-08, production `directus:audit-studio` has zero blockers:
   collection UX metadata, field notes, bookmarks, page-section local assets,
   destructive editor permissions, Files folders, device image alt/label and
-  open lead source context are clean. Expected follow-up counters are 4
-  `page_sections.content.direct_asset_urls.warning`, 8 files in
-  `ISVOI File Review`, and 0 import batches until the first real operator
-  batch is created.
+  open lead source context are clean. The demo operator batch
+  `29016ca3-a815-406c-b492-f2d8f0b93f5c` was created and imported
+  successfully as a `draft` / `hidden` service device, so
+  `import_batches.demo_or_real_batches.warning = 0`. Remaining expected
+  follow-up counters are non-blocking media hygiene warnings:
+  `files.orphan_isvoi_files.warning = 7` and
+  `files.hero_editorial_missing_focal_point.warning = 11`.
 - Completed menu/header work points 1 and 2 before the 2026-06-28 hardening
   pass: homepage metadata uses Directus-managed content, and logo sizing plus
   optional logo caption are edited through `site_settings` in Studio. Keep
@@ -1128,10 +1131,8 @@ Next content-editing priorities:
    images should use `page_sections.image` / Directus Files relations; nested
    JSON image URLs are no longer part of the content model.
 2. Keep `directus:audit:prod` blocker metrics green. Current non-blocking
-   warnings are: `files.orphan_isvoi_files.warning = 7`,
-   `files.hero_editorial_missing_focal_point.warning = 11` and
-   `import_batches.demo_or_real_batches.warning = 1` until the first demo/real
-   batch is run.
+   warnings are: `files.orphan_isvoi_files.warning = 7` and
+   `files.hero_editorial_missing_focal_point.warning = 11`.
 3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 
@@ -1144,14 +1145,12 @@ Next content-editing priorities:
 3. Prepare approved privacy/personal-data consent text, add legal/trust links
    near lead forms and footer, and include those routes in copy/visual smoke
    checks before release. Do not publish placeholder consent UI.
-4. Continue growing the catalog through the operator import workflow.
-5. Create and run one real or demo `catalog_import_batches` item with workbook
-   and photo archive before mass catalog filling. Use
-   `npm run directus:catalog:demo-batch` for a safe `draft` / `hidden` demo
-   device that does not appear on the public site.
-6. Set focal points for editorial/site hero images or explicitly archive unused
+4. Continue growing the catalog through the operator import workflow. The first
+   safe demo batch is already proven; the next catalog step is a small real
+   stock batch with the same workbook + ZIP process.
+5. Set focal points for editorial/site hero images or explicitly archive unused
    editorial files before tightening Files governance warnings into blockers.
-7. Keep reducing legacy fallback fields after Directus content reaches full
+6. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.
-8. Keep auditing for legacy fallback data and obsolete docs/scripts now that
+7. Keep auditing for legacy fallback data and obsolete docs/scripts now that
    public routes no longer depend on legacy HTML/CSS/JS runtime files.

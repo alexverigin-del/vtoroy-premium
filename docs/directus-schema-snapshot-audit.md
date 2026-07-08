@@ -183,6 +183,8 @@ Expected or informational non-zero values:
 - `files.hero_editorial_missing_focal_point.warning` should trend to `0` before
   traffic/media scale, but does not block deploy today.
 - `import_batches.demo_or_real_batches.warning = 1` means the operator import
-  workflow has not yet been proven by a real or demo batch. Use
-  `npm run directus:catalog:demo-batch` to create a safe draft/hidden demo batch
-  before large catalog filling.
+  workflow has not yet been proven by a real or demo batch. Production was
+  proven on 2026-07-08 with demo batch
+  `29016ca3-a815-406c-b492-f2d8f0b93f5c`, so this warning should normally be
+  `0`. Use `npm run directus:catalog:demo-batch` only to recreate a safe
+  draft/hidden demo batch after workflow changes.

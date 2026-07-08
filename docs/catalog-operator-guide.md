@@ -81,9 +81,11 @@ npm run directus:audit-import
 npm run directus:audit:prod
 ```
 
-`import_batches.demo_or_real_batches.warning = 1` означает, что в Studio ещё не
-было ни одной партии. Это не блокирует сайт, но массовое наполнение каталога
-лучше начинать только после одной успешной партии.
+`import_batches.demo_or_real_batches.warning = 1` означает, что в Studio нет
+успешной демо- или реальной партии. Production workflow уже был проверен
+2026-07-08 на партии `29016ca3-a815-406c-b492-f2d8f0b93f5c`; если warning снова
+стал `1`, перед массовым наполнением заново прогоните demo или маленькую
+реальную партию.
 
 Demo batch создаёт служебное устройство в `draft` / `hidden`; оно не появляется
 на сайте и нужно только для проверки маршрута workbook → ZIP → Files → import.

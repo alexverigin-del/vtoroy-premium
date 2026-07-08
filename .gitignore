@@ -29,6 +29,7 @@ venv/
 # Directus / infra runtime data
 var/
 backups/
+imports/
 infra/directus-beget/data/
 infra/directus-beget/uploads/
 infra/directus-beget/extensions/

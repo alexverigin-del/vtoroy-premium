@@ -123,7 +123,12 @@ def request_json(
         json=payload,
         timeout=60,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as error:
+        raise RuntimeError(
+            f"{method} {endpoint} failed: {response.status_code} {response.text[:1000]}"
+        ) from error
     return response.json().get("data")
 
 

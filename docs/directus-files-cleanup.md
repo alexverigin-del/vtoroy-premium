@@ -19,9 +19,14 @@ npm run directus:setup:files-cleanup
 - переносит неиспользуемые `isvoi:site:*` файлы из публичной папки в `ISVOI File Review`;
 - добавляет editor bookmarks в Files: `Product Photos`, `Site Assets`, `Editorial`, `Review Unused`, `Unsorted`;
 - добавляет Studio-памятки для коллекции Files и ключевых полей: `folder`, `title`, `description`, `tags`, размеры, тип и focal point;
+- ставит центрированный focal point для raster-изображений из `ISVOI Site Assets` и `ISVOI Editorial`, если focal point ещё не задан;
 - помечает используемые файлы тегами `isvoi,device,used` или `isvoi,site,used`.
 
 После проверки папки `ISVOI File Review` можно отдельно принять решение: оставить как архив, переиспользовать файл в контенте или удалить вручную.
+
+Production-норма после уборки 2026-07-08: `files.orphan_isvoi_files.warning = 0`
+и `files.hero_editorial_missing_focal_point.warning = 0`. SVG вроде favicon не
+требуют focal point и исключены из focal-аудита.
 
 ## Памятка для редактора
 

@@ -83,6 +83,7 @@ FROM directus_files f
 JOIN folders folder ON folder.id = f.folder
 WHERE folder.name IN ('ISVOI Site Assets', 'ISVOI Editorial')
   AND coalesce(f.type, '') LIKE 'image/%'
+  AND coalesce(f.type, '') <> 'image/svg+xml'
   AND (f.focal_point_x IS NULL OR f.focal_point_y IS NULL)
 UNION ALL
 SELECT 'files.device_photos', count(*)::text

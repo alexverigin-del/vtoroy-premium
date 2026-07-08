@@ -185,6 +185,15 @@ BEGIN
   SET folder = v_editorial_folder
   WHERE title LIKE 'isvoi:editorial:%';
 
+  UPDATE directus_files f
+  SET focal_point_x = GREATEST(0, floor(coalesce(f.width, 0) / 2.0)::integer),
+    focal_point_y = GREATEST(0, floor(coalesce(f.height, 0) / 2.0)::integer),
+    tags = concat_ws(',', nullif(f.tags, ''), 'focal:auto-center')
+  WHERE f.folder IN (v_site_folder, v_editorial_folder)
+    AND coalesce(f.type, '') LIKE 'image/%'
+    AND coalesce(f.type, '') <> 'image/svg+xml'
+    AND (f.focal_point_x IS NULL OR f.focal_point_y IS NULL);
+
   -- Move unreferenced site uploads out of the public site-assets folder.
   UPDATE directus_files f
   SET folder = v_review_folder,
@@ -374,7 +383,15 @@ WHERE collection = 'directus_files'
     'focal_point_x',
     'focal_point_y'
   )
-  AND note IS NOT NULL;
+  AND note IS NOT NULL
+UNION ALL
+SELECT 'files.raster_missing_focal_after_cleanup', count(*)::text
+FROM directus_files f
+JOIN directus_folders d ON d.id = f.folder
+WHERE d.name IN ('ISVOI Site Assets', 'ISVOI Editorial')
+  AND coalesce(f.type, '') LIKE 'image/%'
+  AND coalesce(f.type, '') <> 'image/svg+xml'
+  AND (f.focal_point_x IS NULL OR f.focal_point_y IS NULL);
 
 COMMIT;
 `);

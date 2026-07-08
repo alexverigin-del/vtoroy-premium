@@ -178,10 +178,10 @@ Expected or informational non-zero values:
   `studio.files.device_originals_over_10mb.warning` and
   `studio.leads.in_progress_without_assignee.warning` are review prompts, not
   automatic deploy blockers.
-- `files.orphan_isvoi_files.warning` can be non-zero while editorial archive
-  files are intentionally kept for reuse.
-- `files.hero_editorial_missing_focal_point.warning` should trend to `0` before
-  traffic/media scale, but does not block deploy today.
+- `files.orphan_isvoi_files.warning` and
+  `files.hero_editorial_missing_focal_point.warning` are review prompts, but
+  production should normally keep both at `0`. On 2026-07-08 archive orphans
+  were removed and raster Site Assets / Editorial focal points were filled.
 - `import_batches.demo_or_real_batches.warning = 1` means the operator import
   workflow has not yet been proven by a real or demo batch. Production was
   proven on 2026-07-08 with demo batch

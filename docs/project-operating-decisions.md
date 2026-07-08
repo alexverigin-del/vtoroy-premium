@@ -889,10 +889,11 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   open lead source context are clean. The demo operator batch
   `29016ca3-a815-406c-b492-f2d8f0b93f5c` was created and imported
   successfully as a `draft` / `hidden` service device, so
-  `import_batches.demo_or_real_batches.warning = 0`. Remaining expected
-  follow-up counters are non-blocking media hygiene warnings:
-  `files.orphan_isvoi_files.warning = 7` and
-  `files.hero_editorial_missing_focal_point.warning = 11`.
+  `import_batches.demo_or_real_batches.warning = 0`. Files governance was also
+  cleaned on 2026-07-08: 7 unreferenced `isvoi:editorial:archive:*` files were
+  removed, raster Site Assets / Editorial images received focal points, and
+  `files.orphan_isvoi_files.warning = 0` plus
+  `files.hero_editorial_missing_focal_point.warning = 0`.
 - Completed menu/header work points 1 and 2 before the 2026-06-28 hardening
   pass: homepage metadata uses Directus-managed content, and logo sizing plus
   optional logo caption are edited through `site_settings` in Studio. Keep
@@ -1130,9 +1131,9 @@ Next content-editing priorities:
    `studio.page_sections.content.image_src_keys = 0`. New editorial section
    images should use `page_sections.image` / Directus Files relations; nested
    JSON image URLs are no longer part of the content model.
-2. Keep `directus:audit:prod` blocker metrics green. Current non-blocking
-   warnings are: `files.orphan_isvoi_files.warning = 7` and
-   `files.hero_editorial_missing_focal_point.warning = 11`.
+2. Keep `directus:audit:prod` blocker metrics green. As of 2026-07-08 there
+   are no known Files governance warnings: orphan ISVOI files and missing
+   raster focal points are both `0`.
 3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 
@@ -1148,9 +1149,7 @@ Next content-editing priorities:
 4. Continue growing the catalog through the operator import workflow. The first
    safe demo batch is already proven; the next catalog step is a small real
    stock batch with the same workbook + ZIP process.
-5. Set focal points for editorial/site hero images or explicitly archive unused
-   editorial files before tightening Files governance warnings into blockers.
-6. Keep reducing legacy fallback fields after Directus content reaches full
+5. Keep reducing legacy fallback fields after Directus content reaches full
    production completeness.
-7. Keep auditing for legacy fallback data and obsolete docs/scripts now that
+6. Keep auditing for legacy fallback data and obsolete docs/scripts now that
    public routes no longer depend on legacy HTML/CSS/JS runtime files.

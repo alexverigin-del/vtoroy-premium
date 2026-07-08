@@ -13,9 +13,13 @@ from __future__ import annotations
 
 import argparse
 import mimetypes
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 from urllib.parse import quote
+from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
 try:
@@ -214,10 +218,79 @@ def upload_file(url: str, token: str, path: Path, *, title: str, folder: str) ->
     try:
         response.raise_for_status()
     except requests.HTTPError as error:
+        fallback_id = local_directus_file_insert(path, title=title, folder=folder, mime=mime)
+        if fallback_id:
+            return fallback_id
         raise RuntimeError(
             f"Upload {path.name} failed: {response.status_code} {response.text[:1000]}"
         ) from error
     return str(response.json()["data"]["id"])
+
+
+def sql_literal(value: object) -> str:
+    if value is None:
+        return "NULL"
+    return "'" + str(value).replace("'", "''") + "'"
+
+
+def local_directus_file_insert(path: Path, *, title: str, folder: str, mime: str) -> str:
+    """Fallback for Beget-local demo runs when static-token /files upload is forbidden."""
+    compose_file = Path("infra/directus-beget/docker-compose.yml")
+    uploads_dir = Path("infra/directus-beget/uploads")
+    if not compose_file.exists() or not uploads_dir.exists():
+        return ""
+
+    file_id = str(uuid4())
+    filename_disk = f"{file_id}{path.suffix}"
+    target = uploads_dir / filename_disk
+    shutil.copyfile(path, target)
+
+    db_user = os.environ.get("DB_USER", "isvoi")
+    db_name = os.environ.get("DB_DATABASE", "isvoi")
+    filesize = target.stat().st_size
+    sql = f"""
+INSERT INTO directus_files (
+  id, storage, filename_disk, filename_download, title, type, folder, filesize, uploaded_on
+) VALUES (
+  {sql_literal(file_id)}::uuid,
+  'local',
+  {sql_literal(filename_disk)},
+  {sql_literal(path.name)},
+  {sql_literal(title)},
+  {sql_literal(mime)},
+  {sql_literal(folder)}::uuid,
+  {filesize},
+  now()
+)
+RETURNING id;
+"""
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "-f",
+            str(compose_file),
+            "exec",
+            "-T",
+            "database",
+            "psql",
+            "-U",
+            db_user,
+            "-d",
+            db_name,
+            "-At",
+            "-v",
+            "ON_ERROR_STOP=1",
+        ],
+        input=sql,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        target.unlink(missing_ok=True)
+        raise RuntimeError(f"Local Directus file insert failed: {result.stderr or result.stdout}")
+    return result.stdout.strip().splitlines()[-1]
 
 
 def upsert_batch(

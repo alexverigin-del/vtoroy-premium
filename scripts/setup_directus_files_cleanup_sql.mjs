@@ -176,6 +176,8 @@ BEGIN
     UNION
     SELECT og_image::uuid FROM site_pages WHERE og_image IS NOT NULL
     UNION
+    SELECT logo_file::uuid FROM site_settings WHERE logo_file IS NOT NULL
+    UNION
     SELECT default_og_image::uuid FROM site_settings WHERE default_og_image IS NOT NULL
   );
 
@@ -204,6 +206,8 @@ BEGIN
         SELECT image::uuid FROM page_sections WHERE image IS NOT NULL
         UNION
         SELECT og_image::uuid FROM site_pages WHERE og_image IS NOT NULL
+        UNION
+        SELECT logo_file::uuid FROM site_settings WHERE logo_file IS NOT NULL
         UNION
         SELECT default_og_image::uuid FROM site_settings WHERE default_og_image IS NOT NULL
       ) used

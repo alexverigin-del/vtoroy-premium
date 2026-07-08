@@ -970,6 +970,11 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   `isvoi,editorial,archive` tags instead of being deleted. The durable cleanup
   script now treats `site_settings.logo_file` as a used site asset so favicon
   does not regress into File Review on future runs.
+- Local asset cleanup on 2026-07-08: the only production
+  `page_sections.content` value pointing to `/assets/...` was
+  `home.hero.content.visual.image_src`. It was removed because `home.hero`
+  already has a managed `page_sections.image` Directus Files relation. The
+  durable audit-v1 copy script no longer reseeds that local `image_src`.
 - Directus asset transforms should be used for delivery instead of committing
   multiple generated derivatives.
 - Image optimization policy as of 2026-07-01: keep the current dual layer for
@@ -1090,9 +1095,9 @@ Next content-editing priorities:
 2. Remove remaining image URLs from `page_sections.content` where possible:
    prefer `page_sections.image` / Directus Files relations for editorial images.
    Nested JSON image URLs should be treated as advanced exceptions and audited.
-   After the File Review cleanup, the known media hygiene warnings are
-   `studio.page_sections.content.local_assets = 1` and
-   `studio.page_sections.content.direct_asset_urls.warning = 3`.
+   After the File Review and local asset cleanup, the known media hygiene
+   warning is `studio.page_sections.content.direct_asset_urls.warning = 3`;
+   `studio.page_sections.content.local_assets = 0`.
 3. Add a `directus:audit-content-ownership` check that flags new public-facing
    Russian copy in React/server components unless it is explicitly approved as
    system/accessibility/fallback text.

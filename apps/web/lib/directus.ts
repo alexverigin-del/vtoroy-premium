@@ -42,7 +42,7 @@ export const fallbackDevicePageSettings: DevicePageSettings = {
     homeHref: "/",
     catalogLabel: "Каталог",
     catalogHref: "/catalog",
-    backLabel: "← Store",
+    backLabel: "← Каталог",
   },
   labels: {
     gradePrefix: "грейд",
@@ -1132,9 +1132,17 @@ function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings
   };
 }
 
+function deviceBackLabel(label: string, href: string): string {
+  const trimmed = label.trim();
+  const normalizedHref = href.replace(/\/+$/, "") || "/";
+  return normalizedHref === "/catalog" && /store/i.test(trimmed) ? "← Каталог" : trimmed;
+}
+
 function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): DevicePageSettings {
   const defaults = fallbackDevicePageSettings;
   const relatedPromptCues = stringList(row.related_prompt_cues);
+  const catalogHref = str(row.breadcrumb_catalog_href, defaults.breadcrumbs.catalogHref);
+  const backLabel = deviceBackLabel(str(row.back_label, defaults.breadcrumbs.backLabel), catalogHref);
   const leadMode = (
     key: keyof DevicePageSettings["leadForm"],
   ): DevicePageSettings["leadForm"][typeof key] => {
@@ -1161,8 +1169,8 @@ function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): Device
       homeLabel: str(row.breadcrumb_home_label, defaults.breadcrumbs.homeLabel),
       homeHref: str(row.breadcrumb_home_href, defaults.breadcrumbs.homeHref),
       catalogLabel: str(row.breadcrumb_catalog_label, defaults.breadcrumbs.catalogLabel),
-      catalogHref: str(row.breadcrumb_catalog_href, defaults.breadcrumbs.catalogHref),
-      backLabel: str(row.back_label, defaults.breadcrumbs.backLabel),
+      catalogHref,
+      backLabel,
     },
     labels: {
       gradePrefix: str(row.grade_prefix, defaults.labels.gradePrefix),

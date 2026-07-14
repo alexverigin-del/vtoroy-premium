@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-08T17:07:22.996Z",
+  "updatedAt": "2026-07-14T15:02:04.600Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -2949,6 +2949,13 @@
       "line": 43,
       "text": "Каталог",
       "id": "598145b1541ff403"
+    },
+    {
+      "file": "apps/web/lib/directus.ts",
+      "kind": "string",
+      "line": 45,
+      "text": "← Каталог",
+      "id": "cc0811dbfdf14741"
     },
     {
       "file": "apps/web/lib/directus.ts",

@@ -1142,7 +1142,10 @@ function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): Device
   const defaults = fallbackDevicePageSettings;
   const relatedPromptCues = stringList(row.related_prompt_cues);
   const catalogHref = str(row.breadcrumb_catalog_href, defaults.breadcrumbs.catalogHref);
-  const backLabel = deviceBackLabel(str(row.back_label, defaults.breadcrumbs.backLabel), catalogHref);
+  const backLabel = deviceBackLabel(
+    str(row.back_label, defaults.breadcrumbs.backLabel),
+    catalogHref,
+  );
   const leadMode = (
     key: keyof DevicePageSettings["leadForm"],
   ): DevicePageSettings["leadForm"][typeof key] => {

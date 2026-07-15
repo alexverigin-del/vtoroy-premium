@@ -35,7 +35,7 @@ sync when changing the live infrastructure.
 | Public site | `https://isvoi.ru/` and `https://www.isvoi.ru/` |
 | Directus API | `https://api.isvoi.ru/` |
 | Directus Studio | `https://api.isvoi.ru/admin/` |
-| Directus project branding | `ISVOI`, color `#1d1d1f`, favicon `isvoi:site:favicon` |
+| Directus project branding | `ISVOI`, color `#1d1d1f`, logo `isvoi:site:favicon`, public favicon `isvoi:site:favicon-gold` |
 | Next.js process | PM2 app `isvoi-web` |
 | Directus stack | `/opt/isvoi/infra/directus-beget` |
 | Directus container | `directus-beget-directus-1` |

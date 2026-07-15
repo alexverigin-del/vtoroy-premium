@@ -974,6 +974,19 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   `isvoi,editorial,archive` tags instead of being deleted. The durable cleanup
   script now treats `site_settings.logo_file` as a used site asset so favicon
   does not regress into File Review on future runs.
+- Favicon release on 2026-07-15: the public site serves the supplied multi-size
+  gold ICO from `/favicon.ico`. Directus stores its embedded 256px PNG as
+  `isvoi:site:favicon-gold` and uses it only for
+  `directus_settings.public_favicon`; `directus_settings.project_logo` and
+  `site_settings.logo_file` remain linked to the existing
+  `isvoi:site:favicon` SVG. `import_site_assets.mjs --only-title` limits the
+  operation to one deterministic asset and retains the established Beget-local
+  Files fallback when the least-privilege token cannot return system file
+  fields. Before the write, backup `20260715T152444Z` passed SHA256 checks for
+  PostgreSQL and uploads; off-server copy was skipped because
+  `OFFSITE_BACKUP_DEST` remains unset. Release head `f1bfe44` passed production
+  `web:verify`, `smoke:prod`, `smoke:images`, `smoke:visual`,
+  `smoke:performance` and `smoke:copy`.
 - Local asset cleanup on 2026-07-08: the only production
   `page_sections.content` value pointing to `/assets/...` was
   `home.hero.content.visual.image_src`. It was removed because `home.hero`

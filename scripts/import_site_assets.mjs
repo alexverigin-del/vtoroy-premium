@@ -12,6 +12,7 @@
  *
  * Add --replace to patch page_sections.image/content even when already set.
  * Add --upload-only to only upload missing files and skip page_sections patches.
+ * Add --only-title to sync one deterministic asset without touching the rest.
  */
 
 import { existsSync, readdirSync } from "node:fs";
@@ -22,7 +23,6 @@ const MIME_BY_EXT = new Map([
   [".jpg", "image/jpeg"],
   [".jpeg", "image/jpeg"],
   [".png", "image/png"],
-  [".ico", "image/x-icon"],
   [".svg", "image/svg+xml"],
   [".webp", "image/webp"],
   [".avif", "image/avif"],
@@ -51,7 +51,7 @@ const SECTION_ASSETS = [
 
 const ROOT_SITE_ASSETS = [
   {
-    file: "../favicon.ico",
+    file: "../favicon-gold.png",
     title: "isvoi:site:favicon-gold",
   },
 ];
@@ -74,12 +74,17 @@ function parseArgs(argv) {
     dryRun: false,
     replace: false,
     uploadOnly: false,
+    onlyTitle: "",
   };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--replace") args.replace = true;
     else if (arg === "--upload-only") args.uploadOnly = true;
+    else if (arg === "--only-title") {
+      args.onlyTitle = argv[++i];
+      if (!args.onlyTitle) throw new Error("--only-title requires a Directus file title.");
+    }
     else if (arg === "--assets-root") args.assetsRoot = argv[++i];
     else if (arg === "--folder") args.folder = argv[++i];
     else throw new Error(`Unknown argument: ${arg}`);
@@ -248,7 +253,12 @@ async function main() {
 
   const folderId = await ensureFolder(cfg, args.folder, args.dryRun);
   const existingFiles = await filesByTitle(cfg);
-  const assets = discoverAssets(assetsRoot);
+  const assets = discoverAssets(assetsRoot).filter(
+    (asset) => !args.onlyTitle || asset.title === args.onlyTitle,
+  );
+  if (assets.length === 0) {
+    throw new Error(`No site asset matched --only-title ${args.onlyTitle}.`);
+  }
   console.log(`${args.dryRun ? "[dry-run] " : ""}Syncing ${assets.length} site asset(s)`);
   if (args.uploadOnly) console.log("[upload-only] page_sections patches are disabled");
 

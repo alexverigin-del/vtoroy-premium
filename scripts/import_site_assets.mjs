@@ -15,8 +15,10 @@
  * Add --only-title to sync one deterministic asset without touching the rest.
  */
 
+import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { existsSync, readdirSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { copyFile, readFile, stat, unlink } from "node:fs/promises";
 import path from "node:path";
 
 const MIME_BY_EXT = new Map([
@@ -84,8 +86,7 @@ function parseArgs(argv) {
     else if (arg === "--only-title") {
       args.onlyTitle = argv[++i];
       if (!args.onlyTitle) throw new Error("--only-title requires a Directus file title.");
-    }
-    else if (arg === "--assets-root") args.assetsRoot = argv[++i];
+    } else if (arg === "--assets-root") args.assetsRoot = argv[++i];
     else if (arg === "--folder") args.folder = argv[++i];
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -156,6 +157,90 @@ async function ensureFolder(cfg, name, dryRun) {
   }
 }
 
+function sqlLiteral(value) {
+  if (value === null || value === undefined || value === "") return "NULL";
+  return `'${String(value).replaceAll("'", "''")}'`;
+}
+
+function localPsqlScalar(sql) {
+  const composeFile = path.resolve("infra/directus-beget/docker-compose.yml");
+  const result = spawnSync(
+    "docker",
+    [
+      "compose",
+      "-f",
+      composeFile,
+      "exec",
+      "-T",
+      "database",
+      "psql",
+      "-U",
+      process.env.DB_USER || "isvoi",
+      "-d",
+      process.env.DB_DATABASE || "isvoi",
+      "-At",
+      "-v",
+      "ON_ERROR_STOP=1",
+    ],
+    { input: sql, encoding: "utf8" },
+  );
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || "Local Directus SQL failed.");
+  }
+  return (
+    result.stdout
+      .trim()
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) => /^[0-9a-f-]{36}$/i.test(line)) || ""
+  );
+}
+
+async function localDirectusFileInsert(filePath, { title, folder, mime }) {
+  const composeFile = path.resolve("infra/directus-beget/docker-compose.yml");
+  const uploadsDir = path.resolve("infra/directus-beget/uploads");
+  if (!existsSync(composeFile) || !existsSync(uploadsDir)) return "";
+
+  const existingId = localPsqlScalar(`
+SELECT id
+FROM directus_files
+WHERE title = ${sqlLiteral(title)}
+ORDER BY uploaded_on DESC
+LIMIT 1;
+`);
+  if (existingId) return existingId;
+
+  const fileId = randomUUID();
+  const filenameDisk = `${fileId}${path.extname(filePath).toLowerCase()}`;
+  const target = path.join(uploadsDir, filenameDisk);
+  await copyFile(filePath, target);
+
+  try {
+    const { size } = await stat(target);
+    const insertedId = localPsqlScalar(`
+INSERT INTO directus_files (
+  id, storage, filename_disk, filename_download, title, type, folder, filesize, uploaded_on
+) VALUES (
+  ${sqlLiteral(fileId)}::uuid,
+  'local',
+  ${sqlLiteral(filenameDisk)},
+  ${sqlLiteral(path.basename(filePath))},
+  ${sqlLiteral(title)},
+  ${sqlLiteral(mime)},
+  ${sqlLiteral(folder)}::uuid,
+  ${size},
+  now()
+)
+RETURNING id;
+`);
+    if (!insertedId) throw new Error("Local Directus file insert returned no id.");
+    return insertedId;
+  } catch (error) {
+    await unlink(target).catch(() => {});
+    throw error;
+  }
+}
+
 async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun }) {
   const existing = existingFiles.get(title);
   if (existing?.id) {
@@ -171,16 +256,13 @@ async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun 
   }
 
   const ext = path.extname(filePath).toLowerCase();
+  const mime = MIME_BY_EXT.get(ext) || "application/octet-stream";
   const bytes = await readFile(filePath);
   const form = new FormData();
   if (folder) form.append("folder", folder);
   form.append("title", title);
   form.append("description", "ISVOI site/editorial image");
-  form.append(
-    "file",
-    new Blob([bytes], { type: MIME_BY_EXT.get(ext) || "application/octet-stream" }),
-    path.basename(filePath),
-  );
+  form.append("file", new Blob([bytes], { type: mime }), path.basename(filePath));
 
   const res = await fetch(`${cfg.url}/files?fields=id`, {
     method: "POST",
@@ -190,6 +272,12 @@ async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun 
   const text = await res.text();
   const json = text ? JSON.parse(text) : {};
   if (!res.ok) {
+    const fallbackId = await localDirectusFileInsert(filePath, { title, folder, mime });
+    if (fallbackId) {
+      existingFiles.set(title, { id: fallbackId, title });
+      console.log(`[upload:fallback] file ${title} -> ${fallbackId}`);
+      return fallbackId;
+    }
     throw new Error(`POST /files failed: ${res.status} ${text}`);
   }
   existingFiles.set(title, json.data);

@@ -182,7 +182,7 @@ async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun 
     path.basename(filePath),
   );
 
-  const res = await fetch(`${cfg.url}/files`, {
+  const res = await fetch(`${cfg.url}/files?fields=id`, {
     method: "POST",
     headers: headers(cfg, null),
     body: form,

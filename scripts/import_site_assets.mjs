@@ -22,6 +22,7 @@ const MIME_BY_EXT = new Map([
   [".jpg", "image/jpeg"],
   [".jpeg", "image/jpeg"],
   [".png", "image/png"],
+  [".ico", "image/x-icon"],
   [".svg", "image/svg+xml"],
   [".webp", "image/webp"],
   [".avif", "image/avif"],
@@ -45,6 +46,13 @@ const SECTION_ASSETS = [
     title: "isvoi:site:home:diagnostics",
     page: "home",
     section: "diagnostics_compare",
+  },
+];
+
+const ROOT_SITE_ASSETS = [
+  {
+    file: "../favicon.ico",
+    title: "isvoi:site:favicon-gold",
   },
 ];
 
@@ -227,7 +235,9 @@ function discoverAssets(assetsRoot) {
       title: `isvoi:site:${filename.replace(/\.[^.]+$/, "")}`,
     });
   }
-  return [...SECTION_ASSETS, ...discovered].sort((a, b) => a.title.localeCompare(b.title));
+  return [...SECTION_ASSETS, ...ROOT_SITE_ASSETS, ...discovered].sort((a, b) =>
+    a.title.localeCompare(b.title),
+  );
 }
 
 async function main() {

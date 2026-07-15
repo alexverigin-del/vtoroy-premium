@@ -319,8 +319,10 @@ pip install -r scripts/requirements.txt
 
 See `directus/schema/collections.md` for the full roles/permissions spec.
 
-Apply the ISVOI Studio/project branding after the `isvoi:site:favicon` file is
-present in Directus Files:
+Apply the ISVOI Studio/project branding after the site assets import has created
+`isvoi:site:favicon-gold` and the existing `isvoi:site:favicon` logo is present
+in Directus Files. The gold ICO is used for `public_favicon`; the SVG remains
+the Studio project logo and `site_settings.logo_file`:
 
 ```bash
 node scripts/setup_directus_project_branding_sql.mjs > /tmp/isvoi_project_branding.sql

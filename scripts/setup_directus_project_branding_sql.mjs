@@ -36,10 +36,17 @@ SET
     (
       SELECT id
       FROM directus_files
-      WHERE filename_download = 'favicon.svg'
+      WHERE filename_download = 'favicon.ico'
+         OR title = 'isvoi:site:favicon-gold'
+         OR filename_download = 'favicon.svg'
          OR title = 'isvoi:site:favicon'
       ORDER BY
-        CASE WHEN title = 'isvoi:site:favicon' THEN 0 ELSE 1 END,
+        CASE
+          WHEN title = 'isvoi:site:favicon-gold' THEN 0
+          WHEN filename_download = 'favicon.ico' THEN 1
+          WHEN title = 'isvoi:site:favicon' THEN 2
+          ELSE 3
+        END,
         uploaded_on DESC
       LIMIT 1
     ),

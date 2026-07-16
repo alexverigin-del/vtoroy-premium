@@ -7,6 +7,7 @@ import { ClubPreviewSection } from "./ClubPreviewSection";
 import { DiagnosticsCompareSection } from "./DiagnosticsCompareSection";
 import { FinalCtaSection } from "./FinalCtaSection";
 import { PassportPreviewSection } from "./PassportPreviewSection";
+import { RichText } from "./RichText";
 import { StorePreviewSection } from "./StorePreviewSection";
 import { TradePreviewSection } from "./TradePreviewSection";
 import { cn } from "../lib/cn";
@@ -231,9 +232,11 @@ function HomeHeroSection({ section }: { section: PageSection }) {
         </h1>
       ) : null}
       {section.body ? (
-        <p className="mx-auto mt-4 max-w-body-copy text-base leading-relaxed text-graphite md:mt-5 md:text-xl">
-          {section.body}
-        </p>
+        <RichText
+          className="mx-auto mt-4 max-w-body-copy text-base leading-relaxed text-graphite md:mt-5 md:text-xl"
+          html={section.body}
+          nodes={section.bodyRichText}
+        />
       ) : null}
 
       <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center md:mt-8">
@@ -337,7 +340,11 @@ function MarketTensionSection({ section }: { section: PageSection }) {
               </h2>
             ) : null}
             {section.body ? (
-              <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+              <RichText
+                className="mt-4 text-copy leading-relaxed text-graphite"
+                html={section.body}
+                nodes={section.bodyRichText}
+              />
             ) : null}
           </div>
 
@@ -394,7 +401,11 @@ function CircleRulesSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+            <RichText
+              className="mt-4 text-copy leading-relaxed text-graphite"
+              html={section.body}
+              nodes={section.bodyRichText}
+            />
           ) : null}
         </div>
         <ol className="mx-auto mt-8 grid max-w-content gap-3 md:mt-10 md:grid-cols-4">
@@ -468,7 +479,11 @@ function PathRouterSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+            <RichText
+              className="mt-4 text-copy leading-relaxed text-graphite"
+              html={section.body}
+              nodes={section.bodyRichText}
+            />
           ) : null}
         </div>
 

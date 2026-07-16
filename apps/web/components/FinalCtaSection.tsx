@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useId, useState } from "react";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
+import { RichText } from "./RichText";
 import { useLeadIntake } from "./useLeadIntake";
 import {
   homeSectionLabelClass,
@@ -127,9 +128,11 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
               </h2>
             ) : null}
             {section.body ? (
-              <p className="mt-4 max-w-form text-copy leading-relaxed text-graphite">
-                {section.body}
-              </p>
+              <RichText
+                className="mt-4 max-w-form text-copy leading-relaxed text-graphite"
+                html={section.body}
+                nodes={section.bodyRichText}
+              />
             ) : null}
             <div className="mt-6 flex flex-wrap gap-2">
               {renderedProof.map((item) => (

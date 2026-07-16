@@ -4,6 +4,7 @@ import type { PageSection } from "@vtoroy/shared";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import type { MarketingSlug } from "@/lib/site-content";
 import { DeviceCard } from "./DeviceCard";
+import { RichText } from "./RichText";
 import { cn } from "../lib/cn";
 import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
 import { normalizeSiteUrl } from "./site-chrome-utils";
@@ -341,7 +342,11 @@ function SectionHeader({ section }: { section: PageSection }) {
         </h2>
       ) : null}
       {section.body ? (
-        <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+        <RichText
+          className="mt-4 text-copy leading-relaxed text-graphite"
+          html={section.body}
+          nodes={section.bodyRichText}
+        />
       ) : null}
     </div>
   );
@@ -361,7 +366,11 @@ function DarkSectionHeader({ section }: { section: PageSection }) {
         </h2>
       ) : null}
       {section.body ? (
-        <p className="mt-4 text-copy leading-relaxed text-white/70">{section.body}</p>
+        <RichText
+          className="mt-4 text-copy leading-relaxed text-white/70 [&_a]:text-white"
+          html={section.body}
+          nodes={section.bodyRichText}
+        />
       ) : null}
     </div>
   );
@@ -423,9 +432,10 @@ function MarketingVisualBandSection({
   const rawImageSrc = section.image || "/assets/store-real-premium-hero.webp";
   const imageSrc = priority ? priorityImageSrc(rawImageSrc) : rawImageSrc;
   const captionTitle = visual.captionTitle || section.headline || "";
-  const captionText = visual.captionText || section.body || "";
+  const captionText = visual.captionText;
+  const captionBody = captionText ? "" : section.body || "";
 
-  if (!imageSrc && !captionTitle && !captionText) return null;
+  if (!imageSrc && !captionTitle && !captionText && !captionBody) return null;
 
   return (
     <section className="bg-white pb-14 pt-0 md:pb-20">
@@ -443,7 +453,7 @@ function MarketingVisualBandSection({
               className="object-cover"
             />
           ) : null}
-          {captionTitle || captionText ? (
+          {captionTitle || captionText || captionBody ? (
             <div className="absolute inset-x-4 bottom-4 rounded-card border border-hairline bg-white p-4 md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay-sm md:p-5">
               {captionTitle ? (
                 <strong className="block text-base font-semibold text-carbon">
@@ -452,6 +462,13 @@ function MarketingVisualBandSection({
               ) : null}
               {captionText ? (
                 <span className="mt-1 block text-sm leading-relaxed text-ash">{captionText}</span>
+              ) : null}
+              {captionBody ? (
+                <RichText
+                  className="mt-1 text-sm leading-relaxed text-ash"
+                  html={captionBody}
+                  nodes={section.bodyRichText}
+                />
               ) : null}
             </div>
           ) : null}
@@ -482,9 +499,11 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
         </h1>
       ) : null}
       {section.body ? (
-        <p className="mx-auto mt-5 max-w-measure text-lg leading-relaxed text-graphite md:text-xl">
-          {section.body}
-        </p>
+        <RichText
+          className="mx-auto mt-5 max-w-measure text-lg leading-relaxed text-graphite md:text-xl"
+          html={section.body}
+          nodes={section.bodyRichText}
+        />
       ) : null}
 
       {hasButtons ? (
@@ -699,9 +718,11 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mx-auto mt-4 max-w-prose-narrow text-copy leading-relaxed text-graphite">
-              {section.body}
-            </p>
+            <RichText
+              className="mx-auto mt-4 max-w-prose-narrow text-copy leading-relaxed text-graphite"
+              html={section.body}
+              nodes={section.bodyRichText}
+            />
           ) : null}
           {section.primaryCtaLabel || section.secondaryCtaLabel ? (
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">

@@ -6,6 +6,18 @@
 
 export type PublishStatus = "draft" | "published" | "archived";
 
+export type RichTextTag = "p" | "br" | "strong" | "b" | "em" | "i" | "ul" | "ol" | "li" | "a";
+
+export type RichTextNode =
+  | { type: "text"; text: string }
+  | {
+      type: "element";
+      tag: RichTextTag;
+      children: RichTextNode[];
+      href?: string;
+      openInNew?: boolean;
+    };
+
 export type PageSlug = "home" | "catalog" | "store" | "trade" | "club" | "passport" | "product";
 
 export interface SiteSettings {
@@ -186,7 +198,10 @@ export interface PageSection {
   eyebrow?: string;
   headline?: string;
   subheadline?: string;
+  /** Sanitized rich text HTML from Directus, or trusted repository fallback content. */
   body?: string;
+  /** Safe structured representation used by the React renderer. */
+  bodyRichText?: RichTextNode[];
   primaryCtaLabel?: string;
   primaryCtaUrl?: string;
   secondaryCtaLabel?: string;

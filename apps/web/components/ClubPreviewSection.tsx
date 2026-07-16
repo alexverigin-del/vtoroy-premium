@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { RichText } from "./RichText";
 import { darkSecondaryCtaClass, homeDarkSectionLabelClass, primaryCtaClass } from "./ui-classes";
 
 type ClubLevel = {
@@ -100,7 +101,11 @@ export function ClubPreviewSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-copy leading-relaxed text-white/70">{section.body}</p>
+            <RichText
+              className="mt-4 text-copy leading-relaxed text-white/70 [&_a]:text-white"
+              html={section.body}
+              nodes={section.bodyRichText}
+            />
           ) : null}
         </div>
 

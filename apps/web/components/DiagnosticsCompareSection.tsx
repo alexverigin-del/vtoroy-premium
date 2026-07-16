@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { PageSection } from "@vtoroy/shared";
+import { RichText } from "./RichText";
 import { homeSectionLabelClass } from "./ui-classes";
 
 type DiagnosticsContent = {
@@ -134,7 +135,11 @@ export function DiagnosticsCompareSection({ section }: { section: PageSection })
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+            <RichText
+              className="mt-4 text-copy leading-relaxed text-graphite"
+              html={section.body}
+              nodes={section.bodyRichText}
+            />
           ) : null}
         </div>
 

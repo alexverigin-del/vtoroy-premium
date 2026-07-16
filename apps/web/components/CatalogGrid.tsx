@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import type { DeviceCardData } from "@/lib/device-card-data";
+import { RichText } from "./RichText";
 import {
   CatalogDeviceList,
   CatalogToolbar,
@@ -77,7 +78,11 @@ export function CatalogGrid({
           <Heading className="mt-3 text-4xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
             {headline}
           </Heading>
-          <p className="mx-auto mt-4 max-w-prose text-copy leading-relaxed text-graphite">{body}</p>
+          <RichText
+            className="mx-auto mt-4 max-w-prose text-copy leading-relaxed text-graphite"
+            html={body}
+            nodes={section?.bodyRichText}
+          />
         </div>
 
         <CatalogToolbar

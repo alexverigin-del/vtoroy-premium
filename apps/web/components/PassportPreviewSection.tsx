@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { RichText } from "./RichText";
 import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 type FeatureItem = {
@@ -228,7 +229,11 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             </h2>
           ) : null}
           {section.body ? (
-            <p className="mt-4 text-copy leading-relaxed text-graphite">{section.body}</p>
+            <RichText
+              className="mt-4 text-copy leading-relaxed text-graphite"
+              html={section.body}
+              nodes={section.bodyRichText}
+            />
           ) : null}
 
           <ul className="mt-8 overflow-hidden rounded-card border border-hairline bg-white">

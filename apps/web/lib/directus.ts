@@ -14,6 +14,7 @@ import { cache } from "react";
 
 import { SITE_SETTINGS_CACHE_TAG } from "@/lib/cache-tags";
 import type { DeviceCardData } from "@/lib/device-card-data";
+import { prepareRichText } from "@/lib/rich-text";
 import { fallbackDevices } from "@/data/devices";
 
 // Directus client for the Catalog MVP.
@@ -970,6 +971,8 @@ export const getDeviceBySlug = cache(async function getDeviceBySlug(
 // ---------------------------------------------------------------------------
 
 function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
+  const body = prepareRichText(row.body);
+
   return {
     id: str(row.id),
     sectionKey: str(row.section_key),
@@ -977,7 +980,8 @@ function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
     eyebrow: str(row.eyebrow),
     headline: str(row.headline),
     subheadline: str(row.subheadline),
-    body: str(row.body),
+    body: body.html,
+    bodyRichText: body.nodes,
     primaryCtaLabel: str(row.primary_cta_label),
     primaryCtaUrl: str(row.primary_cta_url),
     secondaryCtaLabel: str(row.secondary_cta_label),

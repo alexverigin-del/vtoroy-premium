@@ -27,6 +27,11 @@ Logo workflow:
 - If the uploaded image is only `I СВОИ`, put any second line in `Подпись под логотипом`.
 - Turn off `Показывать название` when the image itself already contains the brand name.
 
+After saving the settings row, the active Directus event Flow invalidates the
+public Next.js data and page caches. The next public request should therefore
+show the new settings immediately. The five-minute ISR window remains a fallback
+if the webhook is temporarily unavailable.
+
 ## Navigation
 
 Open `Навигация`.
@@ -99,4 +104,5 @@ Apply Studio metadata with:
 ```bash
 npm run directus:setup:global-content
 npm run directus:setup:faq-editor
+npm run directus:setup:site-settings-revalidation
 ```

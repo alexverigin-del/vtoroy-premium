@@ -28,6 +28,7 @@ const auditDefinitions = {
       "schema.custom_tables.untracked",
       "schema.required_file_folders.missing",
       "schema.import_flows.missing",
+      "schema.revalidation_flows.missing",
       "permissions.non_admin_admin_access",
       "permissions.service_app_access",
       "permissions.non_admin_system_permissions",

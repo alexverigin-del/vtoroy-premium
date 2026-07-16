@@ -96,6 +96,15 @@ if (!backupStatus) {
   console.log(`backup.latest_sha256: ${backupStatus}`);
 }
 
+const revalidationSecret = ssh(
+  `if grep -Eq '^SITE_REVALIDATION_SECRET=.{32,}$' /opt/isvoi/apps/web/.env.local; then echo configured; fi`,
+).trim();
+if (revalidationSecret !== "configured") {
+  fail("site_revalidation.secret: missing or shorter than 32 characters");
+} else {
+  console.log("site_revalidation.secret: configured");
+}
+
 if (process.exitCode) {
   console.error("Directus ops audit failed.");
   process.exit(process.exitCode);

@@ -11,6 +11,8 @@ import type {
   DevicePageSettings,
 } from "@vtoroy/shared";
 import { cache } from "react";
+
+import { SITE_SETTINGS_CACHE_TAG } from "@/lib/cache-tags";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { fallbackDevices } from "@/data/devices";
 
@@ -325,6 +327,7 @@ type MediaVariant = keyof typeof ASSET_TRANSFORMS;
 
 type DirectusGetOptions = {
   cache?: "revalidate" | "no-store";
+  tags?: string[];
 };
 
 async function directusGet<T>(path: string, options: DirectusGetOptions = {}): Promise<T | null> {
@@ -339,7 +342,12 @@ async function directusGet<T>(path: string, options: DirectusGetOptions = {}): P
       headers,
       ...(cacheMode === "no-store"
         ? { cache: "no-store" as const }
-        : { next: { revalidate: REVALIDATE } }),
+        : {
+            next: {
+              revalidate: REVALIDATE,
+              ...(options.tags?.length ? { tags: options.tags } : {}),
+            },
+          }),
     });
     if (!res.ok) return null;
     const json = (await res.json()) as { data: T };
@@ -1336,6 +1344,7 @@ export const getSiteSettings = cache(
   async function getSiteSettings(): Promise<SiteSettings | null> {
     const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
       "/items/site_settings?limit=1",
+      { tags: [SITE_SETTINGS_CACHE_TAG] },
     );
     const row = Array.isArray(data) ? data[0] : data;
     return row ? mapSiteSettingsFromDirectus(row) : null;

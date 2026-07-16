@@ -227,6 +227,22 @@ WHERE NOT EXISTS (
   SELECT 1 FROM directus_flows f WHERE f.name = expected_flows.name
 )
 UNION ALL
+SELECT 'schema.revalidation_flows.missing', count(*)::text
+FROM (VALUES ('ISVOI: обновить кэш настроек сайта')) AS expected_flows(name)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_flows f
+  JOIN directus_operations o ON o.id = f.operation
+  WHERE f.name = expected_flows.name
+    AND f.status = 'active'
+    AND f.trigger = 'event'
+    AND f.options ->> 'type' = 'action'
+    AND (f.options::jsonb -> 'scope') ? 'items.update'
+    AND (f.options::jsonb -> 'collections') ? 'site_settings'
+    AND o.type = 'request'
+    AND o.key = 'isvoi_revalidate_site_settings'
+)
+UNION ALL
 SELECT 'permissions.non_admin_admin_access', count(*)::text
 FROM directus_policies
 WHERE name <> 'Administrator'

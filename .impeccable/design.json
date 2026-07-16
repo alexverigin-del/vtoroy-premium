@@ -56,7 +56,7 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Hero headlines and major brand claims only."
+        "purpose": "Public brand hero H1 headings on a 36px mobile, 48px small, 60px desktop scale."
       },
       "headline": {
         "displayName": "Headline",

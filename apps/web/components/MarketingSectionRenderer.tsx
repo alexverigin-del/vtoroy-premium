@@ -7,7 +7,12 @@ import { DeviceCard } from "./DeviceCard";
 import { cn } from "../lib/cn";
 import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
 import { normalizeSiteUrl } from "./site-chrome-utils";
-import { brandZoneEyebrowClass, primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
+import {
+  brandZoneEyebrowClass,
+  primaryPillCtaClass,
+  publicPageHeroTitleClass,
+  secondaryPillCtaClass,
+} from "./ui-classes";
 
 type MarketingSectionRendererProps = {
   section: PageSection;
@@ -472,7 +477,7 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
     <section className="mx-auto max-w-page px-4 pb-14 pt-14 text-center md:px-6 md:pb-16 md:pt-20">
       {eyebrow ? <div className={cn("mx-auto", brandZoneEyebrowClass)}>{eyebrow}</div> : null}
       {section.headline ? (
-        <h1 className="mx-auto mt-6 max-w-copy-wide text-5xl font-semibold leading-display tracking-normal text-carbon md:text-7xl">
+        <h1 className={cn("mx-auto mt-6 max-w-copy-wide", publicPageHeroTitleClass)}>
           {section.headline}
         </h1>
       ) : null}

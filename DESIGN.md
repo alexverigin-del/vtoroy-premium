@@ -22,10 +22,10 @@ colors:
 typography:
   display:
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
-    fontSize: "clamp(48px, 7vw, 64px)"
+    fontSize: "36px mobile / 48px small / 60px desktop"
     fontWeight: 600
-    lineHeight: 1.07
-    letterSpacing: "-0.03em"
+    lineHeight: 1.03
+    letterSpacing: "0"
   headline:
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
     fontSize: "clamp(32px, 5vw, 48px)"
@@ -164,7 +164,7 @@ The palette is restrained and trust-led: a cool Apple-like neutral field, near-b
 
 ### Hierarchy
 
-- **Display** (600, `clamp(48px, 7vw, 64px)`, 1.07): Hero headlines and the largest brand claims only.
+- **Display** (600, `36px / 48px / 60px`, 1.03): Public brand hero H1 headings. Catalog and product H1 headings use the denser `36px / 48px` scale.
 - **Headline** (600, `clamp(32px, 5vw, 48px)`, 1.1): Section introductions and major page promises.
 - **Title** (600, `clamp(24px, 3vw, 28px)`, 1.18): Cards, module headings, and device section titles.
 - **Body** (400, 17px, 1.47): Main prose, form copy, and explanatory content. Keep long prose near 65-75ch.

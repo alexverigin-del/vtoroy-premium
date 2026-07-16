@@ -17,6 +17,7 @@ import {
   homeSectionLabelClass,
   pathRouterCardClass,
   primaryCtaClass,
+  publicPageHeroTitleClass,
   secondaryCtaClass,
 } from "./ui-classes";
 
@@ -225,7 +226,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
         <div className={cn("mx-auto max-w-measure", homeSectionLabelClass)}>{section.eyebrow}</div>
       ) : null}
       {section.headline ? (
-        <h1 className="mx-auto mt-4 max-w-display text-4xl font-semibold leading-display tracking-normal text-carbon sm:text-5xl md:text-7xl">
+        <h1 className={cn("mx-auto mt-4 max-w-display", publicPageHeroTitleClass)}>
           {section.headline}
         </h1>
       ) : null}

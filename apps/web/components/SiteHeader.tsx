@@ -60,7 +60,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       aria-label={item.ariaLabel || undefined}
       className={cn(
-        "flex min-h-11 items-center rounded-card px-3 text-xs font-medium outline-none transition focus-visible:shadow-focus",
+        "flex min-h-11 items-center rounded-card px-3 text-sm font-medium outline-none transition focus-visible:shadow-focus",
         active
           ? "bg-ice text-carbon opacity-100"
           : "text-graphite opacity-80 hover:text-carbon hover:opacity-100",

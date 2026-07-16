@@ -223,7 +223,7 @@ The system is mostly flat and layered by tone. Surfaces are separated by white-o
 
 ### Navigation
 
-- **Style:** Sticky frosted header with subtle blur, hairline bottom border, compact 12px desktop links, and a small filled CTA.
+- **Style:** Sticky frosted header with subtle blur, hairline bottom border, readable 14px navigation links, and a small filled CTA.
 - **Brand:** `brand-logo` supports text lockups, uploaded images, custom width/height, and optional captions. Header captions are intentionally small and must not crowd the nav.
 - **Mobile:** Links collapse into a frosted vertical menu below the header. Header links, brand link and menu button keep at least a 44px hit area while preserving the compact visual rhythm.
 

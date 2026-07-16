@@ -343,6 +343,16 @@ Live deploy checks should include:
   not be automated because least-privilege service tokens correctly returned
   `403` and the original bootstrap admin password is no longer valid; no role,
   token or user permissions were widened for the test.
+- Directus `page_sections.body` is rich-text HTML and must never be rendered as
+  a plain React string or passed through `dangerouslySetInnerHTML`. Release
+  `98daf95` on 2026-07-16 added a server-only allowlist sanitizer and parser,
+  then renders a typed safe node tree through the shared `RichText` component
+  across home, catalog, Store, Trade, Passport, Club and CTA sections. Allowed
+  formatting is limited to paragraphs, line breaks, emphasis, lists and safe
+  links. Production `web:verify`, functional/image/copy/full visual smokes and
+  an explicit browser DOM check passed; the live home hero now contains a real
+  child `P` element and no visible literal `<p>` or `&nbsp;` text. The parser
+  stays server-only so route JS remains within the existing bundle budgets.
 - Studio should be editor-friendly: field groups, notes, display templates,
   presets and safe roles matter as much as table structure.
 - Keep schema/metadata setup scripts idempotent so they can be reapplied.

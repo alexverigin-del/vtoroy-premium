@@ -43,12 +43,13 @@ function assert(condition, message) {
 }
 
 function safeName(route, viewportName) {
-  const routeName = route === "/" ? "home" : route.replace(/^\/+/, "").replace(/[^a-z0-9-]+/gi, "-");
+  const routeName =
+    route === "/" ? "home" : route.replace(/^\/+/, "").replace(/[^a-z0-9-]+/gi, "-");
   return `${viewportName}-${routeName || "home"}.png`;
 }
 
 async function gotoOk(page, url) {
-  const response = await page.goto(url, { waitUntil: "networkidle", timeout: 30_000 });
+  const response = await page.goto(url, { waitUntil: "load", timeout: 30_000 });
   assert(response, `No response for ${url}`);
   assert(response.ok(), `${url} returned HTTP ${response.status()}`);
 }
@@ -103,7 +104,9 @@ async function visualIssues(page) {
 
     const scrollWidth = Math.max(root.scrollWidth, body?.scrollWidth || 0);
     if (scrollWidth > viewportWidth + 4) {
-      issues.push(`document has horizontal overflow: scrollWidth=${scrollWidth}, viewport=${viewportWidth}`);
+      issues.push(
+        `document has horizontal overflow: scrollWidth=${scrollWidth}, viewport=${viewportWidth}`,
+      );
     }
 
     const selectors = [
@@ -129,7 +132,8 @@ async function visualIssues(page) {
       const rect = element.getBoundingClientRect();
       const style = window.getComputedStyle(element);
       const clipsText =
-        element.scrollWidth > element.clientWidth + 2 || element.scrollHeight > element.clientHeight + 2;
+        element.scrollWidth > element.clientWidth + 2 ||
+        element.scrollHeight > element.clientHeight + 2;
       const hasOwnBox = element.clientWidth > 0 && element.clientHeight > 0;
       if (hasOwnBox && clipsText && style.overflow !== "visible") {
         issues.push(`${selectorFor(element)} clips content`);
@@ -161,7 +165,10 @@ async function visualIssues(page) {
         if (overlapWidth <= 6 || overlapHeight <= 6) continue;
 
         const overlapArea = overlapWidth * overlapHeight;
-        const smallerArea = Math.min(firstRect.width * firstRect.height, secondRect.width * secondRect.height);
+        const smallerArea = Math.min(
+          firstRect.width * firstRect.height,
+          secondRect.width * secondRect.height,
+        );
         if (smallerArea > 0 && overlapArea / smallerArea > 0.18) {
           issues.push(`${selectorFor(first)} overlaps ${selectorFor(second)}`);
         }

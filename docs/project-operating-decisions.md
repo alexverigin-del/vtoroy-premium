@@ -193,7 +193,9 @@ production build and `bundle:budget`. `smoke:prod` is the live post-deploy gate
 against `https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.
 `smoke:visual` is the Playwright visual smoke gate for desktop/mobile route
 screenshots and catches horizontal overflow, clipped text and suspicious visible
-element overlap.
+element overlap. Navigation waits for the browser `load` event; do not use
+`networkidle` for this production smoke because lazy Next/Directus image traffic
+can keep a valid mobile page active past the navigation timeout.
 Playwright smoke scripts must use `scripts/playwright_browser.mjs` for browser
 launch. Do not replace them with long `node -e` one-liners in PowerShell: the
 helper first tries the normal Playwright browser cache, then falls back to
@@ -324,6 +326,23 @@ Live deploy checks should include:
   `x-isvoi-import-secret` or bearer auth only. Do not put
   `CATALOG_IMPORT_WEBHOOK_SECRET` in query strings because Flow request URLs can
   be logged.
+- `site_settings` saves use the active non-blocking event Action Flow
+  `ISVOI: обновить кэш настроек сайта`. It calls
+  `/api/revalidate/site-settings` with `x-isvoi-revalidate-secret`; the Next.js
+  route invalidates both the `directus:site-settings` data tag and the root
+  layout path. Keep the five-minute fetch/ISR TTL as a failure fallback, not as
+  the normal editor propagation path. The secret is server-only, at least 32
+  characters, and must never be placed in a URL or printed by audits.
+- The cache invalidation release on 2026-07-16 was deployed from `f43e58e`.
+  Backup `20260716T140132Z` passed SHA256 checks for PostgreSQL and uploads;
+  off-server copy was skipped because `OFFSITE_BACKUP_DEST` is still unset.
+  Production verified one active event Flow/operation, webhook responses
+  `401` without authorization and `200` with the server secret, zero missing
+  revalidation flows in `directus:audit:prod`, and green functional, image,
+  visual, performance and copy smokes. A no-op Studio-equivalent PATCH could
+  not be automated because least-privilege service tokens correctly returned
+  `403` and the original bootstrap admin password is no longer valid; no role,
+  token or user permissions were widened for the test.
 - Studio should be editor-friendly: field groups, notes, display templates,
   presets and safe roles matter as much as table structure.
 - Keep schema/metadata setup scripts idempotent so they can be reapplied.

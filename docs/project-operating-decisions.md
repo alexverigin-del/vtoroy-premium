@@ -413,6 +413,13 @@ new commercial content should use structured collections and Directus Files.
   44px link hit areas. `DESIGN.md` and `.impeccable/design.json` carry the same
   rule. Production functional/visual smoke passed, and browser checks confirmed
   14px links with no overflow on desktop and in the open mobile menu.
+- Public brand hero H1 headings use a shared `36px mobile / 48px small / 60px
+  desktop` scale as of release `9def1df` on 2026-07-16. Catalog and product H1
+  headings stay denser at `36px / 48px`; this preserves page hierarchy without
+  the previous 72px desktop and 48px mobile marketing headings. Production
+  checks confirmed the current Directus home headline at 60px/3 lines desktop,
+  all main mobile H1 headings at 36px, no horizontal overflow, and green
+  functional plus full visual smoke.
 - Tailwind-first migration started on 2026-06-29:
   - `apps/web/tailwind.config.ts` is aligned with `DESIGN.md` tokens for the
     ISVOI palette, 8px card/image/input radii, product/soft/focus shadows and

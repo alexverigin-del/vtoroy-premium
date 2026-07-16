@@ -408,6 +408,11 @@ new commercial content should use structured collections and Directus Files.
   gallery tabs and device-page back link now keep at least a 44px hit area and
   visible focus rings. Current runtime hardening is handled through Tailwind
   utilities and shared `.focus-ring` primitives.
+- Header navigation type was increased from 12px to 14px on 2026-07-16 in
+  release `ff6464c`, while keeping 500 weight, the compact header height and
+  44px link hit areas. `DESIGN.md` and `.impeccable/design.json` carry the same
+  rule. Production functional/visual smoke passed, and browser checks confirmed
+  14px links with no overflow on desktop and in the open mobile menu.
 - Tailwind-first migration started on 2026-06-29:
   - `apps/web/tailwind.config.ts` is aligned with `DESIGN.md` tokens for the
     ISVOI palette, 8px card/image/input radii, product/soft/focus shadows and

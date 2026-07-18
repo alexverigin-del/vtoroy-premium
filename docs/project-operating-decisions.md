@@ -368,6 +368,29 @@ Live deploy checks should include:
   not be automated because least-privilege service tokens correctly returned
   `403` and the original bootstrap admin password is no longer valid; no role,
   token or user permissions were widened for the test.
+- On 2026-07-18 the site-content invalidation release was expanded and deployed
+  through `137a9c8` (`9da14e0`, `19bc53f`, `137a9c8`). All six managed
+  collections now have collection-specific Next.js data tags, while the active
+  Directus Action Flow handles `items.create`, `items.update` and
+  `items.delete`. The production endpoint returned `401` without the secret and
+  `200` with it. After restarting Directus to register the metadata-written
+  event hooks, real API create/update/delete rehearsals produced three internal
+  webhook responses with status `200`; temporary records were deleted and the
+  temporary static token returned `401` after cleanup. Backup
+  `20260718T200617Z` passed SHA256 checks for PostgreSQL and uploads; the
+  off-server copy was skipped because `OFFSITE_BACKUP_DEST` remains unset.
+- The same rehearsal exposed malformed `faq_items` field validation metadata:
+  operator-only filters such as `{"_regex":"..."}` caused Directus 11 to
+  recurse in `generateJoi` and return `500` on FAQ create/update. The canonical
+  setup now stores field-scoped filters, and
+  `studio.faq.invalid_validation_shape` blocks recurrence. The FAQ setup also
+  uses an explicit read-field list instead of `*`; production
+  `permissions.non_admin_wildcards` is back to `0`. A final FAQ rehearsal passed
+  with create `200`, update `200`, delete `204`, followed by three webhook
+  responses `200`. `web:verify`, `directus:audit:prod`, functional, image,
+  visual, performance and copy smokes all passed. The 2026-07-18 performance
+  sample measured desktop home LCP at `3388 ms`, below the `4500 ms` release
+  budget but still above the `2500 ms` product target.
 - Directus `page_sections.body` is rich-text HTML and must never be rendered as
   a plain React string or passed through `dangerouslySetInnerHTML`. Release
   `98daf95` on 2026-07-16 added a server-only allowlist sanitizer and parser,
@@ -1210,9 +1233,9 @@ Next content-editing priorities:
    `studio.page_sections.content.image_src_keys = 0`. New editorial section
    images should use `page_sections.image` / Directus Files relations; nested
    JSON image URLs are no longer part of the content model.
-2. Keep `directus:audit:prod` blocker metrics green. As of 2026-07-08 there
-   are no known Files governance warnings: orphan ISVOI files and missing
-   raster focal points are both `0`.
+2. Keep `directus:audit:prod` blocker metrics green. As of 2026-07-18 the
+   blocker metrics are `0`; the remaining non-blocking Files warnings are two
+   orphan ISVOI files and one hero/editorial raster without a focal point.
 3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 

@@ -162,6 +162,11 @@ npm run web:verify
 - PM2 app: `isvoi-web`
 - Directus compose stack: `/opt/isvoi/infra/directus-beget`
 - Next.js is on the 15.x line (`next@^15.5.19`) with React 18.3.
+- The host Next.js runtime is Node `24.18.0` LTS with npm `11.16.0` and
+  `pm2@7.0.1`. Repo installs are strict to the Node 24/npm 11 lines; Node 26
+  Current is not a production target until it reaches LTS and passes a separate
+  compatibility review. Directus keeps its image-managed runtime and is not
+  coupled to the host Node version.
 - Directus image is pinned to `directus/directus:11.17.4` in
   `infra/directus-beget/docker-compose.yml`.
 - PostgreSQL is `postgres:16-alpine`; Redis is `redis:7-alpine`.
@@ -187,7 +192,8 @@ npm run smoke:performance
 npm run smoke:copy
 ```
 
-`web:verify` is the local pre-deploy web gate. It runs `legacy:audit`,
+`web:verify` is the local pre-deploy web gate. It starts with `runtime:audit`,
+which requires Node `>=24.18.0 <25`, then runs `legacy:audit`,
 `tailwind:post-audit`, Tailwind-aware format check, ESLint, TypeScript, the
 production build and `bundle:budget`. `smoke:prod` is the live post-deploy gate
 against `https://isvoi.ru` unless `SMOKE_BASE_URL` is overridden.

@@ -21,7 +21,7 @@ same origin, so the "api" and "admin" surfaces share **one** subdomain
 
 ---
 
-## Current ISVOI production snapshot (2026-06-18)
+## Current ISVOI production snapshot (2026-07-18)
 
 This repo is currently deployed on the Beget VPS below. Keep this section in
 sync when changing the live infrastructure.
@@ -37,6 +37,8 @@ sync when changing the live infrastructure.
 | Directus Studio | `https://api.isvoi.ru/admin/` |
 | Directus project branding | `ISVOI`, color `#1d1d1f`, logo `isvoi:site:favicon`, public favicon `isvoi:site:favicon-gold` |
 | Next.js process | PM2 app `isvoi-web` |
+| Host Node.js runtime | `24.18.0` LTS with npm `11.16.0` |
+| PM2 runtime | `pm2@7.0.1`, managed by active `pm2-deploy.service` |
 | Directus stack | `/opt/isvoi/infra/directus-beget` |
 | Directus container | `directus-beget-directus-1` |
 | Directus image | `directus/directus:11.17.4` |
@@ -189,17 +191,17 @@ sudo systemctl enable --now nginx
 ## 5. Install Node.js + npm (for the Next.js site)
 
 ```bash
-# Node.js 20 LTS via NodeSource
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node.js 24 LTS via NodeSource
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt -y install nodejs
-node --version    # expect v20.x
-npm --version
+node --version    # expect v24.18.0 or a newer v24.x patch
+npm --version     # expect v11.16.0 or a newer v11.x patch
 ```
 
 A process manager keeps `next start` alive across reboots/crashes:
 
 ```bash
-sudo npm install -g pm2
+sudo npm install -g pm2@7.0.1
 ```
 
 ---

@@ -21,6 +21,15 @@ function text(value: unknown, fallback: string): string {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
+function catalogEyebrow(value: unknown): string {
+  const eyebrow = text(value, "");
+  if (/^(Store|Каталог|Главная\s*\/\s*(Store|Каталог))$/i.test(eyebrow)) {
+    return "I СВОИ · Каталог";
+  }
+
+  return text(eyebrow, "I СВОИ · Каталог");
+}
+
 function catalogEmptyState(section?: PageSection | null) {
   const value = section?.content.emptyState;
   const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -54,7 +63,7 @@ export function CatalogGrid({
   const statuses = statusFilters.length > 0 ? statusFilters : DEFAULT_STATUS_FILTERS;
   const sorts = sortOptions.length > 0 ? sortOptions : DEFAULT_SORT_OPTIONS;
   const empty = catalogEmptyState(section);
-  const eyebrow = text(section?.eyebrow, "I СВОИ · Каталог");
+  const eyebrow = catalogEyebrow(section?.eyebrow);
   const headline = text(section?.headline, "Вещи в кругу — сейчас в наличии.");
   const body = text(
     section?.body,

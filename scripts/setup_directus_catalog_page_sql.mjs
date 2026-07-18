@@ -37,7 +37,11 @@ ON CONFLICT (slug) DO UPDATE SET
 
 UPDATE page_sections ps
 SET variant = 'catalog.grid',
-  eyebrow = COALESCE(NULLIF(ps.eyebrow, ''), 'Store'),
+  eyebrow = CASE
+    WHEN ps.eyebrow IS NULL OR btrim(ps.eyebrow) = '' THEN 'I СВОИ · Каталог'
+    WHEN btrim(ps.eyebrow) IN ('Store', 'Каталог', 'Главная / Store', 'Главная / Каталог') THEN 'I СВОИ · Каталог'
+    ELSE ps.eyebrow
+  END,
   headline = COALESCE(NULLIF(ps.headline, ''), 'Вещи в кругу — сейчас в наличии.'),
   subheadline = COALESCE(NULLIF(ps.subheadline, ''), 'Фильтры каталога'),
   body = COALESCE(
@@ -108,7 +112,7 @@ SELECT
   sp.id,
   'catalog_page_live',
   'catalog.grid',
-  'Store',
+  'I СВОИ · Каталог',
   'Вещи в кругу — сейчас в наличии.',
   'Фильтры каталога',
   'Актуальные устройства с фото, грейдом, ценой, Passport и ориентиром выхода. Выберите вещь под задачу и оставьте заявку прямо из карточки.',

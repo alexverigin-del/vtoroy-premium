@@ -228,7 +228,7 @@ WHERE NOT EXISTS (
 )
 UNION ALL
 SELECT 'schema.revalidation_flows.missing', count(*)::text
-FROM (VALUES ('ISVOI: обновить кэш настроек сайта')) AS expected_flows(name)
+FROM (VALUES ('ISVOI: обновить кэш контента сайта')) AS expected_flows(name)
 WHERE NOT EXISTS (
   SELECT 1
   FROM directus_flows f
@@ -237,11 +237,23 @@ WHERE NOT EXISTS (
     AND f.status = 'active'
     AND f.trigger = 'event'
     AND f.options ->> 'type' = 'action'
+    AND (f.options::jsonb -> 'scope') ? 'items.create'
     AND (f.options::jsonb -> 'scope') ? 'items.update'
+    AND (f.options::jsonb -> 'scope') ? 'items.delete'
     AND (f.options::jsonb -> 'collections') ? 'site_settings'
+    AND (f.options::jsonb -> 'collections') ? 'site_pages'
+    AND (f.options::jsonb -> 'collections') ? 'page_sections'
+    AND (f.options::jsonb -> 'collections') ? 'navigation_items'
+    AND (f.options::jsonb -> 'collections') ? 'faq_items'
+    AND (f.options::jsonb -> 'collections') ? 'device_page_settings'
     AND o.type = 'request'
-    AND o.key = 'isvoi_revalidate_site_settings'
+    AND o.key = 'isvoi_revalidate_site_content'
 )
+UNION ALL
+SELECT 'schema.revalidation_flows.legacy_active', count(*)::text
+FROM directus_flows
+WHERE name = 'ISVOI: обновить кэш настроек сайта'
+  AND status = 'active'
 UNION ALL
 SELECT 'permissions.non_admin_admin_access', count(*)::text
 FROM directus_policies

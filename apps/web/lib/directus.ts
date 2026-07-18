@@ -12,7 +12,14 @@ import type {
 } from "@vtoroy/shared";
 import { cache } from "react";
 
-import { SITE_SETTINGS_CACHE_TAG } from "@/lib/cache-tags";
+import {
+  DEVICE_PAGE_SETTINGS_CACHE_TAG,
+  FAQ_ITEMS_CACHE_TAG,
+  NAVIGATION_ITEMS_CACHE_TAG,
+  PAGE_SECTIONS_CACHE_TAG,
+  SITE_PAGES_CACHE_TAG,
+  SITE_SETTINGS_CACHE_TAG,
+} from "@/lib/cache-tags";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { prepareRichText } from "@/lib/rich-text";
 import { fallbackDevices } from "@/data/devices";
@@ -1083,6 +1090,7 @@ function faqItemsForSection(
 async function getActiveFaqItems(): Promise<FaqItem[]> {
   const data = await directusGet<Record<string, unknown>[]>(
     "/items/faq_items?filter[is_active][_eq]=true&fields=*&sort=category,sort",
+    { tags: [FAQ_ITEMS_CACHE_TAG] },
   );
   return data?.map(mapFaqItemFromDirectus) ?? [];
 }
@@ -1319,11 +1327,13 @@ export const getSitePage = cache(async function getSitePage(
 ): Promise<SitePage | null> {
   const data = await directusGet<Record<string, unknown>[]>(
     `/items/site_pages?filter[slug][_eq]=${encodeURIComponent(slug)}&filter[status][_eq]=published&fields=*&limit=1`,
+    { tags: [SITE_PAGES_CACHE_TAG] },
   );
   if (data && data.length > 0) {
     const page = mapSitePageFromDirectus(data[0]);
     const sections = await directusGet<Record<string, unknown>[]>(
       `/items/page_sections?filter[page][_eq]=${encodeURIComponent(str(data[0].id))}&filter[is_active][_eq]=true&fields=*&sort=sort_order`,
+      { tags: [PAGE_SECTIONS_CACHE_TAG] },
     );
     const mappedSections = sections?.map(mapPageSectionFromDirectus) ?? [];
     return {
@@ -1360,6 +1370,7 @@ export const getDevicePageSettings = cache(
   async function getDevicePageSettings(): Promise<DevicePageSettings> {
     const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
       "/items/device_page_settings?limit=1",
+      { tags: [DEVICE_PAGE_SETTINGS_CACHE_TAG] },
     );
     const row = Array.isArray(data) ? data[0] : data;
     return row ? mapDevicePageSettingsFromDirectus(row) : fallbackDevicePageSettings;
@@ -1372,6 +1383,7 @@ export const getNavigationItems = cache(async function getNavigationItems(): Pro
 > {
   const data = await directusGet<Record<string, unknown>[]>(
     "/items/navigation_items?filter[is_active][_eq]=true&fields=*,page.slug&sort=location,sort",
+    { tags: [NAVIGATION_ITEMS_CACHE_TAG] },
   );
   return data?.map(mapNavigationItemFromDirectus).filter((item) => item.label && item.url) ?? [];
 });
@@ -1381,6 +1393,7 @@ export const getFaqItems = cache(async function getFaqItems(category?: string): 
   const catFilter = category ? `&filter[category][_eq]=${encodeURIComponent(category)}` : "";
   const data = await directusGet<Record<string, unknown>[]>(
     `/items/faq_items?filter[is_active][_eq]=true${catFilter}&sort=sort`,
+    { tags: [FAQ_ITEMS_CACHE_TAG] },
   );
   return data?.map(mapFaqItemFromDirectus) ?? [];
 });

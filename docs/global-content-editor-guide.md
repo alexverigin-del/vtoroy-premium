@@ -104,5 +104,10 @@ Apply Studio metadata with:
 ```bash
 npm run directus:setup:global-content
 npm run directus:setup:faq-editor
-npm run directus:setup:site-settings-revalidation
+npm run directus:setup:site-content-revalidation
 ```
+
+The revalidation Flow covers create, update and delete events for
+`site_settings`, `site_pages`, `page_sections`, `navigation_items`, `faq_items`
+and `device_page_settings`. Successful editor changes should reach the public
+site on the next request; the five-minute TTL remains only as a fallback.

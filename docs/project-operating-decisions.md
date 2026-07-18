@@ -349,12 +349,14 @@ Live deploy checks should include:
   `x-isvoi-import-secret` or bearer auth only. Do not put
   `CATALOG_IMPORT_WEBHOOK_SECRET` in query strings because Flow request URLs can
   be logged.
-- `site_settings` saves use the active non-blocking event Action Flow
-  `ISVOI: обновить кэш настроек сайта`. It calls
-  `/api/revalidate/site-settings` with `x-isvoi-revalidate-secret`; the Next.js
-  route invalidates both the `directus:site-settings` data tag and the root
-  layout path. Keep the five-minute fetch/ISR TTL as a failure fallback, not as
-  the normal editor propagation path. The secret is server-only, at least 32
+- Managed site content uses the active non-blocking event Action Flow
+  `ISVOI: обновить кэш контента сайта`. Create, update and delete events for
+  `site_settings`, `site_pages`, `page_sections`, `navigation_items`,
+  `faq_items` and `device_page_settings` call
+  `/api/revalidate/site-content` with `x-isvoi-revalidate-secret`. The Next.js
+  route invalidates the six collection-specific data tags and the root layout
+  path. Keep the five-minute fetch/ISR TTL as a failure fallback, not as the
+  normal editor propagation path. The secret is server-only, at least 32
   characters, and must never be placed in a URL or printed by audits.
 - The cache invalidation release on 2026-07-16 was deployed from `f43e58e`.
   Backup `20260716T140132Z` passed SHA256 checks for PostgreSQL and uploads;

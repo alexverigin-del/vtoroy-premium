@@ -224,7 +224,13 @@ BEGIN
 END;
 $$;
 
-SELECT isvoi_upsert_permission('ISVOI Editor', 'faq_items', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'faq_items',
+  'read',
+  'id,key,question,answer,page,category,sort,is_active',
+  NULL
+);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'faq_items',

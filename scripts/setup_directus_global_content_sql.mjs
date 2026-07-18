@@ -317,7 +317,13 @@ SELECT isvoi_upsert_permission(
   '{"link_type":{"_in":["page","section","external","custom"]},"location":{"_in":["header","footer","mobile","utility"]},"item_role":{"_in":["link","cta","group"]}}'::json
 );
 
-SELECT isvoi_upsert_permission('ISVOI Editor', 'faq_items', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'faq_items',
+  'read',
+  'id,key,question,answer,page,category,sort,is_active',
+  NULL
+);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'faq_items',

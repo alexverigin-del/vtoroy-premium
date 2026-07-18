@@ -161,6 +161,16 @@ WHERE df.collection IN (SELECT collection FROM expected_collections)
   AND coalesce(df.required, false) = true
   AND nullif(df.note, '') IS NULL
 UNION ALL
+SELECT 'studio.faq.invalid_validation_shape', count(*)::text
+FROM directus_fields df
+WHERE df.collection = 'faq_items'
+  AND df.field IN ('question', 'answer', 'category', 'key')
+  AND (
+    df.validation IS NULL
+    OR jsonb_typeof(df.validation::jsonb) <> 'object'
+    OR NOT (df.validation::jsonb ? df.field)
+  )
+UNION ALL
 SELECT 'studio.site_settings.singleton_not_one', (
   CASE
     WHEN EXISTS (

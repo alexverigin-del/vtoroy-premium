@@ -45,6 +45,7 @@ const auditDefinitions = {
       "studio.collections.missing_ux_metadata",
       "studio.fields.missing_notes",
       "studio.fields.required_without_note",
+      "studio.faq.invalid_validation_shape",
       "studio.site_settings.singleton_not_one",
       "studio.device_page_settings.singleton_not_one",
       "studio.bookmarks.missing",

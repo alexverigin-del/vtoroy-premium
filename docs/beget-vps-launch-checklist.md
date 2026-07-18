@@ -382,6 +382,18 @@ pm2 save
 pm2 startup        # run the printed command once to enable boot persistence
 ```
 
+When validating an existing PM2 systemd unit, do not start the unit over an
+already-running standalone PM2 daemon. Save and stop that daemon first, then
+start the service so systemd owns the new PID from the beginning:
+
+```bash
+pm2 save
+pm2 kill
+sudo systemctl reset-failed pm2-$USER.service
+sudo systemctl start pm2-$USER.service
+sudo systemctl is-active pm2-$USER.service
+```
+
 `next start` listens on `127.0.0.1:3000`; nginx proxies to it (next step).
 
 > If you are not ready to cut over to Next.js yet, you can keep serving the

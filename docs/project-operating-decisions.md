@@ -178,6 +178,23 @@ npm run web:verify
 Keep the full production snapshot in
 `docs/beget-vps-launch-checklist.md` current when infrastructure changes.
 
+The Node 24 migration completed on 2026-07-18 in release `d358c32`:
+
+- Production moved from EOL Node `20.20.2` / npm `10.8.2` to Node `24.18.0`
+  LTS / npm `11.16.0`; PM2 stayed pinned at `7.0.1` to isolate the runtime
+  change. The Directus container remained on its image-managed Node runtime.
+- Rollback config, the PM2 dump and the exact Node 20 package are stored
+  outside git under `/root/isvoi-node24-migration-20260718`.
+- The persistence rehearsal exposed an existing standalone PM2 daemon while
+  `pm2-deploy.service` was only enabled, not active. Starting systemd over that
+  daemon caused a PID ownership/protocol failure. Saving the process list,
+  stopping the standalone daemon and then starting the service restored the
+  app from the dump; the unit is now both enabled and active.
+- Strict production `npm ci`, `web:verify`, functional, image, copy, full
+  desktop/mobile visual and performance smokes passed. Directus health stayed
+  `ok`; no schema, content, secret or container changes were part of the
+  migration.
+
 ## Verification Gates
 
 Use the smallest relevant gate for the change, but production changes should

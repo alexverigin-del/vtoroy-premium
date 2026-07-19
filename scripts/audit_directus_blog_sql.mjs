@@ -401,5 +401,24 @@ FROM (VALUES (1)) required(dummy)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_operations
   WHERE key='isvoi_publish_scheduled_blog_posts' AND type='item-update'
+)
+UNION ALL
+SELECT 'blog.automation.schedule_revalidation_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_operations
+  WHERE key='isvoi_revalidate_after_blog_schedule' AND type='request'
+)
+UNION ALL
+SELECT 'blog.automation.schedule_revalidation_chain_invalid', count(*)::text
+FROM directus_operations publish
+LEFT JOIN directus_operations revalidate ON revalidate.id=publish.resolve
+WHERE publish.key='isvoi_publish_scheduled_blog_posts'
+  AND (
+    revalidate.id IS NULL
+    OR revalidate.key<>'isvoi_revalidate_after_blog_schedule'
+    OR revalidate.type<>'request'
+    OR revalidate.flow<>publish.flow
+  )
 );
 `);

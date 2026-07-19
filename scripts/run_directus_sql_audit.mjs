@@ -203,6 +203,8 @@ const auditDefinitions = {
       "blog.content.orphan_junctions",
       "blog.automation.scheduling_flow_missing",
       "blog.automation.scheduling_operation_missing",
+      "blog.automation.schedule_revalidation_missing",
+      "blog.automation.schedule_revalidation_chain_invalid",
     ],
   },
 };

@@ -61,6 +61,9 @@ DO $$
 DECLARE
   v_flow uuid;
   v_operation uuid;
+  v_scheduling_flow uuid;
+  v_publish_operation uuid;
+  v_schedule_revalidation_operation uuid;
 BEGIN
   SELECT id INTO v_flow
   FROM directus_flows
@@ -146,6 +149,61 @@ BEGIN
     AND key IN ('isvoi_revalidate_site_content', 'isvoi_revalidate_site_settings');
 
   UPDATE directus_flows SET operation = v_operation WHERE id = v_flow;
+
+  -- Updates emitted from a scheduled Flow do not reliably start another event
+  -- Flow. Chain the same revalidation request directly after blog publication.
+  SELECT id INTO v_scheduling_flow
+  FROM directus_flows
+  WHERE name = 'ISVOI: опубликовать запланированные статьи'
+  LIMIT 1;
+
+  SELECT id INTO v_publish_operation
+  FROM directus_operations
+  WHERE flow = v_scheduling_flow
+    AND key = 'isvoi_publish_scheduled_blog_posts'
+  LIMIT 1;
+
+  IF v_scheduling_flow IS NOT NULL AND v_publish_operation IS NOT NULL THEN
+    SELECT id INTO v_schedule_revalidation_operation
+    FROM directus_operations
+    WHERE flow = v_scheduling_flow
+      AND key = 'isvoi_revalidate_after_blog_schedule'
+    LIMIT 1;
+
+    IF v_schedule_revalidation_operation IS NULL THEN
+      v_schedule_revalidation_operation := gen_random_uuid();
+      INSERT INTO directus_operations (
+        id, name, key, type, position_x, position_y, options, flow, date_created
+      ) VALUES (
+        v_schedule_revalidation_operation,
+        'Обновить кэш после публикации',
+        'isvoi_revalidate_after_blog_schedule',
+        'request',
+        38,
+        1,
+        ${sql(requestOptions)}::json,
+        v_scheduling_flow,
+        now()
+      );
+    ELSE
+      UPDATE directus_operations
+      SET name = 'Обновить кэш после публикации',
+        type = 'request',
+        options = ${sql(requestOptions)}::json,
+        resolve = NULL,
+        reject = NULL
+      WHERE id = v_schedule_revalidation_operation;
+    END IF;
+
+    DELETE FROM directus_operations
+    WHERE flow = v_scheduling_flow
+      AND id <> v_schedule_revalidation_operation
+      AND key = 'isvoi_revalidate_after_blog_schedule';
+
+    UPDATE directus_operations
+    SET resolve = v_schedule_revalidation_operation
+    WHERE id = v_publish_operation;
+  END IF;
 END;
 $$;
 
@@ -160,6 +218,11 @@ UNION ALL
 SELECT 'site_content_revalidation_operation', count(*)::text
 FROM directus_operations
 WHERE key = 'isvoi_revalidate_site_content'
+  AND type = 'request'
+UNION ALL
+SELECT 'blog_schedule_revalidation_operation', count(*)::text
+FROM directus_operations
+WHERE key = 'isvoi_revalidate_after_blog_schedule'
   AND type = 'request'
 UNION ALL
 SELECT 'legacy_site_settings_revalidation_active', count(*)::text

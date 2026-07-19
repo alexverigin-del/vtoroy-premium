@@ -71,6 +71,21 @@ export function catalogItemListJsonLd(devices: DeviceCardData[]) {
   };
 }
 
+export function blogItemListJsonLd(posts: BlogPost[], name: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: posts.length,
+    itemListElement: posts.map((post, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: siteUrl(`/blog/${post.slug}`),
+      name: post.title,
+    })),
+  };
+}
+
 export function blogPostingJsonLd(post: BlogPost) {
   return {
     "@context": "https://schema.org",
@@ -87,10 +102,17 @@ export function blogPostingJsonLd(post: BlogPost) {
     ...(post.tags.length ? { keywords: post.tags.map((tag) => tag.name).join(", ") } : {}),
     ...(post.author
       ? {
-          author: {
-            "@type": "Person",
-            name: post.author.name,
-          },
+          author:
+            post.author.slug === "isvoi-editorial"
+              ? {
+                  "@type": "Organization",
+                  "@id": `${SITE_URL}/#organization`,
+                  name: post.author.name,
+                }
+              : {
+                  "@type": "Person",
+                  name: post.author.name,
+                },
         }
       : {}),
     publisher: {

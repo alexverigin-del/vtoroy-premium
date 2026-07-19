@@ -5,20 +5,9 @@ import { RichText } from "@/components/RichText";
 import { cn } from "@/lib/cn";
 
 export function BlogArticleContent({ post }: { post: BlogPost }) {
-  const blocks = post.blocks.length
-    ? post.blocks
-    : [
-        {
-          id: `${post.id}-legacy-body`,
-          type: "rich_text" as const,
-          body: post.body,
-          bodyRichText: post.bodyRichText,
-        },
-      ];
-
   return (
     <div className="pt-10 sm:pt-14">
-      {blocks.map((block, index) => {
+      {post.blocks.map((block, index) => {
         const spacing = index ? "mt-10 sm:mt-14" : "";
 
         if (block.type === "rich_text") {

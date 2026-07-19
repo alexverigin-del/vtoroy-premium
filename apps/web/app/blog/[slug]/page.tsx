@@ -7,7 +7,7 @@ import { ProductImage } from "@/components/ProductImage";
 import { BlogArticleContent } from "@/components/BlogArticleContent";
 import { SiteShell } from "@/components/SiteShell";
 import { detailBackLinkClass } from "@/components/ui-classes";
-import { getBlogPostPreview, getPublishedBlogPost } from "@/lib/blog";
+import { getBlogPostPreview, getPublishedBlogPost, getPublishedBlogPosts } from "@/lib/blog";
 import { getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 import { blogPostingJsonLd, breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
@@ -33,6 +33,28 @@ function stockLabel(status?: string): string {
   if (status === "reserved") return "Бронь";
   if (status === "sold") return "Продано";
   return "Смотреть карточку";
+}
+
+function meaningfulUpdatedAt(publishedAt: string, updatedAt?: string): string | undefined {
+  if (!updatedAt) return undefined;
+  const published = new Date(publishedAt).getTime();
+  const updated = new Date(updatedAt).getTime();
+  if (!Number.isFinite(published) || !Number.isFinite(updated)) return undefined;
+  return updated - published >= 24 * 60 * 60 * 1000 ? updatedAt : undefined;
+}
+
+function attributedHref(path: string, slug: string, content: string, hash = ""): string {
+  const params = new URLSearchParams({
+    utm_source: "blog",
+    utm_medium: "editorial",
+    utm_campaign: slug,
+    utm_content: content,
+  });
+  return `${path}?${params}${hash}`;
+}
+
+function deviceFacts(device: { batteryText?: string; warrantyText?: string }): string[] {
+  return [device.batteryText, device.warrantyText].filter((fact): fact is string => Boolean(fact));
 }
 
 async function resolvePost(
@@ -100,6 +122,12 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
   const { post, preview } = resolved;
   if (!post) notFound();
   const chrome = siteChrome(settings, navigation);
+  const updatedAt = meaningfulUpdatedAt(post.publishedAt, post.updatedAt);
+  const relatedPosts = post.category
+    ? (await getPublishedBlogPosts({ categorySlug: post.category.slug, limit: 4 }))
+        .filter((candidate) => candidate.id !== post.id)
+        .slice(0, 3)
+    : [];
 
   return (
     <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
@@ -151,6 +179,14 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
               {post.author?.roleTitle ? <span>· {post.author.roleTitle}</span> : null}
               <span aria-hidden="true">·</span>
               <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+              {updatedAt ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>
+                    Обновлено <time dateTime={updatedAt}>{formatDate(updatedAt)}</time>
+                  </span>
+                </>
+              ) : null}
             </div>
           </header>
 
@@ -198,8 +234,56 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
                 ) : null}
               </aside>
             ) : null}
+
+            <aside className="mt-10 border-y border-hairline py-8" aria-label="Подбор устройства">
+              <p className="text-sm font-semibold text-link-blue">Нужен понятный вариант?</p>
+              <h2 className="mt-2 text-2xl font-semibold leading-tight text-carbon">
+                Подберём устройство под задачу и бюджет
+              </h2>
+              <p className="mt-3 max-w-2xl leading-relaxed text-graphite">
+                Сопоставим состояние, батарею, известные ремонты и цену до покупки.
+              </p>
+              <Link
+                href={attributedHref("/", post.slug, "article-end", "#final")}
+                className="focus-ring mt-6 inline-flex min-h-11 items-center rounded-pill bg-action-blue px-5 text-sm font-semibold text-white transition hover:bg-link-blue"
+              >
+                Получить подбор
+              </Link>
+            </aside>
           </div>
         </article>
+
+        {relatedPosts.length >= 2 ? (
+          <section className="mx-auto mt-16 max-w-content border-t border-hairline px-5 pt-10 sm:px-8">
+            <p className="text-sm font-semibold text-link-blue">Продолжить чтение</p>
+            <h2 className="mt-3 text-3xl font-semibold text-carbon">Читайте также</h2>
+            <div className="mt-7 grid gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+              {relatedPosts.map((related) => (
+                <article key={related.id} className="border-t border-hairline pt-5">
+                  <Link href={`/blog/${related.slug}`} className="focus-ring group block">
+                    {related.coverImage ? (
+                      <div className="relative aspect-blog-cover overflow-hidden rounded-card bg-surface">
+                        <ProductImage
+                          src={related.coverImage}
+                          alt={related.coverAlt || ""}
+                          fill
+                          sizes="(max-width: 767px) 100vw, 33vw"
+                          className="object-cover transition duration-300 group-hover:opacity-95"
+                        />
+                      </div>
+                    ) : null}
+                    <h3 className="mt-4 text-xl font-semibold leading-tight text-carbon group-hover:text-link-blue">
+                      {related.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-graphite">
+                      {related.excerpt}
+                    </p>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {post.devices.length ? (
           <section className="mx-auto mt-16 max-w-content border-t border-hairline px-5 pt-10 sm:px-8">
@@ -209,18 +293,50 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
               {post.devices.map((device) => (
                 <Link
                   key={device.id}
-                  href={`/device/${device.id}`}
-                  className="focus-ring flex min-h-32 flex-col justify-between rounded-card border border-hairline bg-frost p-5 transition hover:border-link-blue hover:bg-white"
+                  href={attributedHref(`/device/${device.id}`, post.slug, "related-device")}
+                  className="focus-ring group grid min-h-48 overflow-hidden rounded-card border border-hairline bg-frost transition hover:border-link-blue hover:bg-white sm:grid-cols-related-device"
                 >
-                  <div>
-                    <p className="text-lg font-semibold text-carbon">{device.title}</p>
-                    {device.priceText ? (
-                      <p className="mt-2 text-sm text-graphite">{device.priceText}</p>
+                  <div className="relative aspect-product bg-surface sm:aspect-auto">
+                    {device.listingImage ? (
+                      <ProductImage
+                        src={device.listingImage}
+                        alt={device.listingAlt || device.title}
+                        fill
+                        sizes="(max-width: 639px) 100vw, 192px"
+                        className="object-cover"
+                      />
                     ) : null}
                   </div>
-                  <p className="mt-5 text-sm font-medium text-link-blue">
-                    {stockLabel(device.stockStatus)}
-                  </p>
+                  <div className="flex flex-col justify-between p-5">
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-lg font-semibold text-carbon">{device.title}</h3>
+                        {device.grade ? (
+                          <span className="rounded bg-white px-2 py-1 text-xs font-medium text-muted">
+                            {device.grade}
+                          </span>
+                        ) : null}
+                      </div>
+                      {deviceFacts(device).length ? (
+                        <ul className="mt-3 grid gap-1.5 text-sm leading-relaxed text-graphite">
+                          {deviceFacts(device).map((fact) => (
+                            <li key={fact}>{fact}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                    <div className="mt-5 flex items-end justify-between gap-4">
+                      <div>
+                        {device.priceText ? (
+                          <p className="font-semibold text-carbon">{device.priceText}</p>
+                        ) : null}
+                        <p className="mt-1 text-sm text-muted">{stockLabel(device.stockStatus)}</p>
+                      </div>
+                      <span className="text-sm font-medium text-link-blue group-hover:underline">
+                        Смотреть
+                      </span>
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>

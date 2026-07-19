@@ -62,6 +62,11 @@ type BlogRelatedDeviceRow = {
   title?: string;
   price_text?: string;
   stock_status?: string;
+  grade?: string;
+  battery_text?: string;
+  warranty_text?: string;
+  listing_file?: DirectusFileRow | string | null;
+  listing_alt?: string;
 };
 
 type BlogPostRow = {
@@ -128,6 +133,11 @@ const POST_FIELDS = [
   "devices.devices_id.title",
   "devices.devices_id.price_text",
   "devices.devices_id.stock_status",
+  "devices.devices_id.grade",
+  "devices.devices_id.battery_text",
+  "devices.devices_id.warranty_text",
+  "devices.devices_id.listing_file.id",
+  "devices.devices_id.listing_alt",
   "blocks.id",
   "blocks.sort",
   "blocks.block_type",
@@ -248,11 +258,28 @@ function mapDevice(
   const id = text(value.id);
   const title = text(value.title);
   if (!id || !title) return undefined;
+  const listingFileId = fileId(value.listing_file);
   return {
     id,
     title,
     ...(text(value.price_text) ? { priceText: text(value.price_text) } : {}),
     ...(text(value.stock_status) ? { stockStatus: text(value.stock_status) } : {}),
+    ...(text(value.grade) ? { grade: text(value.grade) } : {}),
+    ...(text(value.battery_text) ? { batteryText: text(value.battery_text) } : {}),
+    ...(text(value.warranty_text) ? { warrantyText: text(value.warranty_text) } : {}),
+    ...(listingFileId
+      ? {
+          listingImage: directusAssetUrl(listingFileId, {
+            width: 720,
+            height: 540,
+            quality: 82,
+            fit: "cover",
+            format: "auto",
+            withoutEnlargement: true,
+          }),
+        }
+      : {}),
+    ...(text(value.listing_alt) ? { listingAlt: text(value.listing_alt) } : {}),
   };
 }
 
@@ -308,8 +335,7 @@ function mapPost(row: BlogPostRow, allowIncomplete = false): BlogPost | null {
     slug,
     title,
     excerpt,
-    body: richText.html,
-    bodyRichText: richText.nodes,
+    ...(richText.html ? { body: richText.html, bodyRichText: richText.nodes } : {}),
     ...(coverId
       ? {
           coverImage: directusAssetUrl(coverId, {

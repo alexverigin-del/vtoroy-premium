@@ -265,6 +265,11 @@ export interface BlogRelatedDevice {
   title: string;
   priceText?: string;
   stockStatus?: string;
+  grade?: string;
+  batteryText?: string;
+  warrantyText?: string;
+  listingImage?: string;
+  listingAlt?: string;
 }
 
 export type BlogImageWidth = "content" | "wide";
@@ -293,8 +298,8 @@ export interface BlogPost {
   slug: string;
   title: string;
   excerpt: string;
-  body: string;
-  bodyRichText: RichTextNode[];
+  body?: string;
+  bodyRichText?: RichTextNode[];
   coverImage?: string;
   coverAlt?: string;
   coverCaption?: string;

@@ -102,6 +102,7 @@ const themeExtend = {
     lead: "1.05fr 0.95fr",
     passport: "0.95fr 1.05fr",
     product: "minmax(0, 1fr) 410px",
+    "related-device": "12rem minmax(0, 1fr)",
     trade: "1fr auto 1fr",
   },
   aspectRatio: {

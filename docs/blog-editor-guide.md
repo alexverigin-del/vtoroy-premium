@@ -66,6 +66,20 @@ Next.js.
 материалы, рубрики, теги или авторов в обычной работе: используйте `archived` и
 `is_active`. Связи тегов и устройств можно удалять из карточки материала.
 
+## Рабочий цикл
+
+Основной источник статьи — `Блоки статьи`. Legacy-поле `body` больше не
+используется публичным сайтом и должно оставаться пустым. Для значимого
+редакторского изменения создайте Content Version с понятными key и name,
+проверьте изменения в Compare и Live Preview, затем продвиньте версию в Main.
+O2M-блоки входят в версию вместе с материалом.
+
+Для публикации переведите одобренный материал в `scheduled` и задайте
+`publish_at`. Активный CRON Flow проверяет очередь раз в минуту, переводит
+наступившие материалы в `published`, заполняет `published_at` и сразу снимает
+кэш сайта. После публикации проверьте карточку в `/blog`, страницу рубрики,
+саму статью, RSS и sitemap.
+
 ## Setup и аудит
 
 Генератор идемпотентной схемы и Studio metadata:
@@ -91,33 +105,14 @@ BLOG_PREVIEW_SECRET=<server-secret> npm run directus:setup:blog-preview
 BLOG_PILOT_COVER_FILE_ID=<directus-file-uuid> npm run directus:seed:blog-pilot
 ```
 
-Read-only аудит после применения SQL:
+Read-only аудит после редакторской сессии или применения SQL:
 
 ```bash
 npm run directus:audit-blog
 ```
 
-Setup только печатает SQL. На production его применяют через PostgreSQL
-контейнер Directus в рамках отдельного согласованного выката. До готовности
-Next.js routes не добавляйте ссылку `/blog` в `navigation_items` и не создавайте
-публичные материалы.
-
-## Rollout
-
-1. Применить `directus:setup:blog`, `directus:setup:blog-scheduling` и
-   `directus:setup:blog-preview`. Для preview в Next.js должны быть заданы
-   `DIRECTUS_PREVIEW_TOKEN` и тот же `BLOG_PREVIEW_SECRET`; значения не
-   коммитятся. Token должен принадлежать отдельному service user с policy
-   `ISVOI Blog Preview`. В nginx location `/api/draft/blog` отключается access
-   log, чтобы одноразовый по назначению secret не сохранялся вместе с query.
-2. Выполнить `directus:audit-blog` и сохранить schema snapshot.
-3. Развернуть Next.js маршруты `/blog`, `/blog/[slug]`, рубрики и RSS.
-4. Создать тестовые рубрику, автора и один материал в `draft`.
-5. Проверить preview, затем публикацию и revalidation.
-6. Только после smoke-проверки добавить `Блог` в header/footer navigation.
-
-`blog_posts` использует Directus Content Versioning. Live Preview открывает
-защищенный Next.js Draft Mode и читает черновик отдельным server-only token.
-CRON Flow запускается раз в минуту и меняет статус на `published` только у
-записей с наступившей `publish_at`; database trigger заполняет
-`published_at`, а event Flow сразу снимает cache tags.
+Setup-команды только печатают SQL. Production rollout, Live Preview, Content
+Versioning, scheduling Flow, немедленная revalidation и навигация блога уже
+активированы. На production SQL применяют только через PostgreSQL-контейнер
+Directus в рамках согласованного выката и после свежей локальной VPS-копии.
+Preview token и secret остаются только в server env и никогда не коммитятся.

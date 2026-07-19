@@ -6,7 +6,7 @@ import { SiteShell } from "@/components/SiteShell";
 import { getBlogCategories, getBlogCategory, getPublishedBlogPosts } from "@/lib/blog";
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
-import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
+import { blogItemListJsonLd, breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../../../site-metadata";
 
 type BlogCategoryPageProps = {
@@ -73,6 +73,14 @@ export default async function BlogCategoryPage({ params }: BlogCategoryPageProps
             ),
           }}
         />
+        {posts.length > 1 ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: jsonLdScript(blogItemListJsonLd(posts, `${category.name} — блог I СВОИ`)),
+            }}
+          />
+        ) : null}
         <BlogListing
           title={category.name}
           description={description}

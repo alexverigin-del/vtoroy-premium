@@ -766,7 +766,7 @@ SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_tags','read
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_devices','read','id,blog_posts_id,devices_id,sort',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_files','read','id,filename_download,type,width,height,focal_point_x,focal_point_y',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','devices','read','id,title,price_text,stock_status',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','devices','read','id,title,price_text,stock_status,grade,battery_text,warranty_text,listing_file,listing_alt',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
 
 DROP FUNCTION isvoi_blog_upsert_permission(text,varchar,varchar,text,json,json,json);

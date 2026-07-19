@@ -292,6 +292,20 @@ async function smokeMarketing(page, baseUrl, route) {
   if (route === "/blog" || route.startsWith("/blog/category/")) {
     const eyebrow = page.getByText("I СВОИ · Блог", { exact: true });
     assert((await eyebrow.count()) === 1, `${route}: expected the standard I СВОИ · Блог eyebrow`);
+    const activeBlogLinks = page.locator('header a[aria-current="page"][href="/blog"]');
+    assert((await activeBlogLinks.count()) > 0, `${route}: expected an active Blog header link`);
+    const activeCategoryLink = route.startsWith("/blog/category/")
+      ? page.locator(`nav[aria-label="Рубрики блога"] a[aria-current="page"][href="${route}"]`)
+      : page.locator('nav[aria-label="Рубрики блога"] a[aria-current="page"][href="/blog"]');
+    assert((await activeCategoryLink.count()) === 1, `${route}: expected one active category tab`);
+
+    const articleLinks = await page.locator('main a[href^="/blog/"]').count();
+    if (articleLinks > 1) {
+      assert(
+        seo.jsonLdTypes.includes("ItemList"),
+        `${route}: expected ItemList JSON-LD for a multi-post listing`,
+      );
+    }
   }
 
   return { route, jsonLdTypes: seo.jsonLdTypes.length };
@@ -354,15 +368,76 @@ async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAsset
     `blog article: expected a visible cover image, got ${JSON.stringify(coverBox)}`,
   );
   const blogNavigation = page.getByRole("navigation", { name: "Навигация по блогу" });
-  assert((await blogNavigation.count()) === 1, "blog article: expected one blog navigation landmark");
+  assert(
+    (await blogNavigation.count()) === 1,
+    "blog article: expected one blog navigation landmark",
+  );
   const blogBackLink = blogNavigation.getByRole("link", { name: "← Блог", exact: true });
-  assert((await blogBackLink.count()) === 1, "blog article: expected the standard ← Блог back link");
-  assert((await blogBackLink.getAttribute("href")) === "/blog", "blog article: back link must target /blog");
+  assert(
+    (await blogBackLink.count()) === 1,
+    "blog article: expected the standard ← Блог back link",
+  );
+  assert(
+    (await blogBackLink.getAttribute("href")) === "/blog",
+    "blog article: back link must target /blog",
+  );
+  const activeBlogLinks = page.locator('header a[aria-current="page"][href="/blog"]');
+  assert((await activeBlogLinks.count()) > 0, "blog article: expected an active Blog header link");
+
+  const bodyFigures = page.locator("article > div > figure");
+  assert((await bodyFigures.count()) >= 2, "blog article: expected two structured image blocks");
+  const imageAlts = await bodyFigures
+    .locator("img")
+    .evaluateAll((images) => images.map((image) => image.getAttribute("alt") || ""));
+  assert(imageAlts.every(Boolean), "blog article: every structured image block needs alt text");
+
+  const relatedDevice = page.locator('a[href*="utm_content=related-device"]').first();
+  assert(
+    (await relatedDevice.count()) === 1,
+    "blog article: expected an attributed related-device link",
+  );
+  const deviceHref = (await relatedDevice.getAttribute("href")) || "";
+  for (const part of [
+    "utm_source=blog",
+    "utm_medium=editorial",
+    "utm_campaign=chto-pokazyvaet-diagnostika-iphone",
+    "utm_content=related-device",
+  ]) {
+    assert(deviceHref.includes(part), `blog article: related-device link is missing ${part}`);
+  }
+  assert(
+    (await relatedDevice.locator("img").count()) === 1,
+    "blog article: related device needs an image",
+  );
+
+  const articleCta = page.locator('a[href*="utm_content=article-end"]').first();
+  assert((await articleCta.count()) === 1, "blog article: expected an attributed end CTA");
+  const relatedArticles = page.getByRole("heading", { name: "Читайте также", exact: true });
+  assert(
+    (await relatedArticles.count()) === 1,
+    "blog article: expected a related articles section",
+  );
+
+  const authorType = await page.evaluate(() => {
+    const scripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
+    for (const script of scripts) {
+      try {
+        const value = JSON.parse(script.textContent || "null");
+        if (value?.["@type"] === "BlogPosting") return value.author?.["@type"] || "";
+      } catch {}
+    }
+    return "";
+  });
+  assert(
+    authorType === "Organization",
+    `blog article: expected Organization author, got ${authorType}`,
+  );
 
   return {
     route: articlePath,
     directusImages: await countLoadedDirectusImages(page),
     cover: { width: Math.round(coverBox.width), height: Math.round(coverBox.height) },
+    structuredImages: await bodyFigures.count(),
     jsonLdTypes: seo.jsonLdTypes.length,
   };
 }

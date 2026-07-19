@@ -5,7 +5,7 @@ import { SiteShell } from "@/components/SiteShell";
 import { getBlogCategories, getPublishedBlogPosts } from "@/lib/blog";
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
-import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
+import { blogItemListJsonLd, breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
 const title = "Разумный выбор и владение техникой";
@@ -70,6 +70,14 @@ export default async function BlogPage() {
             ),
           }}
         />
+        {posts.length > 1 ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: jsonLdScript(blogItemListJsonLd(posts, "Материалы блога I СВОИ")),
+            }}
+          />
+        ) : null}
         <BlogListing
           title={indexSection?.headline || title}
           description={indexSection?.subheadline || description}

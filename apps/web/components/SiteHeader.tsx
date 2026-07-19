@@ -42,7 +42,9 @@ function navPath(value: string): string {
 function isCurrentNavItem(item: NavigationItem, pathname: string): boolean {
   const href = navigationHref(item);
   if (/^(https?:|mailto:|tel:|#)/i.test(href)) return false;
-  return navPath(href) === navPath(pathname);
+  const itemPath = navPath(href);
+  const currentPath = navPath(pathname);
+  return itemPath === currentPath || (itemPath !== "/" && currentPath.startsWith(`${itemPath}/`));
 }
 
 function NavLink({

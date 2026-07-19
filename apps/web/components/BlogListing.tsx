@@ -25,6 +25,7 @@ function CategoryNavigation({
       <div className="mx-auto flex max-w-content gap-6 overflow-x-auto px-5 sm:px-8">
         <Link
           href="/blog"
+          aria-current={!activeSlug ? "page" : undefined}
           className={cn(
             "focus-ring shrink-0 border-b-2 py-4 text-sm font-medium",
             !activeSlug
@@ -38,6 +39,7 @@ function CategoryNavigation({
           <Link
             key={category.id}
             href={`/blog/category/${category.slug}`}
+            aria-current={activeSlug === category.slug ? "page" : undefined}
             className={cn(
               "focus-ring shrink-0 border-b-2 py-4 text-sm font-medium",
               activeSlug === category.slug

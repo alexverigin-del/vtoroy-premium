@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-19T15:46:50.222Z",
+  "updatedAt": "2026-07-19T16:22:10.864Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -48,79 +48,142 @@
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "string",
-      "line": 108,
+      "line": 136,
       "text": "Режим предпросмотра",
       "id": "e68f67c269566785"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 114,
+      "line": 142,
       "text": "Выйти из предпросмотра",
       "id": "52e275493d3fe8fe"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "string",
-      "line": 129,
+      "line": 157,
       "text": "Главная",
       "id": "7c1b062be916f513"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "string",
-      "line": 130,
+      "line": 158,
       "text": "Блог",
       "id": "bfe285bc21a59b07"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "string",
-      "line": 139,
+      "line": 167,
       "text": "Навигация по блогу",
       "id": "f1ea81607451f06b"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 140,
+      "line": 168,
       "text": "← Блог",
       "id": "a5f1bc3e853f4721"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 182,
+      "line": 185,
+      "text": "Обновлено",
+      "id": "3b113287206f3975"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 218,
       "text": "Темы",
       "id": "3e0f362f5d27624a"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "string",
-      "line": 190,
+      "line": 226,
       "text": "Об авторе",
       "id": "ab923695caf83f1e"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 191,
+      "line": 227,
       "text": "Автор",
       "id": "4e13b652c7ef9d54"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "string",
+      "line": 238,
+      "text": "Подбор устройства",
+      "id": "2c6f2ce9c3911676"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 206,
+      "line": 239,
+      "text": "Нужен понятный вариант?",
+      "id": "01eba2eb9f1546a4"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 240,
+      "text": "Подберём устройство под задачу и бюджет",
+      "id": "037d6eb51dd5b65a"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 243,
+      "text": "Сопоставим состояние, батарею, известные ремонты и цену до покупки.",
+      "id": "a833de140294910a"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 249,
+      "text": "Получить подбор",
+      "id": "04d2fc21dcca4597"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 258,
+      "text": "Продолжить чтение",
+      "id": "cc966e7e925cfd71"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 259,
+      "text": "Читайте также",
+      "id": "83377930773b8829"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 290,
       "text": "По теме материала",
       "id": "7271ccbd690e9d08"
     },
     {
       "file": "apps/web/app/blog/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 207,
+      "line": 291,
       "text": "Устройства в Store",
       "id": "f6aea3bf9acdd1f4"
+    },
+    {
+      "file": "apps/web/app/blog/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 335,
+      "text": "Смотреть",
+      "id": "fb429cfa9d74bfdc"
     },
     {
       "file": "apps/web/app/blog/category/[slug]/page.tsx",
@@ -191,6 +254,13 @@
       "line": 68,
       "text": "Блог",
       "id": "df065c07341a8e16"
+    },
+    {
+      "file": "apps/web/app/blog/page.tsx",
+      "kind": "string",
+      "line": 77,
+      "text": "Материалы блога I СВОИ",
+      "id": "30827ad49fce390c"
     },
     {
       "file": "apps/web/app/blog/rss.xml/route.ts",
@@ -475,35 +545,35 @@
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 34,
+      "line": 35,
       "text": "Все материалы",
       "id": "d0ce52c78b6a7ccc"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 115,
+      "line": 117,
       "text": "I СВОИ · Блог",
       "id": "d7d18dbee43f5bbb"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 130,
+      "line": 132,
       "text": "Материалы готовятся",
       "id": "8df96cf130ea012a"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 131,
+      "line": 133,
       "text": "Здесь появятся практические разборы о проверке, выборе и разумном владении техникой.",
       "id": "95a1943ac64c8d86"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 164,
+      "line": 166,
       "text": "Читать материал",
       "id": "e6e97c1384a35260"
     },
@@ -2176,28 +2246,28 @@
     {
       "file": "apps/web/components/SiteHeader.tsx",
       "kind": "string",
-      "line": 101,
+      "line": 103,
       "text": "Основная навигация",
       "id": "4cbfb2d80af0086f"
     },
     {
       "file": "apps/web/components/SiteHeader.tsx",
       "kind": "string",
-      "line": 120,
+      "line": 122,
       "text": "Закрыть меню",
       "id": "e371db7dce278dfd"
     },
     {
       "file": "apps/web/components/SiteHeader.tsx",
       "kind": "string",
-      "line": 120,
+      "line": 122,
       "text": "Открыть меню",
       "id": "76025fc6fa03349e"
     },
     {
       "file": "apps/web/components/SiteHeader.tsx",
       "kind": "string",
-      "line": 144,
+      "line": 146,
       "text": "Мобильная навигация",
       "id": "751b21831781717a"
     },
@@ -3184,21 +3254,21 @@
     {
       "file": "apps/web/lib/blog.ts",
       "kind": "string",
-      "line": 263,
+      "line": 290,
       "text": "Лид статьи пока не заполнен.",
       "id": "e7151276c1062ccb"
     },
     {
       "file": "apps/web/lib/blog.ts",
       "kind": "string",
-      "line": 269,
+      "line": 296,
       "text": "<p>Текст статьи пока не заполнен.</p>",
       "id": "28597bf266bcff40"
     },
     {
       "file": "apps/web/lib/blog.ts",
       "kind": "jsx-text",
-      "line": 269,
+      "line": 296,
       "text": "Текст статьи пока не заполнен.",
       "id": "4b2c88bfd6be3f43"
     },

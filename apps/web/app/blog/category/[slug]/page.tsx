@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { BlogListing } from "@/components/BlogListing";
 import { SiteShell } from "@/components/SiteShell";
 import { getBlogCategories, getBlogCategory, getPublishedBlogPosts } from "@/lib/blog";
-import { getNavigationItems, getSiteSettings } from "@/lib/directus";
+import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
+import { DEFAULT_SOCIAL_IMAGE } from "../../../site-metadata";
 
 type BlogCategoryPageProps = {
   params: Promise<{ slug: string }>;
@@ -16,19 +17,28 @@ export const revalidate = 300;
 
 export async function generateMetadata({ params }: BlogCategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const category = await getBlogCategory(slug);
+  const [category, page] = await Promise.all([getBlogCategory(slug), getSitePage("blog")]);
   if (!category) return {};
   const description =
     category.description ||
     `Материалы I СВОИ по теме «${category.name}»: практические разборы и проверенные ориентиры.`;
+  const title = `${category.name} — блог I СВОИ`;
+  const image = page?.ogImage || DEFAULT_SOCIAL_IMAGE;
   return {
-    title: `${category.name} — блог I СВОИ`,
+    title,
     description,
     alternates: { canonical: `/blog/category/${category.slug}` },
     openGraph: {
-      title: `${category.name} — блог I СВОИ`,
+      title,
       description,
       url: `/blog/category/${category.slug}`,
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
     },
   };
 }

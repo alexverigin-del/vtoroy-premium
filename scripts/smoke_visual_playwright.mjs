@@ -13,7 +13,17 @@ import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs"
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
-const DEFAULT_ROUTES = ["/", "/catalog", "/store", "/trade", "/passport", "/club"];
+const DEFAULT_ROUTES = [
+  "/",
+  "/catalog",
+  "/store",
+  "/trade",
+  "/passport",
+  "/club",
+  "/blog",
+  "/blog/chto-pokazyvaet-diagnostika-iphone",
+  "/blog/category/buying-guide",
+];
 const VIEWPORTS = [
   { name: "desktop", width: 1366, height: 900 },
   { name: "mobile", width: 390, height: 844, isMobile: true },

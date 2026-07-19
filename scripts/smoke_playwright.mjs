@@ -11,7 +11,15 @@ import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs"
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
-const MARKETING_ROUTES = ["/store", "/trade", "/passport", "/club"];
+const DEFAULT_BLOG_ARTICLE_PATH = "/blog/chto-pokazyvaet-diagnostika-iphone";
+const MARKETING_ROUTES = [
+  "/store",
+  "/trade",
+  "/passport",
+  "/club",
+  "/blog",
+  "/blog/category/buying-guide",
+];
 const DIRECTUS_ASSET_RE = /(https:\/\/api\.isvoi\.ru\/assets\/|api\.isvoi\.ru%2fassets%2f)/i;
 const DIRECTUS_ASSET_SOURCE = "api.isvoi.ru/assets/";
 
@@ -319,9 +327,33 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
   };
 }
 
+async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAssets) {
+  const url = joinUrl(baseUrl, articlePath);
+  await gotoOk(page, url);
+  const seo = await assertSeoAndStructuredData(page, "blog article", [
+    "Organization",
+    "WebSite",
+    "BlogPosting",
+    "BreadcrumbList",
+  ]);
+  if (requireDirectusAssets) {
+    await waitForDirectusImages(page, 1);
+  } else {
+    await waitForLoadedImages(page, 1);
+  }
+  await assertImages(page, "blog article", 1, requireDirectusAssets);
+
+  return {
+    route: articlePath,
+    directusImages: await countLoadedDirectusImages(page),
+    jsonLdTypes: seo.jsonLdTypes.length,
+  };
+}
+
 async function main() {
   const baseUrl = normalizeBaseUrl(process.env.SMOKE_BASE_URL);
   const devicePath = process.env.SMOKE_DEVICE_PATH || DEFAULT_DEVICE_PATH;
+  const blogArticlePath = process.env.SMOKE_BLOG_ARTICLE_PATH || DEFAULT_BLOG_ARTICLE_PATH;
   const requireDirectusAssets = shouldRequireDirectusAssets(baseUrl);
   const browser = await launchChromium({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
@@ -334,6 +366,7 @@ async function main() {
     for (const route of MARKETING_ROUTES.filter((route) => route !== "/store")) {
       results.push(await smokeMarketing(page, baseUrl, route));
     }
+    results.push(await smokeBlogArticle(page, baseUrl, blogArticlePath, requireDirectusAssets));
     results.push(await smokeDevice(page, baseUrl, devicePath, requireDirectusAssets));
 
     for (const result of results) {

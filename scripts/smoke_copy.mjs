@@ -9,7 +9,17 @@
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
-const DEFAULT_ROUTES = ["/", "/catalog", "/store", "/trade", "/passport", "/club"];
+const DEFAULT_ROUTES = [
+  "/",
+  "/catalog",
+  "/store",
+  "/trade",
+  "/passport",
+  "/club",
+  "/blog",
+  "/blog/chto-pokazyvaet-diagnostika-iphone",
+  "/blog/category/buying-guide",
+];
 
 const BANNED_PATTERNS = [
   { label: "prototype footer copy", pattern: /Прототип лендинга/iu },

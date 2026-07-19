@@ -6,6 +6,7 @@ import { getBlogCategories, getPublishedBlogPosts } from "@/lib/blog";
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
+import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
 const title = "Разумный выбор и владение техникой";
 const description =
@@ -15,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const page = await getSitePage("blog");
   const metadataTitle = page?.title || `Блог I СВОИ — ${title}`;
   const metadataDescription = page?.metaDescription || description;
+  const image = page?.ogImage || DEFAULT_SOCIAL_IMAGE;
   return {
     title: metadataTitle,
     description: metadataDescription,
@@ -28,6 +30,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title: metadataTitle,
       description: metadataDescription,
       url: "/blog",
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metadataTitle,
+      description: metadataDescription,
+      images: [image],
     },
   };
 }

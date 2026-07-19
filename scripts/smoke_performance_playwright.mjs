@@ -10,7 +10,13 @@
 import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs";
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
-const DEFAULT_ROUTES = ["/", "/catalog", "/store"];
+const DEFAULT_ROUTES = [
+  "/",
+  "/catalog",
+  "/store",
+  "/blog",
+  "/blog/chto-pokazyvaet-diagnostika-iphone",
+];
 const VIEWPORTS = [
   {
     name: "desktop",

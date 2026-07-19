@@ -77,9 +77,7 @@ WITH expected_collections(collection) AS (
     ('blog_posts'),
     ('blog_authors'),
     ('blog_categories'),
-    ('blog_tags'),
-    ('blog_posts_tags'),
-    ('blog_posts_devices')
+    ('blog_tags')
 ),
 expected_bookmarks(role_name, collection, bookmark) AS (
   VALUES

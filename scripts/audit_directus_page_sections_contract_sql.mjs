@@ -54,6 +54,7 @@ $$;
 
 WITH allowed_variants(variant) AS (
   VALUES
+    ('blog.index'),
     ('cards.grid'),
     ('cards.three'),
     ('catalog.curated'),

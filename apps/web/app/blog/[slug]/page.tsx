@@ -53,6 +53,11 @@ function attributedHref(path: string, slug: string, content: string, hash = ""):
   return `${path}?${params}${hash}`;
 }
 
+function previewAssetUrl(assetId: string, postId: string, version: string, width: number): string {
+  const params = new URLSearchParams({ post: postId, version, width: String(width) });
+  return `/api/draft/blog-asset/${assetId}?${params}`;
+}
+
 function deviceFacts(device: { batteryText?: string; warrantyText?: string }): string[] {
   return [device.batteryText, device.warrantyText].filter((fact): fact is string => Boolean(fact));
 }
@@ -194,12 +199,17 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
             <figure className="mx-auto max-w-content px-5 sm:px-8">
               <div className="relative aspect-blog-cover overflow-hidden rounded-card bg-surface">
                 <ProductImage
-                  src={post.coverImage}
+                  src={
+                    preview && query.version && post.coverAssetId
+                      ? previewAssetUrl(post.coverAssetId, post.id, query.version, 1600)
+                      : post.coverImage
+                  }
                   alt={post.coverAlt || ""}
                   fill
                   priority
                   sizes="(max-width: 1199px) 100vw, 1200px"
                   className="object-cover"
+                  unoptimized={preview && Boolean(query.version && post.coverAssetId)}
                 />
               </div>
               {post.coverCaption ? (
@@ -210,7 +220,7 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
             </figure>
           ) : null}
 
-          <BlogArticleContent post={post} />
+          <BlogArticleContent post={post} previewVersion={preview ? query.version : undefined} />
 
           <div className="mx-auto max-w-measure px-5 sm:px-8">
             {post.tags.length ? (

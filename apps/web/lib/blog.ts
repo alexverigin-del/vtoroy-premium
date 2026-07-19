@@ -200,6 +200,7 @@ function mapBlock(row: BlogPostBlockRow, previewFallbackId: string): BlogPostBlo
   return {
     id,
     type: "image",
+    assetId: imageId,
     image: directusAssetUrl(imageId, {
       width: width === "wide" ? 1600 : 1200,
       quality: 84,
@@ -353,6 +354,7 @@ function mapPost(row: BlogPostRow, allowIncomplete = false): BlogPost | null {
     ...(richText.html ? { body: richText.html, bodyRichText: richText.nodes } : {}),
     ...(coverId
       ? {
+          coverAssetId: coverId,
           coverImage: directusAssetUrl(coverId, {
             width: 1600,
             height: 1000,

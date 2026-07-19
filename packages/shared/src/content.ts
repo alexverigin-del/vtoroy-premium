@@ -7,19 +7,7 @@
 export type PublishStatus = "draft" | "published" | "archived";
 
 export type RichTextTag =
-  | "p"
-  | "br"
-  | "strong"
-  | "b"
-  | "em"
-  | "i"
-  | "ul"
-  | "ol"
-  | "li"
-  | "a"
-  | "h2"
-  | "h3"
-  | "blockquote";
+  "p" | "br" | "strong" | "b" | "em" | "i" | "ul" | "ol" | "li" | "a" | "h2" | "h3" | "blockquote";
 
 export type RichTextNode =
   | { type: "text"; text: string }
@@ -285,6 +273,7 @@ export type BlogPostBlock =
       id: string;
       type: "image";
       image: string;
+      assetId: string;
       alt: string;
       caption?: string;
       width: BlogImageWidth;
@@ -301,6 +290,7 @@ export interface BlogPost {
   body?: string;
   bodyRichText?: RichTextNode[];
   coverImage?: string;
+  coverAssetId?: string;
   coverAlt?: string;
   coverCaption?: string;
   category?: BlogCategory;

@@ -4,7 +4,18 @@ import { ProductImage } from "@/components/ProductImage";
 import { RichText } from "@/components/RichText";
 import { cn } from "@/lib/cn";
 
-export function BlogArticleContent({ post }: { post: BlogPost }) {
+function previewAssetUrl(assetId: string, postId: string, version: string, width: number): string {
+  const params = new URLSearchParams({ post: postId, version, width: String(width) });
+  return `/api/draft/blog-asset/${assetId}?${params}`;
+}
+
+export function BlogArticleContent({
+  post,
+  previewVersion,
+}: {
+  post: BlogPost;
+  previewVersion?: string;
+}) {
   return (
     <div className="pt-10 sm:pt-14">
       {post.blocks.map((block, index) => {
@@ -34,7 +45,16 @@ export function BlogArticleContent({ post }: { post: BlogPost }) {
             )}
           >
             <ProductImage
-              src={block.image}
+              src={
+                previewVersion
+                  ? previewAssetUrl(
+                      block.assetId,
+                      post.id,
+                      previewVersion,
+                      block.width === "wide" ? 1600 : 1200,
+                    )
+                  : block.image
+              }
               alt={block.alt}
               width={block.sourceWidth}
               height={block.sourceHeight}
@@ -44,6 +64,7 @@ export function BlogArticleContent({ post }: { post: BlogPost }) {
                   : "(max-width: 799px) 100vw, 760px"
               }
               className="h-auto w-full rounded-card bg-surface"
+              unoptimized={Boolean(previewVersion)}
             />
             {block.caption ? (
               <figcaption className="mt-3 text-sm leading-relaxed text-muted">

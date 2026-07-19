@@ -1374,8 +1374,9 @@ Next content-editing priorities:
   through the Draft Mode route and reads the item with `?version=`. Directus
   11.17.4 required a separate non-app `ISVOI Blog Version Workflow` policy;
   PostgreSQL constraint `isvoi_directus_versions_blog_only` limits version rows
-  to `blog_posts`. Named version `editorial-qa-2026-07-19` passed create, save,
-  compare, unchanged-main and Next.js preview checks.
+  to `blog_posts`. Version key `editorial-qa-2026-07-19` (name
+  `Editorial QA before publication`) passed create, save, compare,
+  unchanged-main and Next.js preview checks.
 - Editor upload QA exposed Directus system-field merging in the app-access
   policy. `ISVOI Editor Media Workflow` now owns scoped `directus_files:create`
   for managed ISVOI roots; the app policy no longer owns that action. Upload

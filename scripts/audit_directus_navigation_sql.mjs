@@ -69,5 +69,23 @@ UNION ALL
 SELECT 'navigation.header_cta_missing', count(*)::text
 FROM site_settings
 WHERE COALESCE(header_cta_label, '') = ''
-   OR COALESCE(header_cta_url, '') = '';
+   OR COALESCE(header_cta_url, '') = ''
+UNION ALL
+SELECT 'navigation.blog.header_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM navigation_items item
+  JOIN site_pages page ON page.id=item.page
+  WHERE item.location='header' AND item.is_active=true AND item.label='Блог'
+    AND item.link_type='page' AND page.slug='blog' AND page.status='published'
+)
+UNION ALL
+SELECT 'navigation.blog.footer_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM navigation_items item
+  JOIN site_pages page ON page.id=item.page
+  WHERE item.location='footer' AND item.is_active=true AND item.label='Блог'
+    AND item.link_type='page' AND page.slug='blog' AND page.status='published'
+);
 `);

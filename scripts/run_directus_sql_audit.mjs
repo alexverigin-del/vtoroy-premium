@@ -100,6 +100,8 @@ const auditDefinitions = {
       "navigation.footer_relative_anchors",
       "navigation.site_logo_file_missing",
       "navigation.header_cta_missing",
+      "navigation.blog.header_missing",
+      "navigation.blog.footer_missing",
     ],
   },
   "legacy-fallback": {

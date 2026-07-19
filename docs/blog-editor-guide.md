@@ -19,6 +19,16 @@ Next.js.
 - `ISVOI Blog` в Directus Files — рабочие обложки, портреты и иллюстрации.
 - `ISVOI Editorial` — одобренные публичные обложки и изображения статей.
 
+## Роли и первый вход
+
+- `ISVOI Editor` создаёт и редактирует материалы, блоки, рубрики, теги и
+  авторов; сохраняет, сравнивает и открывает Content Versions в Live Preview.
+- `ISVOI Advanced Editor` дополнительно выполняет `Promote Version` для версии
+  с O2M-блоками и принимает публикационное решение.
+- Оба типа редакторов обязаны настроить 2FA при первом входе. Политика
+  `ISVOI Studio Self Security` разрешает изменить только собственное поле
+  `tfa_secret`; чтение чужих пользователей и управление ролями запрещены.
+
 ## Статусы материала
 
 1. `draft` — рабочий черновик, не виден на сайте.
@@ -76,12 +86,10 @@ O2M-блоки входят в версию вместе с материалом
 
 В Directus 11.17.4 обычная field-restricted роль `ISVOI Editor` сохраняет,
 сравнивает и показывает в Preview версии с O2M-блоками, но relational promote
-требует полного field scope на `blog_posts` и `blog_post_blocks`. Не расширяйте
-роль редактора вручную. Для production rehearsal используется временная
-passwordless identity и user-bound blog-only policy из
-`directus:setup:blog-qa-identity`; после операции identity и policy удаляются,
-а старый token должен вернуть `401`. Администратор Studio может выполнить
-обычный Promote Version без этого обхода.
+требует полного field scope на `blog_posts` и `blog_post_blocks`. Поэтому
+продвижение выполняет `ISVOI Advanced Editor` через отдельную non-app политику
+`ISVOI Blog Publisher`. Не добавляйте wildcard-поля в обычную Editor policy и
+не назначайте Publisher напрямую отдельным пользователям.
 
 Для публикации переведите одобренный материал в `scheduled` и задайте
 `publish_at`. Активный CRON Flow проверяет очередь раз в минуту, переводит

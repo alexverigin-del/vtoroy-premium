@@ -114,6 +114,9 @@ Detailed guide: `docs/leads-workflow-editor-guide.md`.
 Use `Блог · Материалы` (`blog_posts`) as the main editorial entry point.
 
 - New materials start in `draft`; move them through `review` before publication.
+- `ISVOI Editor` creates, edits, compares and previews versions;
+  `ISVOI Advanced Editor` promotes the approved relational version and schedules
+  publication. First Studio login requires 2FA setup.
 - Build article content in ordered `Блоки статьи`: rich-text blocks and image
   blocks with required alt text, optional caption and `content`/`wide` width.
 - Keep one primary category, a responsible author and a small set of useful tags.
@@ -121,8 +124,8 @@ Use `Блог · Материалы` (`blog_posts`) as the main editorial entry 
   article images to `ISVOI Editorial` before publication.
 - Related catalog items are selected through `Связанные устройства`; do not paste
   product URLs into structured relation fields.
-- Do not add `/blog` to public navigation until the Next.js routes and cache
-  invalidation are deployed and smoke-tested.
+- After publication, verify the article, category, RSS and sitemap; blog routes,
+  navigation and immediate cache invalidation are already active in production.
 
 Detailed guide: `docs/blog-editor-guide.md`.
 

@@ -71,6 +71,15 @@ expected_workflow_permissions(collection, action) AS (
     ('directus_versions','read'),('directus_versions','create'),
     ('directus_versions','update'),('directus_versions','delete')
 ),
+expected_publisher_permissions(collection, action, fields, validation) AS (
+  VALUES
+    ('blog_posts','read','*',NULL::jsonb),
+    ('blog_posts','update','*','{"status":{"_in":["draft","review","scheduled","published","archived"]},"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"title":{"_nnull":true}}'::jsonb),
+    ('blog_post_blocks','read','*',NULL::jsonb),
+    ('blog_post_blocks','create','*','{}'::jsonb),
+    ('blog_post_blocks','update','*','{}'::jsonb),
+    ('blog_post_blocks','delete','*',NULL::jsonb)
+),
 expected_media_permissions(collection, action) AS (
   VALUES ('directus_files','create')
 ),
@@ -256,6 +265,62 @@ JOIN directus_policies policy ON policy.id=access.policy
 LEFT JOIN directus_roles role ON role.id=access.role
 WHERE policy.name='ISVOI Blog Version Workflow'
   AND (access."user" IS NOT NULL OR role.name NOT IN ('ISVOI Editor','ISVOI Advanced Editor'))
+UNION ALL
+SELECT 'blog.permissions.publisher_policy_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_policies
+  WHERE name='ISVOI Blog Publisher'
+    AND coalesce(app_access,false)=false
+    AND coalesce(admin_access,false)=false
+    AND coalesce(enforce_tfa,false)=false
+)
+UNION ALL
+SELECT 'blog.permissions.publisher_permissions_missing', count(*)::text
+FROM expected_publisher_permissions expected
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name='ISVOI Blog Publisher'
+    AND permission.collection=expected.collection
+    AND permission.action=expected.action
+    AND permission.fields=expected.fields
+    AND permission.permissions IS NULL
+    AND permission.validation::jsonb IS NOT DISTINCT FROM expected.validation
+    AND permission.presets IS NULL
+)
+UNION ALL
+SELECT 'blog.permissions.publisher_role_binding_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_access access
+  JOIN directus_roles role ON role.id=access.role
+  JOIN directus_policies policy ON policy.id=access.policy
+  WHERE role.name='ISVOI Advanced Editor'
+    AND policy.name='ISVOI Blog Publisher'
+    AND access."user" IS NULL
+)
+UNION ALL
+SELECT 'blog.permissions.publisher_unexpected_bindings', count(*)::text
+FROM directus_access access
+JOIN directus_policies policy ON policy.id=access.policy
+LEFT JOIN directus_roles role ON role.id=access.role
+WHERE policy.name='ISVOI Blog Publisher'
+  AND (access."user" IS NOT NULL OR role.name<>'ISVOI Advanced Editor')
+UNION ALL
+SELECT 'blog.permissions.publisher_scope_invalid', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name='ISVOI Blog Publisher'
+  AND NOT EXISTS (
+    SELECT 1 FROM expected_publisher_permissions expected
+    WHERE permission.collection=expected.collection
+      AND permission.action=expected.action
+      AND permission.fields=expected.fields
+      AND permission.permissions IS NULL
+      AND permission.validation::jsonb IS NOT DISTINCT FROM expected.validation
+      AND permission.presets IS NULL
+  )
 UNION ALL
 SELECT 'blog.permissions.media_missing', count(*)::text
 FROM expected_media_permissions ep

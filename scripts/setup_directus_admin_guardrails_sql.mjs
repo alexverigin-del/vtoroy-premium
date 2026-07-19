@@ -30,6 +30,63 @@ BEGIN
 END;
 $$;
 
+DO $$
+DECLARE
+  v_policy uuid;
+BEGIN
+  SELECT id INTO v_policy
+  FROM directus_policies
+  WHERE name='ISVOI Studio Self Security'
+  LIMIT 1;
+
+  IF v_policy IS NULL THEN
+    v_policy := gen_random_uuid();
+    INSERT INTO directus_policies (
+      id,name,icon,description,app_access,admin_access,enforce_tfa
+    ) VALUES (
+      v_policy,
+      'ISVOI Studio Self Security',
+      'enhanced_encryption',
+      'Non-app self-only permission required for Studio users to enable or disable their own TFA secret.',
+      false,false,false
+    );
+  ELSE
+    UPDATE directus_policies
+    SET icon='enhanced_encryption',
+      description='Non-app self-only permission required for Studio users to enable or disable their own TFA secret.',
+      app_access=false,admin_access=false,enforce_tfa=false
+    WHERE id=v_policy;
+  END IF;
+
+  DELETE FROM directus_access
+  WHERE policy=v_policy
+    AND (
+      "user" IS NOT NULL
+      OR role NOT IN (
+        SELECT id FROM directus_roles
+        WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor','ISVOI Importer')
+      )
+    );
+
+  INSERT INTO directus_access (id,role,"user",policy,sort)
+  SELECT gen_random_uuid(),role.id,NULL,v_policy,30
+  FROM directus_roles role
+  WHERE role.name IN ('ISVOI Editor','ISVOI Advanced Editor','ISVOI Importer')
+    AND NOT EXISTS (
+      SELECT 1 FROM directus_access access
+      WHERE access.role=role.id AND access.policy=v_policy AND access."user" IS NULL
+    );
+
+  DELETE FROM directus_permissions WHERE policy=v_policy;
+  INSERT INTO directus_permissions (
+    policy,collection,action,fields,permissions,validation,presets
+  ) VALUES (
+    v_policy,'directus_users','update','tfa_secret',
+    '{"id":{"_eq":"$CURRENT_USER"}}'::json,NULL,NULL
+  );
+END;
+$$;
+
 -- Policy-level guardrails.
 UPDATE directus_policies
 SET admin_access = false
@@ -58,6 +115,8 @@ WHERE name IN (
   'ISVOI Public Read',
   'ISVOI Blog Preview',
   'ISVOI Blog Version Workflow',
+  'ISVOI Blog Publisher',
+  'ISVOI Studio Self Security',
   'ISVOI Lead Intake',
   'ISVOI Catalog Import'
 );
@@ -96,6 +155,15 @@ WHERE p.id = pe.policy
   AND NOT (
     p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
     AND pe.collection='directus_versions'
+  )
+  AND NOT (
+    p.name='ISVOI Studio Self Security'
+    AND pe.collection='directus_users'
+    AND pe.action='update'
+    AND pe.fields='tfa_secret'
+    AND pe.permissions::jsonb IS NOT DISTINCT FROM '{"id":{"_eq":"$CURRENT_USER"}}'::jsonb
+    AND pe.validation IS NULL
+    AND pe.presets IS NULL
   );
 
 -- Anonymous Public, Next.js reads, and blog preview are read-only surfaces.
@@ -129,7 +197,7 @@ WHERE name <> 'Administrator'
 UNION ALL
 SELECT 'admin_guardrails.service_app_access', count(*)::text
 FROM directus_policies
-WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Blog Version Workflow', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
+WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Blog Version Workflow', 'ISVOI Blog Publisher', 'ISVOI Studio Self Security', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
   AND COALESCE(app_access, false) = true
 UNION ALL
 SELECT 'admin_guardrails.studio_tfa_policies', count(*)::text
@@ -167,6 +235,15 @@ WHERE COALESCE(p.admin_access, false) = false
   AND NOT (
     p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
     AND pe.collection='directus_versions'
+  )
+  AND NOT (
+    p.name='ISVOI Studio Self Security'
+    AND pe.collection='directus_users'
+    AND pe.action='update'
+    AND pe.fields='tfa_secret'
+    AND pe.permissions::jsonb IS NOT DISTINCT FROM '{"id":{"_eq":"$CURRENT_USER"}}'::jsonb
+    AND pe.validation IS NULL
+    AND pe.presets IS NULL
   )
 UNION ALL
 SELECT 'admin_guardrails.public_writes', count(*)::text

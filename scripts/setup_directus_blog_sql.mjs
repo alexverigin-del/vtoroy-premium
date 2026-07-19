@@ -52,6 +52,11 @@ SELECT isvoi_blog_policy_id(
   'Non-app system policy for Directus Content Versions. Bound only to ISVOI Editor and ISVOI Advanced Editor roles; PostgreSQL restricts versions to blog_posts.'
 );
 SELECT isvoi_blog_policy_id(
+  'ISVOI Blog Publisher',
+  'publish',
+  'Non-app policy for relational Content Version promotion. Bound only to ISVOI Advanced Editor; required by Directus 11.17 field checks.'
+);
+SELECT isvoi_blog_policy_id(
   'ISVOI Editor Media Workflow',
   'perm_media',
   'Non-app policy for editor uploads into managed ISVOI folders. Separated from app access because Directus adds system file fields during upload.'
@@ -71,6 +76,13 @@ WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Editor Media Wo
     OR role NOT IN (SELECT id FROM directus_roles WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor'))
   );
 
+DELETE FROM directus_access
+WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Blog Publisher')
+  AND (
+    "user" IS NOT NULL
+    OR role NOT IN (SELECT id FROM directus_roles WHERE name='ISVOI Advanced Editor')
+  );
+
 INSERT INTO directus_access (id,role,"user",policy,sort)
 SELECT gen_random_uuid(),role.id,NULL,policy.id,20
 FROM directus_roles role
@@ -88,6 +100,17 @@ FROM directus_roles role
 CROSS JOIN directus_policies policy
 WHERE role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
   AND policy.name='ISVOI Editor Media Workflow'
+  AND NOT EXISTS (
+    SELECT 1 FROM directus_access access
+    WHERE access.role=role.id AND access.policy=policy.id AND access."user" IS NULL
+  );
+
+INSERT INTO directus_access (id,role,"user",policy,sort)
+SELECT gen_random_uuid(),role.id,NULL,policy.id,22
+FROM directus_roles role
+CROSS JOIN directus_policies policy
+WHERE role.name='ISVOI Advanced Editor'
+  AND policy.name='ISVOI Blog Publisher'
   AND NOT EXISTS (
     SELECT 1 FROM directus_access access
     WHERE access.role=role.id AND access.policy=policy.id AND access."user" IS NULL
@@ -672,6 +695,22 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update'
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','create','post,sort,block_type,body,image,image_alt,image_caption,image_width',NULL,'{"post":{"_nnull":true},"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json,'{"sort":100,"block_type":"rich_text","image_width":"content"}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','update','post,sort,block_type,body,image,image_alt,image_caption,image_width',NULL,'{"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json);
+
+-- Directus 11.17 promotes relational deltas through ItemsService and requires
+-- wildcard field access on both sides of an O2M relation. Keep this dedicated
+-- non-app policy on Advanced Editor only; ordinary Editors retain explicit
+-- fields and can create, edit, compare and preview versions without publishing.
+DELETE FROM directus_permissions
+WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Blog Publisher');
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Publisher','blog_posts','read','*',NULL);
+SELECT isvoi_blog_upsert_permission(
+  'ISVOI Blog Publisher','blog_posts','update','*',NULL,
+  '{"status":{"_in":["draft","review","scheduled","published","archived"]},"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"title":{"_nnull":true}}'::json
+);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Publisher','blog_post_blocks','read','*',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Publisher','blog_post_blocks','create','*',NULL,'{}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Publisher','blog_post_blocks','update','*',NULL,'{}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Publisher','blog_post_blocks','delete','*',NULL);
 
 -- Directus adds the internal hash after create validation, so create must use
 -- full access. The database constraint above keeps it blog-only;

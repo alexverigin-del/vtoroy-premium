@@ -315,13 +315,58 @@ WHERE name <> 'Administrator'
 UNION ALL
 SELECT 'permissions.service_app_access', count(*)::text
 FROM directus_policies
-WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Blog Version Workflow', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
+WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Blog Version Workflow', 'ISVOI Blog Publisher', 'ISVOI Studio Self Security', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
   AND coalesce(app_access, false) = true
 UNION ALL
 SELECT 'permissions.studio_tfa_policies', count(*)::text
 FROM directus_policies
 WHERE name IN ('Administrator', 'ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer')
   AND coalesce(enforce_tfa, false) = true
+UNION ALL
+SELECT 'permissions.self_security_policy_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_policies
+  WHERE name='ISVOI Studio Self Security'
+    AND coalesce(app_access,false)=false
+    AND coalesce(admin_access,false)=false
+    AND coalesce(enforce_tfa,false)=false
+)
+UNION ALL
+SELECT 'permissions.self_security_permission_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions pe
+  JOIN directus_policies p ON p.id=pe.policy
+  WHERE p.name='ISVOI Studio Self Security'
+    AND pe.collection='directus_users'
+    AND pe.action='update'
+    AND pe.fields='tfa_secret'
+    AND pe.permissions::jsonb IS NOT DISTINCT FROM '{"id":{"_eq":"$CURRENT_USER"}}'::jsonb
+    AND pe.validation IS NULL
+    AND pe.presets IS NULL
+)
+UNION ALL
+SELECT 'permissions.self_security_bindings_missing', count(*)::text
+FROM (VALUES ('ISVOI Editor'),('ISVOI Advanced Editor'),('ISVOI Importer')) required(role_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_access access
+  JOIN directus_roles role ON role.id=access.role
+  JOIN directus_policies policy ON policy.id=access.policy
+  WHERE role.name=required.role_name
+    AND policy.name='ISVOI Studio Self Security'
+    AND access."user" IS NULL
+)
+UNION ALL
+SELECT 'permissions.self_security_unexpected_bindings', count(*)::text
+FROM directus_access access
+JOIN directus_policies policy ON policy.id=access.policy
+LEFT JOIN directus_roles role ON role.id=access.role
+WHERE policy.name='ISVOI Studio Self Security'
+  AND (
+    access."user" IS NOT NULL
+    OR role.name NOT IN ('ISVOI Editor','ISVOI Advanced Editor','ISVOI Importer')
+  )
 UNION ALL
 SELECT 'permissions.non_admin_system_permissions', count(*)::text
 FROM directus_permissions pe
@@ -331,6 +376,15 @@ WHERE coalesce(p.admin_access, false) = false
   AND NOT (
     p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
     AND pe.collection='directus_versions'
+  )
+  AND NOT (
+    p.name='ISVOI Studio Self Security'
+    AND pe.collection='directus_users'
+    AND pe.action='update'
+    AND pe.fields='tfa_secret'
+    AND pe.permissions::jsonb IS NOT DISTINCT FROM '{"id":{"_eq":"$CURRENT_USER"}}'::jsonb
+    AND pe.validation IS NULL
+    AND pe.presets IS NULL
   )
 UNION ALL
 SELECT 'permissions.public_writes', count(*)::text

@@ -126,6 +126,23 @@ CREATE TABLE IF NOT EXISTS blog_posts_devices (
   CONSTRAINT blog_posts_devices_unique UNIQUE (blog_posts_id, devices_id)
 );
 
+-- Directus 11.17 adds the version hash after permission validation, so a
+-- filtered create permission fails inside VersionsService. Enforce the same
+-- single-collection boundary at PostgreSQL level instead.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname='isvoi_directus_versions_blog_only'
+      AND conrelid='directus_versions'::regclass
+  ) THEN
+    ALTER TABLE directus_versions
+      ADD CONSTRAINT isvoi_directus_versions_blog_only
+      CHECK (collection='blog_posts');
+  END IF;
+END;
+$$;
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'blog_authors_avatar_fkey') THEN
@@ -556,10 +573,10 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','create'
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update','blog_posts_id,devices_id,sort',NULL);
 
 -- Directus adds the internal hash after create validation, so create must use
--- full access. The blog audit therefore enforces blog_posts as the only
--- version-enabled collection; read/update/delete remain row-scoped.
+-- full access. The database constraint above keeps it blog-only;
+-- read/update/delete remain row-scoped as an additional API-layer guard.
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','*',NULL,NULL,'{"collection":"blog_posts"}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','*',NULL,NULL,NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','update','*','{"collection":{"_eq":"blog_posts"}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','delete','*','{"collection":{"_eq":"blog_posts"}}'::json);
 

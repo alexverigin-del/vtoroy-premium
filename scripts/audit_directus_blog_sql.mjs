@@ -85,6 +85,17 @@ SELECT 'blog.schema.collections_missing', count(*)::text
 FROM expected_tables et
 WHERE NOT EXISTS (SELECT 1 FROM directus_collections dc WHERE dc.collection=et.table_name)
 UNION ALL
+SELECT 'blog.schema.version_collection_guard_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM pg_constraint
+  WHERE conname='isvoi_directus_versions_blog_only'
+    AND conrelid='directus_versions'::regclass
+    AND pg_get_constraintdef(oid)='CHECK (((collection)::text = ''blog_posts''::text))'
+    AND convalidated=true
+)
+UNION ALL
 SELECT 'blog.schema.relations_missing', count(*)::text
 FROM expected_relations er
 WHERE NOT EXISTS (
@@ -219,7 +230,7 @@ WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
       AND p.fields='*'
       AND p.permissions IS NULL
       AND p.validation IS NULL
-      AND p.presets::jsonb IS NOT DISTINCT FROM '{"collection":"blog_posts"}'::jsonb)
+      AND p.presets IS NULL)
     OR (p.action='update'
       AND p.fields='*'
       AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb

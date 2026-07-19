@@ -167,6 +167,7 @@ const auditDefinitions = {
       "blog.schema.tables_missing",
       "blog.schema.fields_missing",
       "blog.schema.collections_missing",
+      "blog.schema.version_collection_guard_missing",
       "blog.schema.relations_missing",
       "blog.studio.folder_missing",
       "blog.studio.collection_metadata_missing",

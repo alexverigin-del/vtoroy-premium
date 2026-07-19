@@ -11,7 +11,7 @@ Production:
 
 ```bash
 cd /opt/isvoi
-npm run directus:setup:admin-guardrails > /tmp/isvoi_admin_guardrails.sql
+node scripts/setup_directus_admin_guardrails_sql.mjs > /tmp/isvoi_admin_guardrails.sql
 
 cd infra/directus-beget
 set -a && . ./.env && set +a

@@ -66,6 +66,14 @@ expected_editor_permissions(collection, action) AS (
     ('blog_posts_devices','read'),('blog_posts_devices','create'),('blog_posts_devices','update'),('blog_posts_devices','delete'),
     ('blog_post_blocks','read'),('blog_post_blocks','create'),('blog_post_blocks','update'),('blog_post_blocks','delete')
 ),
+expected_editor_post_groups(action, field) AS (
+  SELECT action, field
+  FROM (VALUES ('read'),('create'),('update')) actions(action)
+  CROSS JOIN (VALUES
+    ('group_publication'),('group_content'),('group_media'),
+    ('group_relations'),('group_seo'),('group_system')
+  ) groups(field)
+),
 expected_workflow_permissions(collection, action) AS (
   VALUES
     ('directus_versions','read'),('directus_versions','create'),
@@ -201,6 +209,17 @@ WHERE NOT EXISTS (
   SELECT 1 FROM directus_permissions p
   JOIN directus_policies policy ON policy.id=p.policy
   WHERE policy.name='ISVOI Editor' AND p.collection=ep.collection AND p.action=ep.action
+)
+UNION ALL
+SELECT 'blog.permissions.editor_post_groups_missing', count(*)::text
+FROM expected_editor_post_groups expected
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name='ISVOI Editor'
+    AND permission.collection='blog_posts'
+    AND permission.action=expected.action
+    AND (',' || permission.fields || ',') LIKE ('%,' || expected.field || ',%')
 )
 UNION ALL
 SELECT 'blog.permissions.public_missing', count(*)::text

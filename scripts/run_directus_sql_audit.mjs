@@ -183,6 +183,7 @@ const auditDefinitions = {
       "blog.studio.preview_url_missing",
       "blog.studio.presets_missing",
       "blog.permissions.editor_missing",
+      "blog.permissions.editor_post_groups_missing",
       "blog.permissions.workflow_missing",
       "blog.permissions.workflow_policy_invalid",
       "blog.permissions.workflow_role_bindings_missing",

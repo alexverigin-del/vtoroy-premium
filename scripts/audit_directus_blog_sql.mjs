@@ -201,6 +201,7 @@ WHERE NOT EXISTS (
   WHERE policy.name=required.policy_name
     AND p.collection='directus_files'
     AND p.action='read'
+    AND (',' || p.fields || ',') LIKE '%,title,%'
     AND p.permissions::jsonb IS NOT NULL
     AND p.permissions::jsonb::text LIKE '%ISVOI Blog%'
 )

@@ -672,7 +672,7 @@ SELECT isvoi_blog_upsert_permission(
   'ISVOI Public Read',
   'directus_files',
   'read',
-  'id,filename_download,type,width,height,focal_point_x,focal_point_y',
+  'id,filename_download,title,type,width,height,focal_point_x,focal_point_y',
   (
     SELECT json_build_object(
       '_or',
@@ -690,7 +690,7 @@ SELECT isvoi_blog_upsert_permission(
   '$t:public_label',
   'directus_files',
   'read',
-  'id,filename_download,type,width,height,focal_point_x,focal_point_y',
+  'id,filename_download,title,type,width,height,focal_point_x,focal_point_y',
   (
     SELECT json_build_object(
       '_or',

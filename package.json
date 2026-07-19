@@ -86,6 +86,7 @@
     "directus:setup:blog": "node scripts/setup_directus_blog_sql.mjs",
     "directus:setup:blog-preview": "node scripts/setup_directus_blog_preview_sql.mjs",
     "directus:setup:blog-scheduling": "node scripts/setup_directus_blog_scheduling_sql.mjs",
+    "directus:seed:blog-pilot": "node scripts/seed_directus_blog_pilot_sql.mjs",
     "directus:seed:marketing-pages": "node scripts/seed_marketing_pages_sql.mjs",
     "directus:seed:faq": "node scripts/seed_directus_faq_sql.mjs",
     "directus:normalize-urls": "node scripts/normalize_directus_site_urls_sql.mjs",

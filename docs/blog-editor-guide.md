@@ -65,6 +65,14 @@ npm run directus:setup:blog-scheduling
 BLOG_PREVIEW_SECRET=<server-secret> npm run directus:setup:blog-preview
 ```
 
+Первый QA-черновик можно создать идемпотентно, передав UUID уже загруженной
+обложки. Скрипт не публикует материал и не перезаписывает редакторские правки
+при повторном запуске:
+
+```bash
+BLOG_PILOT_COVER_FILE_ID=<directus-file-uuid> npm run directus:seed:blog-pilot
+```
+
 Read-only аудит после применения SQL:
 
 ```bash

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-19T15:37:44.926Z",
+  "updatedAt": "2026-07-19T15:46:50.222Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -468,42 +468,42 @@
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "string",
-      "line": 23,
+      "line": 24,
       "text": "Рубрики блога",
       "id": "2293e9545e631fa2"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 33,
+      "line": 34,
       "text": "Все материалы",
       "id": "d0ce52c78b6a7ccc"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 114,
-      "text": "Блог I СВОИ",
-      "id": "fc284620fd060880"
+      "line": 115,
+      "text": "I СВОИ · Блог",
+      "id": "d7d18dbee43f5bbb"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 129,
+      "line": 130,
       "text": "Материалы готовятся",
       "id": "8df96cf130ea012a"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 130,
+      "line": 131,
       "text": "Здесь появятся практические разборы о проверке, выборе и разумном владении техникой.",
       "id": "95a1943ac64c8d86"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
       "kind": "jsx-text",
-      "line": 163,
+      "line": 164,
       "text": "Читать материал",
       "id": "e6e97c1384a35260"
     },

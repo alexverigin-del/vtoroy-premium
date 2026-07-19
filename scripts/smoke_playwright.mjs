@@ -289,6 +289,10 @@ async function smokeMarketing(page, baseUrl, route) {
     "WebSite",
     "BreadcrumbList",
   ]);
+  if (route === "/blog" || route.startsWith("/blog/category/")) {
+    const eyebrow = page.getByText("I СВОИ · Блог", { exact: true });
+    assert((await eyebrow.count()) === 1, `${route}: expected the standard I СВОИ · Блог eyebrow`);
+  }
 
   return { route, jsonLdTypes: seo.jsonLdTypes.length };
 }

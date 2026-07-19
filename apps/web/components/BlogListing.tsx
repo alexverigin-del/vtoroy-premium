@@ -2,6 +2,7 @@ import type { BlogCategory, BlogPost } from "@vtoroy/shared";
 import Link from "next/link";
 
 import { ProductImage } from "@/components/ProductImage";
+import { brandZoneEyebrowClass } from "@/components/ui-classes";
 import { cn } from "@/lib/cn";
 
 function formatDate(value: string): string {
@@ -111,7 +112,7 @@ export function BlogListing({
     <>
       <section className="border-b border-hairline bg-frost">
         <div className="mx-auto max-w-content px-5 py-14 sm:px-8 sm:py-20 lg:py-24">
-          <p className="text-sm font-semibold leading-snug text-link-blue">Блог I СВОИ</p>
+          <p className={brandZoneEyebrowClass}>I СВОИ · Блог</p>
           <h1 className="leading-display mt-4 max-w-4xl text-4xl font-semibold tracking-normal text-carbon sm:text-5xl md:text-6xl">
             {title}
           </h1>

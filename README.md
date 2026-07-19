@@ -18,6 +18,10 @@ Current Next routes:
 - `/passport`
 - `/trade`
 - `/club`
+- `/blog`
+- `/blog/category/[slug]`
+- `/blog/[slug]`
+- `/blog/rss.xml`
 - `/device/[slug]`
 - `/lead-intake` (POST only)
 
@@ -116,7 +120,7 @@ docker compose exec -T database psql \
 
 Directus audit scripts also print SQL. Use `directus:audit-schema`,
 `directus:audit-catalog`, `directus:audit-images`, `directus:audit-navigation`
-and `directus:audit-studio` as read-only production checks after Studio,
+`directus:audit-studio` and `directus:audit-blog` as read-only production checks after Studio,
 permission or content-workflow changes.
 
 ## Production

@@ -73,7 +73,13 @@ WITH expected_collections(collection) AS (
     ('faq_items'),
     ('leads'),
     ('lead_comments'),
-    ('catalog_import_batches')
+    ('catalog_import_batches'),
+    ('blog_posts'),
+    ('blog_authors'),
+    ('blog_categories'),
+    ('blog_tags'),
+    ('blog_posts_tags'),
+    ('blog_posts_devices')
 ),
 expected_bookmarks(role_name, collection, bookmark) AS (
   VALUES
@@ -109,6 +115,11 @@ expected_bookmarks(role_name, collection, bookmark) AS (
     ('ISVOI Editor', 'catalog_import_batches', 'Проверены к импорту'),
     ('ISVOI Editor', 'catalog_import_batches', 'Ошибки'),
     ('ISVOI Editor', 'catalog_import_batches', 'Импортировано'),
+    ('ISVOI Editor', 'blog_posts', 'Черновики'),
+    ('ISVOI Editor', 'blog_posts', 'На проверке'),
+    ('ISVOI Editor', 'blog_posts', 'Запланированные'),
+    ('ISVOI Editor', 'blog_posts', 'Опубликованные'),
+    ('ISVOI Editor', 'blog_posts', 'Неполные материалы'),
     ('ISVOI Importer', 'catalog_import_batches', 'Новые партии'),
     ('ISVOI Importer', 'catalog_import_batches', 'В работе'),
     ('ISVOI Importer', 'catalog_import_batches', 'Проверены к импорту'),
@@ -121,7 +132,8 @@ expected_file_folders(name) AS (
     ('ISVOI Site Assets'),
     ('ISVOI Editorial'),
     ('ISVOI File Review'),
-    ('ISVOI Catalog Imports')
+    ('ISVOI Catalog Imports'),
+    ('ISVOI Blog')
 ),
 used_files(id) AS (
   SELECT listing_file::uuid FROM devices WHERE listing_file IS NOT NULL
@@ -141,6 +153,12 @@ used_files(id) AS (
   SELECT workbook::uuid FROM catalog_import_batches WHERE workbook IS NOT NULL
   UNION
   SELECT photos_archive::uuid FROM catalog_import_batches WHERE photos_archive IS NOT NULL
+  UNION
+  SELECT avatar::uuid FROM blog_authors WHERE avatar IS NOT NULL
+  UNION
+  SELECT cover_image::uuid FROM blog_posts WHERE cover_image IS NOT NULL
+  UNION
+  SELECT og_image::uuid FROM blog_posts WHERE og_image IS NOT NULL
 )
 SELECT 'studio.collections.missing_ux_metadata' AS check_name, count(*)::text AS value
 FROM expected_collections ec

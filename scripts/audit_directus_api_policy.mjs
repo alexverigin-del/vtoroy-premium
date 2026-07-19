@@ -12,6 +12,7 @@ const checks = [
   { name: "anonymous.devices", path: "/items/devices?limit=1", expected: 403 },
   { name: "anonymous.site_settings", path: "/items/site_settings?limit=1", expected: 403 },
   { name: "anonymous.navigation_items", path: "/items/navigation_items?limit=1", expected: 403 },
+  { name: "anonymous.blog_posts", path: "/items/blog_posts?limit=1", expected: 403 },
   { name: "anonymous.system_users", path: "/items/directus_users?limit=1", expected: 403 },
 ];
 

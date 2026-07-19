@@ -166,6 +166,27 @@ Run `npm run directus:setup:leads` and pipe it into the production Postgres
 container to create/update this schema, Directus Studio metadata and the
 `Обработка заявок` table preset for the `ISVOI Editor` role.
 
+## Blog collections
+
+The editorial blog uses structured collections rather than arbitrary page
+blocks:
+
+| Collection | Purpose |
+| ---------- | ------- |
+| `blog_posts` | Article copy, publication status, dates, media and SEO fields. |
+| `blog_authors` | Public expert identity, role, biography and avatar. |
+| `blog_categories` | One stable primary topic per article. |
+| `blog_tags` | Reusable fine-grained topics. |
+| `blog_posts_tags` | M2M junction between posts and tags. |
+| `blog_posts_devices` | Ordered M2M junction to relevant catalog devices. |
+
+Public reads are limited to `blog_posts.status = published` with
+`published_at <= $NOW`. Drafts can remain incomplete; the blog audit blocks
+published rows without copy, cover/alt, active author/category or publication
+date. Run `npm run directus:setup:blog` to print the idempotent setup SQL and
+`npm run directus:audit-blog` after applying it. The editor workflow is in
+`docs/blog-editor-guide.md`.
+
 ---
 
 ## Roles & permissions

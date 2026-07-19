@@ -76,6 +76,12 @@ const themeExtend = {
     caption: "280px",
     "logo-caption": "88px",
   },
+  aspectRatio: {
+    "blog-cover": "8 / 5",
+  },
+  lineHeight: {
+    article: "1.75",
+  },
   minHeight: {
     touch: "44px",
     turnstile: "65px",

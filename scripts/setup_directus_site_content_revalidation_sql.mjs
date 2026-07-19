@@ -33,6 +33,12 @@ const flowOptions = JSON.stringify({
     "navigation_items",
     "faq_items",
     "device_page_settings",
+    "blog_posts",
+    "blog_authors",
+    "blog_categories",
+    "blog_tags",
+    "blog_posts_tags",
+    "blog_posts_devices",
   ],
 });
 

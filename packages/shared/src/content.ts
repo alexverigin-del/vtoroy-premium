@@ -6,7 +6,20 @@
 
 export type PublishStatus = "draft" | "published" | "archived";
 
-export type RichTextTag = "p" | "br" | "strong" | "b" | "em" | "i" | "ul" | "ol" | "li" | "a";
+export type RichTextTag =
+  | "p"
+  | "br"
+  | "strong"
+  | "b"
+  | "em"
+  | "i"
+  | "ul"
+  | "ol"
+  | "li"
+  | "a"
+  | "h2"
+  | "h3"
+  | "blockquote";
 
 export type RichTextNode =
   | { type: "text"; text: string }
@@ -221,6 +234,62 @@ export interface SitePage {
   metaDescription?: string;
   ogImage?: string;
   sections: PageSection[];
+}
+
+export type BlogPostStatus = "draft" | "review" | "scheduled" | "published" | "archived";
+
+export interface BlogAuthor {
+  id: string;
+  name: string;
+  slug: string;
+  roleTitle?: string;
+  bio?: string;
+  avatar?: string;
+}
+
+export interface BlogCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+}
+
+export interface BlogTag {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface BlogRelatedDevice {
+  id: string;
+  title: string;
+  priceText?: string;
+  stockStatus?: string;
+}
+
+export interface BlogPost {
+  id: string;
+  status: BlogPostStatus;
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  bodyRichText: RichTextNode[];
+  coverImage?: string;
+  coverAlt?: string;
+  coverCaption?: string;
+  category?: BlogCategory;
+  author?: BlogAuthor;
+  tags: BlogTag[];
+  devices: BlogRelatedDevice[];
+  featured: boolean;
+  publishedAt: string;
+  updatedAt?: string;
+  seoTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  noIndex: boolean;
+  ogImage?: string;
 }
 
 export type ProductLeadKind = "purchase" | "selection";

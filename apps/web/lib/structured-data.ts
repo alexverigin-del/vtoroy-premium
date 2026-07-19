@@ -1,3 +1,5 @@
+import type { BlogPost } from "@vtoroy/shared";
+
 import type { DeviceCardData } from "./device-card-data";
 
 export const SITE_URL = "https://isvoi.ru";
@@ -66,5 +68,33 @@ export function catalogItemListJsonLd(devices: DeviceCardData[]) {
       url: siteUrl(`/device/${device.id}`),
       name: device.title,
     })),
+  };
+}
+
+export function blogPostingJsonLd(post: BlogPost) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.metaDescription || post.excerpt,
+    url: siteUrl(`/blog/${post.slug}`),
+    mainEntityOfPage: siteUrl(`/blog/${post.slug}`),
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt || post.publishedAt,
+    inLanguage: "ru-RU",
+    ...(post.coverImage ? { image: [post.coverImage] } : {}),
+    ...(post.category ? { articleSection: post.category.name } : {}),
+    ...(post.tags.length ? { keywords: post.tags.map((tag) => tag.name).join(", ") } : {}),
+    ...(post.author
+      ? {
+          author: {
+            "@type": "Person",
+            name: post.author.name,
+          },
+        }
+      : {}),
+    publisher: {
+      "@id": `${SITE_URL}/#organization`,
+    },
   };
 }

@@ -41,6 +41,19 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # Directus Live Preview uses a one-purpose secret in the query string, as
+    # required by the Next.js Draft Mode handshake. Keep it out of access logs.
+    location = /api/draft/blog {
+        access_log off;
+
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;

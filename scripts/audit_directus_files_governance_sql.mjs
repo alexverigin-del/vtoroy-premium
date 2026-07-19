@@ -7,7 +7,7 @@ process.stdout.write(String.raw`
 WITH folders AS (
   SELECT id, name
   FROM directus_folders
-  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI File Review', 'ISVOI Catalog Imports')
+  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI File Review', 'ISVOI Catalog Imports', 'ISVOI Blog')
 ),
 used_files(id) AS (
   SELECT listing_file::uuid FROM devices WHERE listing_file IS NOT NULL
@@ -27,6 +27,12 @@ used_files(id) AS (
   SELECT workbook::uuid FROM catalog_import_batches WHERE workbook IS NOT NULL
   UNION
   SELECT photos_archive::uuid FROM catalog_import_batches WHERE photos_archive IS NOT NULL
+  UNION
+  SELECT avatar::uuid FROM blog_authors WHERE avatar IS NOT NULL
+  UNION
+  SELECT cover_image::uuid FROM blog_posts WHERE cover_image IS NOT NULL
+  UNION
+  SELECT og_image::uuid FROM blog_posts WHERE og_image IS NOT NULL
 )
 SELECT 'files.review_folder_count' AS check_name, count(*)::text AS value
 FROM directus_files f
@@ -56,6 +62,12 @@ JOIN folders folder ON folder.id = f.folder
 WHERE folder.name = 'ISVOI Editorial'
   AND coalesce(f.type, '') NOT LIKE 'image/%'
 UNION ALL
+SELECT 'files.blog_non_images', count(*)::text
+FROM directus_files f
+JOIN folders folder ON folder.id = f.folder
+WHERE folder.name = 'ISVOI Blog'
+  AND coalesce(f.type, '') NOT LIKE 'image/%'
+UNION ALL
 SELECT 'files.device_originals_over_10mb', count(*)::text
 FROM directus_files f
 JOIN folders folder ON folder.id = f.folder
@@ -75,13 +87,13 @@ SELECT 'files.orphan_isvoi_files.warning', count(*)::text
 FROM directus_files f
 JOIN folders folder ON folder.id = f.folder
 LEFT JOIN used_files u ON u.id = f.id
-WHERE folder.name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI Catalog Imports')
+WHERE folder.name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI Catalog Imports', 'ISVOI Blog')
   AND u.id IS NULL
 UNION ALL
 SELECT 'files.hero_editorial_missing_focal_point.warning', count(*)::text
 FROM directus_files f
 JOIN folders folder ON folder.id = f.folder
-WHERE folder.name IN ('ISVOI Site Assets', 'ISVOI Editorial')
+WHERE folder.name IN ('ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI Blog')
   AND coalesce(f.type, '') LIKE 'image/%'
   AND coalesce(f.type, '') <> 'image/svg+xml'
   AND (f.focal_point_x IS NULL OR f.focal_point_y IS NULL)

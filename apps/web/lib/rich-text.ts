@@ -4,7 +4,21 @@ import type { RichTextNode, RichTextTag } from "@vtoroy/shared";
 import { parseDocument } from "htmlparser2";
 import sanitizeHtml from "sanitize-html";
 
-const ALLOWED_TAGS = ["p", "br", "strong", "b", "em", "i", "ul", "ol", "li", "a"];
+const ALLOWED_TAGS = [
+  "p",
+  "br",
+  "strong",
+  "b",
+  "em",
+  "i",
+  "ul",
+  "ol",
+  "li",
+  "a",
+  "h2",
+  "h3",
+  "blockquote",
+];
 
 export function sanitizeRichText(value: unknown): string {
   if (typeof value !== "string" || !value.trim()) return "";

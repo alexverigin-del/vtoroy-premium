@@ -56,7 +56,7 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
           <LogoMark />
         )}
         {settings.logoCaption ? (
-          <span className="max-w-logo-caption text-brand-caption font-semibold uppercase leading-brand-caption tracking-caption text-ash">
+          <span className="leading-brand-caption max-w-logo-caption text-brand-caption font-semibold uppercase tracking-caption text-ash">
             {settings.logoCaption}
           </span>
         ) : null}

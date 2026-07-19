@@ -109,6 +109,20 @@ Use `Заявки` (`leads`).
 
 Detailed guide: `docs/leads-workflow-editor-guide.md`.
 
+## Blog
+
+Use `Блог · Материалы` (`blog_posts`) as the main editorial entry point.
+
+- New materials start in `draft`; move them through `review` before publication.
+- Keep one primary category, a responsible author and a small set of useful tags.
+- Upload editorial media to `ISVOI Blog`, not to catalog or site-asset folders.
+- Related catalog items are selected through `Связанные устройства`; do not paste
+  product URLs into structured relation fields.
+- Do not add `/blog` to public navigation until the Next.js routes and cache
+  invalidation are deployed and smoke-tested.
+
+Detailed guide: `docs/blog-editor-guide.md`.
+
 ## Catalog Imports
 
 Use `Импорт каталога` (`catalog_import_batches`) for bulk catalog updates.
@@ -128,6 +142,7 @@ Use Directus Files folders as the source of truth.
 - `ISVOI Device Photos`: product photos linked through `device_images`.
 - `ISVOI Site Assets`: page, logo and social images.
 - `ISVOI Editorial`: future editorial/guides assets.
+- `ISVOI Blog`: blog covers, article illustrations and author portraits.
 - `ISVOI Catalog Imports`: import workbooks and ZIP archives.
 - `ISVOI File Review`: files that need sorting or deletion after review.
 
@@ -144,6 +159,7 @@ npm run directus:audit-catalog
 npm run directus:audit-images
 npm run directus:audit-studio
 npm run directus:audit-legacy-fallback
+npm run directus:audit-blog
 ```
 
 The audits print SQL. On production, pipe the generated SQL into the Directus

@@ -56,6 +56,7 @@ SET app_access = false,
 WHERE name IN (
   '$t:public_label',
   'ISVOI Public Read',
+  'ISVOI Blog Preview',
   'ISVOI Lead Intake',
   'ISVOI Catalog Import'
 );
@@ -90,11 +91,11 @@ WHERE p.id = pe.policy
     'directus_webhooks'
   );
 
--- Anonymous Public and the Next.js read policy are read-only surfaces.
+-- Anonymous Public, Next.js reads, and blog preview are read-only surfaces.
 DELETE FROM directus_permissions
 WHERE policy IN (
     SELECT id FROM directus_policies
-    WHERE name IN ('$t:public_label', 'ISVOI Public Read')
+    WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview')
   )
   AND action <> 'read';
 
@@ -121,7 +122,7 @@ WHERE name <> 'Administrator'
 UNION ALL
 SELECT 'admin_guardrails.service_app_access', count(*)::text
 FROM directus_policies
-WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
+WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
   AND COALESCE(app_access, false) = true
 UNION ALL
 SELECT 'admin_guardrails.studio_tfa_policies', count(*)::text
@@ -161,7 +162,7 @@ SELECT 'admin_guardrails.public_writes', count(*)::text
 FROM directus_permissions
 WHERE policy IN (
     SELECT id FROM directus_policies
-    WHERE name IN ('$t:public_label', 'ISVOI Public Read')
+    WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview')
   )
   AND action <> 'read'
 UNION ALL

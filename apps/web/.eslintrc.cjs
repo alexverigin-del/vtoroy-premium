@@ -19,7 +19,14 @@ module.exports = {
       "warn",
       {
         ...tailwindOptions,
-        whitelist: ["btn-pill", "card", "focus-ring"],
+        whitelist: [
+          "btn-pill",
+          "card",
+          "focus-ring",
+          "aspect-blog-cover",
+          "leading-display",
+          "leading-brand-caption",
+        ],
       },
     ],
   },

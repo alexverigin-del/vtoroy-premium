@@ -24,7 +24,13 @@ WITH expected_tables(table_name) AS (
     ('faq_items'),
     ('leads'),
     ('lead_comments'),
-    ('catalog_import_batches')
+    ('catalog_import_batches'),
+    ('blog_posts'),
+    ('blog_authors'),
+    ('blog_categories'),
+    ('blog_tags'),
+    ('blog_posts_tags'),
+    ('blog_posts_devices')
 ),
 expected_fields(table_name, field_name) AS (
   VALUES
@@ -93,7 +99,26 @@ expected_fields(table_name, field_name) AS (
     ('lead_comments', 'comment'),
     ('catalog_import_batches', 'workbook'),
     ('catalog_import_batches', 'photos_archive'),
-    ('catalog_import_batches', 'last_run_status')
+    ('catalog_import_batches', 'last_run_status'),
+    ('blog_posts', 'id'),
+    ('blog_posts', 'status'),
+    ('blog_posts', 'slug'),
+    ('blog_posts', 'title'),
+    ('blog_posts', 'excerpt'),
+    ('blog_posts', 'body'),
+    ('blog_posts', 'cover_image'),
+    ('blog_posts', 'category'),
+    ('blog_posts', 'author'),
+    ('blog_posts', 'published_at'),
+    ('blog_posts', 'tags'),
+    ('blog_posts', 'devices'),
+    ('blog_authors', 'avatar'),
+    ('blog_categories', 'slug'),
+    ('blog_tags', 'slug'),
+    ('blog_posts_tags', 'blog_posts_id'),
+    ('blog_posts_tags', 'blog_tags_id'),
+    ('blog_posts_devices', 'blog_posts_id'),
+    ('blog_posts_devices', 'devices_id')
 ),
 expected_relations(many_collection, many_field, one_collection) AS (
   VALUES
@@ -115,7 +140,16 @@ expected_relations(many_collection, many_field, one_collection) AS (
     ('lead_comments', 'lead', 'leads'),
     ('lead_comments', 'created_by', 'directus_users'),
     ('catalog_import_batches', 'workbook', 'directus_files'),
-    ('catalog_import_batches', 'photos_archive', 'directus_files')
+    ('catalog_import_batches', 'photos_archive', 'directus_files'),
+    ('blog_authors', 'avatar', 'directus_files'),
+    ('blog_posts', 'cover_image', 'directus_files'),
+    ('blog_posts', 'og_image', 'directus_files'),
+    ('blog_posts', 'category', 'blog_categories'),
+    ('blog_posts', 'author', 'blog_authors'),
+    ('blog_posts_tags', 'blog_posts_id', 'blog_posts'),
+    ('blog_posts_tags', 'blog_tags_id', 'blog_tags'),
+    ('blog_posts_devices', 'blog_posts_id', 'blog_posts'),
+    ('blog_posts_devices', 'devices_id', 'devices')
 ),
 system_collections(collection) AS (
   VALUES
@@ -211,7 +245,8 @@ FROM (
     ('ISVOI Site Assets'),
     ('ISVOI Editorial'),
     ('ISVOI File Review'),
-    ('ISVOI Catalog Imports')
+    ('ISVOI Catalog Imports'),
+    ('ISVOI Blog')
 ) AS expected_folders(name)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_folders f WHERE f.name = expected_folders.name
@@ -246,6 +281,12 @@ WHERE NOT EXISTS (
     AND (f.options::jsonb -> 'collections') ? 'navigation_items'
     AND (f.options::jsonb -> 'collections') ? 'faq_items'
     AND (f.options::jsonb -> 'collections') ? 'device_page_settings'
+    AND (f.options::jsonb -> 'collections') ? 'blog_posts'
+    AND (f.options::jsonb -> 'collections') ? 'blog_authors'
+    AND (f.options::jsonb -> 'collections') ? 'blog_categories'
+    AND (f.options::jsonb -> 'collections') ? 'blog_tags'
+    AND (f.options::jsonb -> 'collections') ? 'blog_posts_tags'
+    AND (f.options::jsonb -> 'collections') ? 'blog_posts_devices'
     AND o.type = 'request'
     AND o.key = 'isvoi_revalidate_site_content'
 )
@@ -262,7 +303,7 @@ WHERE name <> 'Administrator'
 UNION ALL
 SELECT 'permissions.service_app_access', count(*)::text
 FROM directus_policies
-WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
+WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
   AND coalesce(app_access, false) = true
 UNION ALL
 SELECT 'permissions.studio_tfa_policies', count(*)::text
@@ -280,7 +321,7 @@ SELECT 'permissions.public_writes', count(*)::text
 FROM directus_permissions
 WHERE policy IN (
     SELECT id FROM directus_policies
-    WHERE name IN ('$t:public_label', 'ISVOI Public Read')
+    WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview')
   )
   AND action <> 'read'
 UNION ALL

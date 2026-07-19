@@ -46,6 +46,29 @@ SELECT isvoi_blog_policy_id(
   'preview',
   'Headless read-only policy for Next.js Draft Mode. Reads blog drafts and only the related file/device fields required by preview.'
 );
+SELECT isvoi_blog_policy_id(
+  'ISVOI Blog Version Workflow',
+  'history',
+  'Non-app system policy for Directus Content Versions. Bound only to ISVOI Editor and ISVOI Advanced Editor roles; PostgreSQL restricts versions to blog_posts.'
+);
+
+DELETE FROM directus_access
+WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Blog Version Workflow')
+  AND (
+    "user" IS NOT NULL
+    OR role NOT IN (SELECT id FROM directus_roles WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor'))
+  );
+
+INSERT INTO directus_access (id,role,"user",policy,sort)
+SELECT gen_random_uuid(),role.id,NULL,policy.id,20
+FROM directus_roles role
+CROSS JOIN directus_policies policy
+WHERE role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
+  AND policy.name='ISVOI Blog Version Workflow'
+  AND NOT EXISTS (
+    SELECT 1 FROM directus_access access
+    WHERE access.role=role.id AND access.policy=policy.id AND access."user" IS NULL
+  );
 
 DROP FUNCTION isvoi_blog_policy_id(text,text,text);
 
@@ -575,10 +598,14 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update'
 -- Directus adds the internal hash after create validation, so create must use
 -- full access. The database constraint above keeps it blog-only;
 -- read/update/delete remain row-scoped as an additional API-layer guard.
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','*',NULL,NULL,NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','update','*','{"collection":{"_eq":"blog_posts"}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','delete','*','{"collection":{"_eq":"blog_posts"}}'::json);
+SELECT isvoi_blog_delete_permission('ISVOI Editor','directus_versions','read');
+SELECT isvoi_blog_delete_permission('ISVOI Editor','directus_versions','create');
+SELECT isvoi_blog_delete_permission('ISVOI Editor','directus_versions','update');
+SELECT isvoi_blog_delete_permission('ISVOI Editor','directus_versions','delete');
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_versions','create','*',NULL,NULL,NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_versions','update','*','{"collection":{"_eq":"blog_posts"}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_versions','delete','*','{"collection":{"_eq":"blog_posts"}}'::json);
 
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_posts','delete');
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_authors','delete');
@@ -657,5 +684,8 @@ SELECT 'blog.public_permissions', count(*)::text FROM directus_permissions
 WHERE policy IN (SELECT id FROM directus_policies WHERE name='ISVOI Public Read') AND collection LIKE 'blog_%'
 UNION ALL
 SELECT 'blog.preview_permissions', count(*)::text FROM directus_permissions
-WHERE policy IN (SELECT id FROM directus_policies WHERE name='ISVOI Blog Preview');
+WHERE policy IN (SELECT id FROM directus_policies WHERE name='ISVOI Blog Preview')
+UNION ALL
+SELECT 'blog.version_workflow_permissions', count(*)::text FROM directus_permissions
+WHERE policy IN (SELECT id FROM directus_policies WHERE name='ISVOI Blog Version Workflow');
 `);

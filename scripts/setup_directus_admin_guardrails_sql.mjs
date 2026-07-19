@@ -57,13 +57,14 @@ WHERE name IN (
   '$t:public_label',
   'ISVOI Public Read',
   'ISVOI Blog Preview',
+  'ISVOI Blog Version Workflow',
   'ISVOI Lead Intake',
   'ISVOI Catalog Import'
 );
 
 -- High-risk Directus system collections stay admin-only. Files/folders are
 -- intentionally excluded because editors/importers need media workflows. The
--- only system exceptions are the scoped Editor workflow and read-only Preview
+-- only system exceptions are the dedicated blog Version Workflow and read-only Preview
 -- access to blog Content Versions. Their exact shapes are owned by the blog setup.
 DELETE FROM directus_permissions pe
 USING directus_policies p
@@ -93,7 +94,7 @@ WHERE p.id = pe.policy
     'directus_webhooks'
   )
   AND NOT (
-    p.name IN ('ISVOI Editor','ISVOI Blog Preview')
+    p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
     AND pe.collection='directus_versions'
   );
 
@@ -128,7 +129,7 @@ WHERE name <> 'Administrator'
 UNION ALL
 SELECT 'admin_guardrails.service_app_access', count(*)::text
 FROM directus_policies
-WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
+WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Blog Version Workflow', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
   AND COALESCE(app_access, false) = true
 UNION ALL
 SELECT 'admin_guardrails.studio_tfa_policies', count(*)::text
@@ -164,7 +165,7 @@ WHERE COALESCE(p.admin_access, false) = false
     'directus_webhooks'
   )
   AND NOT (
-    p.name IN ('ISVOI Editor','ISVOI Blog Preview')
+    p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
     AND pe.collection='directus_versions'
   )
 UNION ALL

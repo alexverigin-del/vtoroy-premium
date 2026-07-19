@@ -303,7 +303,7 @@ WHERE name <> 'Administrator'
 UNION ALL
 SELECT 'permissions.service_app_access', count(*)::text
 FROM directus_policies
-WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
+WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'ISVOI Blog Version Workflow', 'ISVOI Lead Intake', 'ISVOI Catalog Import')
   AND coalesce(app_access, false) = true
 UNION ALL
 SELECT 'permissions.studio_tfa_policies', count(*)::text
@@ -317,7 +317,7 @@ JOIN directus_policies p ON p.id = pe.policy
 WHERE coalesce(p.admin_access, false) = false
   AND pe.collection IN (SELECT collection FROM system_collections)
   AND NOT (
-    p.name IN ('ISVOI Editor','ISVOI Blog Preview')
+    p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
     AND pe.collection='directus_versions'
   )
 UNION ALL
@@ -339,7 +339,7 @@ FROM directus_permissions pe
 JOIN directus_policies p ON p.id = pe.policy
 WHERE pe.fields = '*'
   AND p.name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Catalog Import')
-  AND NOT (p.name='ISVOI Editor' AND pe.collection='directus_versions')
+  AND NOT (p.name='ISVOI Blog Version Workflow' AND pe.collection='directus_versions')
 UNION ALL
 SELECT 'permissions.public_read_rows', count(*)::text
 FROM directus_permissions

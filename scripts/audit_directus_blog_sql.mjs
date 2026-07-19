@@ -55,7 +55,10 @@ expected_editor_permissions(collection, action) AS (
     ('blog_categories','read'),('blog_categories','create'),('blog_categories','update'),
     ('blog_tags','read'),('blog_tags','create'),('blog_tags','update'),
     ('blog_posts_tags','read'),('blog_posts_tags','create'),('blog_posts_tags','update'),('blog_posts_tags','delete'),
-    ('blog_posts_devices','read'),('blog_posts_devices','create'),('blog_posts_devices','update'),('blog_posts_devices','delete'),
+    ('blog_posts_devices','read'),('blog_posts_devices','create'),('blog_posts_devices','update'),('blog_posts_devices','delete')
+),
+expected_workflow_permissions(collection, action) AS (
+  VALUES
     ('directus_versions','read'),('directus_versions','create'),
     ('directus_versions','update'),('directus_versions','delete')
 ),
@@ -176,6 +179,38 @@ WHERE NOT EXISTS (
   WHERE policy.name='ISVOI Public Read' AND p.collection=ep.collection AND p.action=ep.action
 )
 UNION ALL
+SELECT 'blog.permissions.workflow_missing', count(*)::text
+FROM expected_workflow_permissions ep
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions p
+  JOIN directus_policies policy ON policy.id=p.policy
+  WHERE policy.name='ISVOI Blog Version Workflow'
+    AND p.collection=ep.collection AND p.action=ep.action
+)
+UNION ALL
+SELECT 'blog.permissions.workflow_policy_invalid', count(*)::text
+FROM directus_policies
+WHERE name='ISVOI Blog Version Workflow'
+  AND (coalesce(app_access,false) OR coalesce(admin_access,false) OR coalesce(enforce_tfa,false))
+UNION ALL
+SELECT 'blog.permissions.workflow_role_bindings_missing', count(*)::text
+FROM (VALUES ('ISVOI Editor'),('ISVOI Advanced Editor')) required(role_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_access access
+  JOIN directus_roles role ON role.id=access.role
+  JOIN directus_policies policy ON policy.id=access.policy
+  WHERE role.name=required.role_name
+    AND policy.name='ISVOI Blog Version Workflow'
+    AND access."user" IS NULL
+)
+UNION ALL
+SELECT 'blog.permissions.workflow_unexpected_bindings', count(*)::text
+FROM directus_access access
+JOIN directus_policies policy ON policy.id=access.policy
+LEFT JOIN directus_roles role ON role.id=access.role
+WHERE policy.name='ISVOI Blog Version Workflow'
+  AND (access."user" IS NOT NULL OR role.name NOT IN ('ISVOI Editor','ISVOI Advanced Editor'))
+UNION ALL
 SELECT 'blog.permissions.preview_missing', count(*)::text
 FROM expected_preview_permissions ep
 WHERE NOT EXISTS (
@@ -187,12 +222,12 @@ UNION ALL
 SELECT 'blog.permissions.wildcard_fields', count(*)::text
 FROM directus_permissions p
 JOIN directus_policies policy ON policy.id=p.policy
-WHERE (p.collection LIKE 'blog_%' OR policy.name='ISVOI Blog Preview')
-  AND policy.name IN ('ISVOI Editor','ISVOI Public Read','ISVOI Blog Preview')
+WHERE (p.collection LIKE 'blog_%' OR policy.name IN ('ISVOI Blog Preview','ISVOI Blog Version Workflow'))
+  AND policy.name IN ('ISVOI Editor','ISVOI Public Read','ISVOI Blog Preview','ISVOI Blog Version Workflow')
   AND (p.fields='*' OR p.fields LIKE '%,*,%' OR p.fields LIKE '*,%' OR p.fields LIKE '%,*')
   AND NOT (
     p.collection='directus_versions'
-    AND policy.name IN ('ISVOI Editor','ISVOI Blog Preview')
+    AND policy.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
   )
 UNION ALL
 SELECT 'blog.permissions.public_writes', count(*)::text
@@ -211,16 +246,16 @@ JOIN directus_policies policy ON policy.id=p.policy
 WHERE policy.name='ISVOI Editor' AND p.action='delete'
   AND p.collection IN ('blog_posts','blog_authors','blog_categories','blog_tags')
 UNION ALL
-SELECT 'blog.permissions.editor_versions_count_invalid',
+SELECT 'blog.permissions.workflow_versions_count_invalid',
   CASE WHEN count(*)=4 THEN '0' ELSE '1' END
 FROM directus_permissions p
 JOIN directus_policies policy ON policy.id=p.policy
-WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
+WHERE policy.name='ISVOI Blog Version Workflow' AND p.collection='directus_versions'
 UNION ALL
-SELECT 'blog.permissions.editor_versions_scope_invalid', count(*)::text
+SELECT 'blog.permissions.workflow_versions_scope_invalid', count(*)::text
 FROM directus_permissions p
 JOIN directus_policies policy ON policy.id=p.policy
-WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
+WHERE policy.name='ISVOI Blog Version Workflow' AND p.collection='directus_versions'
   AND NOT (
     (p.action='read'
       AND p.fields='*'

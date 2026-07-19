@@ -342,10 +342,18 @@ async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAsset
     await waitForLoadedImages(page, 1);
   }
   await assertImages(page, "blog article", 1, requireDirectusAssets);
+  const cover = page.locator("article > figure").first();
+  assert((await cover.count()) === 1, "blog article: expected a cover figure");
+  const coverBox = await cover.locator("img").boundingBox();
+  assert(
+    coverBox && coverBox.width >= 300 && coverBox.height >= 180,
+    `blog article: expected a visible cover image, got ${JSON.stringify(coverBox)}`,
+  );
 
   return {
     route: articlePath,
     directusImages: await countLoadedDirectusImages(page),
+    cover: { width: Math.round(coverBox.width), height: Math.round(coverBox.height) },
     jsonLdTypes: seo.jsonLdTypes.length,
   };
 }

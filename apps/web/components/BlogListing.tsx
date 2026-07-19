@@ -67,7 +67,7 @@ function PostCard({ post }: { post: BlogPost }) {
     <article className="border-t border-hairline pt-5">
       <Link href={`/blog/${post.slug}`} className="focus-ring group block">
         {post.coverImage ? (
-          <div className="aspect-blog-cover relative overflow-hidden rounded-card bg-surface">
+          <div className="relative aspect-blog-cover overflow-hidden rounded-card bg-surface">
             <ProductImage
               src={post.coverImage}
               alt={post.coverAlt || ""}
@@ -136,7 +136,7 @@ export function BlogListing({
             <article className="grid items-center gap-8 border-b border-hairline pb-12 md:grid-cols-2 md:gap-12 lg:pb-16">
               <Link
                 href={`/blog/${featured.slug}`}
-                className="focus-ring aspect-blog-cover group relative overflow-hidden rounded-card bg-surface"
+                className="focus-ring group relative aspect-blog-cover overflow-hidden rounded-card bg-surface"
               >
                 {featured.coverImage ? (
                   <ProductImage

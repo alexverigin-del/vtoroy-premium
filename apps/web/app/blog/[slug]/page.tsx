@@ -158,7 +158,7 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
 
           {post.coverImage ? (
             <figure className="mx-auto max-w-content px-5 sm:px-8">
-              <div className="aspect-blog-cover relative overflow-hidden rounded-card bg-surface">
+              <div className="relative aspect-blog-cover overflow-hidden rounded-card bg-surface">
                 <ProductImage
                   src={post.coverImage}
                   alt={post.coverAlt || ""}

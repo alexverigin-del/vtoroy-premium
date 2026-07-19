@@ -76,9 +76,6 @@ const themeExtend = {
     caption: "280px",
     "logo-caption": "88px",
   },
-  aspectRatio: {
-    "blog-cover": "8 / 5",
-  },
   lineHeight: {
     article: "1.75",
   },
@@ -108,6 +105,7 @@ const themeExtend = {
     trade: "1fr auto 1fr",
   },
   aspectRatio: {
+    "blog-cover": "8 / 5",
     product: "4 / 3",
   },
 };

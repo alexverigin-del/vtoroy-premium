@@ -179,11 +179,18 @@ async function ensureTag(tag) {
   );
 }
 
-async function ensureVersion(post, name) {
+async function ensureVersion(post, name, { replaceOutdated = false } = {}) {
   const query = new URLSearchParams({ fields: "id,key,name,item,collection", limit: "1" });
   query.set("filter[item][_eq]", post.id);
   query.set("filter[key][_eq]", VERSION_KEY);
-  const existing = (await api(`/versions?${query}`))[0];
+  let existing = (await api(`/versions?${query}`))[0];
+  if (existing && replaceOutdated) {
+    const comparison = await api(`/versions/${existing.id}/compare`);
+    if (comparison.outdated) {
+      await api(`/versions/${existing.id}`, { method: "DELETE" });
+      existing = null;
+    }
+  }
   return (
     existing ||
     (await api("/versions", {
@@ -286,7 +293,9 @@ async function ensurePost(article, files, category, author) {
     });
   }
 
-  const version = await ensureVersion(post, `Publication QA: ${article.title}`);
+  const version = await ensureVersion(post, `Publication QA: ${article.title}`, {
+    replaceOutdated: true,
+  });
   await saveMissingVersionBlocks(
     version,
     post.id,
@@ -313,7 +322,9 @@ async function prepare() {
   if (!pilot || !category || !author)
     throw new Error("Pilot, buying-guide category or editorial author is missing.");
 
-  const pilotVersion = await ensureVersion(pilot, "Structured images editorial QA");
+  const pilotVersion = await ensureVersion(pilot, "Structured images editorial QA", {
+    replaceOutdated: true,
+  });
   await saveMissingVersionBlocks(pilotVersion, pilot.id, [
     {
       post: pilot.id,

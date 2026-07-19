@@ -141,12 +141,12 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
           <aside className="border-b border-blue-200 bg-blue-50" aria-label="Режим предпросмотра">
             <div className="mx-auto flex max-w-content flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm sm:px-8">
               <p className="font-medium text-carbon">Предпросмотр Directus · {post.status}</p>
-              <Link
+              <a
                 href="/api/draft/disable"
                 className="focus-ring inline-flex min-h-11 items-center font-semibold text-link-blue hover:underline"
               >
                 Выйти из предпросмотра
-              </Link>
+              </a>
             </div>
           </aside>
         ) : null}

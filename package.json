@@ -23,6 +23,7 @@
     "smoke:images": "node scripts/smoke_image_latency.mjs",
     "smoke:visual": "node scripts/smoke_visual_playwright.mjs",
     "smoke:performance": "node scripts/smoke_performance_playwright.mjs",
+    "smoke:blog-preview": "node scripts/smoke_blog_preview_playwright.mjs",
     "smoke:copy": "node scripts/smoke_copy.mjs",
     "text:audit": "python scripts/audit_text_encoding.py",
     "legacy:audit": "node scripts/audit_legacy_html.mjs",

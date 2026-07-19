@@ -17891,7 +17891,7 @@
         "group": "group_advanced",
         "hidden": false,
         "interface": "input-code",
-        "note": "JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Не добавляйте image_src/imageSrc, /assets/... или прямые asset URL в JSON.",
+        "note": "JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Не добавляйте image_src/imageSrc, файловые пути или прямые asset URL в JSON.",
         "options": {
           "language": "json",
           "lineWrapping": true

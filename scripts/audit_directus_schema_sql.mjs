@@ -316,6 +316,10 @@ FROM directus_permissions pe
 JOIN directus_policies p ON p.id = pe.policy
 WHERE coalesce(p.admin_access, false) = false
   AND pe.collection IN (SELECT collection FROM system_collections)
+  AND NOT (
+    p.name IN ('ISVOI Editor','ISVOI Blog Preview')
+    AND pe.collection='directus_versions'
+  )
 UNION ALL
 SELECT 'permissions.public_writes', count(*)::text
 FROM directus_permissions

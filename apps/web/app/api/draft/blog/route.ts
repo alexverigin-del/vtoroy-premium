@@ -21,6 +21,8 @@ export async function GET(request: NextRequest) {
   const expectedSecret = (process.env.BLOG_PREVIEW_SECRET || "").trim();
   const candidateSecret = (request.nextUrl.searchParams.get("secret") || "").trim();
   const id = (request.nextUrl.searchParams.get("id") || "").trim();
+  const requestedVersion = (request.nextUrl.searchParams.get("version") || "").trim();
+  const version = requestedVersion && requestedVersion !== "main" ? requestedVersion : undefined;
 
   if (!expectedSecret || !matchesSecret(candidateSecret, expectedSecret)) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
@@ -28,8 +30,11 @@ export async function GET(request: NextRequest) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) {
     return NextResponse.json({ ok: false, error: "invalid_post_id" }, { status: 400 });
   }
+  if (version && !/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(version)) {
+    return NextResponse.json({ ok: false, error: "invalid_version" }, { status: 400 });
+  }
 
-  const post = await getBlogPostPreview(id);
+  const post = await getBlogPostPreview(id, version);
   if (!post) {
     return NextResponse.json({ ok: false, error: "preview_unavailable" }, { status: 404 });
   }
@@ -38,6 +43,7 @@ export async function GET(request: NextRequest) {
   draft.enable();
   const redirectUrl = new URL(siteUrl(`/blog/${post.slug}`));
   redirectUrl.searchParams.set("preview", post.id);
+  if (version) redirectUrl.searchParams.set("version", version);
   const redirect = NextResponse.redirect(redirectUrl);
   redirect.headers.set("Referrer-Policy", "no-referrer");
   return redirect;

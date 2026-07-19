@@ -62,7 +62,9 @@ WHERE name IN (
 );
 
 -- High-risk Directus system collections stay admin-only. Files/folders are
--- intentionally excluded because editors/importers need media workflows.
+-- intentionally excluded because editors/importers need media workflows. The
+-- only system exceptions are the scoped Editor workflow and read-only Preview
+-- access to blog Content Versions. Their exact shapes are owned by the blog setup.
 DELETE FROM directus_permissions pe
 USING directus_policies p
 WHERE p.id = pe.policy
@@ -89,6 +91,10 @@ WHERE p.id = pe.policy
     'directus_users',
     'directus_versions',
     'directus_webhooks'
+  )
+  AND NOT (
+    p.name IN ('ISVOI Editor','ISVOI Blog Preview')
+    AND pe.collection='directus_versions'
   );
 
 -- Anonymous Public, Next.js reads, and blog preview are read-only surfaces.
@@ -156,6 +162,10 @@ WHERE COALESCE(p.admin_access, false) = false
     'directus_users',
     'directus_versions',
     'directus_webhooks'
+  )
+  AND NOT (
+    p.name IN ('ISVOI Editor','ISVOI Blog Preview')
+    AND pe.collection='directus_versions'
   )
 UNION ALL
 SELECT 'admin_guardrails.public_writes', count(*)::text

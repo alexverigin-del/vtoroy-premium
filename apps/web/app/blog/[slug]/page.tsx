@@ -14,7 +14,7 @@ import { DEFAULT_SOCIAL_IMAGE } from "@/app/site-metadata";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ preview?: string }>;
+  searchParams: Promise<{ preview?: string; version?: string }>;
 };
 
 export const revalidate = 300;
@@ -37,11 +37,16 @@ function stockLabel(status?: string): string {
 async function resolvePost(
   slug: string,
   previewId?: string,
+  requestedVersion?: string,
 ): Promise<{ post: Awaited<ReturnType<typeof getPublishedBlogPost>>; preview: boolean }> {
   const draft = await draftMode();
   const canPreview = draft.isEnabled && Boolean(previewId && /^[0-9a-f-]{36}$/i.test(previewId));
+  const version =
+    requestedVersion && /^[a-z0-9][a-z0-9_-]{0,63}$/i.test(requestedVersion)
+      ? requestedVersion
+      : undefined;
   if (canPreview && previewId) {
-    return { post: await getBlogPostPreview(previewId), preview: true };
+    return { post: await getBlogPostPreview(previewId, version), preview: true };
   }
   return { post: await getPublishedBlogPost(slug), preview: false };
 }
@@ -52,7 +57,7 @@ export async function generateMetadata({
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
   const query = await searchParams;
-  const { post, preview } = await resolvePost(slug, query.preview);
+  const { post, preview } = await resolvePost(slug, query.preview, query.version);
   if (!post) return {};
   const title = post.seoTitle || post.title;
   const description = post.metaDescription || post.excerpt;
@@ -87,7 +92,7 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
   const { slug } = await params;
   const query = await searchParams;
   const [resolved, settings, navigation] = await Promise.all([
-    resolvePost(slug, query.preview),
+    resolvePost(slug, query.preview, query.version),
     getSiteSettings(),
     getNavigationItems(),
   ]);

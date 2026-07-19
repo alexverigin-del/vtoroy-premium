@@ -334,25 +334,24 @@ export const getPublishedBlogPost = cache(async function getPublishedBlogPost(
   return rows?.[0] ? mapPost(rows[0]) : null;
 });
 
-export async function getBlogPostPreview(id: string): Promise<BlogPost | null> {
+export async function getBlogPostPreview(id: string, version?: string): Promise<BlogPost | null> {
   if (!directusConfig.url || !/^[0-9a-f-]{36}$/i.test(id)) return null;
   const token = (process.env.DIRECTUS_PREVIEW_TOKEN || "").trim();
   if (!token) return null;
 
   const params = new URLSearchParams({
     fields: `${POST_FIELDS},status,date_created`,
-    limit: "1",
   });
-  params.set("filter[id][_eq]", id);
+  if (version) params.set("version", version);
 
   try {
-    const response = await fetch(`${directusConfig.url}/items/blog_posts?${params}`, {
+    const response = await fetch(`${directusConfig.url}/items/blog_posts/${id}?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
     if (!response.ok) return null;
-    const rows = ((await response.json()) as { data: BlogPostRow[] }).data;
-    return rows?.[0] ? mapPost(rows[0], true) : null;
+    const row = ((await response.json()) as { data: BlogPostRow }).data;
+    return row ? mapPost(row, true) : null;
   } catch {
     return null;
   }

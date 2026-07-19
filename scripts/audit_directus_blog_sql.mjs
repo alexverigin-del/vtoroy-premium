@@ -55,7 +55,9 @@ expected_editor_permissions(collection, action) AS (
     ('blog_categories','read'),('blog_categories','create'),('blog_categories','update'),
     ('blog_tags','read'),('blog_tags','create'),('blog_tags','update'),
     ('blog_posts_tags','read'),('blog_posts_tags','create'),('blog_posts_tags','update'),('blog_posts_tags','delete'),
-    ('blog_posts_devices','read'),('blog_posts_devices','create'),('blog_posts_devices','update'),('blog_posts_devices','delete')
+    ('blog_posts_devices','read'),('blog_posts_devices','create'),('blog_posts_devices','update'),('blog_posts_devices','delete'),
+    ('directus_versions','read'),('directus_versions','create'),
+    ('directus_versions','update'),('directus_versions','delete')
 ),
 expected_public_permissions(collection, action) AS (
   VALUES
@@ -66,7 +68,7 @@ expected_preview_permissions(collection, action) AS (
   VALUES
     ('blog_posts','read'),('blog_authors','read'),('blog_categories','read'),
     ('blog_tags','read'),('blog_posts_tags','read'),('blog_posts_devices','read'),
-    ('directus_files','read'),('devices','read')
+    ('directus_files','read'),('devices','read'),('directus_versions','read')
 )
 SELECT 'blog.schema.tables_missing' AS check_name, count(*)::text AS value
 FROM expected_tables et
@@ -189,6 +191,53 @@ FROM directus_permissions p
 JOIN directus_policies policy ON policy.id=p.policy
 WHERE policy.name='ISVOI Editor' AND p.action='delete'
   AND p.collection IN ('blog_posts','blog_authors','blog_categories','blog_tags')
+UNION ALL
+SELECT 'blog.permissions.editor_versions_count_invalid',
+  CASE WHEN count(*)=4 THEN '0' ELSE '1' END
+FROM directus_permissions p
+JOIN directus_policies policy ON policy.id=p.policy
+WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
+UNION ALL
+SELECT 'blog.permissions.editor_versions_scope_invalid', count(*)::text
+FROM directus_permissions p
+JOIN directus_policies policy ON policy.id=p.policy
+WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
+  AND NOT (
+    (p.action='read'
+      AND p.fields='id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta'
+      AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
+      AND p.validation IS NULL AND p.presets IS NULL)
+    OR (p.action='create'
+      AND p.fields='key,name,collection,item'
+      AND p.permissions IS NULL
+      AND p.validation::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
+      AND p.presets::jsonb IS NOT DISTINCT FROM '{"collection":"blog_posts"}'::jsonb)
+    OR (p.action='update'
+      AND p.fields='key,name,delta'
+      AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
+      AND p.validation IS NULL AND p.presets IS NULL)
+    OR (p.action='delete'
+      AND p.fields='id,key,name,collection,item'
+      AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
+      AND p.validation IS NULL AND p.presets IS NULL)
+  )
+UNION ALL
+SELECT 'blog.permissions.preview_versions_count_invalid',
+  CASE WHEN count(*)=1 THEN '0' ELSE '1' END
+FROM directus_permissions p
+JOIN directus_policies policy ON policy.id=p.policy
+WHERE policy.name='ISVOI Blog Preview' AND p.collection='directus_versions'
+UNION ALL
+SELECT 'blog.permissions.preview_versions_scope_invalid', count(*)::text
+FROM directus_permissions p
+JOIN directus_policies policy ON policy.id=p.policy
+WHERE policy.name='ISVOI Blog Preview' AND p.collection='directus_versions'
+  AND NOT (
+    p.action='read'
+    AND p.fields='id,key,name,collection,item,hash,date_created,date_updated,delta'
+    AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
+    AND p.validation IS NULL AND p.presets IS NULL
+  )
 UNION ALL
 SELECT 'blog.content.invalid_slugs', (
   (SELECT count(*) FROM blog_posts WHERE slug !~ '^[a-z0-9]+(?:-[a-z0-9]+)*$') +

@@ -62,8 +62,15 @@ Next.js.
 ```bash
 npm run directus:setup:blog
 npm run directus:setup:blog-scheduling
+npm run directus:setup:blog-preview-identity
 BLOG_PREVIEW_SECRET=<server-secret> npm run directus:setup:blog-preview
 ```
+
+На production после создания identity выполните
+`bash scripts/configure_blog_preview_env.sh`. Скрипт переносит статический token
+выделенного service user в Next.js env и создаёт preview secret, не печатая их
+значения. Для плановой ротации identity token запустите генератор с
+`BLOG_PREVIEW_ROTATE_TOKEN=1`, затем повторите env-скрипт и restart web.
 
 Первый QA-черновик можно создать идемпотентно, передав UUID уже загруженной
 обложки. Скрипт не публикует материал и не перезаписывает редакторские правки

@@ -85,7 +85,7 @@
         "icon": "article",
         "item_duplication_fields": null,
         "note": "Редакционные материалы ISVOI. Публикуйте только после проверки текста, обложки, автора, категории, SEO и даты публикации.",
-        "preview_url": "https://isvoi.ru/api/draft/blog?secret=__REDACTED__&id={{id}}",
+        "preview_url": "https://isvoi.ru/api/draft/blog?secret=__REDACTED__&id={{id}}&version={{$version}}",
         "singleton": false,
         "sort": 40,
         "sort_field": null,
@@ -249,7 +249,7 @@
         "hidden": false,
         "icon": "photo_library",
         "item_duplication_fields": null,
-        "note": "Фото устройств. Это единственный рабочий раздел для товарной галереи: файл выбирается из Directus Files / ISVOI Device Photos. Для публикации нужны status=published и shot_status=approved. Не используйте внешние URL и JSON-галереи.",
+        "note": "Управляемые фото устройств. Для публикации нужны status=published и shot_status=approved.",
         "preview_url": null,
         "singleton": false,
         "sort": 11,
@@ -338,12 +338,12 @@
         "collapse": "open",
         "collection": "devices",
         "color": "#111827",
-        "display_template": "{{title}} · {{price_text}} · {{stock_status}} · {{content_status}}",
+        "display_template": "{{title}} · {{price_text}} · {{stock_status}}",
         "group": null,
         "hidden": false,
-        "icon": "inventory_2",
+        "icon": "devices",
         "item_duplication_fields": null,
-        "note": "Рабочий каталог устройств. Открывайте устройство, проверьте публикацию, цену, тексты и фото. Товарные фото добавляйте только через блок \"Фото устройства\" (device_images.image); devices.listing_file — fallback для карточки. Не вставляйте фото в JSON, listing_image или внешними URL.",
+        "note": "Редакторский каталог устройств. Заполняйте публикацию, цену, основные характеристики, фото и тексты; import/source поля обычно меняются импорт-скриптами.",
         "preview_url": null,
         "singleton": false,
         "sort": 10,
@@ -442,7 +442,7 @@
         "hidden": false,
         "icon": "support_agent",
         "item_duplication_fields": null,
-        "note": "Заявки с сайта. Ежедневный сценарий: открыть новую заявку, назначить ответственного, оставить короткую заметку/комментарий, поставить следующий шаг и перевести статус.",
+        "note": "Заявки с сайта. Ежедневный цикл: новая, в работе, ждем ответа, успешная или закрыта.",
         "preview_url": null,
         "singleton": false,
         "sort": 30,
@@ -508,7 +508,7 @@
         "hidden": false,
         "icon": "view_agenda",
         "item_duplication_fields": null,
-        "note": "Блоки внутри страниц сайта. Обычно удобнее редактировать их через \"Страницы сайта\" → \"Секции страницы\". Поле \"JSON-настройки блока\" нужно только для карточек, шагов, таблиц и других сложных блоков.",
+        "note": "Секции страниц. Для обычной работы используйте закладки по страницам или редактируйте секции из карточки страницы. Поля \"Ключ блока\", \"Тип блока\" и JSON связаны с renderer.",
         "preview_url": null,
         "singleton": false,
         "sort": 21,
@@ -536,12 +536,12 @@
         "collapse": "open",
         "collection": "site_pages",
         "color": "#0f766e",
-        "display_template": "{{title}} · {{status}}",
+        "display_template": "{{title}} · {{slug}} · {{status}}",
         "group": null,
         "hidden": false,
         "icon": "web_asset",
         "item_duplication_fields": null,
-        "note": "Редактируемые страницы сайта. Обычный сценарий: открыть страницу, поменять SEO/статус и секции внутри поля \"Секции страницы\". Slug и template лучше не менять без разработчика.",
+        "note": "Страницы сайта для редактора. Обычный сценарий: открыть нужную страницу, поправить SEO и секции внутри поля \"Секции страницы\". Slug и template не менять без разработчика.",
         "preview_url": null,
         "singleton": false,
         "sort": 20,
@@ -4698,11 +4698,8 @@
         "group": "group_image_main",
         "hidden": false,
         "interface": "input",
-        "note": "Порядок в галерее. Меньше число — выше/раньше.",
-        "options": {
-          "min": 1,
-          "step": 1
-        },
+        "note": "Порядок в галерее.",
+        "options": null,
         "readonly": false,
         "required": false,
         "searchable": false,
@@ -4750,7 +4747,7 @@
         "group": "group_image_main",
         "hidden": false,
         "interface": "select-dropdown-m2o",
-        "note": "Связанное устройство. Если фото создаётся из карточки устройства, поле заполняется автоматически.",
+        "note": "Связанное устройство.",
         "options": {
           "template": "{{title}} · {{price_text}} · {{stock_status}}"
         },
@@ -4803,36 +4800,30 @@
         "group": "group_image_main",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Роль фото. role=card используется для плитки каталога; остальные роли показываются в галерее товарной страницы.",
+        "note": "Роль фото. role=card используется для плитки каталога.",
         "options": {
           "choices": [
             {
-              "color": "#111827",
-              "text": "Карточка каталога",
+              "text": "Карточка",
               "value": "card"
             },
             {
-              "color": "#2563eb",
               "text": "Главный вид",
               "value": "main"
             },
             {
-              "color": "#0f766e",
               "text": "Экран",
               "value": "screen"
             },
             {
-              "color": "#7c3aed",
               "text": "Корпус",
               "value": "body"
             },
             {
-              "color": "#dc2626",
               "text": "Дефект",
               "value": "defect"
             },
             {
-              "color": "#6b7280",
               "text": "Другое",
               "value": "other"
             }
@@ -4885,10 +4876,8 @@
         "group": "group_image_main",
         "hidden": false,
         "interface": "file-image",
-        "note": "Файл из Directus Files. Используйте только папку ISVOI Device Photos для товарных фото; сайт отдаёт изображение через Directus asset transforms и Next image optimizer. Не вставляйте URL вручную.",
-        "options": {
-          "folder": "ISVOI Device Photos"
-        },
+        "note": "Файл из Directus Files.",
+        "options": null,
         "readonly": false,
         "required": true,
         "searchable": false,
@@ -4938,7 +4927,7 @@
         "group": "group_image_main",
         "hidden": false,
         "interface": "input",
-        "note": "Короткая подпись кадра для редактора и интерфейса.",
+        "note": "Подпись кадра.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -4987,7 +4976,7 @@
         "group": "group_image_main",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Alt-текст изображения. Пишите, что реально видно на фото.",
+        "note": "Alt-текст изображения.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -5278,7 +5267,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Связь изображения с устройством, роль кадра и публикация. Это основной и безопасный путь для всех товарных фото.",
+        "note": "Связь изображения с устройством и публикацией.",
         "options": {
           "headerIcon": "photo_library",
           "start": "open"
@@ -12207,14 +12196,14 @@
         "display_options": null,
         "field": "listing_image",
         "group": "group_media",
-        "hidden": true,
+        "hidden": false,
         "interface": "input",
-        "note": "Legacy path. Не используйте для новых устройств и не вставляйте сюда /assets, http(s) URL или Directus asset URL. Товарные фото ведутся через device_images/listing_file.",
+        "note": "Legacy fallback path. Для новых устройств оставляйте пустым.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 53,
+        "sort": 52,
         "special": null,
         "translations": [
           {
@@ -12258,12 +12247,12 @@
         "group": "group_media",
         "hidden": false,
         "interface": "input",
-        "note": "Alt-текст основного фото, если нужен отдельно от alt в device_images.",
+        "note": "Alt-текст основного фото.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 55,
+        "sort": 53,
         "special": null,
         "translations": [
           {
@@ -12437,9 +12426,9 @@
         "display_options": null,
         "field": "visual_class",
         "group": "group_media",
-        "hidden": true,
+        "hidden": false,
         "interface": "input",
-        "note": "Legacy CSS-класс. Обычно не нужен после Directus Files.",
+        "note": "Legacy CSS-класс визуала. Обычно не нужен при Directus Files.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -12486,9 +12475,9 @@
         "display_options": null,
         "field": "gallery",
         "group": "group_structured",
-        "hidden": true,
+        "hidden": false,
         "interface": "list",
-        "note": "Legacy JSON-галерея. Скрыто из обычного workflow: не добавляйте сюда image_src, /assets или внешние URL. Новые фото ведутся через device_images.",
+        "note": "Legacy JSON-галерея. Новые фото лучше вести через device_images.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -12539,15 +12528,14 @@
         "group": "group_structured",
         "hidden": false,
         "interface": "input-code",
-        "note": "Legacy JSON Passport. Сайт теперь сначала читает device_passports; это поле оставлено как fallback на время миграции.",
+        "note": "JSON ISVOI Passport. Перед публикацией проверяйте формат.",
         "options": {
-          "language": "json",
-          "lineWrapping": true
+          "language": "json"
         },
-        "readonly": true,
+        "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 96,
+        "sort": 92,
         "special": [
           "cast-json"
         ],
@@ -12593,15 +12581,14 @@
         "group": "group_structured",
         "hidden": false,
         "interface": "input-code",
-        "note": "Legacy JSON Trade. Сайт теперь сначала читает trade_options; это поле оставлено как fallback на время миграции.",
+        "note": "JSON trade options.",
         "options": {
-          "language": "json",
-          "lineWrapping": true
+          "language": "json"
         },
-        "readonly": true,
+        "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 97,
+        "sort": 93,
         "special": [
           "cast-json"
         ],
@@ -12647,14 +12634,12 @@
         "group": "group_media",
         "hidden": false,
         "interface": "file-image",
-        "note": "Fallback для карточки каталога: сайт сначала ищет device_images role=card, затем использует это поле. Заполняйте только файлом из ISVOI Device Photos. Для новых устройств основной путь — \"Фото устройства\".",
-        "options": {
-          "folder": "ISVOI Device Photos"
-        },
+        "note": "Основное фото карточки из Directus Files. Для новых устройств используйте это поле или device_images role=card.",
+        "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 52,
+        "sort": 51,
         "special": [
           "m2o"
         ],
@@ -13244,10 +13229,9 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Фото товара. Основной сценарий: добавляйте строки в \"Фото устройства\"; role=card отвечает за плитку каталога, остальные роли формируют галерею. Не добавляйте товарные фото через JSON-поля, listing_image или внешние URL.",
+        "note": "Фото карточки и визуальные fallback-поля.",
         "options": {
-          "headerIcon": "photo_library",
-          "start": "open"
+          "headerIcon": "image"
         },
         "readonly": false,
         "required": false,
@@ -13314,10 +13298,9 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Расширенные JSON-данные. Галерею для новых устройств не редактируйте здесь: товарные фото ведутся только через \"Фото устройства\" и Directus Files.",
+        "note": "JSON-поля Passport, галереи и Trade. Редактируйте осторожно.",
         "options": {
-          "headerIcon": "data_object",
-          "start": "closed"
+          "headerIcon": "data_object"
         },
         "readonly": false,
         "required": false,
@@ -17891,15 +17874,15 @@
         "group": "group_advanced",
         "hidden": false,
         "interface": "input-code",
-        "note": "JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Не добавляйте image_src/imageSrc, файловые пути или прямые asset URL в JSON.",
+        "note": "JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Обычный редактор видит поле для диагностики; расширенный редактор может править JSON после проверки структуры.",
         "options": {
           "language": "json",
           "lineWrapping": true
         },
-        "readonly": true,
+        "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 91,
+        "sort": 93,
         "special": [
           "json"
         ],
@@ -17945,7 +17928,7 @@
         "group": "group_placement",
         "hidden": false,
         "interface": "select-dropdown-m2o",
-        "note": "Страница-владелец. Обычно задаётся автоматически, если редактировать из страницы.",
+        "note": "Страница-владелец. При редактировании из карточки страницы подставляется автоматически.",
         "options": {
           "template": "{{title}} · {{slug}}"
         },
@@ -18291,7 +18274,7 @@
         "display": null,
         "display_options": null,
         "field": "section_key",
-        "group": "group_placement",
+        "group": "group_advanced",
         "hidden": false,
         "interface": "input",
         "note": "Стабильный ключ блока для кода и импорта. Не менять без разработчика.",
@@ -18299,7 +18282,7 @@
         "readonly": true,
         "required": true,
         "searchable": true,
-        "sort": 6,
+        "sort": 91,
         "special": null,
         "translations": [
           {
@@ -18340,10 +18323,10 @@
         "display": "labels",
         "display_options": null,
         "field": "variant",
-        "group": "group_placement",
+        "group": "group_advanced",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Тип блока, который выбирает renderer. Менять осторожно: разные типы ждут разные JSON-настройки.",
+        "note": "Тип блока, который выбирает Next renderer. Менять только вместе с проверкой сайта.",
         "options": {
           "choices": [
             {
@@ -18441,7 +18424,7 @@
         "readonly": true,
         "required": false,
         "searchable": true,
-        "sort": 7,
+        "sort": 92,
         "special": null,
         "translations": [
           {
@@ -18636,7 +18619,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Где находится блок и как он рендерится.",
+        "note": "Публикация блока: страница, порядок и видимость.",
         "options": {
           "headerIcon": "low_priority",
           "start": "open"
@@ -18788,7 +18771,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Структурные данные для сложных блоков: карточки, шаги, таблицы, FAQ. Если не уверены — не менять.",
+        "note": "Технические поля renderer и структурные данные для сложных блоков. Обычно не менять без разработчика.",
         "options": {
           "headerIcon": "data_object",
           "start": "closed"
@@ -19345,17 +19328,16 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "list-o2m",
-        "note": "Блоки страницы в порядке вывода. Основное редактирование текстов и нетоварных картинок делайте здесь.",
+        "note": "Основное место редактирования существующих блоков страницы. Новые секции добавляет разработчик или администратор, чтобы не сломать renderer.",
         "options": {
-          "enableCreate": true,
-          "enableSelect": true,
+          "enableCreate": false,
+          "enableSelect": false,
           "fields": [
             "sort_order",
             "is_active",
-            "section_key",
-            "variant",
             "headline",
-            "image"
+            "image",
+            "section_key"
           ],
           "layout": "table"
         },

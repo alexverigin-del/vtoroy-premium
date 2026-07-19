@@ -104,7 +104,7 @@ Blockers should be `0`:
 
 Expected non-zero values:
 
-- `permissions.studio_tfa_policies = 3`
+- `permissions.studio_tfa_policies = 4`
 - `permissions.public_read_rows` should match the intentional public/read-token
   surface.
 - `schema.snapshot_audit_rows = ok`

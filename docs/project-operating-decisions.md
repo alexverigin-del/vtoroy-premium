@@ -1466,6 +1466,21 @@ Next content-editing priorities:
   block metadata. Exactly one sensitive preview query value is stored as
   `__REDACTED__`; no raw snapshot was retained.
 
+### Blog Detail Navigation Standard (2026-07-19)
+
+- Public detail pages use one compact back-navigation link above the content:
+  `← Каталог` for a device and `← Блог` for an article. The shared visual class
+  is `detailBackLinkClass`; do not present a single back link as a breadcrumb
+  landmark.
+- Full hierarchy remains in `BreadcrumbList` JSON-LD. For an article it is
+  `Главная -> Блог -> Статья`, so search semantics are retained without adding
+  a long, wrapping path before the mobile H1.
+- Commit `4503b17` deployed the standard to production. Local `web:verify`, the
+  production build, the full HTTP/SEO smoke and targeted desktop/mobile visual
+  smoke passed. The article smoke now requires exactly one `Навигация по блогу`
+  landmark with a `← Блог` link to `/blog`; the cover remained visible at
+  1056 x 660 px on desktop.
+
 ### Blog Next Step
 
 1. In Directus Studio, add one real structured `image` block to the pilot

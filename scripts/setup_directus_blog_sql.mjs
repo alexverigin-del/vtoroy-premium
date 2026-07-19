@@ -51,9 +51,21 @@ SELECT isvoi_blog_policy_id(
   'history',
   'Non-app system policy for Directus Content Versions. Bound only to ISVOI Editor and ISVOI Advanced Editor roles; PostgreSQL restricts versions to blog_posts.'
 );
+SELECT isvoi_blog_policy_id(
+  'ISVOI Editor Media Workflow',
+  'perm_media',
+  'Non-app policy for editor uploads into managed ISVOI folders. Separated from app access because Directus adds system file fields during upload.'
+);
 
 DELETE FROM directus_access
 WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Blog Version Workflow')
+  AND (
+    "user" IS NOT NULL
+    OR role NOT IN (SELECT id FROM directus_roles WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor'))
+  );
+
+DELETE FROM directus_access
+WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Editor Media Workflow')
   AND (
     "user" IS NOT NULL
     OR role NOT IN (SELECT id FROM directus_roles WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor'))
@@ -65,6 +77,17 @@ FROM directus_roles role
 CROSS JOIN directus_policies policy
 WHERE role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
   AND policy.name='ISVOI Blog Version Workflow'
+  AND NOT EXISTS (
+    SELECT 1 FROM directus_access access
+    WHERE access.role=role.id AND access.policy=policy.id AND access."user" IS NULL
+  );
+
+INSERT INTO directus_access (id,role,"user",policy,sort)
+SELECT gen_random_uuid(),role.id,NULL,policy.id,21
+FROM directus_roles role
+CROSS JOIN directus_policies policy
+WHERE role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
+  AND policy.name='ISVOI Editor Media Workflow'
   AND NOT EXISTS (
     SELECT 1 FROM directus_access access
     WHERE access.role=role.id AND access.policy=policy.id AND access."user" IS NULL
@@ -606,6 +629,30 @@ SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_vers
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_versions','create','*',NULL,NULL,NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_versions','update','*','{"collection":{"_eq":"blog_posts"}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Version Workflow','directus_versions','delete','*','{"collection":{"_eq":"blog_posts"}}'::json);
+
+-- Directus adds storage/type/filename fields during upload. Keep create off the
+-- app-access policy and scope the dedicated non-app permission to managed roots.
+SELECT isvoi_blog_delete_permission('ISVOI Editor','directus_files','create');
+SELECT isvoi_blog_upsert_permission(
+  'ISVOI Editor Media Workflow',
+  'directus_files',
+  'create',
+  '*',
+  NULL,
+  (
+    SELECT json_build_object(
+      'folder',
+      json_build_object(
+        '_in',
+        COALESCE(json_agg(id::text ORDER BY id), '[]'::json)
+      )
+    )
+    FROM directus_folders
+    WHERE name IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial','ISVOI Blog')
+      AND parent IS NULL
+  ),
+  NULL
+);
 
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_posts','delete');
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_authors','delete');

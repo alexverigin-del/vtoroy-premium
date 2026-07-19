@@ -129,10 +129,25 @@ SELECT isvoi_policy_id(
   'Catalog import automation: device rows, media rows and file uploads. No system administration.',
   true
 );
+SELECT isvoi_policy_id(
+  'ISVOI Editor Media Workflow',
+  'perm_media',
+  'Non-app policy for editor uploads into managed ISVOI folders. Separated from app access because Directus adds system file fields during upload.',
+  false
+);
 SELECT isvoi_bind_policy_to_role('ISVOI Editor', 'ISVOI Editor');
 SELECT isvoi_bind_policy_to_role('ISVOI Advanced Editor', 'ISVOI Editor');
 SELECT isvoi_bind_policy_to_role('ISVOI Advanced Editor', 'ISVOI Advanced Editor');
+SELECT isvoi_bind_policy_to_role('ISVOI Editor', 'ISVOI Editor Media Workflow');
+SELECT isvoi_bind_policy_to_role('ISVOI Advanced Editor', 'ISVOI Editor Media Workflow');
 SELECT isvoi_bind_policy_to_role('ISVOI Importer', 'ISVOI Importer');
+
+DELETE FROM directus_access
+WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Editor Media Workflow')
+  AND (
+    "user" IS NOT NULL
+    OR role NOT IN (SELECT id FROM directus_roles WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor'))
+  );
 
 CREATE OR REPLACE FUNCTION isvoi_upsert_collection_metadata(
   p_collection varchar,
@@ -296,7 +311,27 @@ SELECT isvoi_upsert_permission(
 );
 SELECT isvoi_delete_permission('ISVOI Editor', 'device_images', 'delete');
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'read', 'id,filename_download,title,description,type,width,height,focal_point_x,focal_point_y,folder,uploaded_on,modified_on', NULL);
-SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'create', 'title,description,folder,file,tags,filename_download,filename_disk,storage,type,filesize,width,height,focal_point_x,focal_point_y,charset,duration,embed,location,tus_id,tus_data,metadata,uploaded_by,uploaded_on,created_on,modified_by,modified_on', NULL);
+SELECT isvoi_delete_permission('ISVOI Editor', 'directus_files', 'create');
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor Media Workflow',
+  'directus_files',
+  'create',
+  '*',
+  NULL,
+  (
+    SELECT json_build_object(
+      'folder',
+      json_build_object(
+        '_in',
+        COALESCE(json_agg(id::text ORDER BY id), '[]'::json)
+      )
+    )
+    FROM directus_folders
+    WHERE name IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial','ISVOI Blog')
+      AND parent IS NULL
+  ),
+  NULL
+);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'update', 'title,description,folder,tags,focal_point_x,focal_point_y', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'leads', 'read', 'id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent', NULL);
 SELECT isvoi_upsert_permission(

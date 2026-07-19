@@ -479,7 +479,6 @@ const updates = [
   ["ISVOI Editor", "device_page_settings", "read", fields.devicePageSettings],
   ["ISVOI Editor", "device_page_settings", "update", fields.devicePageSettingsWrite],
   ["ISVOI Editor", "directus_files", "read", fields.directusFilesRead],
-  ["ISVOI Editor", "directus_files", "create", fields.directusFilesCreate],
   ["ISVOI Editor", "directus_files", "update", fields.directusFilesUpdate],
 
   ["ISVOI Importer", "catalog_import_batches", "read", fields.catalogImportBatchesRead],
@@ -592,6 +591,7 @@ for (const [policy, collection, action, fieldList] of updates) {
 }
 
 const destructiveStudioDeletes = [
+  ["ISVOI Editor", "directus_files", "create"],
   ["ISVOI Editor", "device_images", "delete"],
   ["ISVOI Editor", "trade_options", "delete"],
   ["ISVOI Importer", "device_images", "delete"],

@@ -62,6 +62,9 @@ expected_workflow_permissions(collection, action) AS (
     ('directus_versions','read'),('directus_versions','create'),
     ('directus_versions','update'),('directus_versions','delete')
 ),
+expected_media_permissions(collection, action) AS (
+  VALUES ('directus_files','create')
+),
 expected_public_permissions(collection, action) AS (
   VALUES
     ('blog_posts','read'),('blog_authors','read'),('blog_categories','read'),
@@ -211,6 +214,62 @@ LEFT JOIN directus_roles role ON role.id=access.role
 WHERE policy.name='ISVOI Blog Version Workflow'
   AND (access."user" IS NOT NULL OR role.name NOT IN ('ISVOI Editor','ISVOI Advanced Editor'))
 UNION ALL
+SELECT 'blog.permissions.media_missing', count(*)::text
+FROM expected_media_permissions ep
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions p
+  JOIN directus_policies policy ON policy.id=p.policy
+  WHERE policy.name='ISVOI Editor Media Workflow'
+    AND p.collection=ep.collection AND p.action=ep.action
+)
+UNION ALL
+SELECT 'blog.permissions.media_policy_invalid', count(*)::text
+FROM directus_policies
+WHERE name='ISVOI Editor Media Workflow'
+  AND (coalesce(app_access,false) OR coalesce(admin_access,false) OR coalesce(enforce_tfa,false))
+UNION ALL
+SELECT 'blog.permissions.media_role_bindings_missing', count(*)::text
+FROM (VALUES ('ISVOI Editor'),('ISVOI Advanced Editor')) required(role_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_access access
+  JOIN directus_roles role ON role.id=access.role
+  JOIN directus_policies policy ON policy.id=access.policy
+  WHERE role.name=required.role_name
+    AND policy.name='ISVOI Editor Media Workflow'
+    AND access."user" IS NULL
+)
+UNION ALL
+SELECT 'blog.permissions.media_unexpected_bindings', count(*)::text
+FROM directus_access access
+JOIN directus_policies policy ON policy.id=access.policy
+LEFT JOIN directus_roles role ON role.id=access.role
+WHERE policy.name='ISVOI Editor Media Workflow'
+  AND (access."user" IS NOT NULL OR role.name NOT IN ('ISVOI Editor','ISVOI Advanced Editor'))
+UNION ALL
+SELECT 'blog.permissions.media_scope_invalid', count(*)::text
+FROM directus_permissions p
+JOIN directus_policies policy ON policy.id=p.policy
+WHERE policy.name='ISVOI Editor Media Workflow'
+  AND NOT (
+    p.collection='directus_files'
+    AND p.action='create'
+    AND p.fields='*'
+    AND p.permissions IS NULL
+    AND p.presets IS NULL
+    AND p.validation::jsonb IS NOT DISTINCT FROM (
+      SELECT jsonb_build_object(
+        'folder',
+        jsonb_build_object(
+          '_in',
+          COALESCE(jsonb_agg(id::text ORDER BY id), '[]'::jsonb)
+        )
+      )
+      FROM directus_folders
+      WHERE name IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial','ISVOI Blog')
+        AND parent IS NULL
+    )
+  )
+UNION ALL
 SELECT 'blog.permissions.preview_missing', count(*)::text
 FROM expected_preview_permissions ep
 WHERE NOT EXISTS (
@@ -222,12 +281,17 @@ UNION ALL
 SELECT 'blog.permissions.wildcard_fields', count(*)::text
 FROM directus_permissions p
 JOIN directus_policies policy ON policy.id=p.policy
-WHERE (p.collection LIKE 'blog_%' OR policy.name IN ('ISVOI Blog Preview','ISVOI Blog Version Workflow'))
-  AND policy.name IN ('ISVOI Editor','ISVOI Public Read','ISVOI Blog Preview','ISVOI Blog Version Workflow')
+WHERE (p.collection LIKE 'blog_%' OR policy.name IN ('ISVOI Blog Preview','ISVOI Blog Version Workflow','ISVOI Editor Media Workflow'))
+  AND policy.name IN ('ISVOI Editor','ISVOI Public Read','ISVOI Blog Preview','ISVOI Blog Version Workflow','ISVOI Editor Media Workflow')
   AND (p.fields='*' OR p.fields LIKE '%,*,%' OR p.fields LIKE '*,%' OR p.fields LIKE '%,*')
   AND NOT (
     p.collection='directus_versions'
     AND policy.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
+  )
+  AND NOT (
+    p.collection='directus_files'
+    AND p.action='create'
+    AND policy.name='ISVOI Editor Media Workflow'
   )
 UNION ALL
 SELECT 'blog.permissions.public_writes', count(*)::text

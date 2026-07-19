@@ -1486,17 +1486,65 @@ Next content-editing priorities:
   landmark with a `← Блог` link to `/blog`; the cover remained visible at
   1056 x 660 px on desktop.
 
+### Blog Growth And Editorial Rehearsal Completed (2026-07-19)
+
+- A fresh local VPS backup was created before the content mutation at
+  `/opt/isvoi/backups/directus/20260719T162305Z`; both archives passed checksum
+  verification. Offsite upload and restore rehearsal remain deferred by the
+  user and are not represented as completed resilience.
+- The pilot article now has one `rich_text` block plus two real `image` blocks:
+  `content` and `wide`, each with alt text and a caption. Version-aware Draft
+  Preview passed on desktop and mobile. Private working media is served in
+  Draft Mode only through `/api/draft/blog-asset/[id]`; the route verifies that
+  the file belongs to the requested post/version. Disabling Draft Mode uses a
+  non-prefetched link so Next.js cannot clear the preview cookie early.
+- Two articles were created through `blog_post_blocks` with no legacy `body`:
+  `kak-proverit-batareyu-iphone` and
+  `kak-ponyat-kakie-detali-menyali-v-iphone`. Each version restored and promoted
+  three O2M text blocks. Their covers and the pilot inline images were approved
+  into `ISVOI Editorial` before publication.
+- Directus 11.17.4 rejected O2M promotion under the field-restricted
+  `ISVOI Editor` policy. A temporary passwordless QA identity used a user-bound,
+  non-app, blog-only wildcard policy during compare/promote. Direct SQL policy
+  changes required clearing only Redis `permissions:*` keys; restarting
+  Directus alone did not clear that namespace. The temporary identity and six
+  permission rows were deleted after rehearsal, nullable file/version audit
+  references were cleared, and the old token returned `401`. The permanent
+  Editor, Public and Preview policies retain zero wildcard fields.
+- The active minute scheduling Flow published both articles at
+  `2026-07-19T17:40:11.976Z` and immediate revalidation made both public URLs
+  return 200. The pilot legacy `body` was then cleared. Production audit reports
+  zero `published_legacy_body`, invalid blocks, private media and orphan blog
+  junctions; the frontend legacy body fallback is removed.
+- Blog navigation now marks nested routes active and category tabs expose
+  `aria-current`. Related-device cards include image, grade, price, availability
+  and trust facts. Related device and article-end CTA links carry blog UTM
+  attribution. Organization authors emit `Organization`, listings emit
+  `ItemList`, and articles show an update date only after a material delay.
+- With three published posts, `/blog` and `buying-guide` render a complete
+  editorial grid and articles show `Читайте также`. Both new articles are in
+  RSS, sitemap and canonical output. Production `web:verify`, full Directus
+  audits, API/ops/content audits, HTTP/SEO, image, copy and desktop/mobile visual
+  smokes pass. Structured-image smoke now scrolls both lazy images into view and
+  verifies non-zero intrinsic dimensions.
+- The normal release performance smoke passes. The final full run measured blog
+  index LCP at 2176 ms desktop / 2240 ms mobile and the pilot article at
+  2660 ms / 2520 ms. The stricter 2500 ms article target remains a small
+  performance gap; cold targeted runs observed 3876 ms and 3124 ms desktop.
+
 ### Blog Next Step
 
-1. In Directus Studio, add one real structured `image` block to the pilot
-   article, including alt text, caption and both width modes; verify it in Live
-   Preview before publishing the revision.
-2. Create the second real article through the same draft -> version QA -> media
-   approval -> scheduled flow, using `ISVOI Blog` for work-in-progress media and
-   `ISVOI Editorial` for approved public covers and article images.
-3. Establish an editorial cadence and owner, then measure article-to-catalog and
-   article-to-lead transitions before adding search, newsletter or comments.
-4. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
+1. Formalize who may publish relational versions: either add a reviewed
+   Advanced Editor publisher policy for the Directus 11.17.4 wildcard
+   requirement or verify that a later pinned Directus release removes it.
+2. Establish an editorial owner and cadence, then monitor the existing
+   article-to-device and article-to-lead UTM values in Directus Leads.
+3. Optimize the article cover cold path until desktop and mobile LCP are
+   consistently at or below 2500 ms without weakening image quality.
+4. Open a second category only when three complete materials are ready. Keep
+   search, newsletter, comments and pagination deferred until volume justifies
+   them; pagination starts before the 25th article.
+5. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
    local VPS backup as equivalent resilience.
 
 ### Blog Rollout Order

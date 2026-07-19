@@ -81,6 +81,17 @@ async function waitForImages(page) {
   });
 }
 
+async function revealLazyImages(page) {
+  await page.evaluate(async () => {
+    const step = Math.max(window.innerHeight, 600);
+    for (let top = 0; top < document.documentElement.scrollHeight; top += step) {
+      window.scrollTo(0, top);
+      await new Promise((resolve) => window.setTimeout(resolve, 60));
+    }
+    window.scrollTo(0, 0);
+  });
+}
+
 async function visualIssues(page) {
   return page.evaluate(() => {
     const viewportWidth = window.innerWidth;
@@ -198,6 +209,7 @@ async function smokeRoute(page, baseUrl, route, viewport, outputDir) {
     content:
       "*,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}",
   });
+  await revealLazyImages(page);
   await waitForImages(page);
 
   const issues = await visualIssues(page);

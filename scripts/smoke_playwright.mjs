@@ -385,11 +385,27 @@ async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAsset
   assert((await activeBlogLinks.count()) > 0, "blog article: expected an active Blog header link");
 
   const bodyFigures = page.locator("article > div > figure");
-  assert((await bodyFigures.count()) >= 2, "blog article: expected two structured image blocks");
+  const structuredImageCount = await bodyFigures.count();
+  assert(structuredImageCount >= 2, "blog article: expected two structured image blocks");
   const imageAlts = await bodyFigures
     .locator("img")
     .evaluateAll((images) => images.map((image) => image.getAttribute("alt") || ""));
   assert(imageAlts.every(Boolean), "blog article: every structured image block needs alt text");
+  for (let index = 0; index < structuredImageCount; index += 1) {
+    const figure = bodyFigures.nth(index);
+    const image = figure.locator("img").first();
+    await figure.scrollIntoViewIfNeeded();
+    const loaded = await image.evaluate(async (element) => {
+      if (element.complete) return element.naturalWidth > 0 && element.naturalHeight > 0;
+      await Promise.race([
+        new Promise((resolve) => element.addEventListener("load", resolve, { once: true })),
+        new Promise((resolve) => element.addEventListener("error", resolve, { once: true })),
+        new Promise((resolve) => window.setTimeout(resolve, 10_000)),
+      ]);
+      return element.complete && element.naturalWidth > 0 && element.naturalHeight > 0;
+    });
+    assert(loaded, `blog article: structured image ${index + 1} failed to load`);
+  }
 
   const relatedDevice = page.locator('a[href*="utm_content=related-device"]').first();
   assert(
@@ -437,7 +453,7 @@ async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAsset
     route: articlePath,
     directusImages: await countLoadedDirectusImages(page),
     cover: { width: Math.round(coverBox.width), height: Math.round(coverBox.height) },
-    structuredImages: await bodyFigures.count(),
+    structuredImages: structuredImageCount,
     jsonLdTypes: seo.jsonLdTypes.length,
   };
 }

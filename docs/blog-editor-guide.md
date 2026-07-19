@@ -74,6 +74,15 @@ Next.js.
 проверьте изменения в Compare и Live Preview, затем продвиньте версию в Main.
 O2M-блоки входят в версию вместе с материалом.
 
+В Directus 11.17.4 обычная field-restricted роль `ISVOI Editor` сохраняет,
+сравнивает и показывает в Preview версии с O2M-блоками, но relational promote
+требует полного field scope на `blog_posts` и `blog_post_blocks`. Не расширяйте
+роль редактора вручную. Для production rehearsal используется временная
+passwordless identity и user-bound blog-only policy из
+`directus:setup:blog-qa-identity`; после операции identity и policy удаляются,
+а старый token должен вернуть `401`. Администратор Studio может выполнить
+обычный Promote Version без этого обхода.
+
 Для публикации переведите одобренный материал в `scheduled` и задайте
 `publish_at`. Активный CRON Flow проверяет очередь раз в минуту, переводит
 наступившие материалы в `published`, заполняет `published_at` и сразу снимает

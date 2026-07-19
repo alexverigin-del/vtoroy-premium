@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 /**
  * Print SQL that creates or removes a temporary Editor identity for a real
- * blog workflow rehearsal. The static token is generated in PostgreSQL and is
- * never printed. Remove the identity immediately after the rehearsal.
+ * blog workflow rehearsal. The user-bound blog-only policy works around
+ * Directus 11 relational-version promotion checks and is deleted with the
+ * identity. The static token is generated in PostgreSQL and is never printed.
+ * Clear the Directus `permissions:*` cache after create/delete and remove the
+ * identity immediately after the rehearsal.
  *
  * Optional env:
  *   BLOG_QA_IDENTITY_MODE=create|delete
@@ -22,6 +25,21 @@ WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Temporary Blog 
 DELETE FROM directus_permissions
 WHERE policy=(SELECT id FROM directus_policies WHERE name='ISVOI Temporary Blog Editorial QA');
 DELETE FROM directus_policies WHERE name='ISVOI Temporary Blog Editorial QA';
+UPDATE directus_files
+SET uploaded_by=CASE
+      WHEN uploaded_by=(SELECT id FROM directus_users WHERE email='blog-editorial-qa@service.isvoi')
+      THEN NULL ELSE uploaded_by END,
+    modified_by=CASE
+      WHEN modified_by=(SELECT id FROM directus_users WHERE email='blog-editorial-qa@service.isvoi')
+      THEN NULL ELSE modified_by END
+WHERE uploaded_by=(SELECT id FROM directus_users WHERE email='blog-editorial-qa@service.isvoi')
+   OR modified_by=(SELECT id FROM directus_users WHERE email='blog-editorial-qa@service.isvoi');
+UPDATE directus_notifications SET sender=NULL
+WHERE sender=(SELECT id FROM directus_users WHERE email='blog-editorial-qa@service.isvoi');
+UPDATE directus_versions SET user_updated=NULL
+WHERE user_updated=(SELECT id FROM directus_users WHERE email='blog-editorial-qa@service.isvoi');
+UPDATE directus_comments SET user_updated=NULL
+WHERE user_updated=(SELECT id FROM directus_users WHERE email='blog-editorial-qa@service.isvoi');
 DELETE FROM directus_users WHERE email='blog-editorial-qa@service.isvoi';
 COMMIT;
 SELECT 'blog.qa_identity_removed' AS check_name,
@@ -138,7 +156,7 @@ BEGIN
     'create',
     '*',
     NULL,
-    '{"post":{"slug":{"_in":["chto-pokazyvaet-diagnostika-iphone","kak-proverit-batareyu-iphone","kak-ponyat-kakie-detali-menyali-v-iphone"]}},"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json,
+    '{}'::json,
     NULL
   ),
   (
@@ -147,7 +165,7 @@ BEGIN
     'update',
     '*',
     NULL,
-    '{"post":{"slug":{"_in":["chto-pokazyvaet-diagnostika-iphone","kak-proverit-batareyu-iphone","kak-ponyat-kakie-detali-menyali-v-iphone"]}},"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json,
+    '{}'::json,
     NULL
   ),
   (

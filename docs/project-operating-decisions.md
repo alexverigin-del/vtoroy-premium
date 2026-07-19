@@ -1532,19 +1532,51 @@ Next content-editing priorities:
   2660 ms / 2520 ms. The stricter 2500 ms article target remains a small
   performance gap; cold targeted runs observed 3876 ms and 3124 ms desktop.
 
+### Blog Studio Editing Verification (2026-07-19)
+
+- A fresh local VPS backup was created before the permission changes at
+  `/opt/isvoi/backups/directus/20260719T184337Z`; database and uploads checksums
+  passed. Offsite upload remains deferred because `OFFSITE_BACKUP_DEST` is not
+  configured by the current user decision.
+- A real temporary `ISVOI Editor` Studio user exposed three production UX
+  blockers. Mandatory first-login TFA could not write the user's own secret,
+  alias layout groups were absent from the Editor field scope and the version
+  review could not read blog revisions. These are now covered by the non-app,
+  self-only `ISVOI Studio Self Security` policy, explicit `group_*` field
+  access and blog-scoped `directus_revisions:read` respectively.
+- Relational promotion is permanent and role-based. `ISVOI Blog Publisher` is
+  bound only to `ISVOI Advanced Editor`; ordinary Editors create and edit
+  posts, blocks and versions, while Advanced Editors review and promote O2M
+  changes. The wildcard policy remains limited to `blog_posts` and
+  `blog_post_blocks`; exact permission shape and unexpected bindings are
+  enforced by the blog audit.
+- Directus file-interface options now store the UUID of `ISVOI Blog`, not its
+  display name. Cover and block file pickers open the intended folder without
+  the former PostgreSQL UUID error. The audit checks all six blog media field
+  options against the managed folder id.
+- End-to-end Studio QA passed: first-login 2FA, create draft, edit title, create
+  a `rich_text` block, create a Content Version, edit its O2M block, review one
+  difference and promote it to Main. PostgreSQL confirmed the promoted block
+  text and zero remaining test versions. The QA draft, temporary user and
+  static token were removed; both user/post counts are zero and the old token
+  returns `401`.
+- Production `directus:audit-blog`, aggregate `directus:audit:prod`, API policy,
+  ops/content audits and storefront smoke all pass. The repository, GitHub and
+  `/opt/isvoi` implementation checkpoint before this memory-only update was
+  `4b3450e`. When piping generated setup SQL, use
+  `node scripts/<generator>.mjs`; plain `npm run ... > file.sql` also writes the
+  npm banner and must not be fed to `psql`.
+
 ### Blog Next Step
 
-1. Formalize who may publish relational versions: either add a reviewed
-   Advanced Editor publisher policy for the Directus 11.17.4 wildcard
-   requirement or verify that a later pinned Directus release removes it.
-2. Establish an editorial owner and cadence, then monitor the existing
+1. Establish an editorial owner and cadence, then monitor the existing
    article-to-device and article-to-lead UTM values in Directus Leads.
-3. Optimize the article cover cold path until desktop and mobile LCP are
+2. Optimize the article cover cold path until desktop and mobile LCP are
    consistently at or below 2500 ms without weakening image quality.
-4. Open a second category only when three complete materials are ready. Keep
+3. Open a second category only when three complete materials are ready. Keep
    search, newsletter, comments and pagination deferred until volume justifies
    them; pagination starts before the 25th article.
-5. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
+4. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
    local VPS backup as equivalent resilience.
 
 ### Blog Rollout Order

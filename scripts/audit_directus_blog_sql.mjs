@@ -182,6 +182,17 @@ WHERE NOT EXISTS (
   WHERE policy.name='ISVOI Public Read' AND p.collection=ep.collection AND p.action=ep.action
 )
 UNION ALL
+SELECT 'blog.permissions.public_posts_scope_invalid', count(*)::text
+FROM directus_permissions p
+JOIN directus_policies policy ON policy.id=p.policy
+WHERE policy.name='ISVOI Public Read'
+  AND p.collection='blog_posts'
+  AND p.action='read'
+  AND NOT (
+    (',' || p.fields || ',') LIKE '%,status,%'
+    AND p.permissions::jsonb IS NOT DISTINCT FROM '{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}'::jsonb
+  )
+UNION ALL
 SELECT 'blog.permissions.workflow_missing', count(*)::text
 FROM expected_workflow_permissions ep
 WHERE NOT EXISTS (

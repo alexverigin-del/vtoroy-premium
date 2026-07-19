@@ -661,7 +661,7 @@ SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_tags','delete');
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_tags','delete','id,blog_posts_id,blog_tags_id',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','delete','id,blog_posts_id,devices_id',NULL);
 
-SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts','read','id,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_updated,tags,devices','{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_updated,tags,devices','{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_authors','read','id,name,slug,role_title,bio,avatar,sort','{"is_active":{"_eq":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_categories','read','id,name,slug,description,sort','{"is_active":{"_eq":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_tags','read','id,name,slug','{"is_active":{"_eq":true}}'::json);

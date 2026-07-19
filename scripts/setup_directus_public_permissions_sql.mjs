@@ -27,13 +27,19 @@ BEGIN
   SELECT array_agg(id::text ORDER BY name)
   INTO v_folder_ids
   FROM directus_folders
-  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI Blog');
+  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial');
 
   IF v_folder_ids IS NULL OR array_length(v_folder_ids, 1) IS NULL THEN
     RETURN '{"id":{"_null":true}}'::json;
   END IF;
 
-  RETURN json_build_object('folder', json_build_object('_in', v_folder_ids))::json;
+  RETURN json_build_object(
+    '_or',
+    json_build_array(
+      json_build_object('folder', json_build_object('_in', v_folder_ids)),
+      json_build_object('title', json_build_object('_starts_with', 'ISVOI Blog:'))
+    )
+  )::json;
 END;
 $$;
 
@@ -113,20 +119,14 @@ BEGIN
   PERFORM isvoi_delete_permission('$t:public_label', 'device_page_settings', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'navigation_items', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'faq_items', 'read');
+  PERFORM isvoi_delete_permission('$t:public_label', 'directus_folders', 'read');
 
   PERFORM isvoi_upsert_permission(
     '$t:public_label',
     'directus_files',
     'read',
-    'id,filename_download,type,width,height,focal_point_x,focal_point_y,folder',
+    'id,filename_download,type,width,height,focal_point_x,focal_point_y',
     isvoi_public_file_filter()
-  );
-  PERFORM isvoi_upsert_permission(
-    '$t:public_label',
-    'directus_folders',
-    'read',
-    'id,name,parent',
-    '{"_and":[{"name":{"_in":["ISVOI Device Photos","ISVOI Site Assets","ISVOI Editorial","ISVOI Blog"]}},{"parent":{"_null":true}}]}'::json
   );
 END;
 $$;
@@ -136,6 +136,8 @@ RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
+  PERFORM isvoi_delete_permission(p_policy_name, 'directus_folders', 'read');
+
   PERFORM isvoi_upsert_permission(
     p_policy_name,
     'devices',
@@ -172,15 +174,8 @@ BEGIN
     p_policy_name,
     'directus_files',
     'read',
-    'id,filename_download,type,width,height,focal_point_x,focal_point_y,folder',
+    'id,filename_download,type,width,height,focal_point_x,focal_point_y',
     isvoi_public_file_filter()
-  );
-  PERFORM isvoi_upsert_permission(
-    p_policy_name,
-    'directus_folders',
-    'read',
-    'id,name,parent',
-    '{"_and":[{"name":{"_in":["ISVOI Device Photos","ISVOI Site Assets","ISVOI Editorial","ISVOI Blog"]}},{"parent":{"_null":true}}]}'::json
   );
 
   PERFORM isvoi_upsert_permission(

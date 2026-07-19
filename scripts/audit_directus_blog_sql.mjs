@@ -195,28 +195,12 @@ WHERE policy.name='ISVOI Public Read'
 UNION ALL
 SELECT 'blog.permissions.public_file_scope_missing', count(*)::text
 FROM (VALUES ('ISVOI Public Read'),('$t:public_label')) required(policy_name)
-CROSS JOIN LATERAL (
-  SELECT id FROM directus_folders WHERE name='ISVOI Blog' AND parent IS NULL LIMIT 1
-) folder
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_permissions p
   JOIN directus_policies policy ON policy.id=p.policy
   WHERE policy.name=required.policy_name
     AND p.collection='directus_files'
     AND p.action='read'
-    AND (',' || p.fields || ',') LIKE '%,folder,%'
-    AND (p.permissions::jsonb #> '{folder,_in}') ? folder.id::text
-)
-UNION ALL
-SELECT 'blog.permissions.public_folder_scope_missing', count(*)::text
-FROM (VALUES ('ISVOI Public Read'),('$t:public_label')) required(policy_name)
-WHERE NOT EXISTS (
-  SELECT 1 FROM directus_permissions p
-  JOIN directus_policies policy ON policy.id=p.policy
-  WHERE policy.name=required.policy_name
-    AND p.collection='directus_folders'
-    AND p.action='read'
-    AND p.fields='id,name,parent'
     AND p.permissions::jsonb IS NOT NULL
     AND p.permissions::jsonb::text LIKE '%ISVOI Blog%'
 )

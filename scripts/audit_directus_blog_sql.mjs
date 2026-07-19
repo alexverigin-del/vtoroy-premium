@@ -201,9 +201,8 @@ WHERE NOT EXISTS (
   WHERE policy.name=required.policy_name
     AND p.collection='directus_files'
     AND p.action='read'
-    AND (',' || p.fields || ',') LIKE '%,title,%'
     AND p.permissions::jsonb IS NOT NULL
-    AND p.permissions::jsonb::text LIKE '%ISVOI Blog%'
+    AND p.permissions::jsonb::text LIKE '%folder%'
 )
 UNION ALL
 SELECT 'blog.permissions.workflow_missing', count(*)::text
@@ -396,6 +395,13 @@ WHERE status='published' AND (
   nullif(btrim(cover_alt),'') IS NULL OR category IS NULL OR author IS NULL OR
   published_at IS NULL OR published_at > now()
 )
+UNION ALL
+SELECT 'blog.content.published_private_cover', count(*)::text
+FROM blog_posts post
+JOIN directus_files file ON file.id=post.cover_image
+LEFT JOIN directus_folders folder ON folder.id=file.folder
+WHERE post.status='published'
+  AND coalesce(folder.name,'') NOT IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial')
 UNION ALL
 SELECT 'blog.content.scheduled_without_date', count(*)::text
 FROM blog_posts WHERE status='scheduled' AND publish_at IS NULL

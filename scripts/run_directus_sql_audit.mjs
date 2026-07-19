@@ -200,6 +200,7 @@ const auditDefinitions = {
       "blog.permissions.preview_versions_scope_invalid",
       "blog.content.invalid_slugs",
       "blog.content.published_incomplete",
+      "blog.content.published_private_cover",
       "blog.content.scheduled_without_date",
       "blog.content.published_inactive_relations",
       "blog.content.orphan_junctions",

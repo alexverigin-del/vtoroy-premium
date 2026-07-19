@@ -33,13 +33,7 @@ BEGIN
     RETURN '{"id":{"_null":true}}'::json;
   END IF;
 
-  RETURN json_build_object(
-    '_or',
-    json_build_array(
-      json_build_object('folder', json_build_object('_in', v_folder_ids)),
-      json_build_object('title', json_build_object('_starts_with', 'ISVOI Blog:'))
-    )
-  )::json;
+  RETURN json_build_object('folder', json_build_object('_in', v_folder_ids))::json;
 END;
 $$;
 
@@ -125,7 +119,7 @@ BEGIN
     '$t:public_label',
     'directus_files',
     'read',
-    'id,filename_download,title,type,width,height,focal_point_x,focal_point_y',
+    'id,filename_download,type,width,height,focal_point_x,focal_point_y',
     isvoi_public_file_filter()
   );
 END;
@@ -174,7 +168,7 @@ BEGIN
     p_policy_name,
     'directus_files',
     'read',
-    'id,filename_download,title,type,width,height,focal_point_x,focal_point_y',
+    'id,filename_download,type,width,height,focal_point_x,focal_point_y',
     isvoi_public_file_filter()
   );
 

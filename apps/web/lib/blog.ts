@@ -301,19 +301,24 @@ export const getPublishedBlogPosts = cache(async function getPublishedBlogPosts(
   categorySlug,
   limit = 24,
 }: BlogPostQuery = {}): Promise<BlogPost[]> {
+  const normalizedLimit = Math.min(Math.max(limit, 1), 100);
   const params = new URLSearchParams({
     fields: POST_FIELDS,
     sort: "-featured,-published_at",
-    limit: String(Math.min(Math.max(limit, 1), 100)),
+    limit: String(categorySlug ? 100 : normalizedLimit),
   });
   params.set("filter[published_at][_lte]", "$NOW");
-  if (categorySlug) params.set("filter[category][slug][_eq]", categorySlug);
 
   const rows = await blogGet<BlogPostRow[]>(`/items/blog_posts?${params}`, [
     BLOG_POSTS_CACHE_TAG,
     BLOG_TAXONOMY_CACHE_TAG,
   ]);
-  return (rows ?? []).map((row) => mapPost(row)).filter((post): post is BlogPost => Boolean(post));
+  const posts = (rows ?? [])
+    .map((row) => mapPost(row))
+    .filter((post): post is BlogPost => Boolean(post));
+  return categorySlug
+    ? posts.filter((post) => post.category?.slug === categorySlug).slice(0, normalizedLimit)
+    : posts;
 });
 
 export const getPublishedBlogPost = cache(async function getPublishedBlogPost(
@@ -361,7 +366,6 @@ export const getBlogCategories = cache(async function getBlogCategories(): Promi
     sort: "sort,name",
     limit: "100",
   });
-  params.set("filter[is_active][_eq]", "true");
   const rows = await blogGet<BlogCategoryRow[]>(`/items/blog_categories?${params}`, [
     BLOG_TAXONOMY_CACHE_TAG,
   ]);

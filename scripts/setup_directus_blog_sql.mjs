@@ -672,14 +672,11 @@ SELECT isvoi_blog_upsert_permission(
   'ISVOI Public Read',
   'directus_files',
   'read',
-  'id,filename_download,title,type,width,height,focal_point_x,focal_point_y',
+  'id,filename_download,type,width,height,focal_point_x,focal_point_y',
   (
     SELECT json_build_object(
-      '_or',
-      json_build_array(
-        json_build_object('folder', json_build_object('_in', COALESCE(json_agg(id::text ORDER BY name), '[]'::json))),
-        json_build_object('title', json_build_object('_starts_with', 'ISVOI Blog:'))
-      )
+      'folder',
+      json_build_object('_in', COALESCE(json_agg(id::text ORDER BY name), '[]'::json))
     )
     FROM directus_folders
     WHERE name IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial')
@@ -690,14 +687,11 @@ SELECT isvoi_blog_upsert_permission(
   '$t:public_label',
   'directus_files',
   'read',
-  'id,filename_download,title,type,width,height,focal_point_x,focal_point_y',
+  'id,filename_download,type,width,height,focal_point_x,focal_point_y',
   (
     SELECT json_build_object(
-      '_or',
-      json_build_array(
-        json_build_object('folder', json_build_object('_in', COALESCE(json_agg(id::text ORDER BY name), '[]'::json))),
-        json_build_object('title', json_build_object('_starts_with', 'ISVOI Blog:'))
-      )
+      'folder',
+      json_build_object('_in', COALESCE(json_agg(id::text ORDER BY name), '[]'::json))
     )
     FROM directus_folders
     WHERE name IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial')

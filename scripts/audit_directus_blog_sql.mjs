@@ -445,6 +445,10 @@ WHERE (p.collection LIKE 'blog_%' OR policy.name IN ('ISVOI Blog Preview','ISVOI
     AND policy.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
   )
   AND NOT (
+    p.collection='directus_revisions'
+    AND policy.name='ISVOI Blog Version Workflow'
+  )
+  AND NOT (
     p.collection='directus_files'
     AND p.action='create'
     AND policy.name='ISVOI Editor Media Workflow'

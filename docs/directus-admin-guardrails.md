@@ -27,7 +27,8 @@ docker compose exec -T database psql \
 - `Administrator` is the only policy with `admin_access=true`.
 - `Administrator`, `ISVOI Editor`, `ISVOI Advanced Editor` and `ISVOI Importer` keep Studio `app_access=true` and require TFA.
 - Service policies stay headless: `$t:public_label`, `ISVOI Public Read`, `ISVOI Lead Intake`, `ISVOI Catalog Import`.
-- High-risk Directus system collections stay admin-only for non-admin policies.
+- High-risk Directus system collections stay admin-only. Narrow exceptions are
+  limited to blog versions/revisions and a Studio user's own TFA secret.
 - Public policies are read-only.
 - `ISVOI Lead Intake` is create-only on `leads`.
 

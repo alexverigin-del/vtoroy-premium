@@ -74,10 +74,16 @@ expected_editor_post_groups(action, field) AS (
     ('group_relations'),('group_seo'),('group_system')
   ) groups(field)
 ),
+expected_blog_media_fields(collection, field) AS (
+  VALUES
+    ('blog_posts','body'),('blog_posts','cover_image'),('blog_posts','og_image'),
+    ('blog_authors','avatar'),('blog_post_blocks','body'),('blog_post_blocks','image')
+),
 expected_workflow_permissions(collection, action) AS (
   VALUES
     ('directus_versions','read'),('directus_versions','create'),
-    ('directus_versions','update'),('directus_versions','delete')
+    ('directus_versions','update'),('directus_versions','delete'),
+    ('directus_revisions','read')
 ),
 expected_publisher_permissions(collection, action, fields, validation) AS (
   VALUES
@@ -173,6 +179,16 @@ WHERE NOT EXISTS (
     AND interface='list-o2m'
 )
 UNION ALL
+SELECT 'blog.studio.media_folder_options_invalid', count(*)::text
+FROM expected_blog_media_fields expected
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  JOIN directus_folders folder ON folder.name='ISVOI Blog' AND folder.parent IS NULL
+  WHERE field.collection=expected.collection
+    AND field.field=expected.field
+    AND field.options::jsonb->>'folder'=folder.id::text
+)
+UNION ALL
 SELECT 'blog.studio.versioning_missing', count(*)::text
 FROM (VALUES (1)) required(dummy)
 WHERE NOT EXISTS (
@@ -266,6 +282,19 @@ SELECT 'blog.permissions.workflow_policy_invalid', count(*)::text
 FROM directus_policies
 WHERE name='ISVOI Blog Version Workflow'
   AND (coalesce(app_access,false) OR coalesce(admin_access,false) OR coalesce(enforce_tfa,false))
+UNION ALL
+SELECT 'blog.permissions.workflow_revisions_scope_invalid', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name='ISVOI Blog Version Workflow'
+  AND permission.collection='directus_revisions'
+  AND NOT (
+    permission.action='read'
+    AND permission.fields='*'
+    AND permission.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
+    AND permission.validation IS NULL
+    AND permission.presets IS NULL
+  )
 UNION ALL
 SELECT 'blog.permissions.workflow_role_bindings_missing', count(*)::text
 FROM (VALUES ('ISVOI Editor'),('ISVOI Advanced Editor')) required(role_name)

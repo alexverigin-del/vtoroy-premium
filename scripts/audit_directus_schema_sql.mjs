@@ -374,8 +374,8 @@ JOIN directus_policies p ON p.id = pe.policy
 WHERE coalesce(p.admin_access, false) = false
   AND pe.collection IN (SELECT collection FROM system_collections)
   AND NOT (
-    p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
-    AND pe.collection='directus_versions'
+    (p.name='ISVOI Blog Version Workflow' AND pe.collection IN ('directus_versions','directus_revisions'))
+    OR (p.name='ISVOI Blog Preview' AND pe.collection='directus_versions')
   )
   AND NOT (
     p.name='ISVOI Studio Self Security'

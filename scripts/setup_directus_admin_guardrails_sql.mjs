@@ -153,8 +153,8 @@ WHERE p.id = pe.policy
     'directus_webhooks'
   )
   AND NOT (
-    p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
-    AND pe.collection='directus_versions'
+    (p.name='ISVOI Blog Version Workflow' AND pe.collection IN ('directus_versions','directus_revisions'))
+    OR (p.name='ISVOI Blog Preview' AND pe.collection='directus_versions')
   )
   AND NOT (
     p.name='ISVOI Studio Self Security'
@@ -233,8 +233,8 @@ WHERE COALESCE(p.admin_access, false) = false
     'directus_webhooks'
   )
   AND NOT (
-    p.name IN ('ISVOI Blog Version Workflow','ISVOI Blog Preview')
-    AND pe.collection='directus_versions'
+    (p.name='ISVOI Blog Version Workflow' AND pe.collection IN ('directus_versions','directus_revisions'))
+    OR (p.name='ISVOI Blog Preview' AND pe.collection='directus_versions')
   )
   AND NOT (
     p.name='ISVOI Studio Self Security'

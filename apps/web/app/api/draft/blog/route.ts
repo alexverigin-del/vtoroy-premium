@@ -3,6 +3,7 @@ import { draftMode } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getBlogPostPreview } from "@/lib/blog";
+import { siteUrl } from "@/lib/structured-data";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -35,9 +36,9 @@ export async function GET(request: NextRequest) {
 
   const draft = await draftMode();
   draft.enable();
-  const redirect = NextResponse.redirect(
-    new URL(`/blog/${post.slug}?preview=${encodeURIComponent(post.id)}`, request.url),
-  );
+  const redirectUrl = new URL(siteUrl(`/blog/${post.slug}`));
+  redirectUrl.searchParams.set("preview", post.id);
+  const redirect = NextResponse.redirect(redirectUrl);
   redirect.headers.set("Referrer-Policy", "no-referrer");
   return redirect;
 }

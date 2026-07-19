@@ -18,7 +18,7 @@ import { DeviceCard } from "@/components/DeviceCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
 import { MobileProductActionBar } from "@/components/MobileProductActionBar";
 import { SiteShell } from "@/components/SiteShell";
-import { deviceBackLinkClass } from "@/components/ui-classes";
+import { detailBackLinkClass } from "@/components/ui-classes";
 import { cn } from "@/lib/cn";
 import { siteChrome } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
@@ -330,7 +330,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
           }}
         />
         <section className="mx-auto max-w-content px-6 py-10 md:py-14">
-          <Link href={devicePageSettings.breadcrumbs.catalogHref} className={deviceBackLinkClass}>
+          <Link href={devicePageSettings.breadcrumbs.catalogHref} className={detailBackLinkClass}>
             {devicePageSettings.breadcrumbs.backLabel}
           </Link>
 

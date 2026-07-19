@@ -33,7 +33,7 @@ export const leadTextareaClass =
 
 export const leadHoneypotClass = "absolute left-[-9999px] h-px w-px opacity-0";
 
-export const deviceBackLinkClass =
+export const detailBackLinkClass =
   "inline-flex min-h-touch items-center rounded-sm pr-2 text-sm font-medium text-link-blue hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link-blue";
 
 export const mobileProductCtaBarClass =

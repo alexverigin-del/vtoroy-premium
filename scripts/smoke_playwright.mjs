@@ -349,6 +349,11 @@ async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAsset
     coverBox && coverBox.width >= 300 && coverBox.height >= 180,
     `blog article: expected a visible cover image, got ${JSON.stringify(coverBox)}`,
   );
+  const blogNavigation = page.getByRole("navigation", { name: "Навигация по блогу" });
+  assert((await blogNavigation.count()) === 1, "blog article: expected one blog navigation landmark");
+  const blogBackLink = blogNavigation.getByRole("link", { name: "← Блог", exact: true });
+  assert((await blogBackLink.count()) === 1, "blog article: expected the standard ← Блог back link");
+  assert((await blogBackLink.getAttribute("href")) === "/blog", "blog article: back link must target /blog");
 
   return {
     route: articlePath,

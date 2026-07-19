@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ProductImage } from "@/components/ProductImage";
 import { BlogArticleContent } from "@/components/BlogArticleContent";
 import { SiteShell } from "@/components/SiteShell";
+import { detailBackLinkClass } from "@/components/ui-classes";
 import { getBlogPostPreview, getPublishedBlogPost } from "@/lib/blog";
 import { getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
@@ -135,12 +136,9 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
 
         <article>
           <header className="mx-auto max-w-measure px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-14 lg:pt-20">
-            <nav aria-label="Хлебные крошки">
-              <Link
-                href="/blog"
-                className="focus-ring inline-flex min-h-11 items-center text-sm font-medium text-link-blue hover:underline"
-              >
-                Блог
+            <nav aria-label="Навигация по блогу">
+              <Link href="/blog" className={detailBackLinkClass}>
+                ← Блог
               </Link>
             </nav>
             <p className="mt-5 text-sm font-semibold text-link-blue">{post.category?.name}</p>

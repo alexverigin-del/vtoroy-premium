@@ -175,6 +175,10 @@ JOIN directus_policies policy ON policy.id=p.policy
 WHERE (p.collection LIKE 'blog_%' OR policy.name='ISVOI Blog Preview')
   AND policy.name IN ('ISVOI Editor','ISVOI Public Read','ISVOI Blog Preview')
   AND (p.fields='*' OR p.fields LIKE '%,*,%' OR p.fields LIKE '*,%' OR p.fields LIKE '%,*')
+  AND NOT (
+    p.collection='directus_versions'
+    AND policy.name IN ('ISVOI Editor','ISVOI Blog Preview')
+  )
 UNION ALL
 SELECT 'blog.permissions.public_writes', count(*)::text
 FROM directus_permissions p
@@ -204,20 +208,20 @@ JOIN directus_policies policy ON policy.id=p.policy
 WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
   AND NOT (
     (p.action='read'
-      AND p.fields='id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta'
+      AND p.fields='*'
       AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
       AND p.validation IS NULL AND p.presets IS NULL)
     OR (p.action='create'
-      AND p.fields='id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta'
+      AND p.fields='*'
       AND p.permissions IS NULL
       AND p.validation::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
       AND p.presets::jsonb IS NOT DISTINCT FROM '{"collection":"blog_posts"}'::jsonb)
     OR (p.action='update'
-      AND p.fields='key,name,delta'
+      AND p.fields='*'
       AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
       AND p.validation IS NULL AND p.presets IS NULL)
     OR (p.action='delete'
-      AND p.fields='id,key,name,collection,item'
+      AND p.fields='*'
       AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
       AND p.validation IS NULL AND p.presets IS NULL)
   )
@@ -234,7 +238,7 @@ JOIN directus_policies policy ON policy.id=p.policy
 WHERE policy.name='ISVOI Blog Preview' AND p.collection='directus_versions'
   AND NOT (
     p.action='read'
-    AND p.fields='id,key,name,collection,item,hash,date_created,date_updated,delta'
+    AND p.fields='*'
     AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
     AND p.validation IS NULL AND p.presets IS NULL
   )

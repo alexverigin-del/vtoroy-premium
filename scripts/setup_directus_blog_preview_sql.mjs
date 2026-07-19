@@ -23,7 +23,7 @@ function sql(value) {
 }
 
 const separator = endpoint.includes("?") ? "&" : "?";
-const previewUrl = `${endpoint}${separator}secret=${encodeURIComponent(secret)}&id={{id}}&version={{version}}`;
+const previewUrl = `${endpoint}${separator}secret=${encodeURIComponent(secret)}&id={{id}}&version={{$version}}`;
 
 process.stdout.write(String.raw`
 BEGIN;

@@ -557,10 +557,10 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update'
 
 -- Content Versions are a system collection, so keep Editor access scoped to
 -- blog_posts and to the exact fields needed by Directus version workflows.
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','read','id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta','{"collection":{"_eq":"blog_posts"}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta',NULL,'{"collection":{"_eq":"blog_posts"}}'::json,'{"collection":"blog_posts"}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','update','key,name,delta','{"collection":{"_eq":"blog_posts"}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','delete','id,key,name,collection,item','{"collection":{"_eq":"blog_posts"}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','*',NULL,'{"collection":{"_eq":"blog_posts"}}'::json,'{"collection":"blog_posts"}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','update','*','{"collection":{"_eq":"blog_posts"}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','delete','*','{"collection":{"_eq":"blog_posts"}}'::json);
 
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_posts','delete');
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_authors','delete');
@@ -584,7 +584,7 @@ SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_tags','read
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_devices','read','id,blog_posts_id,devices_id,sort',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_files','read','id,filename_download,type,width,height,focal_point_x,focal_point_y',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','devices','read','id,title,price_text,stock_status',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_versions','read','id,key,name,collection,item,hash,date_created,date_updated,delta','{"collection":{"_eq":"blog_posts"}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
 
 DROP FUNCTION isvoi_blog_upsert_permission(text,varchar,varchar,text,json,json,json);
 DROP FUNCTION isvoi_blog_delete_permission(text,varchar,varchar);

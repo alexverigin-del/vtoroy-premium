@@ -339,6 +339,7 @@ FROM directus_permissions pe
 JOIN directus_policies p ON p.id = pe.policy
 WHERE pe.fields = '*'
   AND p.name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Catalog Import')
+  AND NOT (p.name='ISVOI Editor' AND pe.collection='directus_versions')
 UNION ALL
 SELECT 'permissions.public_read_rows', count(*)::text
 FROM directus_permissions

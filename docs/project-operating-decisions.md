@@ -1466,8 +1466,13 @@ Next content-editing priorities:
   block metadata. Exactly one sensitive preview query value is stored as
   `__REDACTED__`; no raw snapshot was retained.
 
-### Blog Detail Navigation Standard (2026-07-19)
+### Blog Navigation And Brand-Zone Standards (2026-07-19)
 
+- Blog listing and category pages use the shared commercial eyebrow pattern
+  `I СВОИ · Блог` with `brandZoneEyebrowClass`. Do not reverse it to
+  `Блог I СВОИ` or treat this brand-zone label as a breadcrumb. Commit
+  `5392c79` deployed the correction; local `web:verify`, production build,
+  full smoke and targeted desktop/mobile visual smoke passed.
 - Public detail pages use one compact back-navigation link above the content:
   `← Каталог` for a device and `← Блог` for an article. The shared visual class
   is `detailBackLinkClass`; do not present a single back link as a breadcrumb

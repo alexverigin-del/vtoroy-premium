@@ -338,8 +338,14 @@ Live deploy checks should include:
 - Public role should stay minimal: public reads only intentionally public
   content and never writes to system collections or files.
 - Service tokens should be least-privilege and server-only.
-- `Administrator`, `ISVOI Editor` and `ISVOI Importer` are the human/operator
-  Studio roles. Admin users require 2FA.
+- `Administrator`, `ISVOI Editor`, `ISVOI Advanced Editor` and
+  `ISVOI Importer` are the human/operator Studio roles. Admin users require
+  2FA.
+- `page_sections.content` / `JSON-настройки блока` is technically editable in
+  Studio, but only the `ISVOI Advanced Editor` policy can update it. Keep the
+  ordinary `ISVOI Editor` limited to safe section fields, and run
+  `directus:audit:prod` after JSON edits because this field controls structured
+  React section rendering.
 - Headless/service policies include public read, lead intake and catalog import
   policies. They should not have Studio app access.
 - `ISVOI Lead Intake` is create-only on `leads`.

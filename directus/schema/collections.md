@@ -196,6 +196,9 @@ date. Run `npm run directus:setup:blog` to print the idempotent setup SQL and
 - **ISVOI Editor** — manual catalog/photo/lead work in Studio. Can create and
   update `devices`, manage `device_images`, upload/update file metadata, and
   read/update `leads`. Cannot delete `devices` or manage roles/policies.
+- **ISVOI Advanced Editor** — Studio role for trusted page editors who need to
+  edit `page_sections.content` JSON settings. Inherits ordinary editor workflow
+  and still has no admin/system access.
 - **ISVOI Importer** — dedicated role for import scripts and batch media sync.
   Can create/update imported `devices`, manage imported `device_images`, and
   upload/update files. Use it for service users, not day-to-day human editing.

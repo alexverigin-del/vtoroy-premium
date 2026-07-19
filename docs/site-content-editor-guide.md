@@ -43,6 +43,10 @@ image, attach it through `Главное изображение блока`.
 `JSON-настройки блока` is an advanced field for structured parts of a block:
 cards, steps, comparison rows, FAQ keys and similar repeatable content.
 
+The ordinary `ISVOI Editor` role uses this field for review only. To edit and
+save JSON in Studio, assign the `ISVOI Advanced Editor` role and run the
+page-sections/content audits after the change.
+
 For Store, Trade, Passport and Club hero sections, the JSON field may include a
 compact trust strip under the main actions. Use one of these keys:
 `highlights`, `hero_highlights` or `facts`. Each item may contain:

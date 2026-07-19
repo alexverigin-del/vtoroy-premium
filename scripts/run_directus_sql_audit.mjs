@@ -37,7 +37,7 @@ const auditDefinitions = {
       "permissions.lead_intake_extra_permissions",
       "permissions.non_admin_wildcards",
     ],
-    equals: { "permissions.studio_tfa_policies": "3", "schema.snapshot_audit_rows": "ok" },
+    equals: { "permissions.studio_tfa_policies": "4", "schema.snapshot_audit_rows": "ok" },
   },
   studio: {
     script: "scripts/audit_directus_studio_sql.mjs",

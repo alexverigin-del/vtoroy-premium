@@ -159,7 +159,7 @@ SELECT isvoi_upsert_directus_field('page_sections', 'sort_order', 'input', NULL,
 SELECT isvoi_upsert_directus_field('page_sections', 'is_active', 'boolean', 'boolean', NULL, NULL, 'half', 5, 'Выключите, чтобы временно скрыть блок без удаления.', false, false, false, NULL, 'group_placement', 'Показывать на сайте');
 SELECT isvoi_upsert_directus_field('page_sections', 'section_key', 'input', NULL, NULL, NULL, 'half', 91, 'Стабильный ключ блока для кода и импорта. Не менять без разработчика.', true, false, true, NULL, 'group_advanced', 'Ключ блока');
 SELECT isvoi_upsert_directus_field('page_sections', 'variant', 'select-dropdown', 'labels', '{"choices":[{"text":"Hero страницы","value":"page.hero","color":"#0f766e"},{"text":"Hero главной","value":"hero.static","color":"#0f766e"},{"text":"Полоса доверия","value":"trust.strip","color":"#10b981"},{"text":"Карточки 3","value":"cards.three","color":"#2563eb"},{"text":"Сетка карточек","value":"cards.grid","color":"#2563eb"},{"text":"Каталог","value":"catalog.grid","color":"#111827"},{"text":"Шаги","value":"steps","color":"#7c3aed"},{"text":"Store steps","value":"store.steps","color":"#7c3aed"},{"text":"Сравнение","value":"compare","color":"#dc2626"},{"text":"Диагностика","value":"diagnostics.compare","color":"#dc2626"},{"text":"Визуальная полоса","value":"visual.band","color":"#0891b2"},{"text":"FAQ","value":"faq","color":"#ca8a04"},{"text":"CTA","value":"page.cta","color":"#f97316"},{"text":"Форма","value":"final.form","color":"#f97316"},{"text":"Passport split","value":"passport.split","color":"#be123c"},{"text":"Trade choices","value":"trade.choices","color":"#7c3aed"},{"text":"Club levels","value":"club.levels","color":"#ca8a04"},{"text":"Levels","value":"levels","color":"#ca8a04"}]}'::json, NULL, 'half', 92, 'Тип блока, который выбирает Next renderer. Менять только вместе с проверкой сайта.', true, false, false, NULL, 'group_advanced', 'Тип блока');
-SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 93, 'JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Редактор видит это поле только для диагностики; правки JSON проходят через setup/import.', true, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
+SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 93, 'JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Обычный редактор видит поле для диагностики; расширенный редактор может править JSON после проверки структуры.', false, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
 
 DROP FUNCTION isvoi_upsert_directus_field(varchar, varchar, varchar, varchar, json, json, varchar, integer, text, boolean, boolean, boolean, varchar, varchar, text);
 
@@ -281,7 +281,13 @@ BEGIN
 END;
 $$;
 
-SELECT isvoi_upsert_permission('ISVOI Editor', 'page_sections', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'page_sections',
+  'read',
+  'id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
+  NULL
+);
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'delete');
 SELECT isvoi_upsert_permission(
@@ -289,6 +295,13 @@ SELECT isvoi_upsert_permission(
   'page_sections',
   'update',
   'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
+  NULL
+);
+SELECT isvoi_upsert_permission(
+  'ISVOI Advanced Editor',
+  'page_sections',
+  'update',
+  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
   NULL
 );
 

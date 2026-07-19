@@ -191,7 +191,7 @@ SELECT isvoi_upsert_directus_field('page_sections', 'primary_cta_url', 'input', 
 SELECT isvoi_upsert_directus_field('page_sections', 'secondary_cta_label', 'input', NULL, NULL, NULL, 'half', 53, 'Текст второй кнопки.', false, false, false, NULL, 'group_actions', 'Вторая кнопка');
 SELECT isvoi_upsert_directus_field('page_sections', 'secondary_cta_url', 'input', NULL, NULL, NULL, 'half', 54, 'Ссылка второй кнопки.', false, false, false, NULL, 'group_actions', 'Ссылка второй кнопки');
 SELECT isvoi_upsert_directus_field('page_sections', 'image', 'file-image', 'file', '{"folder":"ISVOI Site Assets"}'::json, NULL, 'full', 71, 'Главное нетоварное изображение блока. Загружайте и выбирайте файлы из папки ISVOI Site Assets. Сайт отдаёт его через Directus assets с resize/WebP/AVIF.', false, false, false, 'm2o', 'group_media', 'Главное изображение блока');
-SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 91, 'JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Не добавляйте image_src/imageSrc, файловые пути или прямые asset URL в JSON.', true, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
+SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 91, 'JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Править JSON может только расширенный редактор. Не добавляйте image_src/imageSrc, файловые пути или прямые asset URL в JSON.', false, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
 
 DROP FUNCTION isvoi_upsert_directus_field(varchar, varchar, varchar, varchar, json, json, varchar, integer, text, boolean, boolean, boolean, varchar, varchar, text);
 
@@ -291,7 +291,13 @@ BEGIN
 END;
 $$;
 
-SELECT isvoi_upsert_permission('ISVOI Editor', 'site_pages', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'site_pages',
+  'read',
+  'id,slug,template,status,title,meta_description,og_image,sections',
+  NULL
+);
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_pages',
@@ -300,7 +306,13 @@ SELECT isvoi_upsert_permission(
   NULL,
   '{"status":{"_in":["draft","published","archived"]}}'::json
 );
-SELECT isvoi_upsert_permission('ISVOI Editor', 'page_sections', 'read', '*', NULL);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'page_sections',
+  'read',
+  'id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
+  NULL
+);
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'delete');
 SELECT isvoi_upsert_permission(
@@ -308,6 +320,13 @@ SELECT isvoi_upsert_permission(
   'page_sections',
   'update',
   'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
+  NULL
+);
+SELECT isvoi_upsert_permission(
+  'ISVOI Advanced Editor',
+  'page_sections',
+  'update',
+  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
   NULL
 );
 

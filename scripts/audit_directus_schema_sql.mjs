@@ -308,7 +308,7 @@ WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'IS
 UNION ALL
 SELECT 'permissions.studio_tfa_policies', count(*)::text
 FROM directus_policies
-WHERE name IN ('Administrator', 'ISVOI Editor', 'ISVOI Importer')
+WHERE name IN ('Administrator', 'ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer')
   AND coalesce(enforce_tfa, false) = true
 UNION ALL
 SELECT 'permissions.non_admin_system_permissions', count(*)::text
@@ -338,7 +338,7 @@ SELECT 'permissions.non_admin_wildcards', count(*)::text
 FROM directus_permissions pe
 JOIN directus_policies p ON p.id = pe.policy
 WHERE pe.fields = '*'
-  AND p.name IN ('ISVOI Editor', 'ISVOI Importer', 'ISVOI Catalog Import')
+  AND p.name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Catalog Import')
 UNION ALL
 SELECT 'permissions.public_read_rows', count(*)::text
 FROM directus_permissions

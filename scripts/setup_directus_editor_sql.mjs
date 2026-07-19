@@ -31,11 +31,13 @@ BEGIN
       p_name,
       CASE p_name
         WHEN 'ISVOI Editor' THEN 'edit_note'
+        WHEN 'ISVOI Advanced Editor' THEN 'data_object'
         WHEN 'ISVOI Importer' THEN 'upload_file'
         ELSE 'person'
       END,
       CASE p_name
         WHEN 'ISVOI Editor' THEN 'Редактор каталога: ручное ведение карточек, фото и заявок без доступа к системным настройкам.'
+        WHEN 'ISVOI Advanced Editor' THEN 'Расширенный редактор страниц: обычные редакторские права плюс осторожная правка JSON-настроек блоков.'
         WHEN 'ISVOI Importer' THEN 'Импорт каталога: загрузка устройств, файлов и служебных import/source полей без управления ролями.'
         ELSE NULL
       END
@@ -44,11 +46,13 @@ BEGIN
     UPDATE directus_roles
     SET icon = CASE p_name
         WHEN 'ISVOI Editor' THEN 'edit_note'
+        WHEN 'ISVOI Advanced Editor' THEN 'data_object'
         WHEN 'ISVOI Importer' THEN 'upload_file'
         ELSE icon
       END,
       description = CASE p_name
         WHEN 'ISVOI Editor' THEN 'Редактор каталога: ручное ведение карточек, фото и заявок без доступа к системным настройкам.'
+        WHEN 'ISVOI Advanced Editor' THEN 'Расширенный редактор страниц: обычные редакторские права плюс осторожная правка JSON-настроек блоков.'
         WHEN 'ISVOI Importer' THEN 'Импорт каталога: загрузка устройств, файлов и служебных import/source полей без управления ролями.'
         ELSE description
       END
@@ -105,11 +109,18 @@ END;
 $$;
 
 SELECT isvoi_role_id('ISVOI Editor');
+SELECT isvoi_role_id('ISVOI Advanced Editor');
 SELECT isvoi_role_id('ISVOI Importer');
 SELECT isvoi_policy_id(
   'ISVOI Editor',
   'edit_note',
   'Manual catalog/content editing: devices, device images and lead processing. No system administration.',
+  true
+);
+SELECT isvoi_policy_id(
+  'ISVOI Advanced Editor',
+  'data_object',
+  'Advanced page-section editing: allows careful JSON settings updates for managed blocks. No system administration.',
   true
 );
 SELECT isvoi_policy_id(
@@ -119,6 +130,8 @@ SELECT isvoi_policy_id(
   true
 );
 SELECT isvoi_bind_policy_to_role('ISVOI Editor', 'ISVOI Editor');
+SELECT isvoi_bind_policy_to_role('ISVOI Advanced Editor', 'ISVOI Editor');
+SELECT isvoi_bind_policy_to_role('ISVOI Advanced Editor', 'ISVOI Advanced Editor');
 SELECT isvoi_bind_policy_to_role('ISVOI Importer', 'ISVOI Importer');
 
 CREATE OR REPLACE FUNCTION isvoi_upsert_collection_metadata(
@@ -493,11 +506,11 @@ COMMIT;
 
 SELECT 'directus_editor_roles' AS check_name, count(*)::text AS value
 FROM directus_roles
-WHERE name IN ('ISVOI Editor', 'ISVOI Importer')
+WHERE name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer')
 UNION ALL
 SELECT 'directus_editor_policies' AS check_name, count(*)::text AS value
 FROM directus_policies
-WHERE name IN ('ISVOI Editor', 'ISVOI Importer')
+WHERE name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer')
 UNION ALL
 SELECT 'devices_group_fields' AS check_name, count(*)::text AS value
 FROM directus_fields

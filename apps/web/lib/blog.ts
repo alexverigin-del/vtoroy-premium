@@ -176,8 +176,8 @@ function positiveInteger(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : fallback;
 }
 
-function mapBlock(row: BlogPostBlockRow): BlogPostBlock | undefined {
-  const id = text(row.id);
+function mapBlock(row: BlogPostBlockRow, previewFallbackId: string): BlogPostBlock | undefined {
+  const id = text(row.id) || previewFallbackId;
   if (!id) return undefined;
 
   if (row.block_type === "rich_text") {
@@ -335,7 +335,9 @@ function mapPost(row: BlogPostRow, allowIncomplete = false): BlogPost | null {
     .filter((device): device is BlogRelatedDevice => Boolean(device));
   const blocks = [...(row.blocks ?? [])]
     .sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100))
-    .map(mapBlock)
+    .map((block, index) =>
+      mapBlock(block, allowIncomplete ? `${id}-preview-block-${index + 1}` : ""),
+    )
     .filter((block): block is BlogPostBlock => Boolean(block));
   const hasArticleBody =
     Boolean(richText.html) || blocks.some((block) => block.type === "rich_text");

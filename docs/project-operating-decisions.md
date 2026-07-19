@@ -1315,7 +1315,10 @@ Next content-editing priorities:
   was explicitly skipped because the user deferred offsite backup work.
 - `directus:setup:blog`, `directus:setup:blog-scheduling`, the expanded
   `directus:setup:site-content-revalidation` and final admin guardrails were
-  applied successfully. Directus was restarted and returned health 200.
+  applied successfully. Directus was restarted and returned health 200. The
+  post-rollout production schema was exported through the Directus container
+  CLI to `directus/schema/snapshots/current.json`; it contains all six blog
+  collections and no secret, token or password values.
 - Production Next.js build passed, PM2 `isvoi-web` is online, and `/blog`, RSS,
   sitemap, home, catalog, device, robots and Directus health returned 200.
   The existing Playwright production smoke also passed all storefront routes.

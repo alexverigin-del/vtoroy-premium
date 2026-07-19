@@ -306,7 +306,6 @@ export const getPublishedBlogPosts = cache(async function getPublishedBlogPosts(
     sort: "-featured,-published_at",
     limit: String(Math.min(Math.max(limit, 1), 100)),
   });
-  params.set("filter[status][_eq]", "published");
   params.set("filter[published_at][_lte]", "$NOW");
   if (categorySlug) params.set("filter[category][slug][_eq]", categorySlug);
 
@@ -325,7 +324,6 @@ export const getPublishedBlogPost = cache(async function getPublishedBlogPost(
 
   const params = new URLSearchParams({ fields: POST_FIELDS, limit: "1" });
   params.set("filter[slug][_eq]", normalizedSlug);
-  params.set("filter[status][_eq]", "published");
   params.set("filter[published_at][_lte]", "$NOW");
   const rows = await blogGet<BlogPostRow[]>(`/items/blog_posts?${params}`, [
     BLOG_POSTS_CACHE_TAG,

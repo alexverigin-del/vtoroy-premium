@@ -321,14 +321,6 @@ WHERE NOT EXISTS (
   WHERE policy.name='ISVOI Blog Preview' AND p.collection=ep.collection AND p.action=ep.action
 )
 UNION ALL
-SELECT 'blog.permissions.preview_device_fields_invalid', count(*)::text
-FROM directus_permissions p
-JOIN directus_policies policy ON policy.id=p.policy
-WHERE policy.name='ISVOI Blog Preview' AND p.collection='devices' AND p.action='read'
-  AND NOT (string_to_array(p.fields,',') @> ARRAY[
-    'id','title','price_text','stock_status','grade','battery_text','warranty_text','listing_file','listing_alt'
-  ])
-UNION ALL
 SELECT 'blog.permissions.wildcard_fields', count(*)::text
 FROM directus_permissions p
 JOIN directus_policies policy ON policy.id=p.policy

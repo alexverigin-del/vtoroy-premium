@@ -150,6 +150,19 @@ const POST_FIELDS = [
   "blocks.image_width",
 ].join(",");
 
+const PREVIEW_POST_FIELDS = POST_FIELDS.split(",")
+  .filter(
+    (field) =>
+      ![
+        "devices.devices_id.grade",
+        "devices.devices_id.battery_text",
+        "devices.devices_id.warranty_text",
+        "devices.devices_id.listing_file.id",
+        "devices.devices_id.listing_alt",
+      ].includes(field),
+  )
+  .join(",");
+
 function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -445,7 +458,7 @@ export async function getBlogPostPreview(id: string, version?: string): Promise<
   if (!token) return null;
 
   const params = new URLSearchParams({
-    fields: `${POST_FIELDS},status,date_created`,
+    fields: `${PREVIEW_POST_FIELDS},status,date_created`,
   });
   if (version) params.set("version", version);
 

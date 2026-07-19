@@ -28,6 +28,17 @@ The command reads `DIRECTUS_URL` and `DIRECTUS_TOKEN` from the shell, `.env`,
 `scripts/.env`, or `apps/web/.env.local`. The token must be able to read schema
 metadata. Do not commit admin tokens; use a temporary shell env when needed.
 
+Directus includes collection `preview_url` values in a snapshot. Sanitize a raw
+snapshot before committing whenever Live Preview is configured:
+
+```bash
+npm run directus:schema:sanitize -- raw.json directus/schema/snapshots/current.json
+```
+
+The sanitizer preserves the URL contract and replaces sensitive query values
+such as `secret`, `token` and `api_key` with `__REDACTED__`. Never commit the raw
+snapshot.
+
 Commit the snapshot when the Directus schema contract intentionally changes.
 
 ## Audit

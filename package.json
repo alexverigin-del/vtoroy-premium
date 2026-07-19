@@ -38,6 +38,7 @@
     "directus:normalize-images": "node scripts/normalize_directus_image_refs.mjs",
     "directus:normalize-device-images-sql": "node scripts/normalize_directus_device_image_refs_sql.mjs",
     "directus:schema:snapshot": "node scripts/export_directus_schema_snapshot.mjs",
+    "directus:schema:sanitize": "node scripts/sanitize_directus_schema_snapshot.mjs",
     "directus:audit:prod": "node scripts/run_directus_sql_audit.mjs prod && npm run directus:audit-api-policy && npm run directus:audit-ops && npm run directus:audit-content-ownership",
     "directus:audit-schema": "node scripts/run_directus_sql_audit.mjs schema",
     "directus:audit-studio": "node scripts/run_directus_sql_audit.mjs studio",

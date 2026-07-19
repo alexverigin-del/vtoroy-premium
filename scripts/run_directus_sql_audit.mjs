@@ -172,6 +172,7 @@ const auditDefinitions = {
       "blog.studio.collection_metadata_missing",
       "blog.studio.post_groups_missing",
       "blog.studio.versioning_missing",
+      "blog.studio.unexpected_versioned_collections",
       "blog.studio.preview_url_missing",
       "blog.studio.presets_missing",
       "blog.permissions.editor_missing",

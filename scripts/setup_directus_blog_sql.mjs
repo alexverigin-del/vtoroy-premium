@@ -555,10 +555,11 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','read','
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','create','blog_posts_id,devices_id,sort',NULL,'{"blog_posts_id":{"_nnull":true},"devices_id":{"_nnull":true}}'::json,'{"sort":100}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update','blog_posts_id,devices_id,sort',NULL);
 
--- Content Versions are a system collection, so keep Editor access scoped to
--- blog_posts and to the exact fields needed by Directus version workflows.
+-- Directus adds the internal hash after create validation, so create must use
+-- full access. The blog audit therefore enforces blog_posts as the only
+-- version-enabled collection; read/update/delete remain row-scoped.
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','*',NULL,'{"collection":{"_eq":"blog_posts"}}'::json,'{"collection":"blog_posts"}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','*',NULL,NULL,'{"collection":"blog_posts"}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','update','*','{"collection":{"_eq":"blog_posts"}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','delete','*','{"collection":{"_eq":"blog_posts"}}'::json);
 

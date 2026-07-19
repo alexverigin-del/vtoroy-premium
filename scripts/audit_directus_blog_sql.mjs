@@ -126,6 +126,10 @@ WHERE NOT EXISTS (
   WHERE collection='blog_posts' AND versioning=true
 )
 UNION ALL
+SELECT 'blog.studio.unexpected_versioned_collections', count(*)::text
+FROM directus_collections
+WHERE versioning=true AND collection<>'blog_posts'
+UNION ALL
 SELECT 'blog.studio.preview_url_missing', count(*)::text
 FROM (VALUES (1)) required(dummy)
 WHERE NOT EXISTS (
@@ -214,7 +218,7 @@ WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
     OR (p.action='create'
       AND p.fields='*'
       AND p.permissions IS NULL
-      AND p.validation::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
+      AND p.validation IS NULL
       AND p.presets::jsonb IS NOT DISTINCT FROM '{"collection":"blog_posts"}'::jsonb)
     OR (p.action='update'
       AND p.fields='*'

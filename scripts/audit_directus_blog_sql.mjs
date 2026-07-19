@@ -204,6 +204,7 @@ WHERE NOT EXISTS (
   WHERE policy.name=required.policy_name
     AND p.collection='directus_files'
     AND p.action='read'
+    AND (',' || p.fields || ',') LIKE '%,folder,%'
     AND (p.permissions::jsonb #> '{folder,_in}') ? folder.id::text
 )
 UNION ALL

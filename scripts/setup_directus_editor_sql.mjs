@@ -296,7 +296,7 @@ SELECT isvoi_upsert_permission(
 );
 SELECT isvoi_delete_permission('ISVOI Editor', 'device_images', 'delete');
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'read', 'id,filename_download,title,description,type,width,height,focal_point_x,focal_point_y,folder,uploaded_on,modified_on', NULL);
-SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'create', 'title,description,folder,file,tags', NULL);
+SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'create', 'title,description,folder,file,tags,filename_download,filename_disk,storage,type,filesize,width,height,focal_point_x,focal_point_y,charset,duration,embed,location,tus_id,tus_data,metadata,uploaded_by,uploaded_on,created_on,modified_by,modified_on', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'directus_files', 'update', 'title,description,folder,tags,focal_point_x,focal_point_y', NULL);
 SELECT isvoi_upsert_permission('ISVOI Editor', 'leads', 'read', 'id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent', NULL);
 SELECT isvoi_upsert_permission(

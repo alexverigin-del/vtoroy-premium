@@ -478,6 +478,9 @@ const updates = [
   ["ISVOI Editor", "site_settings", "read", fields.siteSettings],
   ["ISVOI Editor", "device_page_settings", "read", fields.devicePageSettings],
   ["ISVOI Editor", "device_page_settings", "update", fields.devicePageSettingsWrite],
+  ["ISVOI Editor", "directus_files", "read", fields.directusFilesRead],
+  ["ISVOI Editor", "directus_files", "create", fields.directusFilesCreate],
+  ["ISVOI Editor", "directus_files", "update", fields.directusFilesUpdate],
 
   ["ISVOI Importer", "catalog_import_batches", "read", fields.catalogImportBatchesRead],
   ["ISVOI Importer", "catalog_import_batches", "create", fields.catalogImportBatchesImporterWrite],

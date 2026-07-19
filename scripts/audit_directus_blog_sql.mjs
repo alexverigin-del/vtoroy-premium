@@ -193,6 +193,20 @@ WHERE policy.name='ISVOI Public Read'
     AND p.permissions::jsonb IS NOT DISTINCT FROM '{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}'::jsonb
   )
 UNION ALL
+SELECT 'blog.permissions.public_file_scope_missing', count(*)::text
+FROM (VALUES ('ISVOI Public Read'),('$t:public_label')) required(policy_name)
+CROSS JOIN LATERAL (
+  SELECT id FROM directus_folders WHERE name='ISVOI Blog' AND parent IS NULL LIMIT 1
+) folder
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions p
+  JOIN directus_policies policy ON policy.id=p.policy
+  WHERE policy.name=required.policy_name
+    AND p.collection='directus_files'
+    AND p.action='read'
+    AND (p.permissions::jsonb #> '{folder,_in}') ? folder.id::text
+)
+UNION ALL
 SELECT 'blog.permissions.workflow_missing', count(*)::text
 FROM expected_workflow_permissions ep
 WHERE NOT EXISTS (

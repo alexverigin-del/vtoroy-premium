@@ -188,6 +188,7 @@ const auditDefinitions = {
       "blog.permissions.media_scope_invalid",
       "blog.permissions.public_missing",
       "blog.permissions.public_posts_scope_invalid",
+      "blog.permissions.public_file_scope_missing",
       "blog.permissions.preview_missing",
       "blog.permissions.wildcard_fields",
       "blog.permissions.public_writes",

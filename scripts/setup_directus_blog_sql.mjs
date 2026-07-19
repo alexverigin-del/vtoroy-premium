@@ -668,6 +668,37 @@ SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_tags','read','id,n
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts_tags','read','id,blog_posts_id,blog_tags_id','{"blog_posts_id":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts_devices','read','id,blog_posts_id,devices_id,sort','{"blog_posts_id":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
 
+SELECT isvoi_blog_upsert_permission(
+  'ISVOI Public Read',
+  'directus_files',
+  'read',
+  'id,filename_download,type,width,height,focal_point_x,focal_point_y',
+  (
+    SELECT json_build_object(
+      'folder',
+      json_build_object('_in', COALESCE(json_agg(id::text ORDER BY name), '[]'::json))
+    )
+    FROM directus_folders
+    WHERE name IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial','ISVOI Blog')
+      AND parent IS NULL
+  )
+);
+SELECT isvoi_blog_upsert_permission(
+  '$t:public_label',
+  'directus_files',
+  'read',
+  'id,filename_download,type,width,height,focal_point_x,focal_point_y',
+  (
+    SELECT json_build_object(
+      'folder',
+      json_build_object('_in', COALESCE(json_agg(id::text ORDER BY name), '[]'::json))
+    )
+    FROM directus_folders
+    WHERE name IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial','ISVOI Blog')
+      AND parent IS NULL
+  )
+);
+
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_created,date_updated,tags,devices',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_authors','read','id,name,slug,role_title,bio,avatar,is_active,sort,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_categories','read','id,name,slug,description,is_active,sort,date_created,date_updated',NULL);

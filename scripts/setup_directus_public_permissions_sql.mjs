@@ -27,7 +27,7 @@ BEGIN
   SELECT array_agg(id::text ORDER BY name)
   INTO v_folder_ids
   FROM directus_folders
-  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial');
+  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI Blog');
 
   IF v_folder_ids IS NULL OR array_length(v_folder_ids, 1) IS NULL THEN
     RETURN '{"id":{"_null":true}}'::json;

@@ -1434,24 +1434,49 @@ Next content-editing priorities:
   distinguishes private work-in-progress media in `ISVOI Blog` from approved
   public assets in `ISVOI Editorial`.
 - Local `web:verify`, JavaScript syntax checks for all changed SQL generators
-  and SQL generation completed successfully. This change is not yet applied to
-  production in this entry. Apply the Directus setup before deploying the web
-  commit, then regenerate the sanitized schema snapshot from production.
+  and SQL generation completed successfully. The implementation was still
+  awaiting production rollout when this preparation entry was written; the
+  completed rollout is recorded below.
+
+### Structured Blog Blocks Production Rollout (2026-07-19)
+
+- A fresh pre-migration VPS backup was created at
+  `/opt/isvoi/backups/directus/20260719T151115Z`; both `postgres.sql.gz` and
+  `uploads.tar.gz` passed checksum verification. Offsite upload and restore
+  rehearsal remain deferred by the user.
+- Production deployed `36fb5a5` (`Add structured blog content blocks`) in
+  schema-first order. The idempotent blog setup migrated the existing article
+  body into one ordered `rich_text` block, then scheduling and immediate
+  site-content revalidation Flows were reapplied. Directus was restarted and
+  `/server/health` returned healthy.
+- The aggregate production Directus audit passed, including block schema,
+  relations, editor/public/preview permissions and content completeness. The
+  production API returns the pilot article with one `rich_text` block. The two
+  existing informational file warnings (orphan ISVOI files and missing hero
+  focal points) remain unchanged and do not fail the audit.
+- Visual QA found that the article cover image had a zero-height layout box.
+  Root cause was a duplicate `aspectRatio` key in `tailwind.shared.cjs`; commit
+  `2593c31` merged the blog and product aspect-ratio tokens. The Playwright
+  production smoke now asserts a visible cover area and observed 1056 x 660 px
+  on desktop.
+- `web:verify`, production build, HTTP smoke and desktop/mobile visual and
+  performance smokes pass. Observed blog LCP after the fix: index 2244 ms
+  desktop / 1972 ms mobile; article 2536 ms desktop / 2416 ms mobile.
+- The sanitized production schema snapshot was regenerated with all structured
+  block metadata. Exactly one sensitive preview query value is stored as
+  `__REDACTED__`; no raw snapshot was retained.
 
 ### Blog Next Step
 
-1. Roll out structured blocks in schema-first order: backup, apply
-   `directus:setup:blog`, `directus:setup:blog-scheduling` and
-   `directus:setup:site-content-revalidation`, then deploy/restart the web app.
-2. Run blog/schema/production audits, test text + content image blocks in Live
-   Preview, regenerate the sanitized schema snapshot and complete production
-   smoke/visual checks.
-3. Create the second real article through the same draft -> version QA -> media
+1. In Directus Studio, add one real structured `image` block to the pilot
+   article, including alt text, caption and both width modes; verify it in Live
+   Preview before publishing the revision.
+2. Create the second real article through the same draft -> version QA -> media
    approval -> scheduled flow, using `ISVOI Blog` for work-in-progress media and
    `ISVOI Editorial` for approved public covers and article images.
-4. Establish an editorial cadence and owner, then measure article-to-catalog and
+3. Establish an editorial cadence and owner, then measure article-to-catalog and
    article-to-lead transitions before adding search, newsletter or comments.
-5. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
+4. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
    local VPS backup as equivalent resilience.
 
 ### Blog Rollout Order

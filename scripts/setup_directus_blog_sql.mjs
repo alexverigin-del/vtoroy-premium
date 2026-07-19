@@ -558,7 +558,7 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update'
 -- Content Versions are a system collection, so keep Editor access scoped to
 -- blog_posts and to the exact fields needed by Directus version workflows.
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','read','id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta','{"collection":{"_eq":"blog_posts"}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','key,name,collection,item',NULL,'{"collection":{"_eq":"blog_posts"}}'::json,'{"collection":"blog_posts"}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','create','id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta',NULL,'{"collection":{"_eq":"blog_posts"}}'::json,'{"collection":"blog_posts"}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','update','key,name,delta','{"collection":{"_eq":"blog_posts"}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','directus_versions','delete','id,key,name,collection,item','{"collection":{"_eq":"blog_posts"}}'::json);
 

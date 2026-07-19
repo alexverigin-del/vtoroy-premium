@@ -208,7 +208,7 @@ WHERE policy.name='ISVOI Editor' AND p.collection='directus_versions'
       AND p.permissions::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
       AND p.validation IS NULL AND p.presets IS NULL)
     OR (p.action='create'
-      AND p.fields='key,name,collection,item'
+      AND p.fields='id,key,name,collection,item,hash,date_created,date_updated,user_created,user_updated,delta'
       AND p.permissions IS NULL
       AND p.validation::jsonb IS NOT DISTINCT FROM '{"collection":{"_eq":"blog_posts"}}'::jsonb
       AND p.presets::jsonb IS NOT DISTINCT FROM '{"collection":"blog_posts"}'::jsonb)

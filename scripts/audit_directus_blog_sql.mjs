@@ -449,6 +449,5 @@ WHERE publish.key='isvoi_publish_scheduled_blog_posts'
     OR revalidate.key<>'isvoi_revalidate_after_blog_schedule'
     OR revalidate.type<>'request'
     OR revalidate.flow<>publish.flow
-  )
-);
+  );
 `);

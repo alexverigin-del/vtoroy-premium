@@ -12,7 +12,8 @@ WITH expected_tables(table_name) AS (
     ('blog_categories'),
     ('blog_tags'),
     ('blog_posts_tags'),
-    ('blog_posts_devices')
+    ('blog_posts_devices'),
+    ('blog_post_blocks')
 ),
 expected_fields(table_name, field_name) AS (
   VALUES
@@ -32,7 +33,12 @@ expected_fields(table_name, field_name) AS (
     ('blog_tags','id'),('blog_tags','name'),('blog_tags','slug'),('blog_tags','is_active'),
     ('blog_posts_tags','id'),('blog_posts_tags','blog_posts_id'),('blog_posts_tags','blog_tags_id'),
     ('blog_posts_devices','id'),('blog_posts_devices','blog_posts_id'),
-    ('blog_posts_devices','devices_id'),('blog_posts_devices','sort')
+    ('blog_posts_devices','devices_id'),('blog_posts_devices','sort'),
+    ('blog_post_blocks','id'),('blog_post_blocks','post'),('blog_post_blocks','sort'),
+    ('blog_post_blocks','block_type'),('blog_post_blocks','body'),
+    ('blog_post_blocks','image'),('blog_post_blocks','image_alt'),
+    ('blog_post_blocks','image_caption'),('blog_post_blocks','image_width'),
+    ('blog_post_blocks','date_created'),('blog_post_blocks','date_updated')
 ),
 expected_relations(many_collection, many_field, one_collection, one_field, junction_field) AS (
   VALUES
@@ -46,7 +52,9 @@ expected_relations(many_collection, many_field, one_collection, one_field, junct
     ('blog_posts_tags','blog_posts_id','blog_posts','tags','blog_tags_id'),
     ('blog_posts_tags','blog_tags_id','blog_tags',NULL,'blog_posts_id'),
     ('blog_posts_devices','blog_posts_id','blog_posts','devices','devices_id'),
-    ('blog_posts_devices','devices_id','devices',NULL,'blog_posts_id')
+    ('blog_posts_devices','devices_id','devices',NULL,'blog_posts_id'),
+    ('blog_post_blocks','post','blog_posts','blocks',NULL),
+    ('blog_post_blocks','image','directus_files',NULL,NULL)
 ),
 expected_editor_permissions(collection, action) AS (
   VALUES
@@ -55,7 +63,8 @@ expected_editor_permissions(collection, action) AS (
     ('blog_categories','read'),('blog_categories','create'),('blog_categories','update'),
     ('blog_tags','read'),('blog_tags','create'),('blog_tags','update'),
     ('blog_posts_tags','read'),('blog_posts_tags','create'),('blog_posts_tags','update'),('blog_posts_tags','delete'),
-    ('blog_posts_devices','read'),('blog_posts_devices','create'),('blog_posts_devices','update'),('blog_posts_devices','delete')
+    ('blog_posts_devices','read'),('blog_posts_devices','create'),('blog_posts_devices','update'),('blog_posts_devices','delete'),
+    ('blog_post_blocks','read'),('blog_post_blocks','create'),('blog_post_blocks','update'),('blog_post_blocks','delete')
 ),
 expected_workflow_permissions(collection, action) AS (
   VALUES
@@ -68,12 +77,14 @@ expected_media_permissions(collection, action) AS (
 expected_public_permissions(collection, action) AS (
   VALUES
     ('blog_posts','read'),('blog_authors','read'),('blog_categories','read'),
-    ('blog_tags','read'),('blog_posts_tags','read'),('blog_posts_devices','read')
+    ('blog_tags','read'),('blog_posts_tags','read'),('blog_posts_devices','read'),
+    ('blog_post_blocks','read')
 ),
 expected_preview_permissions(collection, action) AS (
   VALUES
     ('blog_posts','read'),('blog_authors','read'),('blog_categories','read'),
     ('blog_tags','read'),('blog_posts_tags','read'),('blog_posts_devices','read'),
+    ('blog_post_blocks','read'),
     ('directus_files','read'),('devices','read'),('directus_versions','read')
 )
 SELECT 'blog.schema.tables_missing' AS check_name, count(*)::text AS value
@@ -134,6 +145,15 @@ WHERE NOT EXISTS (
   SELECT 1 FROM directus_fields df
   WHERE df.collection='blog_posts' AND df.field=required.field
     AND coalesce(df.special,'') LIKE '%group%'
+)
+UNION ALL
+SELECT 'blog.studio.blocks_field_missing', count(*)::text
+FROM (VALUES (1)) required(dummy)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields
+  WHERE collection='blog_posts' AND field='blocks'
+    AND coalesce(special,'') LIKE '%o2m%'
+    AND interface='list-o2m'
 )
 UNION ALL
 SELECT 'blog.studio.versioning_missing', count(*)::text
@@ -391,9 +411,21 @@ SELECT 'blog.content.published_incomplete', count(*)::text
 FROM blog_posts
 WHERE status='published' AND (
   nullif(btrim(title),'') IS NULL OR nullif(btrim(excerpt),'') IS NULL OR
-  nullif(btrim(body),'') IS NULL OR cover_image IS NULL OR
+  cover_image IS NULL OR
   nullif(btrim(cover_alt),'') IS NULL OR category IS NULL OR author IS NULL OR
-  published_at IS NULL OR published_at > now()
+  published_at IS NULL OR published_at > now() OR NOT EXISTS (
+    SELECT 1 FROM blog_post_blocks block
+    WHERE block.post=blog_posts.id AND block.block_type='rich_text'
+      AND nullif(btrim(block.body),'') IS NOT NULL
+  )
+)
+UNION ALL
+SELECT 'blog.content.published_invalid_blocks', count(*)::text
+FROM blog_post_blocks block
+JOIN blog_posts post ON post.id=block.post
+WHERE post.status='published' AND (
+  (block.block_type='rich_text' AND nullif(btrim(block.body),'') IS NULL) OR
+  (block.block_type='image' AND (block.image IS NULL OR nullif(btrim(block.image_alt),'') IS NULL))
 )
 UNION ALL
 SELECT 'blog.content.published_private_cover', count(*)::text
@@ -401,6 +433,14 @@ FROM blog_posts post
 JOIN directus_files file ON file.id=post.cover_image
 LEFT JOIN directus_folders folder ON folder.id=file.folder
 WHERE post.status='published'
+  AND coalesce(folder.name,'') NOT IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial')
+UNION ALL
+SELECT 'blog.content.published_private_block_image', count(*)::text
+FROM blog_post_blocks block
+JOIN blog_posts post ON post.id=block.post
+JOIN directus_files file ON file.id=block.image
+LEFT JOIN directus_folders folder ON folder.id=file.folder
+WHERE post.status='published' AND block.block_type='image'
   AND coalesce(folder.name,'') NOT IN ('ISVOI Device Photos','ISVOI Site Assets','ISVOI Editorial')
 UNION ALL
 SELECT 'blog.content.scheduled_without_date', count(*)::text
@@ -414,7 +454,8 @@ WHERE p.status='published' AND (a.id IS NULL OR a.is_active=false OR c.id IS NUL
 UNION ALL
 SELECT 'blog.content.orphan_junctions', (
   (SELECT count(*) FROM blog_posts_tags pt LEFT JOIN blog_posts p ON p.id=pt.blog_posts_id LEFT JOIN blog_tags t ON t.id=pt.blog_tags_id WHERE p.id IS NULL OR t.id IS NULL) +
-  (SELECT count(*) FROM blog_posts_devices pd LEFT JOIN blog_posts p ON p.id=pd.blog_posts_id LEFT JOIN devices d ON d.id=pd.devices_id WHERE p.id IS NULL OR d.id IS NULL)
+  (SELECT count(*) FROM blog_posts_devices pd LEFT JOIN blog_posts p ON p.id=pd.blog_posts_id LEFT JOIN devices d ON d.id=pd.devices_id WHERE p.id IS NULL OR d.id IS NULL) +
+  (SELECT count(*) FROM blog_post_blocks block LEFT JOIN blog_posts p ON p.id=block.post LEFT JOIN directus_files file ON file.id=block.image WHERE p.id IS NULL OR (block.image IS NOT NULL AND file.id IS NULL))
 )::text
 UNION ALL
 SELECT 'blog.automation.scheduling_flow_missing', count(*)::text

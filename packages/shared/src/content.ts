@@ -267,6 +267,26 @@ export interface BlogRelatedDevice {
   stockStatus?: string;
 }
 
+export type BlogImageWidth = "content" | "wide";
+
+export type BlogPostBlock =
+  | {
+      id: string;
+      type: "rich_text";
+      body: string;
+      bodyRichText: RichTextNode[];
+    }
+  | {
+      id: string;
+      type: "image";
+      image: string;
+      alt: string;
+      caption?: string;
+      width: BlogImageWidth;
+      sourceWidth: number;
+      sourceHeight: number;
+    };
+
 export interface BlogPost {
   id: string;
   status: BlogPostStatus;
@@ -282,6 +302,7 @@ export interface BlogPost {
   author?: BlogAuthor;
   tags: BlogTag[];
   devices: BlogRelatedDevice[];
+  blocks: BlogPostBlock[];
   featured: boolean;
   publishedAt: string;
   updatedAt?: string;

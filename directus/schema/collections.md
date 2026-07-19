@@ -179,6 +179,7 @@ blocks:
 | `blog_tags` | Reusable fine-grained topics. |
 | `blog_posts_tags` | M2M junction between posts and tags. |
 | `blog_posts_devices` | Ordered M2M junction to relevant catalog devices. |
+| `blog_post_blocks` | Ordered O2M rich-text and image blocks inside a post. |
 
 Public reads are limited to `blog_posts.status = published` with
 `published_at <= $NOW`. Drafts can remain incomplete; the blog audit blocks

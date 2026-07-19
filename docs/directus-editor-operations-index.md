@@ -49,7 +49,7 @@ by all `/device/...` pages.
 - Warranty, Passport, Trade, related-device and mobile sticky CTA labels live
   here.
 - Product lead form copy lives here too: use the three groups `Форма заявки: В
-  наличии`, `Форма заявки: Бронь` and `Форма заявки: Продано` for title,
+наличии`, `Форма заявки: Бронь` and `Форма заявки: Продано` for title,
   placeholders, submit/success/error/status texts and manager-facing scenario.
 - Product-specific facts, price, photos, Passport rows and Trade values still
   live in `devices`, `device_images`, `device_passports` and `trade_options`.
@@ -114,8 +114,11 @@ Detailed guide: `docs/leads-workflow-editor-guide.md`.
 Use `Блог · Материалы` (`blog_posts`) as the main editorial entry point.
 
 - New materials start in `draft`; move them through `review` before publication.
+- Build article content in ordered `Блоки статьи`: rich-text blocks and image
+  blocks with required alt text, optional caption and `content`/`wide` width.
 - Keep one primary category, a responsible author and a small set of useful tags.
-- Upload editorial media to `ISVOI Blog`, not to catalog or site-asset folders.
+- Upload work-in-progress media to `ISVOI Blog`; move approved public covers and
+  article images to `ISVOI Editorial` before publication.
 - Related catalog items are selected through `Связанные устройства`; do not paste
   product URLs into structured relation fields.
 - Do not add `/blog` to public navigation until the Next.js routes and cache
@@ -141,8 +144,8 @@ Use Directus Files folders as the source of truth.
 
 - `ISVOI Device Photos`: product photos linked through `device_images`.
 - `ISVOI Site Assets`: page, logo and social images.
-- `ISVOI Editorial`: future editorial/guides assets.
-- `ISVOI Blog`: blog covers, article illustrations and author portraits.
+- `ISVOI Editorial`: approved public blog/editorial assets.
+- `ISVOI Blog`: private work-in-progress covers, illustrations and portraits.
 - `ISVOI Catalog Imports`: import workbooks and ZIP archives.
 - `ISVOI File Review`: files that need sorting or deletion after review.
 

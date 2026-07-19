@@ -1415,14 +1415,43 @@ Next content-editing priorities:
   was retained. Final launch production commit before this memory update was
   `ea7157c`.
 
+### Structured Blog Blocks Prepared (2026-07-19)
+
+- The repo now models article content as ordered `blog_post_blocks` O2M rows.
+  Supported block types are `rich_text` and `image`; image blocks require an
+  alt text and preserve their source aspect ratio at `content` (760 px) or
+  `wide` (1120 px) width.
+- `scripts/setup_directus_blog_sql.mjs` creates the collection, Studio fields,
+  relations and scoped editor/public/preview permissions idempotently. It also
+  migrates each existing non-empty `blog_posts.body` into one text block while
+  retaining `body` as a hidden compatibility fallback.
+- The frontend reads, sanitizes and renders ordered blocks. Existing articles
+  remain renderable before migration through the legacy body fallback. The
+  scheduler requires a valid text block and rejects incomplete image blocks;
+  block create/update/delete events are included in immediate cache invalidation.
+- Blog/schema audits now cover block schema, permissions, completeness,
+  approved public media folders and orphan relations. Editor documentation
+  distinguishes private work-in-progress media in `ISVOI Blog` from approved
+  public assets in `ISVOI Editorial`.
+- Local `web:verify`, JavaScript syntax checks for all changed SQL generators
+  and SQL generation completed successfully. This change is not yet applied to
+  production in this entry. Apply the Directus setup before deploying the web
+  commit, then regenerate the sanitized schema snapshot from production.
+
 ### Blog Next Step
 
-1. Create the second real article through the same draft -> version QA -> cover
+1. Roll out structured blocks in schema-first order: backup, apply
+   `directus:setup:blog`, `directus:setup:blog-scheduling` and
+   `directus:setup:site-content-revalidation`, then deploy/restart the web app.
+2. Run blog/schema/production audits, test text + content image blocks in Live
+   Preview, regenerate the sanitized schema snapshot and complete production
+   smoke/visual checks.
+3. Create the second real article through the same draft -> version QA -> media
    approval -> scheduled flow, using `ISVOI Blog` for work-in-progress media and
-   `ISVOI Editorial` for approved public covers.
-2. Establish an editorial cadence and owner, then measure article-to-catalog and
+   `ISVOI Editorial` for approved public covers and article images.
+4. Establish an editorial cadence and owner, then measure article-to-catalog and
    article-to-lead transitions before adding search, newsletter or comments.
-3. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
+5. Keep offsite backup and restore rehearsal visibly deferred; do not treat the
    local VPS backup as equivalent resilience.
 
 ### Blog Rollout Order

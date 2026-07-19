@@ -122,6 +122,10 @@ BEGIN
     WHERE slug='chto-pokazyvaet-diagnostika-iphone';
   END IF;
 
+  INSERT INTO blog_post_blocks (id,post,sort,block_type,body,image_width)
+  SELECT gen_random_uuid(),v_post,100,'rich_text',${sql(body)},'content'
+  WHERE NOT EXISTS (SELECT 1 FROM blog_post_blocks block WHERE block.post=v_post);
+
   INSERT INTO blog_posts_tags (id,blog_posts_id,blog_tags_id)
   VALUES (gen_random_uuid(),v_post,v_tag)
   ON CONFLICT (blog_posts_id,blog_tags_id) DO NOTHING;

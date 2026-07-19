@@ -4,7 +4,7 @@ import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { ProductImage } from "@/components/ProductImage";
-import { RichText } from "@/components/RichText";
+import { BlogArticleContent } from "@/components/BlogArticleContent";
 import { SiteShell } from "@/components/SiteShell";
 import { getBlogPostPreview, getPublishedBlogPost } from "@/lib/blog";
 import { getNavigationItems, getSiteSettings } from "@/lib/directus";
@@ -176,13 +176,9 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
             </figure>
           ) : null}
 
-          <div className="mx-auto max-w-measure px-5 pt-10 sm:px-8 sm:pt-14">
-            <RichText
-              html={post.body}
-              nodes={post.bodyRichText}
-              className="text-lg leading-article text-carbon"
-            />
+          <BlogArticleContent post={post} />
 
+          <div className="mx-auto max-w-measure px-5 sm:px-8">
             {post.tags.length ? (
               <div className="mt-12 border-t border-hairline pt-6">
                 <p className="text-sm font-semibold text-carbon">Темы</p>

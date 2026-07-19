@@ -16,7 +16,30 @@ const operationOptions = JSON.stringify({
         { publish_at: { _nnull: true } },
         { publish_at: { _lte: "$NOW" } },
         { excerpt: { _nempty: true } },
-        { body: { _nempty: true } },
+        {
+          blocks: {
+            _some: {
+              _and: [{ block_type: { _eq: "rich_text" } }, { body: { _nempty: true } }],
+            },
+          },
+        },
+        {
+          blocks: {
+            _none: {
+              _or: [
+                {
+                  _and: [{ block_type: { _eq: "rich_text" } }, { body: { _empty: true } }],
+                },
+                {
+                  _and: [{ block_type: { _eq: "image" } }, { image: { _null: true } }],
+                },
+                {
+                  _and: [{ block_type: { _eq: "image" } }, { image_alt: { _empty: true } }],
+                },
+              ],
+            },
+          },
+        },
         { cover_image: { _nnull: true } },
         { cover_alt: { _nempty: true } },
         { category: { _nnull: true } },

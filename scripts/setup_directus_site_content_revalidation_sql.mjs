@@ -39,6 +39,7 @@ const flowOptions = JSON.stringify({
     "blog_tags",
     "blog_posts_tags",
     "blog_posts_devices",
+    "blog_post_blocks",
   ],
 });
 

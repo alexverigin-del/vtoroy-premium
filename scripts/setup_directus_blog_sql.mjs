@@ -172,6 +172,22 @@ CREATE TABLE IF NOT EXISTS blog_posts_devices (
   CONSTRAINT blog_posts_devices_unique UNIQUE (blog_posts_id, devices_id)
 );
 
+CREATE TABLE IF NOT EXISTS blog_post_blocks (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post uuid NOT NULL,
+  sort integer NOT NULL DEFAULT 100,
+  block_type varchar(32) NOT NULL DEFAULT 'rich_text',
+  body text,
+  image uuid,
+  image_alt varchar(255),
+  image_caption text,
+  image_width varchar(32) NOT NULL DEFAULT 'content',
+  date_created timestamptz NOT NULL DEFAULT now(),
+  date_updated timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT blog_post_blocks_type_check CHECK (block_type IN ('rich_text', 'image')),
+  CONSTRAINT blog_post_blocks_width_check CHECK (image_width IN ('content', 'wide'))
+);
+
 -- Directus 11.17 adds the version hash after permission validation, so a
 -- filtered create permission fails inside VersionsService. Enforce the same
 -- single-collection boundary at PostgreSQL level instead.
@@ -235,6 +251,14 @@ BEGIN
     ALTER TABLE blog_posts_devices ADD CONSTRAINT blog_posts_devices_device_fkey
       FOREIGN KEY (devices_id) REFERENCES devices(id) ON UPDATE CASCADE ON DELETE CASCADE;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'blog_post_blocks_post_fkey') THEN
+    ALTER TABLE blog_post_blocks ADD CONSTRAINT blog_post_blocks_post_fkey
+      FOREIGN KEY (post) REFERENCES blog_posts(id) ON DELETE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'blog_post_blocks_image_fkey') THEN
+    ALTER TABLE blog_post_blocks ADD CONSTRAINT blog_post_blocks_image_fkey
+      FOREIGN KEY (image) REFERENCES directus_files(id) ON DELETE SET NULL;
+  END IF;
 END;
 $$;
 
@@ -247,6 +271,15 @@ CREATE INDEX IF NOT EXISTS blog_posts_tags_post_idx ON blog_posts_tags (blog_pos
 CREATE INDEX IF NOT EXISTS blog_posts_tags_tag_idx ON blog_posts_tags (blog_tags_id);
 CREATE INDEX IF NOT EXISTS blog_posts_devices_post_idx ON blog_posts_devices (blog_posts_id, sort);
 CREATE INDEX IF NOT EXISTS blog_posts_devices_device_idx ON blog_posts_devices (devices_id);
+CREATE INDEX IF NOT EXISTS blog_post_blocks_post_idx ON blog_post_blocks (post, sort);
+CREATE INDEX IF NOT EXISTS blog_post_blocks_image_idx ON blog_post_blocks (image);
+
+-- Preserve existing articles while moving editorial ownership to ordered blocks.
+INSERT INTO blog_post_blocks (id,post,sort,block_type,body,image_width)
+SELECT gen_random_uuid(),post.id,100,'rich_text',post.body,'content'
+FROM blog_posts post
+WHERE nullif(btrim(post.body),'') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM blog_post_blocks block WHERE block.post=post.id);
 
 CREATE OR REPLACE FUNCTION isvoi_blog_touch_date_updated()
 RETURNS trigger
@@ -281,6 +314,9 @@ CREATE TRIGGER blog_tags_touch_date_updated BEFORE UPDATE ON blog_tags
 FOR EACH ROW EXECUTE FUNCTION isvoi_blog_touch_date_updated();
 DROP TRIGGER IF EXISTS blog_posts_touch_date_updated ON blog_posts;
 CREATE TRIGGER blog_posts_touch_date_updated BEFORE UPDATE ON blog_posts
+FOR EACH ROW EXECUTE FUNCTION isvoi_blog_touch_date_updated();
+DROP TRIGGER IF EXISTS blog_post_blocks_touch_date_updated ON blog_post_blocks;
+CREATE TRIGGER blog_post_blocks_touch_date_updated BEFORE UPDATE ON blog_post_blocks
 FOR EACH ROW EXECUTE FUNCTION isvoi_blog_touch_date_updated();
 DROP TRIGGER IF EXISTS blog_posts_set_published_at ON blog_posts;
 CREATE TRIGGER blog_posts_set_published_at BEFORE INSERT OR UPDATE ON blog_posts
@@ -352,9 +388,10 @@ SELECT isvoi_blog_upsert_collection('blog_tags','sell','Теги для точн
 SELECT isvoi_blog_upsert_collection('blog_authors','person','Публичные авторы и эксперты ISVOI. Биография должна объяснять компетенцию без лишних персональных данных.','{{name}} · {{role_title}}',NULL,'sort',43,'#ca8a04','Блог · Авторы');
 SELECT isvoi_blog_upsert_collection('blog_posts_tags','link','Системная связь материалов и тегов. Обычно редактируется из карточки материала.',NULL,NULL,NULL,44,'#9ca3af','Блог · Связи тегов');
 SELECT isvoi_blog_upsert_collection('blog_posts_devices','devices','Связь материала с релевантными устройствами каталога. Порядок задает выдачу карточек в статье.',NULL,NULL,'sort',45,'#9ca3af','Блог · Связи устройств');
+SELECT isvoi_blog_upsert_collection('blog_post_blocks','view_agenda','Упорядоченные текстовые и графические блоки статьи. Обычно редактируются внутри материала.',NULL,NULL,'sort',46,'#9ca3af','Блог · Блоки материалов');
 
 UPDATE directus_collections SET hidden = true
-WHERE collection IN ('blog_posts_tags','blog_posts_devices');
+WHERE collection IN ('blog_posts_tags','blog_posts_devices','blog_post_blocks');
 
 UPDATE directus_collections SET versioning = true
 WHERE collection = 'blog_posts';
@@ -458,7 +495,8 @@ SELECT isvoi_blog_upsert_field('blog_posts','published_at','datetime','datetime'
 SELECT isvoi_blog_upsert_field('blog_posts','title','input',NULL,'{"placeholder":"Что важно проверить перед покупкой iPhone"}'::json,'full',21,'Ясный человеческий заголовок без кликбейта.',false,false,true,NULL,'group_content','Заголовок','{"title":{"_nnull":true}}'::json,'Заполните заголовок.');
 SELECT isvoi_blog_upsert_field('blog_posts','slug','input',NULL,'{"slug":true,"trim":true,"placeholder":"kak-proverit-iphone"}'::json,'full',22,'Постоянный URL латиницей. После публикации не меняйте без redirect.',false,false,true,NULL,'group_content','URL slug','{"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"}}'::json,'Используйте латиницу, цифры и дефисы.');
 SELECT isvoi_blog_upsert_field('blog_posts','excerpt','input-multiline',NULL,'{"trim":true}'::json,'full',23,'Короткий лид для карточек и верхней части статьи, обычно 140–220 знаков.',false,false,false,NULL,'group_content','Лид');
-SELECT isvoi_blog_upsert_field('blog_posts','body','input-rich-text-html',NULL,'{"toolbar":["bold","italic","bullist","numlist","blockquote","link","removeformat"],"folder":"ISVOI Blog"}'::json,'full',24,'Основной текст. Используйте короткие абзацы, H2/H3, списки и ссылки; не вставляйте стили, скрипты и произвольную вёрстку.',false,false,false,NULL,'group_content','Текст');
+SELECT isvoi_blog_upsert_field('blog_posts','blocks','list-o2m','related-values','{"template":"{{block_type}} · {{image_alt}}{{body}}","enableCreate":true,"enableSelect":false,"fields":["sort","block_type","body","image","image_alt","image_caption","image_width"]}'::json,'full',24,'Соберите статью из текстовых и графических блоков. Порядок блоков определяет публичную верстку.',false,false,false,'o2m','group_content','Блоки статьи');
+SELECT isvoi_blog_upsert_field('blog_posts','body','input-rich-text-html',NULL,'{"toolbar":["bold","italic","bullist","numlist","blockquote","link","removeformat"],"folder":"ISVOI Blog"}'::json,'full',126,'Устаревший текст сохранён для обратной совместимости. Новые материалы собирайте в поле «Блоки статьи».',true,true,false,NULL,'group_system','Устаревший текст');
 
 SELECT isvoi_blog_upsert_field('blog_posts','cover_image','file-image','image','{"folder":"ISVOI Blog"}'::json,'half',51,'Основная обложка из папки ISVOI Blog.',false,false,false,'m2o','group_media','Обложка');
 SELECT isvoi_blog_upsert_field('blog_posts','cover_alt','input',NULL,NULL,'half',52,'Кратко опишите полезное содержание обложки. Для публикации поле обязательно.',false,false,false,NULL,'group_media','Alt-текст');
@@ -518,6 +556,18 @@ SELECT isvoi_blog_upsert_field('blog_posts_devices','blog_posts_id','select-drop
 SELECT isvoi_blog_upsert_field('blog_posts_devices','devices_id','select-dropdown-m2o','related-values','{"template":"{{title}} · {{price_text}}"}'::json,'full',3,'Устройство каталога.',false,false,true,'m2o',NULL,'Устройство');
 SELECT isvoi_blog_upsert_field('blog_posts_devices','sort','input',NULL,'{"min":1,"step":1}'::json,'half',4,'Порядок карточки в материале.',false,false,false,NULL,NULL,'Порядок');
 
+SELECT isvoi_blog_upsert_field('blog_post_blocks','id','input',NULL,NULL,'half',1,'Системный ID.',true,true,false,'uuid',NULL,'ID');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','post','select-dropdown-m2o','related-values','{"template":"{{title}}"}'::json,'half',2,'Родительский материал.',true,true,true,'m2o',NULL,'Материал');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','sort','input',NULL,'{"min":1,"step":1}'::json,'half',3,'Положение блока в статье.',false,false,false,NULL,NULL,'Порядок');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','block_type','select-dropdown','labels','{"choices":[{"text":"Текст","value":"rich_text","color":"#2563eb"},{"text":"Изображение","value":"image","color":"#0f766e"}]}'::json,'half',4,'Выберите тип и заполняйте только относящиеся к нему поля.',false,false,true,NULL,NULL,'Тип блока','{"block_type":{"_in":["rich_text","image"]}}'::json,'Выберите текст или изображение.');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','body','input-rich-text-html',NULL,'{"toolbar":["bold","italic","bullist","numlist","blockquote","link","removeformat"],"folder":"ISVOI Blog"}'::json,'full',5,'Текст блока: короткие абзацы, H2/H3, списки, цитаты и ссылки. Для блока изображения оставьте пустым.',false,false,false,NULL,NULL,'Текст');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','image','file-image','image','{"folder":"ISVOI Blog"}'::json,'full',6,'Изображение блока. Перед публикацией переместите одобренный файл в ISVOI Editorial.',false,false,false,'m2o',NULL,'Изображение');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','image_alt','input',NULL,'{"trim":true}'::json,'full',7,'Обязательное содержательное описание для блока изображения.',false,false,false,NULL,NULL,'Alt-текст');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','image_caption','input-multiline',NULL,'{"trim":true}'::json,'full',8,'Необязательная подпись или источник.',false,false,false,NULL,NULL,'Подпись');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','image_width','select-dropdown','labels','{"choices":[{"text":"По ширине текста","value":"content","color":"#6b7280"},{"text":"Широкое","value":"wide","color":"#2563eb"}]}'::json,'half',9,'Content — 760 px, wide — до 1120 px. Соотношение сторон файла сохраняется.',false,false,true,NULL,NULL,'Ширина','{"image_width":{"_in":["content","wide"]}}'::json,'Выберите допустимую ширину.');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','date_created','datetime','datetime',NULL,'half',90,'Создано.',true,true,false,'date-created',NULL,'Создано');
+SELECT isvoi_blog_upsert_field('blog_post_blocks','date_updated','datetime','datetime',NULL,'half',91,'Обновлено.',true,true,false,'date-updated',NULL,'Обновлено');
+
 DROP FUNCTION isvoi_blog_upsert_field(varchar,varchar,varchar,varchar,json,varchar,integer,text,boolean,boolean,boolean,varchar,varchar,text,json,text);
 
 CREATE OR REPLACE FUNCTION isvoi_blog_upsert_relation(
@@ -556,6 +606,8 @@ SELECT isvoi_blog_upsert_relation('blog_posts_tags','blog_posts_id','blog_posts'
 SELECT isvoi_blog_upsert_relation('blog_posts_tags','blog_tags_id','blog_tags',NULL,'delete','blog_posts_id');
 SELECT isvoi_blog_upsert_relation('blog_posts_devices','blog_posts_id','blog_posts','devices','delete','devices_id');
 SELECT isvoi_blog_upsert_relation('blog_posts_devices','devices_id','devices',NULL,'delete','blog_posts_id');
+SELECT isvoi_blog_upsert_relation('blog_post_blocks','post','blog_posts','blocks','delete');
+SELECT isvoi_blog_upsert_relation('blog_post_blocks','image','directus_files',NULL,'nullify');
 
 DROP FUNCTION isvoi_blog_upsert_relation(varchar,varchar,varchar,varchar,varchar,varchar);
 
@@ -598,9 +650,9 @@ BEGIN
 END;
 $$;
 
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_created,date_updated,user_created,user_updated,tags,devices',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts','create','status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,tags,devices',NULL,'{"status":{"_in":["draft","review","scheduled","published","archived"]},"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"title":{"_nnull":true}}'::json,'{"status":"draft","featured":false,"no_index":false}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts','update','status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,tags,devices',NULL,'{"status":{"_in":["draft","review","scheduled","published","archived"]},"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"title":{"_nnull":true}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_created,date_updated,user_created,user_updated,tags,devices,blocks',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts','create','status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,tags,devices,blocks',NULL,'{"status":{"_in":["draft","review","scheduled","published","archived"]},"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"title":{"_nnull":true}}'::json,'{"status":"draft","featured":false,"no_index":false}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts','update','status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,tags,devices,blocks',NULL,'{"status":{"_in":["draft","review","scheduled","published","archived"]},"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"title":{"_nnull":true}}'::json);
 
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_authors','read','id,name,slug,role_title,bio,avatar,is_active,sort,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_authors','create','name,slug,role_title,bio,avatar,is_active,sort',NULL,'{"name":{"_nnull":true},"slug":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"}}'::json,'{"is_active":true,"sort":100}'::json);
@@ -617,6 +669,9 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_tags','update','b
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','read','id,blog_posts_id,devices_id,sort',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','create','blog_posts_id,devices_id,sort',NULL,'{"blog_posts_id":{"_nnull":true},"devices_id":{"_nnull":true}}'::json,'{"sort":100}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update','blog_posts_id,devices_id,sort',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width,date_created,date_updated',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','create','post,sort,block_type,body,image,image_alt,image_caption,image_width',NULL,'{"post":{"_nnull":true},"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json,'{"sort":100,"block_type":"rich_text","image_width":"content"}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','update','post,sort,block_type,body,image,image_alt,image_caption,image_width',NULL,'{"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json);
 
 -- Directus adds the internal hash after create validation, so create must use
 -- full access. The database constraint above keeps it blog-only;
@@ -660,13 +715,15 @@ SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_categories','delete');
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_tags','delete');
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_tags','delete','id,blog_posts_id,blog_tags_id',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','delete','id,blog_posts_id,devices_id',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','delete','id,post',NULL);
 
-SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_updated,tags,devices','{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_updated,tags,devices,blocks','{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_authors','read','id,name,slug,role_title,bio,avatar,sort','{"is_active":{"_eq":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_categories','read','id,name,slug,description,sort','{"is_active":{"_eq":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_tags','read','id,name,slug','{"is_active":{"_eq":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts_tags','read','id,blog_posts_id,blog_tags_id','{"blog_posts_id":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts_devices','read','id,blog_posts_id,devices_id,sort','{"blog_posts_id":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width','{"post":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
 
 SELECT isvoi_blog_upsert_permission(
   'ISVOI Public Read',
@@ -701,12 +758,13 @@ SELECT isvoi_blog_upsert_permission(
 SELECT isvoi_blog_delete_permission('ISVOI Public Read','directus_folders','read');
 SELECT isvoi_blog_delete_permission('$t:public_label','directus_folders','read');
 
-SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_created,date_updated,tags,devices',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_created,date_updated,tags,devices,blocks',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_authors','read','id,name,slug,role_title,bio,avatar,is_active,sort,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_categories','read','id,name,slug,description,is_active,sort,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_tags','read','id,name,slug,is_active,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_tags','read','id,blog_posts_id,blog_tags_id',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_devices','read','id,blog_posts_id,devices_id,sort',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_files','read','id,filename_download,type,width,height,focal_point_x,focal_point_y',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','devices','read','id,title,price_text,stock_status',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
@@ -744,14 +802,14 @@ SELECT isvoi_blog_upsert_preset('ISVOI Editor','blog_posts','Черновики'
 SELECT isvoi_blog_upsert_preset('ISVOI Editor','blog_posts','На проверке','fact_check','#ca8a04','{"status":{"_eq":"review"}}'::json,'{"tabular":{"sort":["-date_updated"],"fields":["status","title","category","author","date_updated"],"page":1}}'::json);
 SELECT isvoi_blog_upsert_preset('ISVOI Editor','blog_posts','Запланированные','schedule','#7c3aed','{"status":{"_eq":"scheduled"}}'::json,'{"tabular":{"sort":["publish_at"],"fields":["status","publish_at","title","category","author"],"page":1}}'::json);
 SELECT isvoi_blog_upsert_preset('ISVOI Editor','blog_posts','Опубликованные','public','#16a34a','{"status":{"_eq":"published"}}'::json,'{"tabular":{"sort":["-published_at"],"fields":["featured","published_at","title","category","author"],"page":1}}'::json);
-SELECT isvoi_blog_upsert_preset('ISVOI Editor','blog_posts','Неполные материалы','warning','#dc2626','{"_or":[{"excerpt":{"_null":true}},{"body":{"_null":true}},{"cover_image":{"_null":true}},{"category":{"_null":true}},{"author":{"_null":true}}]}'::json,'{"tabular":{"sort":["-date_updated"],"fields":["status","title","excerpt","cover_image","category","author"],"page":1}}'::json);
+SELECT isvoi_blog_upsert_preset('ISVOI Editor','blog_posts','Неполные материалы','warning','#dc2626','{"_or":[{"excerpt":{"_null":true}},{"blocks":{"_none":{"_and":[{"block_type":{"_eq":"rich_text"}},{"body":{"_nempty":true}}]}}},{"cover_image":{"_null":true}},{"category":{"_null":true}},{"author":{"_null":true}}]}'::json,'{"tabular":{"sort":["-date_updated"],"fields":["status","title","excerpt","blocks","cover_image","category","author"],"page":1}}'::json);
 
 DROP FUNCTION isvoi_blog_upsert_preset(text,varchar,varchar,varchar,varchar,json,json);
 
 COMMIT;
 
 SELECT 'blog.collections' AS check_name, count(*)::text AS value
-FROM directus_collections WHERE collection IN ('blog_posts','blog_authors','blog_categories','blog_tags','blog_posts_tags','blog_posts_devices')
+FROM directus_collections WHERE collection IN ('blog_posts','blog_authors','blog_categories','blog_tags','blog_posts_tags','blog_posts_devices','blog_post_blocks')
 UNION ALL
 SELECT 'blog.folder', count(*)::text FROM directus_folders WHERE name='ISVOI Blog' AND parent IS NULL
 UNION ALL

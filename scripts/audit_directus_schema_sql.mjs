@@ -30,7 +30,8 @@ WITH expected_tables(table_name) AS (
     ('blog_categories'),
     ('blog_tags'),
     ('blog_posts_tags'),
-    ('blog_posts_devices')
+    ('blog_posts_devices'),
+    ('blog_post_blocks')
 ),
 expected_fields(table_name, field_name) AS (
   VALUES
@@ -112,13 +113,22 @@ expected_fields(table_name, field_name) AS (
     ('blog_posts', 'published_at'),
     ('blog_posts', 'tags'),
     ('blog_posts', 'devices'),
+    ('blog_posts', 'blocks'),
     ('blog_authors', 'avatar'),
     ('blog_categories', 'slug'),
     ('blog_tags', 'slug'),
     ('blog_posts_tags', 'blog_posts_id'),
     ('blog_posts_tags', 'blog_tags_id'),
     ('blog_posts_devices', 'blog_posts_id'),
-    ('blog_posts_devices', 'devices_id')
+    ('blog_posts_devices', 'devices_id'),
+    ('blog_post_blocks', 'post'),
+    ('blog_post_blocks', 'sort'),
+    ('blog_post_blocks', 'block_type'),
+    ('blog_post_blocks', 'body'),
+    ('blog_post_blocks', 'image'),
+    ('blog_post_blocks', 'image_alt'),
+    ('blog_post_blocks', 'image_caption'),
+    ('blog_post_blocks', 'image_width')
 ),
 expected_relations(many_collection, many_field, one_collection) AS (
   VALUES
@@ -149,7 +159,9 @@ expected_relations(many_collection, many_field, one_collection) AS (
     ('blog_posts_tags', 'blog_posts_id', 'blog_posts'),
     ('blog_posts_tags', 'blog_tags_id', 'blog_tags'),
     ('blog_posts_devices', 'blog_posts_id', 'blog_posts'),
-    ('blog_posts_devices', 'devices_id', 'devices')
+    ('blog_posts_devices', 'devices_id', 'devices'),
+    ('blog_post_blocks', 'post', 'blog_posts'),
+    ('blog_post_blocks', 'image', 'directus_files')
 ),
 system_collections(collection) AS (
   VALUES

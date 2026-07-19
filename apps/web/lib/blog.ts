@@ -3,7 +3,9 @@ import "server-only";
 import type {
   BlogAuthor,
   BlogCategory,
+  BlogImageWidth,
   BlogPost,
+  BlogPostBlock,
   BlogPostStatus,
   BlogRelatedDevice,
   BlogTag,
@@ -18,6 +20,19 @@ const REVALIDATE = 300;
 
 type DirectusFileRow = {
   id?: string;
+  width?: number;
+  height?: number;
+};
+
+type BlogPostBlockRow = {
+  id?: string;
+  sort?: number;
+  block_type?: string;
+  body?: string;
+  image?: DirectusFileRow | string | null;
+  image_alt?: string;
+  image_caption?: string;
+  image_width?: string;
 };
 
 type BlogAuthorRow = {
@@ -75,6 +90,7 @@ type BlogPostRow = {
     sort?: number;
     devices_id?: BlogRelatedDeviceRow | string | null;
   }>;
+  blocks?: BlogPostBlockRow[];
 };
 
 const POST_FIELDS = [
@@ -112,6 +128,16 @@ const POST_FIELDS = [
   "devices.devices_id.title",
   "devices.devices_id.price_text",
   "devices.devices_id.stock_status",
+  "blocks.id",
+  "blocks.sort",
+  "blocks.block_type",
+  "blocks.body",
+  "blocks.image.id",
+  "blocks.image.width",
+  "blocks.image.height",
+  "blocks.image_alt",
+  "blocks.image_caption",
+  "blocks.image_width",
 ].join(",");
 
 function text(value: unknown): string {
@@ -121,6 +147,48 @@ function text(value: unknown): string {
 function fileId(value: DirectusFileRow | string | null | undefined): string {
   if (typeof value === "string") return value;
   return text(value?.id);
+}
+
+function positiveInteger(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : fallback;
+}
+
+function mapBlock(row: BlogPostBlockRow): BlogPostBlock | undefined {
+  const id = text(row.id);
+  if (!id) return undefined;
+
+  if (row.block_type === "rich_text") {
+    const richText = prepareRichText(row.body);
+    return richText.html
+      ? { id, type: "rich_text", body: richText.html, bodyRichText: richText.nodes }
+      : undefined;
+  }
+
+  if (row.block_type !== "image") return undefined;
+  const imageId = fileId(row.image);
+  const alt = text(row.image_alt);
+  if (!imageId || !alt) return undefined;
+  const width: BlogImageWidth = row.image_width === "wide" ? "wide" : "content";
+  const sourceWidth =
+    typeof row.image === "object" && row.image ? positiveInteger(row.image.width, 1600) : 1600;
+  const sourceHeight =
+    typeof row.image === "object" && row.image ? positiveInteger(row.image.height, 1000) : 1000;
+
+  return {
+    id,
+    type: "image",
+    image: directusAssetUrl(imageId, {
+      width: width === "wide" ? 1600 : 1200,
+      quality: 84,
+      format: "auto",
+      withoutEnlargement: true,
+    }),
+    alt,
+    ...(text(row.image_caption) ? { caption: text(row.image_caption) } : {}),
+    width,
+    sourceWidth,
+    sourceHeight,
+  };
 }
 
 function mapAuthor(value: BlogAuthorRow | string | null | undefined): BlogAuthor | undefined {
@@ -210,7 +278,6 @@ function mapPost(row: BlogPostRow, allowIncomplete = false): BlogPost | null {
     !title ||
     !excerpt ||
     !publishedAt ||
-    !richText.html ||
     (!allowIncomplete && !coverId) ||
     (!allowIncomplete && !coverAlt) ||
     (!allowIncomplete && !category) ||
@@ -226,6 +293,14 @@ function mapPost(row: BlogPostRow, allowIncomplete = false): BlogPost | null {
     .sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100))
     .map((relation) => mapDevice(relation.devices_id))
     .filter((device): device is BlogRelatedDevice => Boolean(device));
+  const blocks = [...(row.blocks ?? [])]
+    .sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100))
+    .map(mapBlock)
+    .filter((block): block is BlogPostBlock => Boolean(block));
+  const hasArticleBody =
+    Boolean(richText.html) || blocks.some((block) => block.type === "rich_text");
+
+  if (!allowIncomplete && !hasArticleBody) return null;
 
   return {
     id,
@@ -253,6 +328,7 @@ function mapPost(row: BlogPostRow, allowIncomplete = false): BlogPost | null {
     ...(author ? { author } : {}),
     tags,
     devices,
+    blocks,
     featured: row.featured === true,
     publishedAt,
     ...(text(row.date_updated) ? { updatedAt: text(row.date_updated) } : {}),

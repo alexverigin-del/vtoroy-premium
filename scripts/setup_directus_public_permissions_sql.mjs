@@ -121,6 +121,13 @@ BEGIN
     'id,filename_download,type,width,height,focal_point_x,focal_point_y,folder',
     isvoi_public_file_filter()
   );
+  PERFORM isvoi_upsert_permission(
+    '$t:public_label',
+    'directus_folders',
+    'read',
+    'id,name,parent',
+    '{"_and":[{"name":{"_in":["ISVOI Device Photos","ISVOI Site Assets","ISVOI Editorial","ISVOI Blog"]}},{"parent":{"_null":true}}]}'::json
+  );
 END;
 $$;
 
@@ -167,6 +174,13 @@ BEGIN
     'read',
     'id,filename_download,type,width,height,focal_point_x,focal_point_y,folder',
     isvoi_public_file_filter()
+  );
+  PERFORM isvoi_upsert_permission(
+    p_policy_name,
+    'directus_folders',
+    'read',
+    'id,name,parent',
+    '{"_and":[{"name":{"_in":["ISVOI Device Photos","ISVOI Site Assets","ISVOI Editorial","ISVOI Blog"]}},{"parent":{"_null":true}}]}'::json
   );
 
   PERFORM isvoi_upsert_permission(

@@ -208,6 +208,19 @@ WHERE NOT EXISTS (
     AND (p.permissions::jsonb #> '{folder,_in}') ? folder.id::text
 )
 UNION ALL
+SELECT 'blog.permissions.public_folder_scope_missing', count(*)::text
+FROM (VALUES ('ISVOI Public Read'),('$t:public_label')) required(policy_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions p
+  JOIN directus_policies policy ON policy.id=p.policy
+  WHERE policy.name=required.policy_name
+    AND p.collection='directus_folders'
+    AND p.action='read'
+    AND p.fields='id,name,parent'
+    AND p.permissions::jsonb IS NOT NULL
+    AND p.permissions::jsonb::text LIKE '%ISVOI Blog%'
+)
+UNION ALL
 SELECT 'blog.permissions.workflow_missing', count(*)::text
 FROM expected_workflow_permissions ep
 WHERE NOT EXISTS (

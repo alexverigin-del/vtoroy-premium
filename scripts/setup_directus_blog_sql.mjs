@@ -698,6 +698,20 @@ SELECT isvoi_blog_upsert_permission(
       AND parent IS NULL
   )
 );
+SELECT isvoi_blog_upsert_permission(
+  'ISVOI Public Read',
+  'directus_folders',
+  'read',
+  'id,name,parent',
+  '{"_and":[{"name":{"_in":["ISVOI Device Photos","ISVOI Site Assets","ISVOI Editorial","ISVOI Blog"]}},{"parent":{"_null":true}}]}'::json
+);
+SELECT isvoi_blog_upsert_permission(
+  '$t:public_label',
+  'directus_folders',
+  'read',
+  'id,name,parent',
+  '{"_and":[{"name":{"_in":["ISVOI Device Photos","ISVOI Site Assets","ISVOI Editorial","ISVOI Blog"]}},{"parent":{"_null":true}}]}'::json
+);
 
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,publish_at,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_created,date_updated,tags,devices',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_authors','read','id,name,slug,role_title,bio,avatar,is_active,sort,date_created,date_updated',NULL);

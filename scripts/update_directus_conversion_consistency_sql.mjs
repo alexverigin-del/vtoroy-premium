@@ -389,6 +389,26 @@ SET
 FROM site_pages sp
 WHERE ps.page = sp.id AND sp.slug = 'passport' AND ps.section_key = 'final_cta';
 
+UPDATE page_sections ps
+SET content = '{
+  "items": [
+    {
+      "title": "Что если дефект нашли после покупки?",
+      "text": "Письменная гарантия покрывает функциональные неисправности, не зафиксированные в Passport."
+    },
+    {
+      "title": "Почему предварительная стоимость при обновлении не окончательная?",
+      "text": "Итог зависит от состояния при повторной диагностике, спроса и комплектации."
+    },
+    {
+      "title": "Можно ли посмотреть диагностику?",
+      "text": "Да. Проверка проходит открыто в Store."
+    }
+  ]
+}'::json
+FROM site_pages sp
+WHERE ps.page = sp.id AND sp.slug = 'passport' AND ps.section_key = 'faq';
+
 -- Club remains a clearly labelled pilot without unverified plan/rating claims.
 UPDATE page_sections ps
 SET
@@ -424,7 +444,23 @@ WHERE ps.page = sp.id
 UPDATE page_sections ps
 SET
   eyebrow = 'Условия пилота',
-  headline = 'Что важно понять до участия.'
+  headline = 'Что важно понять до участия.',
+  content = '{
+    "items": [
+      {
+        "title": "Club — это готовая подписка?",
+        "text": "Нет. Это пилотный сценарий вокруг конкретного устройства, его Passport и предполагаемого срока владения."
+      },
+      {
+        "title": "Можно ли заранее узнать итоговые условия?",
+        "text": "До участия мы показываем индивидуальный расчёт. Условия вступают в силу только после отдельного подтверждения."
+      },
+      {
+        "title": "Предварительная стоимость при обновлении окончательная?",
+        "text": "Нет. Итог зависит от состояния устройства при повторной диагностике, комплектации и спроса."
+      }
+    ]
+  }'::json
 FROM site_pages sp
 WHERE ps.page = sp.id AND sp.slug = 'club' AND ps.section_key = 'faq';
 
@@ -438,6 +474,21 @@ SET
   secondary_cta_url = '/catalog'
 FROM site_pages sp
 WHERE ps.page = sp.id AND sp.slug = 'club' AND ps.section_key = 'final_cta';
+
+-- Repair any legacy encoding placeholders in CTA consent copy without changing
+-- the page-specific form fields or scenario.
+UPDATE page_sections ps
+SET content = jsonb_set(
+  coalesce(ps.content::jsonb, '{}'::jsonb),
+  '{form,consent_note}',
+  to_jsonb('Отправляя форму, вы соглашаетесь с обработкой контакта для ответа по заявке.'::text),
+  true
+)::json
+FROM site_pages sp
+WHERE ps.page = sp.id
+  AND sp.status = 'published'
+  AND ps.is_active = true
+  AND ps.section_key = 'final_cta';
 
 -- Managed FAQ copy follows the same terminology and pilot limitations.
 UPDATE faq_items

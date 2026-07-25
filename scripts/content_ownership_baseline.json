@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T20:29:33.134Z",
+  "updatedAt": "2026-07-25T20:39:35.180Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -714,8 +714,8 @@
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
       "line": 258,
-      "text": "Условия гарантии и возврата →",
-      "id": "44cf0f1abcc2e0fc"
+      "text": "Уточнить условия в магазине →",
+      "id": "a666208f35900c38"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",

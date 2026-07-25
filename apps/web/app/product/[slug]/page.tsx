@@ -255,8 +255,8 @@ export default async function ProductPage({ params }: PageProps) {
                     Комплект: {product.completeness}
                   </p>
                 ) : null}
-                <Link href="/warranty" className="mt-3 inline-flex text-sm font-medium text-accent">
-                  Условия гарантии и возврата →
+                <Link href="/store" className="mt-3 inline-flex text-sm font-medium text-accent">
+                  Уточнить условия в магазине →
                 </Link>
               </div>
             </aside>

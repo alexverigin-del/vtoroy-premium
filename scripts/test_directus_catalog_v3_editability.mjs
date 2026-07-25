@@ -2,7 +2,7 @@
 
 const baseUrl = (process.env.DIRECTUS_URL || "").replace(/\/$/, "");
 const token = (process.env.DIRECTUS_TOKEN || "").trim();
-const slug = process.env.CATALOG_V3_EDIT_TEST_SLUG || "qa-galaxy-s24-case";
+const productId = process.env.CATALOG_V3_EDIT_TEST_PRODUCT_ID || "qa-galaxy-s24-case";
 
 if (!baseUrl || !token) {
   throw new Error("DIRECTUS_URL and DIRECTUS_TOKEN are required.");
@@ -28,22 +28,22 @@ async function request(path, options = {}) {
 }
 
 const query = new URLSearchParams({
-  "filter[slug][_eq]": slug,
-  fields: "id,slug,status,content_status,description",
+  "filter[id][_eq]": productId,
+  fields: "id,status,content_status,short_description",
   limit: "1",
 });
 const result = await request(`/items/products?${query}`);
 const product = result?.data?.[0];
 
 if (!product) {
-  throw new Error(`Draft QA product not found: ${slug}`);
+  throw new Error(`Draft QA product not found: ${productId}`);
 }
 
 if (product.status === "published") {
-  throw new Error(`Refusing to edit published product: ${slug}`);
+  throw new Error(`Refusing to edit published product: ${productId}`);
 }
 
-const originalDescription = product.description ?? null;
+const originalDescription = product.short_description ?? null;
 const marker = `catalog-v3-editability-${Date.now()}`;
 const testDescription = originalDescription
   ? `${originalDescription}\n\n[${marker}]`
@@ -53,36 +53,36 @@ let changed = false;
 try {
   await request(`/items/products/${product.id}`, {
     method: "PATCH",
-    body: JSON.stringify({ description: testDescription }),
+    body: JSON.stringify({ short_description: testDescription }),
   });
   changed = true;
 
   const changedProduct = await request(
-    `/items/products/${product.id}?fields=id,slug,status,content_status,description`,
+    `/items/products/${product.id}?fields=id,status,content_status,short_description`,
   );
-  if (changedProduct?.data?.description !== testDescription) {
+  if (changedProduct?.data?.short_description !== testDescription) {
     throw new Error("Edited value was not returned by Directus.");
   }
 } finally {
   if (changed) {
     await request(`/items/products/${product.id}`, {
       method: "PATCH",
-      body: JSON.stringify({ description: originalDescription }),
+      body: JSON.stringify({ short_description: originalDescription }),
     });
   }
 }
 
 const restoredProduct = await request(
-  `/items/products/${product.id}?fields=id,slug,status,content_status,description`,
+  `/items/products/${product.id}?fields=id,status,content_status,short_description`,
 );
-if (restoredProduct?.data?.description !== originalDescription) {
+if (restoredProduct?.data?.short_description !== originalDescription) {
   throw new Error("QA product was edited, but the original value was not restored.");
 }
 
 console.log(
   JSON.stringify({
     ok: true,
-    slug,
+    product_id: productId,
     status: restoredProduct.data.status,
     content_status: restoredProduct.data.content_status,
     restored: true,

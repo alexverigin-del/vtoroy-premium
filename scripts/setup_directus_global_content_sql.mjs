@@ -15,6 +15,13 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS business_hours varchar(240);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS map_url text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS legal_name text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS inn varchar(32);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS ogrn varchar(32);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS privacy_url text;
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -168,6 +175,12 @@ SELECT isvoi_upsert_directus_field('site_settings', 'phone', 'input', NULL, NULL
 SELECT isvoi_upsert_directus_field('site_settings', 'telegram', 'input', NULL, NULL, NULL, 'half', 22, 'Telegram username или URL.', false, false, false, NULL, 'group_contacts', 'Telegram');
 SELECT isvoi_upsert_directus_field('site_settings', 'email', 'input', NULL, NULL, NULL, 'half', 23, 'Публичный email.', false, false, false, NULL, 'group_contacts', 'Email');
 SELECT isvoi_upsert_directus_field('site_settings', 'address', 'input-multiline', NULL, NULL, NULL, 'full', 24, 'Адрес или пояснение по визиту.', false, false, false, NULL, 'group_contacts', 'Адрес');
+SELECT isvoi_upsert_directus_field('site_settings', 'business_hours', 'input', NULL, NULL, NULL, 'half', 25, 'Публичные часы работы в понятной человеку форме.', false, false, false, NULL, 'group_contacts', 'Часы работы');
+SELECT isvoi_upsert_directus_field('site_settings', 'map_url', 'input', NULL, NULL, NULL, 'half', 26, 'Ссылка на карту или карточку организации.', false, false, false, NULL, 'group_contacts', 'Карта');
+SELECT isvoi_upsert_directus_field('site_settings', 'legal_name', 'input', NULL, NULL, NULL, 'full', 27, 'Юридическое наименование продавца. Публиковать только после проверки.', false, false, false, NULL, 'group_contacts', 'Юридическое наименование');
+SELECT isvoi_upsert_directus_field('site_settings', 'inn', 'input', NULL, NULL, NULL, 'half', 28, 'ИНН продавца.', false, false, false, NULL, 'group_contacts', 'ИНН');
+SELECT isvoi_upsert_directus_field('site_settings', 'ogrn', 'input', NULL, NULL, NULL, 'half', 29, 'ОГРН или ОГРНИП продавца.', false, false, false, NULL, 'group_contacts', 'ОГРН / ОГРНИП');
+SELECT isvoi_upsert_directus_field('site_settings', 'privacy_url', 'input', NULL, NULL, NULL, 'full', 30, 'Путь к опубликованной политике обработки данных, обычно /privacy.', false, false, false, NULL, 'group_contacts', 'Политика данных');
 SELECT isvoi_upsert_directus_field('site_settings', 'footer_brand_text', 'input-multiline', NULL, NULL, NULL, 'full', 41, 'Короткий текст о бренде в footer.', false, false, false, NULL, 'group_footer', 'Текст бренда');
 SELECT isvoi_upsert_directus_field('site_settings', 'footer_note', 'input-multiline', NULL, NULL, NULL, 'full', 42, 'Дополнительная заметка в footer.', false, false, false, NULL, 'group_footer', 'Заметка');
 SELECT isvoi_upsert_directus_field('site_settings', 'footer_legal', 'input-multiline', NULL, NULL, NULL, 'full', 43, 'Юридический текст или дисклеймер.', false, false, false, NULL, 'group_footer', 'Юридический текст');
@@ -281,14 +294,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'read',
-  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+  'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'update',
-  'brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
+  'brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
   NULL
 );
 

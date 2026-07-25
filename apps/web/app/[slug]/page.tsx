@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MarketingSectionRenderer } from "@/components/MarketingSectionRenderer";
+import { InfoPageSectionRenderer } from "@/components/InfoPageSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
 import {
   getNavigationItems,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/directus";
 import {
   getFallbackMarketingPage,
+  isInfoSlug,
   isMarketingSlug,
   marketingSectionsForPage,
   siteChrome,
@@ -26,18 +28,27 @@ type MarketingPageProps = {
 };
 
 export function generateStaticParams() {
-  return [{ slug: "store" }, { slug: "trade" }, { slug: "passport" }, { slug: "club" }];
+  return [
+    { slug: "store" },
+    { slug: "trade" },
+    { slug: "passport" },
+    { slug: "club" },
+    { slug: "about" },
+    { slug: "contacts" },
+    { slug: "warranty" },
+    { slug: "payment" },
+    { slug: "privacy" },
+    { slug: "terms" },
+  ];
 }
 
 export async function generateMetadata({ params }: MarketingPageProps): Promise<Metadata> {
   const { slug } = await params;
-  if (!isMarketingSlug(slug)) return {};
+  if (!isMarketingSlug(slug) && !isInfoSlug(slug)) return {};
 
-  const [directusPage, fallbackPage] = await Promise.all([
-    getSitePage(slug),
-    Promise.resolve(getFallbackMarketingPage(slug)),
-  ]);
-  const page = directusPage ?? fallbackPage;
+  const directusPage = await getSitePage(slug);
+  const page = directusPage ?? (isMarketingSlug(slug) ? getFallbackMarketingPage(slug) : null);
+  if (!page) return {};
 
   return {
     title: page.title,
@@ -62,7 +73,7 @@ export async function generateMetadata({ params }: MarketingPageProps): Promise<
 
 export default async function MarketingPage({ params }: MarketingPageProps) {
   const { slug } = await params;
-  if (!isMarketingSlug(slug)) notFound();
+  if (!isMarketingSlug(slug) && !isInfoSlug(slug)) notFound();
 
   const [page, settings, navigation, devices] = await Promise.all([
     getSitePage(slug),
@@ -70,9 +81,13 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
     getNavigationItems(),
     getPublishedDeviceCards(),
   ]);
+  if (isInfoSlug(slug) && !page) notFound();
   const chrome = siteChrome(settings, navigation);
-  const sections = marketingSectionsForPage(slug, page?.sections);
-  const currentPage = page ?? getFallbackMarketingPage(slug);
+  const sections = isMarketingSlug(slug)
+    ? marketingSectionsForPage(slug, page?.sections)
+    : (page?.sections ?? []).filter((section) => section.isActive);
+  const currentPage = page ?? (isMarketingSlug(slug) ? getFallbackMarketingPage(slug) : null);
+  if (!currentPage) notFound();
   const firstVisualBandSection = sections.find((section) => section.variant === "visual.band");
 
   return (
@@ -89,15 +104,19 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
             ),
           }}
         />
-        {sections.map((section) => (
-          <MarketingSectionRenderer
-            key={section.id || section.sectionKey}
-            section={section}
-            slug={slug}
-            devices={devices}
-            priorityVisual={section === firstVisualBandSection}
-          />
-        ))}
+        {sections.map((section) =>
+          isMarketingSlug(slug) ? (
+            <MarketingSectionRenderer
+              key={section.id || section.sectionKey}
+              section={section}
+              slug={slug}
+              devices={devices}
+              priorityVisual={section === firstVisualBandSection}
+            />
+          ) : (
+            <InfoPageSectionRenderer key={section.id || section.sectionKey} section={section} />
+          ),
+        )}
       </main>
     </SiteShell>
   );

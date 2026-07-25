@@ -12,9 +12,9 @@ import { siteChrome } from "@/lib/site-content";
 import { breadcrumbJsonLd, catalogItemListJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
-const fallbackTitle = "I СВОИ Store — вещи в кругу";
+const fallbackTitle = "Каталог проверенной б/у Apple‑техники — I СВОИ";
 const fallbackDescription =
-  "Проверенные вещи с I СВОИ Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу I СВОИ.";
+  "Проверенная б/у Apple‑техника: точная модель, память, цвет, состояние, батарея, ремонт, цена и наличие.";
 
 function catalogSection(page: Awaited<ReturnType<typeof getSitePage>>) {
   return (

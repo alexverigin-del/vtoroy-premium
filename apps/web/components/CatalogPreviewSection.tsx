@@ -28,6 +28,7 @@ export function CatalogPreviewSection({
   const statusFilters = catalogFilterList(section.content.statusFilters);
   const sortOptions = catalogFilterList(section.content.sortOptions);
   const controls = useCatalogControls();
+  const showFilters = section.content.showFilters === true;
   const headingTag = section.content.headingTag === "h1" ? "h1" : "h2";
   const limit =
     typeof section.content.limit === "number" && section.content.limit > 0
@@ -64,28 +65,32 @@ export function CatalogPreviewSection({
         </div>
       </div>
 
-      <div className="mx-auto max-w-shell px-5">
-        <CatalogToolbar
-          categories={categories}
-          statuses={statuses}
-          controls={controls}
-          categoryLabel={section.subheadline || "Фильтры каталога"}
-          statusLabel={
-            typeof section.content.statusFilterLabel === "string"
-              ? section.content.statusFilterLabel
-              : "Статус устройства"
-          }
-          sortLabel={
-            typeof section.content.sortLabel === "string" ? section.content.sortLabel : "Сортировка"
-          }
-          sortAriaLabel={
-            typeof section.content.sortAriaLabel === "string"
-              ? section.content.sortAriaLabel
-              : "Сортировка каталога"
-          }
-          sortOptions={sorts}
-        />
-      </div>
+      {showFilters ? (
+        <div className="mx-auto max-w-shell px-5">
+          <CatalogToolbar
+            categories={categories}
+            statuses={statuses}
+            controls={controls}
+            categoryLabel={section.subheadline || "Фильтры каталога"}
+            statusLabel={
+              typeof section.content.statusFilterLabel === "string"
+                ? section.content.statusFilterLabel
+                : "Статус устройства"
+            }
+            sortLabel={
+              typeof section.content.sortLabel === "string"
+                ? section.content.sortLabel
+                : "Сортировка"
+            }
+            sortAriaLabel={
+              typeof section.content.sortAriaLabel === "string"
+                ? section.content.sortAriaLabel
+                : "Сортировка каталога"
+            }
+            sortOptions={sorts}
+          />
+        </div>
+      ) : null}
 
       <div className="mx-auto max-w-page px-4 md:px-6">
         <CatalogDeviceList

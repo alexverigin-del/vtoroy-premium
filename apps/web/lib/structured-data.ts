@@ -1,4 +1,4 @@
-import type { BlogPost } from "@vtoroy/shared";
+import type { BlogPost, SiteSettings } from "@vtoroy/shared";
 
 import type { DeviceCardData } from "./device-card-data";
 
@@ -19,14 +19,34 @@ export function jsonLdScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-export function organizationJsonLd() {
+export function organizationJsonLd(settings?: SiteSettings | null) {
+  const telegram = settings?.telegram
+    ? /^https?:\/\//i.test(settings.telegram)
+      ? settings.telegram
+      : `https://t.me/${settings.telegram.replace(/^@/, "")}`
+    : "";
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "LocalBusiness"],
     "@id": `${SITE_URL}/#organization`,
-    name: PUBLIC_BRAND_NAME,
+    name: settings?.legalName || settings?.brandName || PUBLIC_BRAND_NAME,
+    alternateName: settings?.brandName || PUBLIC_BRAND_NAME,
     url: SITE_URL,
     logo: siteUrl("/favicon.svg"),
+    ...(settings?.phone ? { telephone: settings.phone } : {}),
+    ...(settings?.email ? { email: settings.email } : {}),
+    ...(settings?.address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: settings.address,
+            addressLocality: settings.city || undefined,
+            addressCountry: "RU",
+          },
+        }
+      : {}),
+    ...(settings?.businessHours ? { openingHours: settings.businessHours } : {}),
+    ...(telegram ? { sameAs: [telegram] } : {}),
   };
 }
 

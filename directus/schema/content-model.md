@@ -23,6 +23,11 @@ Global, site-wide values. Configure as a **singleton** in Directus.
 | `brand_name`        | string               | `ISVOI`.                                                                                                   |
 | `tagline`           | string               | `Хорошие вещи проходят через своих.`                                                                       |
 | `city`              | string               | `Северодвинск`.                                                                                            |
+| `business_hours`    | string               | Public opening hours.                                                                                      |
+| `map_url`           | string               | Public map/card URL.                                                                                       |
+| `legal_name`        | string               | Verified legal seller name.                                                                                |
+| `inn` / `ogrn`      | string               | Verified seller identifiers.                                                                               |
+| `privacy_url`       | string               | Published personal-data policy path.                                                                       |
 | `logo_file`         | M2O → directus_files | Header/footer logo from `ISVOI Site Assets`.                                                               |
 | `logo_alt`          | string               | Accessible alt text for the logo.                                                                          |
 | `logo_href`         | string               | Usually `/`.                                                                                               |

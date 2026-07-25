@@ -240,6 +240,17 @@ const auditDefinitions = {
       "blog.automation.schedule_revalidation_chain_invalid",
     ],
   },
+  "conversion-v2": {
+    script: "scripts/audit_directus_conversion_v2_sql.mjs",
+    zero: [
+      "conversion_v2.prototype_copy",
+      "conversion_v2.broken_known_links",
+      "conversion_v2.header_club",
+      "conversion_v2.home_deprecated_active",
+      "conversion_v2.repair_story_conflicts",
+      "conversion_v2.unverified_social_proof_published",
+    ],
+  },
 };
 
 const prodAuditOrder = [
@@ -254,6 +265,7 @@ const prodAuditOrder = [
   "files",
   "import",
   "blog",
+  "conversion-v2",
 ];
 
 function selectedAudits() {

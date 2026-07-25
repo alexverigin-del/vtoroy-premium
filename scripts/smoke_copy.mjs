@@ -8,7 +8,7 @@
  */
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
-const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
+const DEFAULT_DEVICE_PATHS = ["/device/iphone-13-pro", "/device/iphone-14"];
 const DEFAULT_ROUTES = [
   "/",
   "/catalog",
@@ -22,7 +22,9 @@ const DEFAULT_ROUTES = [
 ];
 
 const BANNED_PATTERNS = [
-  { label: "prototype footer copy", pattern: /Прототип лендинга/iu },
+  { label: "Russian prototype copy", pattern: /Прототип/iu },
+  { label: "future-launch placeholder", pattern: /в реальном запуске/iu },
+  { label: "CRM implementation placeholder", pattern: /\bCRM\b/iu },
   { label: "concept prototype copy", pattern: /концепт[-\s]?прототип/iu },
   { label: "English prototype copy", pattern: /\bprototype\b/iu },
   { label: "English concept prototype copy", pattern: /\bconcept\s+prototype\b/iu },
@@ -40,7 +42,10 @@ function routeList() {
         .split(",")
         .map((route) => route.trim())
         .filter(Boolean)
-    : [...DEFAULT_ROUTES, process.env.SMOKE_DEVICE_PATH || DEFAULT_DEVICE_PATH];
+    : [
+        ...DEFAULT_ROUTES,
+        ...(process.env.SMOKE_DEVICE_PATH ? [process.env.SMOKE_DEVICE_PATH] : DEFAULT_DEVICE_PATHS),
+      ];
 
   return routes.map((route) => (route.startsWith("/") ? route : `/${route}`));
 }
@@ -73,9 +78,7 @@ async function checkRoute(baseUrl, route) {
   });
 
   if (matches.length > 0) {
-    const details = matches
-      .map((match) => `${match.label}: "${match.snippet}"`)
-      .join("; ");
+    const details = matches.map((match) => `${match.label}: "${match.snippet}"`).join("; ");
     throw new Error(`${route}: banned public copy found: ${details}`);
   }
 

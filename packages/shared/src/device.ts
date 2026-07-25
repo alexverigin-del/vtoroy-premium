@@ -94,6 +94,17 @@ export interface Device {
   id: string;
   tags: string[];
   category: DeviceCategory;
+  brand?: string;
+  year?: number;
+  modelIdentifier?: string;
+  region?: string;
+  sim?: string;
+  batteryCycles?: number;
+  diagnosticDate?: string;
+  activationLock?: string;
+  mdm?: string;
+  completeness?: string;
+  diagnosticBy?: string;
   title: string;
   model: string;
   specs: string;

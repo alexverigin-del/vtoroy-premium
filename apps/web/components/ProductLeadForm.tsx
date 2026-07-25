@@ -104,6 +104,10 @@ export function ProductLeadForm({
     useLeadIntake();
   const normalizedStockStatus = normalizeStockStatus(stockStatus);
   const mode = leadMode(normalizedStockStatus, leadCopy);
+  const submitLabel =
+    normalizedStockStatus === "available"
+      ? `Записаться на просмотр ${deviceTitle}`
+      : mode.submitLabel;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -198,7 +202,7 @@ export function ProductLeadForm({
         disabled={state === "submitting" || !turnstileReady}
         className={submitButtonClass}
       >
-        {state === "submitting" ? mode.submittingLabel : mode.submitLabel}
+        {state === "submitting" ? mode.submittingLabel : submitLabel}
       </button>
       <p
         id={statusId}

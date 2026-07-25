@@ -2,7 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import type { Device, DevicePageSettings, DeviceStoryInfo, PassportState } from "@vtoroy/shared";
+import type {
+  Device,
+  DevicePageSettings,
+  DeviceStoryInfo,
+  PassportState,
+  SiteSettings,
+} from "@vtoroy/shared";
 import {
   getDeviceBySlug,
   getDevicePageSettings,
@@ -167,7 +173,7 @@ function relatedDevices(device: Device, devices: DeviceCardData[]): DeviceCardDa
   return fallback.slice(0, 3);
 }
 
-function productJsonLd(device: Device) {
+function productJsonLd(device: Device, settings: SiteSettings) {
   const status = normalizedStockStatus(device);
   const availability =
     status === "sold"
@@ -184,7 +190,7 @@ function productJsonLd(device: Device) {
     sku: device.id,
     brand: {
       "@type": "Brand",
-      name: device.model || device.category || "I СВОИ",
+      name: device.brand || "Apple",
     },
     image: [device.listingImage, ...device.gallery.map((image) => image.src)].filter(Boolean),
     offers: {
@@ -194,8 +200,31 @@ function productJsonLd(device: Device) {
       availability,
       url: `https://isvoi.ru/device/${device.id}`,
       itemCondition: "https://schema.org/UsedCondition",
+      seller: {
+        "@type": "Organization",
+        "@id": "https://isvoi.ru/#organization",
+        name: settings.legalName || settings.brandName || "I СВОИ",
+      },
     },
   };
+}
+
+function deviceTechnicalFacts(device: Device): { label: string; value: string }[] {
+  return [
+    { label: "Модель", value: device.modelIdentifier || device.model },
+    { label: "Год / поколение", value: device.year ? String(device.year) : "" },
+    { label: "Регион", value: device.region || "" },
+    { label: "SIM / eSIM", value: device.sim || "" },
+    {
+      label: "Циклы батареи",
+      value: device.batteryCycles ? String(device.batteryCycles) : "",
+    },
+    { label: "Дата диагностики", value: device.diagnosticDate || "" },
+    { label: "Activation Lock", value: device.activationLock || "" },
+    { label: "MDM", value: device.mdm || "" },
+    { label: "Комплект", value: device.completeness || "" },
+    { label: "Проверил", value: device.diagnosticBy || "" },
+  ].filter((fact) => fact.value);
 }
 
 function DetailCard({
@@ -296,6 +325,16 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
   const story = device.passport.story;
   const tradeOptions = device.trade.options ?? [];
   const lastUpdated = updatedText(device, devicePageSettings);
+  const technicalFacts = deviceTechnicalFacts(device);
+  const productHeading = [
+    device.title,
+    device.storage,
+    device.color,
+    "б/у",
+    device.grade ? `грейд ${device.grade}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const leadFormId = "product-lead";
   const mobileCta = mobileLeadCta(device, devicePageSettings);
   const showRelatedPrompt = related.length > 0 && related.length < 3;
@@ -309,7 +348,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
       <main id="top" className="bg-surface">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(device)) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(device, chrome.settings)) }}
         />
         <script
           type="application/ld+json"
@@ -341,7 +380,7 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                   {device.category}
                 </p>
                 <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
-                  {device.headline || device.title}
+                  {productHeading}
                 </h1>
                 <p className="mt-4 text-muted">{device.shortDescription}</p>
 
@@ -439,6 +478,18 @@ export default async function DevicePage({ params }: { params: Promise<{ slug: s
                         </li>
                       ))}
                     </ul>
+                  ) : null}
+                  {technicalFacts.length > 0 ? (
+                    <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                      {technicalFacts.map((fact) => (
+                        <div key={fact.label} className="rounded-card border border-hairline p-4">
+                          <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                            {fact.label}
+                          </dt>
+                          <dd className="mt-1 text-sm font-semibold text-carbon">{fact.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
                   ) : null}
                 </DetailCard>
 

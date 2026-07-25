@@ -9,6 +9,15 @@ const footerLinkClass =
 const mobileFooterSummaryClass =
   "flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-card px-4 text-sm font-semibold text-carbon outline-none transition marker:hidden focus-visible:shadow-focus";
 
+function telegramHref(value: string): string {
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://t.me/${value.replace(/^@/, "")}`;
+}
+
+function phoneHref(value: string): string {
+  return `tel:${value.replace(/[^\d+]/g, "")}`;
+}
+
 export function SiteFooter({
   settings,
   navigation,
@@ -41,6 +50,51 @@ export function SiteFooter({
       data-component="SiteFooter"
     >
       <div className="mx-auto max-w-shell px-5">
+        {settings.phone ||
+        settings.telegram ||
+        settings.email ||
+        settings.address ||
+        settings.businessHours ? (
+          <address className="grid gap-2 border-b border-hairline pb-8 text-sm not-italic text-graphite sm:grid-cols-2 lg:grid-cols-4">
+            {settings.phone ? (
+              <a className={footerLinkClass} href={phoneHref(settings.phone)}>
+                {settings.phone}
+              </a>
+            ) : null}
+            {settings.telegram ? (
+              <a
+                className={footerLinkClass}
+                href={telegramHref(settings.telegram)}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Telegram
+              </a>
+            ) : null}
+            {settings.email ? (
+              <a className={footerLinkClass} href={`mailto:${settings.email}`}>
+                {settings.email}
+              </a>
+            ) : null}
+            {settings.address ? (
+              settings.mapUrl ? (
+                <a
+                  className={footerLinkClass}
+                  href={settings.mapUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {settings.address}
+                </a>
+              ) : (
+                <span className="flex min-h-11 items-center">{settings.address}</span>
+              )
+            ) : null}
+            {settings.businessHours ? (
+              <span className="flex min-h-11 items-center">{settings.businessHours}</span>
+            ) : null}
+          </address>
+        ) : null}
         {settings.footerNote ? (
           <p className="max-w-copy-wide text-sm leading-relaxed text-ash">{settings.footerNote}</p>
         ) : null}
@@ -115,6 +169,14 @@ export function SiteFooter({
         </div>
         <div className="mt-10 flex flex-wrap gap-3 border-t border-hairline pt-5 text-xs text-ash">
           {settings.footerCopyright ? <span>{settings.footerCopyright}</span> : null}
+          {settings.legalName ? <span>{settings.legalName}</span> : null}
+          {settings.inn ? <span>ИНН {settings.inn}</span> : null}
+          {settings.ogrn ? <span>ОГРН {settings.ogrn}</span> : null}
+          {settings.privacyUrl ? (
+            <a className="underline-offset-4 hover:underline" href={settings.privacyUrl}>
+              Обработка персональных данных
+            </a>
+          ) : null}
           {settings.footerLegal ? <span>{settings.footerLegal}</span> : null}
         </div>
       </div>

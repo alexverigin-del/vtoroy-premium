@@ -478,7 +478,7 @@ SET link_type = 'page', page = (SELECT id FROM site_pages WHERE slug = 'club' LI
 WHERE location = 'footer' AND label = 'Club';
 
 UPDATE navigation_items
-SET link_type = 'custom', page = NULL, section_anchor = NULL, custom_url = '/store#diagnostics', url = '/store#diagnostics', sort = 3, item_role = 'link',
+SET link_type = 'custom', page = NULL, section_anchor = NULL, custom_url = '/passport', url = '/passport', sort = 3, item_role = 'link',
   parent = COALESCE((SELECT id FROM navigation_items WHERE location = 'footer' AND parent IS NULL AND label = 'Сервисы' LIMIT 1), parent)
 WHERE location = 'footer' AND label = 'Открытая проверка';
 

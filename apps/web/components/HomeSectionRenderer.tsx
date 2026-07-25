@@ -461,6 +461,91 @@ function TrustSection({ section }: { section: PageSection }) {
   );
 }
 
+function SocialProofSection({ section }: { section: PageSection }) {
+  const testimonials = Array.isArray(section.content.testimonials)
+    ? section.content.testimonials
+    : [];
+  if (testimonials.length === 0) return null;
+
+  return (
+    <section className="bg-frost py-14 md:py-20" aria-label={section.eyebrow || "Отзывы"}>
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
+          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
+          {section.headline ? (
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-carbon md:text-5xl">
+              {section.headline}
+            </h2>
+          ) : null}
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {testimonials.map((item) => (
+            <figure
+              key={`${item.name}-${item.date || ""}-${item.model || ""}`}
+              className="rounded-card border border-hairline bg-white p-5"
+            >
+              <blockquote className="text-sm leading-relaxed text-graphite">{item.text}</blockquote>
+              <figcaption className="mt-5 text-sm">
+                <strong className="text-carbon">{item.name}</strong>
+                {item.model || item.date ? (
+                  <span className="mt-1 block text-ash">
+                    {[item.model, item.date].filter(Boolean).join(" · ")}
+                  </span>
+                ) : null}
+                {item.sourceUrl && item.sourceLabel ? (
+                  <a
+                    className="mt-3 inline-flex text-link-blue underline-offset-4 hover:underline"
+                    href={item.sourceUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {item.sourceLabel}
+                  </a>
+                ) : null}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeFaqSection({ section }: { section: PageSection }) {
+  const items = sectionItemList(section.content.items);
+  if (items.length === 0) return null;
+
+  return (
+    <section className="bg-white py-14 md:py-20" aria-label="Частые вопросы">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
+          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
+          {section.headline ? (
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-carbon md:text-5xl">
+              {section.headline}
+            </h2>
+          ) : null}
+        </div>
+        <div className="mx-auto mt-8 max-w-faq overflow-hidden rounded-card border border-hairline">
+          {items.map((item, index) => (
+            <details
+              key={`${item.title}-${index}`}
+              className={index ? "border-t border-hairline" : ""}
+            >
+              <summary className="cursor-pointer list-none p-5 font-semibold text-carbon marker:hidden md:p-6">
+                {item.title}
+              </summary>
+              <p className="border-t border-hairline px-5 py-4 text-sm leading-relaxed text-graphite md:px-6">
+                {item.text}
+              </p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function PathRouterSection({ section }: { section: PageSection }) {
   const cards = pathCardList(section.content.cards);
   if (cards.length === 0) return null;
@@ -525,6 +610,8 @@ export function HomeSectionRenderer({ section, devices = [] }: HomeSectionRender
     return <PassportPreviewSection section={section} />;
   if (section.sectionKey === "store_preview") return <StorePreviewSection section={section} />;
   if (section.sectionKey === "trade_preview") return <TradePreviewSection section={section} />;
+  if (section.sectionKey === "social_proof") return <SocialProofSection section={section} />;
+  if (section.sectionKey === "faq") return <HomeFaqSection section={section} />;
   if (section.sectionKey === "club_preview") return <ClubPreviewSection section={section} />;
   if (section.sectionKey === "diagnostics_compare")
     return <DiagnosticsCompareSection section={section} />;

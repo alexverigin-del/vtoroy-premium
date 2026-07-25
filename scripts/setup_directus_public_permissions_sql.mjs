@@ -136,7 +136,7 @@ BEGIN
     p_policy_name,
     'devices',
     'read',
-    'id,status,sort,tags,category,title,model,specs,storage,color,serial,price,price_text,grade,battery,battery_text,meta_battery,warranty,warranty_text,exit,exit_text,availability,short_description,headline,listing_image,listing_alt,cta_label,has_detail_page,detail_href,visual_class,gallery,passport,trade,listing_file,updated_at,stock_status,content_status',
+    'id,status,sort,tags,category,brand,year,model_identifier,region,sim,battery_cycles,diagnostic_date,activation_lock,mdm,completeness,diagnostic_by,title,model,specs,storage,color,serial,price,price_text,grade,battery,battery_text,meta_battery,warranty,warranty_text,exit,exit_text,availability,short_description,headline,listing_image,listing_alt,cta_label,has_detail_page,detail_href,visual_class,gallery,passport,trade,listing_file,updated_at,stock_status,content_status',
     '{"_and":[{"status":{"_eq":"published"}},{"stock_status":{"_neq":"hidden"}},{"content_status":{"_eq":"ready"}}]}'::json
   );
 
@@ -192,7 +192,7 @@ BEGIN
     p_policy_name,
     'site_settings',
     'read',
-    'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+    'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
     NULL
   );
 

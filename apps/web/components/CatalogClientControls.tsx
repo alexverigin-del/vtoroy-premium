@@ -253,7 +253,7 @@ export function CatalogDeviceList({
   emptyCtaHref = "/#final",
   priorityImageCount = 0,
   showSelectionCta = false,
-  selectionCtaHref = "/store#final",
+  selectionCtaHref = "/#final",
   layout = "balanced",
 }: {
   devices: DeviceCardData[];

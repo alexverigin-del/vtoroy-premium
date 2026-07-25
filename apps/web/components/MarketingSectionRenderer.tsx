@@ -4,6 +4,7 @@ import type { PageSection } from "@vtoroy/shared";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import type { MarketingSlug } from "@/lib/site-content";
 import { DeviceCard } from "./DeviceCard";
+import { FinalCtaSection } from "./FinalCtaSection";
 import { RichText } from "./RichText";
 import { cn } from "../lib/cn";
 import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
@@ -1412,6 +1413,8 @@ export function MarketingSectionRenderer({
     <MarketingStepsSection section={section} />
   ) : isFaqSection(section) ? (
     <MarketingFaqSection section={section} />
+  ) : slug === "trade" && isPageCtaSection(section) ? (
+    <FinalCtaSection section={section} source="trade_page" />
   ) : isPageCtaSection(section) ? (
     <MarketingPageCtaSection section={section} />
   ) : null;

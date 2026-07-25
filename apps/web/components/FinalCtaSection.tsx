@@ -43,19 +43,16 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
   const scenarioOptions = stringList(record.scenarioOptions).length
     ? stringList(record.scenarioOptions)
     : stringList(record.scenario_options);
+  const publicScenarioOptions = scenarioOptions.filter((option) => !/\bClub\b/iu.test(option));
+  const note = text("note", "note", "Оставьте контакт, и мы предложим спокойный следующий шаг.");
 
   return {
     scenarioLabel: text("scenarioLabel", "scenario_label", "Что хотите сделать?"),
     scenarioAriaLabel: text("scenarioAriaLabel", "scenario_aria_label", "Сценарий обращения"),
     scenarioOptions:
-      scenarioOptions.length > 0
-        ? scenarioOptions
-        : [
-            "Найти вещь в кругу",
-            "Передать свою вещь дальше",
-            "Обновиться на следующую",
-            "Узнать про Club",
-          ],
+      publicScenarioOptions.length > 0
+        ? publicScenarioOptions
+        : ["Найти устройство", "Подобрать несколько вариантов"],
     deviceLabel: text("deviceLabel", "device_label", "Какая вещь интересна?"),
     devicePlaceholder: text(
       "devicePlaceholder",
@@ -64,17 +61,25 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
     ),
     contactLabel: text("contactLabel", "contact_label", "Контакт для ответа"),
     contactPlaceholder: text("contactPlaceholder", "contact_placeholder", "Телефон или Telegram"),
-    submitLabel: text("submitLabel", "submit_label", "Оставить заявку"),
+    submitLabel: text("submitLabel", "submit_label", "Получить варианты"),
     consentNote: text(
       "consentNote",
       "consent_note",
       "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
     ),
-    note: text("note", "note", "Оставьте контакт, и мы предложим спокойный следующий шаг."),
+    note: /Прототип|в реальном запуске|\bCRM\b/iu.test(note)
+      ? "Ответим по указанному контакту."
+      : note,
   };
 }
 
-export function FinalCtaSection({ section }: { section: PageSection }) {
+export function FinalCtaSection({
+  section,
+  source = "home_final_cta",
+}: {
+  section: PageSection;
+  source?: string;
+}) {
   const proof = stringList(section.content.proof);
   const renderedProof =
     proof.length > 0
@@ -111,7 +116,7 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
       scenario,
       device,
       contact,
-      source: "home_final_cta",
+      source,
       website,
     });
 

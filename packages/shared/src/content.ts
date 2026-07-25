@@ -19,7 +19,20 @@ export type RichTextNode =
       openInNew?: boolean;
     };
 
-export type PageSlug = "home" | "catalog" | "store" | "trade" | "club" | "passport" | "product";
+export type PageSlug =
+  | "home"
+  | "catalog"
+  | "store"
+  | "trade"
+  | "club"
+  | "passport"
+  | "product"
+  | "about"
+  | "contacts"
+  | "warranty"
+  | "payment"
+  | "privacy"
+  | "terms";
 
 export interface SiteSettings {
   brandName: string;
@@ -38,6 +51,12 @@ export interface SiteSettings {
   telegram?: string;
   email?: string;
   address?: string;
+  businessHours?: string;
+  mapUrl?: string;
+  legalName?: string;
+  inn?: string;
+  ogrn?: string;
+  privacyUrl?: string;
   footerNote?: string;
   footerBrandText?: string;
   footerLegal?: string;
@@ -74,6 +93,14 @@ export interface SectionContent {
   assurance?: string[];
   // trust
   items?: { title: string; text: string }[];
+  testimonials?: {
+    name: string;
+    model?: string;
+    date?: string;
+    text: string;
+    sourceLabel?: string;
+    sourceUrl?: string;
+  }[];
   // path_router
   cards?: { title: string; text: string; url: string; label?: string }[];
   // catalog_preview / store_preview

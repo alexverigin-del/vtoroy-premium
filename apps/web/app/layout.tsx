@@ -6,6 +6,7 @@ import {
   DEFAULT_SOCIAL_IMAGE,
 } from "./site-metadata";
 import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
+import { getSiteSettings } from "@/lib/directus";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -41,15 +42,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  const settings = await getSiteSettings();
 
   return (
     <html lang="ru">
       <body>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd()) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd(settings)) }}
         />
         <script
           type="application/ld+json"

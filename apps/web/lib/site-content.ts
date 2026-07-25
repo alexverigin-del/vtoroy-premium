@@ -9,8 +9,17 @@ type SiteChrome = {
 };
 
 export type MarketingSlug = "store" | "trade" | "passport" | "club";
+export type InfoSlug = "about" | "contacts" | "warranty" | "payment" | "privacy" | "terms";
 
 const marketingSlugs = new Set<MarketingSlug>(["store", "trade", "passport", "club"]);
+const infoSlugs = new Set<InfoSlug>([
+  "about",
+  "contacts",
+  "warranty",
+  "payment",
+  "privacy",
+  "terms",
+]);
 const marketingFallbackEnhancementKeys: Record<MarketingSlug, Set<string>> = {
   store: new Set(["store_decision", "store_curated_catalog"]),
   trade: new Set(["trade_live_example"]),
@@ -25,8 +34,8 @@ const defaultSiteSettings: SiteSettings = {
   logoHref: "/",
   logoHeight: 22,
   showBrandName: true,
-  headerCtaLabel: "Оставить заявку",
-  headerCtaUrl: "/#final",
+  headerCtaLabel: "Смотреть устройства",
+  headerCtaUrl: "/catalog",
   footerNote:
     "I СВОИ — клуб разумного владения: проверенные вещи проходят дальше через своих. Наличие, цены, грейды, гарантия и условия выхода подтверждаются перед сделкой. Названия и товарные знаки принадлежат их правообладателям.",
   footerBrandText: "Клуб разумного владения. Хорошие вещи проходят через своих. Северодвинск.",
@@ -125,7 +134,7 @@ const defaultNavigationItems: NavigationItem[] = [
   {
     id: "footer-services-check",
     label: "Открытая проверка",
-    url: "/store#diagnostics",
+    url: "/passport",
     location: "footer",
     parent: "footer-services",
     sort: 3,
@@ -172,24 +181,18 @@ const defaultCatalogPreviewSection: PageSection = {
   id: "catalog-preview-fallback",
   sectionKey: "catalog_preview",
   variant: "catalog.grid",
-  eyebrow: "Store · сейчас в I СВОИ",
-  headline: "Вещи в кругу — сейчас в наличии.",
-  subheadline: "Фильтры каталога",
-  body: "Каждая карточка показывает не только цену, но и историю вещи: грейд, батарею, проверку и цену выхода. Это вещи, которые прошли через своих.",
-  primaryCtaLabel: "Смотреть весь Store",
+  eyebrow: "В наличии",
+  headline: "Проверенные устройства Apple.",
+  body: "Точная модель, память, цвет, состояние, батарея, ремонт, цена и наличие.",
+  primaryCtaLabel: "Смотреть все устройства",
   primaryCtaUrl: "/catalog",
-  secondaryCtaLabel: "Подобрать вещь",
+  secondaryCtaLabel: "Получить варианты",
   secondaryCtaUrl: "#final",
-  sortOrder: 4,
+  sortOrder: 3,
   isActive: true,
   content: {
-    filters: [
-      { label: "Все", value: "all" },
-      { label: "iPhone", value: "iphone" },
-      { label: "MacBook", value: "macbook" },
-      { label: "iPad", value: "ipad" },
-      { label: "Для Club", value: "club" },
-    ],
+    limit: 6,
+    showFilters: false,
   },
 };
 
@@ -197,18 +200,18 @@ const defaultHeroSection: PageSection = {
   id: "hero-fallback",
   sectionKey: "hero",
   variant: "hero.static",
-  eyebrow: "I СВОИ · клуб разумного владения · Северодвинск",
-  headline: "Хорошие вещи проходят через своих.",
-  body: "На случайном рынке вы покупаете не только устройство, но и чужую неизвестность. В I СВОИ вещь проходит дальше с проверенной историей, открытым состоянием и понятным ориентиром выхода.",
-  primaryCtaLabel: "Подобрать проверенную вещь",
+  eyebrow: "I СВОИ · Северодвинск",
+  headline: "Б/у Apple‑техника, о которой всё известно до покупки.",
+  body: "Реальные фотографии, состояние батареи, история ремонта, отмеченные дефекты, открытая проверка и письменная гарантия 90 дней.",
+  primaryCtaLabel: "Смотреть устройства",
   primaryCtaUrl: "/catalog",
-  secondaryCtaLabel: "Оценить свою вещь",
+  secondaryCtaLabel: "Оценить свою технику",
   secondaryCtaUrl: "/trade",
   sortOrder: 1,
   isActive: true,
   image: "/assets/hero-apple-like-single-phone-clean.webp",
   content: {
-    assurance: ["История до покупки", "Проверка при вас", "Ориентир выхода"],
+    assurance: ["Реальные фото", "Проверка при посетителе", "Гарантия 90 дней"],
     visual: {
       image_alt: "Премиальный графитовый смартфон на светло-серой студийной поверхности",
     },
@@ -224,10 +227,112 @@ const defaultHeroSection: PageSection = {
         { label: "Face ID", value: "работает", state: "ok" },
         { label: "Влага", value: "следов нет", state: "ok" },
       ],
-      exit_label: "Ориентир выхода через 6 мес",
-      exit_value: "до 42 000 ₽",
+      exit_label: "Предварительная стоимость при обновлении через 6 месяцев",
+      exit_value: "после повторной диагностики",
       warranty: "Гарантия",
       warranty_strong: "90 дней",
+    },
+  },
+};
+
+const defaultTrustSection: PageSection = {
+  id: "trust-fallback",
+  sectionKey: "trust",
+  variant: "trust.strip",
+  eyebrow: "До оплаты",
+  headline: "Что вы узнаете об устройстве заранее.",
+  sortOrder: 2,
+  isActive: true,
+  content: {
+    items: [
+      { title: "Состояние", text: "Грейд и заметные дефекты." },
+      { title: "Батарея и функции", text: "Результаты диагностики." },
+      { title: "Ремонт", text: "Подтверждённая история вмешательств." },
+      { title: "Гарантия", text: "Письменные условия на 90 дней." },
+    ],
+  },
+};
+
+const defaultPassportSection: PageSection = {
+  id: "passport-preview-fallback",
+  sectionKey: "passport_preview",
+  variant: "passport.split",
+  eyebrow: "Passport · документ о проверке",
+  headline: "Состояние видно до решения о покупке.",
+  body: "Дата диагностики, грейд, ремонт, функции и отмеченные дефекты — в одном документе.",
+  primaryCtaLabel: "Как мы проверяем",
+  primaryCtaUrl: "/passport",
+  sortOrder: 4,
+  isActive: true,
+  content: {},
+};
+
+const defaultStoreSection: PageSection = {
+  id: "store-preview-fallback",
+  sectionKey: "store_preview",
+  variant: "store.steps",
+  eyebrow: "Магазин в Северодвинске",
+  headline: "Как проходит покупка.",
+  body: "Выберите устройство, проверьте его в магазине и получите документы с гарантией.",
+  primaryCtaLabel: "Условия визита",
+  primaryCtaUrl: "/store",
+  sortOrder: 5,
+  isActive: true,
+  content: {},
+};
+
+const defaultTradeSection: PageSection = {
+  id: "trade-preview-fallback",
+  sectionKey: "trade_preview",
+  variant: "trade.choices",
+  eyebrow: "Trade · продажа или обмен",
+  headline: "Оцените свою технику без объявлений.",
+  body: "Предварительная оценка уточняется после диагностики.",
+  primaryCtaLabel: "Получить предварительную оценку",
+  primaryCtaUrl: "/trade",
+  sortOrder: 6,
+  isActive: true,
+  content: {},
+};
+
+const defaultFaqSection: PageSection = {
+  id: "home-faq-fallback",
+  sectionKey: "faq",
+  variant: "faq",
+  eyebrow: "Коротко о главном",
+  headline: "Частые вопросы.",
+  sortOrder: 8,
+  isActive: true,
+  content: {
+    items: [
+      {
+        title: "Можно проверить устройство перед покупкой?",
+        text: "Да. Состояние и функции сверяются в магазине до решения о покупке.",
+      },
+      {
+        title: "Предварительная оценка Trade окончательная?",
+        text: "Нет. Итоговая сумма подтверждается после повторной диагностики.",
+      },
+    ],
+  },
+};
+
+const defaultFinalSection: PageSection = {
+  id: "final-cta-fallback",
+  sectionKey: "final_cta",
+  variant: "final.form",
+  eyebrow: "Подбор",
+  headline: "Не нашли подходящую модель?",
+  body: "Оставьте модель, необязательный бюджет и удобный контакт — предложим доступные варианты.",
+  secondaryCtaLabel: "Оценить свою технику",
+  secondaryCtaUrl: "/trade",
+  sortOrder: 9,
+  isActive: true,
+  content: {
+    form: {
+      scenario_options: ["Найти устройство", "Подобрать несколько вариантов"],
+      submit_label: "Получить варианты",
+      note: "Ответим по указанному контакту.",
     },
   },
 };
@@ -320,6 +425,35 @@ function normalizeSiteUrl(url: string, fallback = "#top"): string {
     .replace(/^\/device\/([^/]+)\/index\.html$/, "/device/$1");
 }
 
+function conversionNavigation(items: NavigationItem[]): NavigationItem[] {
+  const headerLabels: Record<string, string> = {
+    "/catalog": "Каталог",
+    "/passport": "Как мы проверяем",
+    "/trade": "Продать или обменять",
+    "/store": "Магазин в Северодвинске",
+    "/blog": "Блог",
+  };
+
+  return items
+    .filter(
+      (item) =>
+        !(
+          item.location === "header" &&
+          (normalizeSiteUrl(item.url) === "/club" || item.label.trim().toLowerCase() === "club")
+        ),
+    )
+    .map((item) => {
+      const url = normalizeSiteUrl(item.url);
+      if (item.location === "header" && headerLabels[url] && item.itemRole !== "cta") {
+        return { ...item, label: headerLabels[url], labelShort: headerLabels[url] };
+      }
+      if (item.location === "footer" && url === "/club") {
+        return { ...item, label: "Club — пилот" };
+      }
+      return item;
+    });
+}
+
 function strField(record: Record<string, unknown>, key: string, fallback = ""): string {
   const value = record[key];
   return typeof value === "string" ? value : fallback;
@@ -377,21 +511,30 @@ function marketingSections(slug: MarketingSlug, sections: PageSection[] = []): P
 }
 
 function homeSections(sections: PageSection[] = []): PageSection[] {
-  const active = sections.filter((section) => section.isActive);
+  const deprecated = new Set([
+    defaultMarketTensionSection.sectionKey,
+    defaultCircleRulesSection.sectionKey,
+    "path_router",
+    "club_preview",
+    "diagnostics_compare",
+  ]);
+  const active = sections.filter(
+    (section) => section.isActive && !deprecated.has(section.sectionKey),
+  );
   const byKey = new Map(active.map((section) => [section.sectionKey, section]));
 
   if (!byKey.has("hero")) {
     byKey.set("hero", defaultHeroSection);
   }
-  if (!byKey.has("market_tension")) {
-    byKey.set("market_tension", defaultMarketTensionSection);
-  }
-  if (!byKey.has("circle_rules")) {
-    byKey.set("circle_rules", defaultCircleRulesSection);
-  }
+  if (!byKey.has("trust")) byKey.set("trust", defaultTrustSection);
   if (!byKey.has("catalog_preview")) {
     byKey.set("catalog_preview", defaultCatalogPreviewSection);
   }
+  if (!byKey.has("passport_preview")) byKey.set("passport_preview", defaultPassportSection);
+  if (!byKey.has("store_preview")) byKey.set("store_preview", defaultStoreSection);
+  if (!byKey.has("trade_preview")) byKey.set("trade_preview", defaultTradeSection);
+  if (!byKey.has("faq")) byKey.set("faq", defaultFaqSection);
+  if (!byKey.has("final_cta")) byKey.set("final_cta", defaultFinalSection);
 
   return [...byKey.values()].sort((a, b) => a.sortOrder - b.sortOrder);
 }
@@ -443,12 +586,16 @@ export function siteChrome(
         defaultSiteSettings.footerCopyright ?? "",
       ),
     },
-    navigation: navigation.length > 0 ? navigation : defaultNavigationItems,
+    navigation: conversionNavigation(navigation.length > 0 ? navigation : defaultNavigationItems),
   };
 }
 
 export function isMarketingSlug(slug: string): slug is MarketingSlug {
   return marketingSlugs.has(slug as MarketingSlug);
+}
+
+export function isInfoSlug(slug: string): slug is InfoSlug {
+  return infoSlugs.has(slug as InfoSlug);
 }
 
 export function getFallbackMarketingPage(slug: MarketingSlug): SitePage {

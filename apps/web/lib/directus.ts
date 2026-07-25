@@ -1174,7 +1174,7 @@ function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings
     legalName: str(row.legal_name),
     inn: str(row.inn),
     ogrn: str(row.ogrn),
-    privacyUrl: str(row.privacy_url, "/privacy"),
+    privacyUrl: str(row.privacy_url),
     footerNote: str(row.footer_note),
     footerBrandText: str(row.footer_brand_text),
     footerLegal: str(row.footer_legal),

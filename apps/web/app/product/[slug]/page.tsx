@@ -183,6 +183,15 @@ export default async function ProductPage({ params }: PageProps) {
             ← Назад в каталог
           </Link>
 
+          <div className="mt-6 max-w-4xl">
+            <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
+              {product.brand.name} · {product.category.name}
+            </p>
+            <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
+              {product.title}
+            </h1>
+          </div>
+
           <div className="mt-6 grid gap-6 lg:grid-cols-product lg:items-start lg:gap-8">
             <div className="grid gap-6">
               <DeviceGallery images={gallery} />
@@ -209,13 +218,7 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
 
             <aside className="card p-6 lg:sticky lg:top-24">
-              <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
-                {product.brand.name} · {product.category.name}
-              </p>
-              <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
-                {product.title}
-              </h1>
-              <p className="mt-4 text-muted">{product.shortDescription}</p>
+              <p className="text-muted">{product.shortDescription}</p>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <span className="text-3xl font-semibold tabular-nums">{product.priceText}</span>
                 <span className="rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">

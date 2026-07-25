@@ -28,13 +28,22 @@ export function MobileProductActionBar({
 
   useEffect(() => {
     function updateVisibility() {
-      setVisible(window.scrollY > 320);
+      const leadForm = document.getElementById(leadFormId);
+      const leadFormRect = leadForm?.getBoundingClientRect();
+      const leadFormVisible =
+        leadFormRect && leadFormRect.bottom > 0 && leadFormRect.top < window.innerHeight;
+
+      setVisible(window.scrollY > 320 && !leadFormVisible);
     }
 
     updateVisibility();
     window.addEventListener("scroll", updateVisibility, { passive: true });
-    return () => window.removeEventListener("scroll", updateVisibility);
-  }, []);
+    window.addEventListener("resize", updateVisibility, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", updateVisibility);
+      window.removeEventListener("resize", updateVisibility);
+    };
+  }, [leadFormId]);
 
   if (!visible) return null;
 

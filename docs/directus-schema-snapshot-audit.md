@@ -168,6 +168,10 @@ Blockers should be `0`:
 - `leads.in_progress_without_assignee`
 - `leads.closed_without_manager_note`
 - `leads.device_slug_without_relation`
+- `leads.blog_attribution_bookmarks_missing`
+- `leads.blog_utm_without_campaign`
+- `leads.blog_utm_without_content`
+- `leads.blog_related_device_without_relation`
 - `files.review_folder_count`
 - `files.used_without_folder`
 - `files.device_non_images`

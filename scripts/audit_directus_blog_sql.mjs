@@ -210,7 +210,7 @@ UNION ALL
 SELECT 'blog.studio.presets_missing', count(*)::text
 FROM (VALUES
   ('Черновики'),('На проверке'),('Запланированные'),
-  ('Опубликованные'),('Неполные материалы')
+  ('Редплан'),('Опубликованные'),('Неполные материалы')
 ) required(bookmark)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_presets dp

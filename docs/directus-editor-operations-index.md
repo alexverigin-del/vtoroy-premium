@@ -104,6 +104,10 @@ Use `Заявки` (`leads`).
 - Start from `Новые заявки`.
 - Move active work to `В работе` or `Ждем ответа`.
 - Keep manager notes in `Заметка менеджера` or `История обработки`.
+- Для атрибуции блога проверяйте `Блог: заявки` после CTA в статье и
+  `Блог: устройства` после переходов из статьи в карточки устройств. Оба
+  представления опираются на `utm_source=blog`, `utm_campaign=<slug статьи>` и
+  `utm_content`.
 - Telegram is intentionally deferred; the Studio table must remain enough for
   everyday processing.
 
@@ -120,6 +124,9 @@ Use `Блог · Материалы` (`blog_posts`) as the main editorial entry 
 - Build article content in ordered `Блоки статьи`: rich-text blocks and image
   blocks with required alt text, optional caption and `content`/`wide` width.
 - Keep one primary category, a responsible author and a small set of useful tags.
+- Раз в неделю открывайте `Редплан`: черновики, материалы на проверке и
+  запланированные публикации должны иметь понятный следующий шаг, автора и
+  публикационный замысел.
 - Upload work-in-progress media to `ISVOI Blog`; move approved public covers and
   article images to `ISVOI Editorial` before publication.
 - Related catalog items are selected through `Связанные устройства`; do not paste

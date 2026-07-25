@@ -752,6 +752,8 @@ BEGIN
         'Без ответственного',
         'Просрочены',
         'Без источника',
+        'Блог: заявки',
+        'Блог: устройства',
         'Закрытые заявки'
       );
   END IF;
@@ -799,6 +801,20 @@ SELECT isvoi_upsert_simple_lead_preset(
   '#8b5cf6',
   '{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"_or":[{"source_path":{"_null":true}},{"source_url":{"_null":true}}]}]}'::json,
   '["created_at","status","contact","kind","device_id","source_path","source_url"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'Блог: заявки',
+  'article',
+  '#0071e3',
+  '{"_and":[{"_or":[{"utm_source":{"_eq":"blog"}},{"source_url":{"_contains":"utm_source=blog"}}]},{"_or":[{"utm_content":{"_eq":"article-end"}},{"source_url":{"_contains":"utm_content=article-end"}}]}]}'::json,
+  '["created_at","status","contact","kind","utm_campaign","utm_content","source_path","assigned_to","next_action_at"]'::json
+);
+SELECT isvoi_upsert_simple_lead_preset(
+  'Блог: устройства',
+  'devices',
+  '#16a34a',
+  '{"_and":[{"_or":[{"utm_source":{"_eq":"blog"}},{"source_url":{"_contains":"utm_source=blog"}}]},{"_or":[{"utm_content":{"_eq":"related-device"}},{"source_url":{"_contains":"utm_content=related-device"}}]}]}'::json,
+  '["created_at","status","contact","kind","device_id","utm_campaign","utm_content","source_path","assigned_to"]'::json
 );
 SELECT isvoi_upsert_simple_lead_preset(
   'Закрытые заявки',

@@ -40,6 +40,48 @@ FROM leads
 WHERE nullif(device, '') IS NOT NULL
   AND device_id IS NULL
 UNION ALL
+SELECT 'leads.blog_attribution_bookmarks_missing', count(*)::text
+FROM (VALUES ('Блог: заявки'), ('Блог: устройства')) required(bookmark)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_presets preset
+  JOIN directus_roles role ON role.id = preset.role
+  WHERE role.name = 'ISVOI Editor'
+    AND preset.collection = 'leads'
+    AND preset.bookmark = required.bookmark
+    AND preset."user" IS NULL
+)
+UNION ALL
+SELECT 'leads.blog_utm_without_campaign', count(*)::text
+FROM leads
+WHERE (
+    utm_source = 'blog'
+    OR source_url LIKE '%utm_source=blog%'
+  )
+  AND NULLIF(utm_campaign, '') IS NULL
+  AND COALESCE(source_url, '') NOT LIKE '%utm_campaign=%'
+UNION ALL
+SELECT 'leads.blog_utm_without_content', count(*)::text
+FROM leads
+WHERE (
+    utm_source = 'blog'
+    OR source_url LIKE '%utm_source=blog%'
+  )
+  AND NULLIF(utm_content, '') IS NULL
+  AND COALESCE(source_url, '') NOT LIKE '%utm_content=%'
+UNION ALL
+SELECT 'leads.blog_related_device_without_relation', count(*)::text
+FROM leads
+WHERE (
+    utm_source = 'blog'
+    OR source_url LIKE '%utm_source=blog%'
+  )
+  AND (
+    utm_content = 'related-device'
+    OR source_url LIKE '%utm_content=related-device%'
+  )
+  AND device_id IS NULL
+UNION ALL
 SELECT 'lead_hardening.device_consent_fields_missing', (3 - count(*))::text
 FROM information_schema.columns
 WHERE table_schema = 'public'

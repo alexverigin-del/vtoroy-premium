@@ -1590,8 +1590,11 @@ Next content-editing priorities:
 
 ### Blog Next Step
 
-1. Establish an editorial owner and cadence, then monitor the existing
-   article-to-device and article-to-lead UTM values in Directus Leads.
+1. Editorial cadence is operationalized in Studio: `blog_posts` has the
+   `Редплан` bookmark for weekly draft/review/scheduled review, and `leads` has
+   `Блог: заявки` plus `Блог: устройства` bookmarks for article-to-lead and
+   article-to-device UTM monitoring. `directus:audit-leads` checks that blog
+   UTM leads keep `utm_campaign`, `utm_content` and device relation integrity.
 2. Keep the article cover cold path under observation with the strict 2500 ms
    targeted smoke after deploys that touch blog, image delivery, nginx or
    Directus cache behavior.

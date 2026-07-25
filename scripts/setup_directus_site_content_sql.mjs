@@ -163,7 +163,7 @@ SELECT isvoi_upsert_directus_field('site_pages', 'group_seo', 'group-detail', NU
 SELECT isvoi_upsert_directus_field('site_pages', 'group_sections', 'group-detail', NULL, '{"headerIcon":"view_agenda","start":"open"}'::json, NULL, 'full', 40, 'Секции, которые реально выводятся на странице.', false, false, false, 'alias,no-data,group', NULL, 'Секции');
 SELECT isvoi_upsert_directus_field('site_pages', 'id', 'input', NULL, NULL, NULL, 'half', 2, 'Системный ID.', true, true, false, 'uuid', 'group_page', 'ID');
 SELECT isvoi_upsert_directus_field('site_pages', 'slug', 'input', NULL, NULL, NULL, 'half', 3, 'Адрес страницы. Менять только вместе с маршрутом сайта.', true, false, true, NULL, 'group_page', 'Адрес страницы');
-SELECT isvoi_upsert_directus_field('site_pages', 'template', 'select-dropdown', 'labels', '{"choices":[{"text":"Главная","value":"home","color":"#0f766e"},{"text":"Store","value":"store","color":"#2563eb"},{"text":"Trade","value":"trade","color":"#7c3aed"},{"text":"Passport","value":"passport","color":"#dc2626"},{"text":"Club","value":"club","color":"#ca8a04"}]}'::json, NULL, 'half', 4, 'Шаблон рендера в Next. Обычно не менять.', true, false, true, NULL, 'group_page', 'Шаблон');
+SELECT isvoi_upsert_directus_field('site_pages', 'template', 'select-dropdown', 'labels', '{"choices":[{"text":"Главная","value":"home","color":"#0f766e"},{"text":"Store","value":"store","color":"#2563eb"},{"text":"Trade","value":"trade","color":"#7c3aed"},{"text":"Passport","value":"passport","color":"#dc2626"},{"text":"Club","value":"club","color":"#ca8a04"},{"text":"Информационная","value":"info","color":"#64748b"}]}'::json, NULL, 'half', 4, 'Шаблон рендера в Next. Обычно не менять.', true, false, true, NULL, 'group_page', 'Шаблон');
 SELECT isvoi_upsert_directus_field('site_pages', 'status', 'select-dropdown', 'labels', '{"choices":[{"text":"Черновик","value":"draft","color":"#6b7280"},{"text":"Опубликовано","value":"published","color":"#10b981"},{"text":"Архив","value":"archived","color":"#6b7280"}]}'::json, NULL, 'half', 5, 'На сайте отображаются только published страницы.', false, false, true, NULL, 'group_page', 'Статус');
 SELECT isvoi_upsert_directus_field('site_pages', 'title', 'input', NULL, NULL, NULL, 'full', 21, 'Заголовок страницы для SEO и запасного H1.', false, false, true, NULL, 'group_seo', 'Название страницы');
 SELECT isvoi_upsert_directus_field('site_pages', 'meta_description', 'input-multiline', NULL, NULL, NULL, 'full', 22, 'Описание для поисковиков и превью.', false, false, false, NULL, 'group_seo', 'SEO-описание');
@@ -295,14 +295,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_pages',
   'read',
-  'id,slug,template,status,title,meta_description,og_image,sections',
+  'group_page,group_seo,group_sections,id,slug,template,status,title,meta_description,og_image,sections',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_pages',
   'update',
-  'status,title,meta_description,og_image',
+  'group_page,group_seo,group_sections,status,title,meta_description,og_image',
   NULL,
   '{"status":{"_in":["draft","published","archived"]}}'::json
 );
@@ -310,7 +310,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'read',
-  'id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
+  'group_placement,group_copy,group_actions,group_media,group_advanced,id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
   NULL
 );
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
@@ -319,14 +319,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'update',
-  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
+  'group_placement,group_copy,group_actions,group_media,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Advanced Editor',
   'page_sections',
   'update',
-  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
+  'group_placement,group_copy,group_actions,group_media,group_advanced,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
   NULL
 );
 

@@ -59,6 +59,7 @@ const auditDefinitions = {
       "studio.site_settings.singleton_not_one",
       "studio.device_page_settings.singleton_not_one",
       "studio.bookmarks.missing",
+      "studio.editor_layout_groups_missing",
       "studio.page_sections.advanced_json_editable_by_editor",
       "studio.page_sections.content.local_assets",
       "studio.page_sections.content.direct_asset_urls.warning",

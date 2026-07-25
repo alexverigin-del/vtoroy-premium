@@ -283,9 +283,24 @@ $$;
 
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
+  'site_pages',
+  'read',
+  'group_page,group_seo,group_sections,id,slug,template,status,title,meta_description,og_image,sections',
+  NULL
+);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
+  'site_pages',
+  'update',
+  'group_page,group_seo,group_sections,status,title,meta_description,og_image',
+  NULL,
+  '{"status":{"_in":["draft","published","archived"]}}'::json
+);
+SELECT isvoi_upsert_permission(
+  'ISVOI Editor',
   'page_sections',
   'read',
-  'id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
+  'group_placement,group_copy,group_actions,group_media,group_advanced,id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
   NULL
 );
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
@@ -294,14 +309,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'update',
-  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
+  'group_placement,group_copy,group_actions,group_media,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Advanced Editor',
   'page_sections',
   'update',
-  'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
+  'group_placement,group_copy,group_actions,group_media,group_advanced,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
   NULL
 );
 
@@ -337,7 +352,7 @@ SELECT 'site_pages_workflow.editor_update_fields', count(*)::text
 FROM directus_permissions
 WHERE collection = 'page_sections'
   AND action = 'update'
-  AND fields = 'sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image'
+  AND fields = 'group_placement,group_copy,group_actions,group_media,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image'
   AND policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Editor');
 
 COMMIT;

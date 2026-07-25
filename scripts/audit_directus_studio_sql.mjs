@@ -221,6 +221,35 @@ LEFT JOIN directus_presets p
   AND p."user" IS NULL
 WHERE p.id IS NULL
 UNION ALL
+SELECT 'studio.editor_layout_groups_missing', count(*)::text
+FROM (
+  VALUES
+    ('site_pages', 'group_page'),
+    ('site_pages', 'group_seo'),
+    ('site_pages', 'group_sections'),
+    ('page_sections', 'group_placement'),
+    ('page_sections', 'group_copy'),
+    ('page_sections', 'group_actions'),
+    ('page_sections', 'group_media'),
+    ('page_sections', 'group_advanced'),
+    ('site_settings', 'group_brand'),
+    ('site_settings', 'group_contacts'),
+    ('site_settings', 'group_footer'),
+    ('site_settings', 'group_technical')
+) AS expected(collection, field)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_permissions pe
+  JOIN directus_policies po ON po.id = pe.policy
+  WHERE po.name = 'ISVOI Editor'
+    AND pe.collection = expected.collection
+    AND pe.action = 'read'
+    AND (
+      pe.fields = '*'
+      OR concat(',', pe.fields, ',') LIKE '%,' || expected.field || ',%'
+    )
+)
+UNION ALL
 SELECT 'studio.page_sections.advanced_json_editable_by_editor', count(*)::text
 FROM directus_permissions pe
 JOIN directus_policies po ON po.id = pe.policy

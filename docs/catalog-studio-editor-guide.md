@@ -1,68 +1,79 @@
-# Catalog Studio Editor Guide
+# Редактирование универсального каталога в Directus Studio
 
-Use this guide for manual catalog work in Directus Studio.
+Основная коллекция каталога — `Товары` (`products`). Старые `devices` и
+`device_images` сохраняются только для dual-read и отката; новые позиции в них
+не создаются.
 
-## Main Workflow
+## Быстрый выбор представления
 
-Start from `Устройства` (`devices`).
+В коллекции `Товары` доступны сохранённые представления:
 
-1. Open a device.
-2. Check publication fields: `status`, `stock_status`, `content_status`.
-3. Fill model, price, condition, warranty and copy fields.
-4. Open `Фото устройства`.
-5. Add or update photo rows.
-6. Publish only when the device has `content_status = ready` and the needed
-   photo rows are `published / approved`.
+- `Техника`
+- `Аксессуары`
+- `Новые`
+- `Б/у`
+- `Требует совместимости`
+- `Не готово к публикации`
 
-`Фото устройств` (`device_images`) remains useful for bulk review, but day to
-day editing should happen inside the device card.
+Представления помогают найти нужные позиции, но не отменяют правила публикации.
 
-## Photo Roles
+## Новый товар
 
-Use one row with `role = card` for the catalog card image.
+1. Создайте товар в статусе `draft`.
+2. Заполните общие поля: SKU, тип, состояние, бренд, категорию, название,
+   модель, цену, наличие, гарантию и главное изображение.
+3. Для техники заполните `device_details`.
+4. Для аксессуара заполните `accessory_details`.
+5. Для модельного аксессуара добавьте хотя бы одну точную модель в
+   `product_compatible_models`.
+6. Для б/у техники добавьте Passport, дату диагностики и грейд.
+7. Проверьте карточку через Draft Preview.
+8. Переведите `content_status` в `ready`, затем публикуйте.
 
-Use gallery roles for the product page:
+## Правила
 
-- `main`: main product view
-- `screen`: screen close-up
-- `body`: body or side condition
-- `defect`: visible defect
-- `other`: additional image
+- Аксессуары публикуются только как новые.
+- Новая техника не получает Passport, грейд и диагностические блоки.
+- Б/у техника без Passport, даты диагностики и грейда не публикуется.
+- Модельный аксессуар без точной связи совместимости не публикуется.
+- Цена и остаток в Directus являются источником истины до подключения ERP/POS.
+- JSON-характеристики используются только для отображения. Фильтруемые признаки
+  должны иметь отдельные поля или справочники.
+- Не удаляйте строки старых коллекций до отдельного релиза выключения dual-read.
 
-Each photo should have:
+## Изображения и совместимость
 
-- `status = published`
-- `shot_status = approved`
-- a Directus file from the `ISVOI Device Photos` folder
-- clear `label` and `alt`
+Главное изображение хранится в `products.main_image`. Остальные изображения
+добавляются в `product_images` с порядком и alt-текстом.
 
-## Legacy Fields
+Совместимость модельных аксессуаров задаётся только через
+`product_compatible_models` и `device_models`. Свободный текст можно использовать
+как пояснение, но не как источник фильтрации и рекомендаций.
 
-Do not use these for new catalog content:
+## Импорт
 
-- `listing_image`
-- `visual_class`
-- `gallery`
-
-They remain in the database only as compatibility fallback for old content.
-
-## Saved Views
-
-The catalog Studio setup creates editor bookmarks:
-
-- `Нужны фото`
-- `Нужен текст`
-- `На проверке`
-- `Готово к публикации`
-- `Фото на проверке`
-- `Опубликованные фото`
-
-Use them as a daily checklist before publishing.
-
-## Technical Setup
-
-Apply Studio metadata with:
+Шаблон создаётся командой:
 
 ```bash
-npm run directus:setup:catalog-studio
+npm run catalog:v3:template
 ```
+
+Перед записью всегда выполняйте dry-run:
+
+```bash
+npm run catalog:v3:import -- --file path/to/catalog.xlsx --dry-run
+```
+
+Рабочая книга содержит листы `products`, `images`, `compatibility`, `passports`
+и `trade_options`. Upsert выполняется по SKU или стабильному `source_id`.
+
+## Проверка перед публикацией
+
+```bash
+npm run directus:audit-catalog-v3
+npm run directus:audit:prod
+npm run directus:test:catalog-v3-editability
+```
+
+Публичную карточку проверяйте на `/product/{slug}`. Старый
+`/device/{slug}` должен отвечать постоянным 301-редиректом.

@@ -110,6 +110,8 @@ async function visualIssues(page) {
     }
 
     function visible(element) {
+      const closedDetails = element.closest("details:not([open])");
+      if (closedDetails && element.tagName.toLowerCase() !== "summary") return false;
       const style = window.getComputedStyle(element);
       if (
         style.display === "none" ||

@@ -1687,3 +1687,37 @@ Next content-editing priorities:
   Protected content revalidation succeeded and PM2 reports `isvoi-web`
   online. The sanitized production schema snapshot was regenerated and its
   raw temporary source removed.
+
+### Catalog V3 Production Rollout (2026-07-25)
+
+- Универсальный каталог развёрнут как аддитивная forward-only миграция:
+  `products` стал корневой сущностью для техники и аксессуаров, а старые
+  `devices` сохранены для dual-read и отката.
+- Созданы справочники брендов, категорий и моделей, отдельные детали техники и
+  аксессуаров, общая галерея и точные связи совместимости. Passport, Trade и
+  Leads получили связи с `products`; legacy-поля временно поддерживаются.
+- Миграция перенесла пять устройств, 23 изображения, четыре Passport и 12
+  Trade-строк. Четыре черновые QA-позиции покрывают новую технику, б/у технику
+  другого бренда, универсальный и модельный аксессуар. Тестовые позиции не
+  опубликованы.
+- Четыре перенесённых опубликованных устройства не имеют подтверждённой даты
+  диагностики. Аудит помечает это как переходное предупреждение; новые
+  публикации с таким пробелом блокируются, а вымышленные даты не добавляются.
+- Публичный каталог работает на `/catalog`, `/catalog/tech`,
+  `/catalog/accessories`, страницах категорий и брендов. Карточка товара
+  находится на `/product/{slug}`, старый `/device/{slug}` отвечает 301.
+- Поиск, фильтры, сортировка и пагинация выполняются серверно и сохраняются в
+  URL. Каталог рассчитан на 100–500 SKU без внешнего поискового движка.
+- XLSX-контракт разделён на `products`, `images`, `compatibility`, `passports`
+  и `trade_options`; dry-run тестового файла прошёл. Цена и остаток остаются
+  данными Directus.
+- Перед миграцией создан backup
+  `/opt/isvoi/backups/directus/20260725T203144Z`; PostgreSQL и uploads прошли
+  checksum. Offsite-копия по-прежнему не настроена.
+- Aggregate Directus audit, schema/Studio/permissions/publication audits,
+  `web:verify`, production HTTP/copy/link/structured-data, desktop/mobile
+  visual и performance smokes прошли. Тестовая заявка сохранила `product`,
+  `product_type` и `source_path`.
+- Studio доступен только после пользовательской аутентификации. Сервисный токен
+  намеренно не расширен до административного доступа к schema snapshot; это
+  ограничение least privilege, а не ошибка каталога.

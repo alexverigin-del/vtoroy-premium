@@ -1082,6 +1082,15 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   `OFFSITE_BACKUP_DEST` remains unset. Release head `f1bfe44` passed production
   `web:verify`, `smoke:prod`, `smoke:images`, `smoke:visual`,
   `smoke:performance` and `smoke:copy`.
+- Files governance cleanup on 2026-07-25: `blog_post_blocks.image`,
+  `directus_settings.project_logo` and `directus_settings.public_favicon` are
+  now included in the Directus Files used-file model. Production cleanup set
+  focal points for the five blog/editorial raster images and
+  `isvoi:site:favicon-gold`; `directus:audit-files` returned
+  `files.orphan_isvoi_files.warning = 0` and
+  `files.hero_editorial_missing_focal_point.warning = 0`. Do not delete the two
+  favicon Directus files as orphan assets; they are used by Directus project
+  branding even though the public web favicon is served from `/favicon.ico`.
 - Local asset cleanup on 2026-07-08: the only production
   `page_sections.content` value pointing to `/assets/...` was
   `home.hero.content.visual.image_src`. It was removed because `home.hero`
@@ -1240,9 +1249,8 @@ Next content-editing priorities:
    `studio.page_sections.content.image_src_keys = 0`. New editorial section
    images should use `page_sections.image` / Directus Files relations; nested
    JSON image URLs are no longer part of the content model.
-2. Keep `directus:audit:prod` blocker metrics green. As of 2026-07-18 the
-   blocker metrics are `0`; the remaining non-blocking Files warnings are two
-   orphan ISVOI files and one hero/editorial raster without a focal point.
+2. Keep `directus:audit:prod` blocker metrics green. As of 2026-07-25 the
+   blocker metrics are `0`; Files governance warnings are also back to `0`.
 3. Keep system UI labels, accessibility labels, 404 text and legal/trust copy as
    lower-priority decisions unless business copy needs frequent editor changes.
 

@@ -5,6 +5,8 @@
 - `ISVOI Device Photos` - товарные фото из `devices.listing_file` и `device_images.image`.
 - `ISVOI Site Assets` - изображения, реально привязанные к страницам и секциям сайта.
 - `ISVOI Editorial` - нетоварные редакционные изображения.
+- `ISVOI Catalog Imports` - workbook/ZIP вложения операторских партий импорта.
+- `ISVOI Blog` - приватные рабочие изображения черновиков блога.
 - `ISVOI File Review` - неиспользуемые или спорные файлы для ручной проверки.
 
 Команда безопасной уборки:
@@ -19,8 +21,13 @@ npm run directus:setup:files-cleanup
 - переносит неиспользуемые `isvoi:site:*` файлы из публичной папки в `ISVOI File Review`;
 - добавляет editor bookmarks в Files: `Product Photos`, `Site Assets`, `Editorial`, `Review Unused`, `Unsorted`;
 - добавляет Studio-памятки для коллекции Files и ключевых полей: `folder`, `title`, `description`, `tags`, размеры, тип и focal point;
-- ставит центрированный focal point для raster-изображений из `ISVOI Site Assets` и `ISVOI Editorial`, если focal point ещё не задан;
+- ставит центрированный focal point для raster-изображений из `ISVOI Site Assets`, `ISVOI Editorial` и `ISVOI Blog`, если focal point ещё не задан;
 - помечает используемые файлы тегами `isvoi,device,used` или `isvoi,site,used`.
+
+Files governance считает использованными не только товарные и page-section
+связи, но и `blog_post_blocks.image`, `blog_posts.cover_image` /
+`blog_posts.og_image`, import batch вложения, а также Directus project branding
+файлы `directus_settings.project_logo` и `directus_settings.public_favicon`.
 
 После проверки папки `ISVOI File Review` можно отдельно принять решение: оставить как архив, переиспользовать файл в контенте или удалить вручную.
 

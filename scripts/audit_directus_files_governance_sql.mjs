@@ -24,6 +24,10 @@ used_files(id) AS (
   UNION
   SELECT default_og_image::uuid FROM site_settings WHERE default_og_image IS NOT NULL
   UNION
+  SELECT project_logo::uuid FROM directus_settings WHERE project_logo IS NOT NULL
+  UNION
+  SELECT public_favicon::uuid FROM directus_settings WHERE public_favicon IS NOT NULL
+  UNION
   SELECT workbook::uuid FROM catalog_import_batches WHERE workbook IS NOT NULL
   UNION
   SELECT photos_archive::uuid FROM catalog_import_batches WHERE photos_archive IS NOT NULL
@@ -33,6 +37,8 @@ used_files(id) AS (
   SELECT cover_image::uuid FROM blog_posts WHERE cover_image IS NOT NULL
   UNION
   SELECT og_image::uuid FROM blog_posts WHERE og_image IS NOT NULL
+  UNION
+  SELECT image::uuid FROM blog_post_blocks WHERE image IS NOT NULL
 )
 SELECT 'files.review_folder_count' AS check_name, count(*)::text AS value
 FROM directus_files f

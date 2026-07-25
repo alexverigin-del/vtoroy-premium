@@ -143,11 +143,13 @@ DECLARE
   v_device_folder uuid;
   v_site_folder uuid;
   v_editorial_folder uuid;
+  v_blog_folder uuid;
   v_review_folder uuid;
 BEGIN
   v_device_folder := isvoi_file_folder_id('ISVOI Device Photos');
   v_site_folder := isvoi_file_folder_id('ISVOI Site Assets');
   v_editorial_folder := isvoi_file_folder_id('ISVOI Editorial');
+  v_blog_folder := isvoi_file_folder_id('ISVOI Blog');
   v_review_folder := isvoi_file_folder_id('ISVOI File Review');
 
   UPDATE directus_collections
@@ -179,7 +181,24 @@ BEGIN
     SELECT logo_file::uuid FROM site_settings WHERE logo_file IS NOT NULL
     UNION
     SELECT default_og_image::uuid FROM site_settings WHERE default_og_image IS NOT NULL
+    UNION
+    SELECT project_logo::uuid FROM directus_settings WHERE project_logo IS NOT NULL
+    UNION
+    SELECT public_favicon::uuid FROM directus_settings WHERE public_favicon IS NOT NULL
   );
+
+  UPDATE directus_files
+  SET folder = v_editorial_folder,
+    tags = 'isvoi,editorial,used',
+    description = coalesce(nullif(description, ''), 'ISVOI editorial image used by blog structured content.')
+  WHERE id IN (
+    SELECT cover_image::uuid FROM blog_posts WHERE cover_image IS NOT NULL
+    UNION
+    SELECT og_image::uuid FROM blog_posts WHERE og_image IS NOT NULL
+    UNION
+    SELECT image::uuid FROM blog_post_blocks WHERE image IS NOT NULL
+  )
+    AND folder <> v_blog_folder;
 
   UPDATE directus_files
   SET folder = v_editorial_folder
@@ -189,7 +208,7 @@ BEGIN
   SET focal_point_x = GREATEST(0, floor(coalesce(f.width, 0) / 2.0)::integer),
     focal_point_y = GREATEST(0, floor(coalesce(f.height, 0) / 2.0)::integer),
     tags = concat_ws(',', nullif(f.tags, ''), 'focal:auto-center')
-  WHERE f.folder IN (v_site_folder, v_editorial_folder)
+  WHERE f.folder IN (v_site_folder, v_editorial_folder, v_blog_folder)
     AND coalesce(f.type, '') LIKE 'image/%'
     AND coalesce(f.type, '') <> 'image/svg+xml'
     AND (f.focal_point_x IS NULL OR f.focal_point_y IS NULL);
@@ -219,6 +238,10 @@ BEGIN
         SELECT logo_file::uuid FROM site_settings WHERE logo_file IS NOT NULL
         UNION
         SELECT default_og_image::uuid FROM site_settings WHERE default_og_image IS NOT NULL
+        UNION
+        SELECT project_logo::uuid FROM directus_settings WHERE project_logo IS NOT NULL
+        UNION
+        SELECT public_favicon::uuid FROM directus_settings WHERE public_favicon IS NOT NULL
       ) used
       WHERE used.id = f.id
     );
@@ -344,7 +367,14 @@ DROP FUNCTION isvoi_file_folder_id(text);
 
 SELECT 'files.folders' AS check_name, count(*)::text AS value
 FROM directus_folders
-WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI File Review')
+WHERE name IN (
+  'ISVOI Device Photos',
+  'ISVOI Site Assets',
+  'ISVOI Editorial',
+  'ISVOI File Review',
+  'ISVOI Catalog Imports',
+  'ISVOI Blog'
+)
 UNION ALL
 SELECT 'files.unsorted', count(*)::text
 FROM directus_files

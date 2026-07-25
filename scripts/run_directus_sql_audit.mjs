@@ -276,6 +276,7 @@ const auditDefinitions = {
       "catalog_v3.publication.accessory_not_new",
       "catalog_v3.publication.device_details_missing",
       "catalog_v3.publication.used_passport_missing",
+      "catalog_v3.publication.new_items_missing_diagnostic_date",
       "catalog_v3.publication.model_compatibility_missing",
       "catalog_v3.migration.legacy_products_missing",
       "catalog_v3.migration.passport_links_missing",

@@ -112,8 +112,22 @@ WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
   AND NOT EXISTS (
     SELECT 1 FROM device_details d
     JOIN device_passports dp ON dp.product=p.id
-    WHERE d.product=p.id AND d.diagnostic_date IS NOT NULL AND NULLIF(d.grade,'') IS NOT NULL
+    WHERE d.product=p.id AND NULLIF(d.grade,'') IS NOT NULL
   )
+UNION ALL
+SELECT 'catalog_v3.publication.new_items_missing_diagnostic_date', count(*)::text
+FROM products p
+JOIN device_details d ON d.product=p.id
+WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
+  AND p.sku NOT LIKE 'LEGACY-%'
+  AND d.diagnostic_date IS NULL
+UNION ALL
+SELECT 'catalog_v3.transition.legacy_missing_diagnostic_date', count(*)::text
+FROM products p
+JOIN device_details d ON d.product=p.id
+WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
+  AND p.sku LIKE 'LEGACY-%'
+  AND d.diagnostic_date IS NULL
 UNION ALL
 SELECT 'catalog_v3.publication.model_compatibility_missing', count(*)::text
 FROM products p

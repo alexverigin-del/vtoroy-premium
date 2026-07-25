@@ -37,8 +37,9 @@ const defaultSiteSettings: SiteSettings = {
   headerCtaLabel: "Смотреть устройства",
   headerCtaUrl: "/catalog",
   footerNote:
-    "I СВОИ — клуб разумного владения: проверенные вещи проходят дальше через своих. Наличие, цены, грейды, гарантия и условия выхода подтверждаются перед сделкой. Названия и товарные знаки принадлежат их правообладателям.",
-  footerBrandText: "Клуб разумного владения. Хорошие вещи проходят через своих. Северодвинск.",
+    "I СВОИ — проверенная б/у Apple‑техника с открытой диагностикой и письменной гарантией. Наличие, цены и состояние подтверждаются перед сделкой.",
+  footerBrandText:
+    "Б/у Apple‑техника с прозрачной историей. Хорошие вещи проходят через своих. Северодвинск.",
   footerLegal: "Хорошие вещи проходят через своих.",
   footerCopyright: "© 2026 I СВОИ.",
 };
@@ -76,8 +77,15 @@ const defaultNavigationItems: NavigationItem[] = [
     sort: 4,
     isActive: true,
   },
-  { id: "header-club", label: "Club", url: "/club", location: "header", sort: 5, isActive: true },
-  { id: "footer-club", label: "Клуб", url: "#top", location: "footer", sort: 1, isActive: true },
+  { id: "header-club", label: "Club", url: "/club", location: "header", sort: 5, isActive: false },
+  {
+    id: "footer-club",
+    label: "Навигация",
+    url: "#top",
+    location: "footer",
+    sort: 1,
+    isActive: true,
+  },
   {
     id: "footer-club-catalog",
     label: "Каталог",
@@ -89,7 +97,7 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-club-store",
-    label: "Store",
+    label: "Магазин в Северодвинске",
     url: "/store",
     location: "footer",
     parent: "footer-club",
@@ -98,7 +106,7 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-club-passport",
-    label: "I СВОИ Passport",
+    label: "Как мы проверяем",
     url: "/passport",
     location: "footer",
     parent: "footer-club",
@@ -115,7 +123,7 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-services-trade",
-    label: "Trade",
+    label: "Trade — продать или обменять",
     url: "/trade",
     location: "footer",
     parent: "footer-services",
@@ -150,8 +158,8 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-contacts-city",
-    label: "Северодвинск",
-    url: "/#top",
+    label: "Магазин в Северодвинске",
+    url: "/store",
     location: "footer",
     parent: "footer-contacts",
     sort: 1,
@@ -159,8 +167,8 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-contacts-check",
-    label: "Записаться на проверку",
-    url: "/#final",
+    label: "Как мы проверяем",
+    url: "/passport",
     location: "footer",
     parent: "footer-contacts",
     sort: 2,
@@ -168,8 +176,8 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-contacts-sell",
-    label: "Передать вещь дальше",
-    url: "/#final",
+    label: "Получить предварительную оценку",
+    url: "/trade#final",
     location: "footer",
     parent: "footer-contacts",
     sort: 3,
@@ -365,7 +373,7 @@ const defaultMarketTensionSection: PageSection = {
         {
           label: "После покупки",
           bad: "дальше вы снова одни",
-          good: "есть гарантия, Trade и ориентир выхода",
+          good: "есть гарантия и предварительная оценка Trade",
         },
       ],
     },
@@ -396,8 +404,8 @@ const defaultCircleRulesSection: PageSection = {
         text: "Условия гарантии показываются до покупки и остаются частью сделки.",
       },
       {
-        title: "Ориентир выхода",
-        text: "Ориентир выхода помогает планировать обновление, но подтверждается повторной проверкой.",
+        title: "Предварительная стоимость при обновлении",
+        text: "Расчёт помогает планировать обновление и подтверждается повторной диагностикой.",
       },
     ],
   },

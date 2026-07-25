@@ -18,7 +18,6 @@ export const DEFAULT_CATEGORY_FILTERS: CatalogFilterOption[] = [
   { label: "iPhone", value: "iphone" },
   { label: "MacBook", value: "macbook" },
   { label: "iPad", value: "ipad" },
-  { label: "Для Club", value: "club" },
 ];
 
 export const DEFAULT_STATUS_FILTERS: CatalogFilterOption[] = [
@@ -319,15 +318,15 @@ export function CatalogDeviceList({
             Не нашли свою модель?
           </h2>
           <p className="mx-auto mt-3 max-w-prose-narrow text-sm leading-relaxed text-graphite md:text-copy">
-            Оставьте контакт и задачу. Мы проверим ближайшие поступления, предложим похожую вещь или
-            подскажем спокойный сценарий Trade.
+            Оставьте модель, необязательный бюджет и удобный контакт. Предложим доступные варианты
+            или сообщим о ближайшем поступлении.
           </p>
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href={selectionCtaHref} className={primaryPillCtaClass}>
-              Оставить заявку
+              Получить варианты
             </Link>
             <Link href="/trade" className={secondaryPillCtaClass}>
-              Рассчитать Trade
+              Получить предварительную оценку
             </Link>
           </div>
         </div>

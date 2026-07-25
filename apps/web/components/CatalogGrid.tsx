@@ -64,11 +64,11 @@ export function CatalogGrid({
   const sorts = sortOptions.length > 0 ? sortOptions : DEFAULT_SORT_OPTIONS;
   const empty = catalogEmptyState(section);
   const eyebrow = catalogEyebrow(section?.eyebrow);
-  const headline = text(section?.headline, "Вещи в кругу — сейчас в наличии.");
+  const headline = text(section?.headline, "Проверенная б/у Apple‑техника в наличии.");
   const body = text(
     section?.body,
     directusEnabled
-      ? "В наличии только проверенные вещи: фото, грейд, гарантия и ориентир выхода обновляются после проверки."
+      ? "Реальные фото, грейд, батарея, известный ремонт, цена и наличие. Подробности проверки — в карточке устройства."
       : "Показаны демонстрационные карточки: они помогают оценить формат Store до подключения живого каталога.",
   );
   const categoryLabel = text(

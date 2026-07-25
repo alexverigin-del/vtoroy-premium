@@ -29,6 +29,9 @@ const BANNED_PATTERNS = [
   { label: "English prototype copy", pattern: /\bprototype\b/iu },
   { label: "English concept prototype copy", pattern: /\bconcept\s+prototype\b/iu },
   { label: "Directus technical copy", pattern: /\bDirectus\b/u },
+  { label: "damaged question-mark placeholder", pattern: /\?{5,}/u },
+  { label: "retired update-value term", pattern: /(?:ориентир|цена)\s+выхода/iu },
+  { label: "legacy ISVOI spelling", pattern: /\bISVOI\b/u },
 ];
 
 function normalizeBaseUrl(value) {

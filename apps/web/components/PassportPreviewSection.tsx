@@ -46,8 +46,8 @@ const DEFAULT_FEATURES: FeatureItem[] = [
     icon: "clock",
   },
   {
-    title: "Ориентир выхода",
-    text: "Сколько вещь будет стоить, когда пойдёт дальше через своих - известно заранее.",
+    title: "Предварительная стоимость при обновлении",
+    text: "Расчёт подтверждается после повторной диагностики и не является обещанием выкупа.",
     icon: "chart",
   },
 ];
@@ -110,7 +110,12 @@ function passportCard(value: unknown): PassportCard {
     grade: textField(record, "grade", "grade", "A-"),
     gradeLabel: textField(record, "gradeLabel", "grade_label", "Грейд"),
     rows: rows.length > 0 ? rows : DEFAULT_ROWS,
-    exitLabel: textField(record, "exitLabel", "exit_label", "Ориентир выхода через 6 мес"),
+    exitLabel: textField(
+      record,
+      "exitLabel",
+      "exit_label",
+      "Предварительная стоимость при обновлении через 6 месяцев",
+    ),
     exitValue: textField(record, "exitValue", "exit_value", "до 42 000 ₽"),
     warranty: textField(record, "warranty", "warranty", "Гарантия"),
     warrantyStrong: textField(record, "warrantyStrong", "warranty_strong", "90 дней"),

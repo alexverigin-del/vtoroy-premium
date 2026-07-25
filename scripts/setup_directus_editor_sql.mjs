@@ -449,7 +449,7 @@ $$;
 -- Device Studio groups. Alias fields do not change the actual devices table.
 SELECT isvoi_upsert_directus_field('devices', 'group_publish', 'group-detail', NULL, '{"headerIcon":"fact_check","start":"open"}'::json, 'full', 1, 'Публикация, складской статус и готовность карточки.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('devices', 'group_identity', 'group-detail', NULL, '{"headerIcon":"devices","start":"open"}'::json, 'full', 10, 'Название, категория и основные характеристики.', false, 'alias,no-data,group');
-SELECT isvoi_upsert_directus_field('devices', 'group_price', 'group-detail', NULL, '{"headerIcon":"payments"}'::json, 'full', 30, 'Цена, гарантия, грейд и цена выхода.', false, 'alias,no-data,group');
+SELECT isvoi_upsert_directus_field('devices', 'group_price', 'group-detail', NULL, '{"headerIcon":"payments"}'::json, 'full', 30, 'Цена, гарантия, грейд и предварительная стоимость при обновлении.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('devices', 'group_media', 'group-detail', NULL, '{"headerIcon":"image"}'::json, 'full', 50, 'Фото карточки и визуальные fallback-поля.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('devices', 'group_copy', 'group-detail', NULL, '{"headerIcon":"article"}'::json, 'full', 70, 'Тексты карточки, товарной страницы и CTA.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('devices', 'group_structured', 'group-detail', NULL, '{"headerIcon":"data_object"}'::json, 'full', 90, 'JSON-поля Passport, галереи и Trade. Редактируйте осторожно.', false, 'alias,no-data,group');

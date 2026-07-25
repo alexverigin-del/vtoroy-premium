@@ -167,7 +167,12 @@ function heroPassportContent(value: unknown): HeroPassport {
             { label: "Face ID", value: "работает", state: "ok" },
             { label: "Влага", value: "следов нет", state: "ok" },
           ],
-    exitLabel: textField(record, "exitLabel", "exit_label", "Ориентир выхода через 6 мес"),
+    exitLabel: textField(
+      record,
+      "exitLabel",
+      "exit_label",
+      "Предварительная стоимость при обновлении через 6 месяцев",
+    ),
     exitValue: textField(record, "exitValue", "exit_value", "до 42 000 ₽"),
     warranty: textField(record, "warranty", "warranty", "Гарантия"),
     warrantyStrong: textField(record, "warrantyStrong", "warranty_strong", "90 дней"),

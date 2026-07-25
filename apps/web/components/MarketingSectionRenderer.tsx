@@ -81,7 +81,7 @@ const DEFAULT_HERO_HIGHLIGHTS: Record<MarketingSlug, MarketingHeroHighlight[]> =
     {
       label: "Витрина",
       value: "проверенные вещи",
-      text: "Карточки показывают грейд, наличие, гарантию и цену выхода до решения.",
+      text: "Карточки показывают грейд, наличие, гарантию и известную историю до решения.",
     },
     {
       label: "Проверка",
@@ -123,16 +123,16 @@ const DEFAULT_HERO_HIGHLIGHTS: Record<MarketingSlug, MarketingHeroHighlight[]> =
       text: "Покупатель видит нюансы до решения, а не узнаёт их после сделки.",
     },
     {
-      label: "Выход",
-      value: "понятный ориентир",
-      text: "Passport помогает оценивать не только покупку, но и будущую передачу вещи.",
+      label: "Обновление",
+      value: "предварительная стоимость",
+      text: "Расчёт подтверждается после повторной диагностики устройства.",
     },
   ],
   club: [
     {
-      label: "Круг",
-      value: "разумное владение",
-      text: "Устройства не теряются на случайном рынке, а переходят через своих.",
+      label: "Формат",
+      value: "пилот",
+      text: "Условия обсуждаются только вокруг конкретного устройства.",
     },
     {
       label: "Обновление",
@@ -140,9 +140,9 @@ const DEFAULT_HERO_HIGHLIGHTS: Record<MarketingSlug, MarketingHeroHighlight[]> =
       text: "Trade и Store помогают перейти на следующую вещь без объявлений и торга.",
     },
     {
-      label: "Отношения",
-      value: "после первой сделки",
-      text: "Club удерживает историю, доверие и понятные правила следующего шага.",
+      label: "Расчёт",
+      value: "до участия",
+      text: "Стоимость и обязательства подтверждаются отдельно до решения.",
     },
   ],
 };
@@ -151,7 +151,7 @@ const MARKETING_HERO_EYEBROWS: Record<MarketingSlug, string> = {
   store: "I СВОИ · Store",
   trade: "I СВОИ · Trade",
   passport: "I СВОИ · Passport",
-  club: "I СВОИ · Club",
+  club: "I СВОИ · Club — пилот",
 };
 
 function strField(record: Record<string, unknown>, key: string, fallback = ""): string {
@@ -782,9 +782,9 @@ function MarketingLiveExampleSection({
   const primaryLabel =
     section.primaryCtaLabel ||
     (mode === "trade"
-      ? "Рассчитать Trade"
+      ? "Получить предварительную оценку"
       : mode === "club"
-        ? "Узнать условия Club"
+        ? "Узнать условия пилота"
         : "Смотреть Passport");
   const primaryUrl =
     section.primaryCtaUrl ||
@@ -800,9 +800,9 @@ function MarketingLiveExampleSection({
         : "Фрагмент Passport";
   const modeText =
     mode === "trade"
-      ? "Берём реальную вещь из Store как цель обновления: цена, состояние и ориентир выхода видны до расчёта зачёта вашей вещи."
+      ? "Берём реальное устройство из Store как цель обновления: цена и состояние известны, а стоимость вашей техники уточняется после диагностики."
       : mode === "club"
-        ? "Один и тот же Passport помогает выбрать вещь, пользоваться с понятными условиями и потом спокойно обновиться через Trade."
+        ? "Passport фиксирует состояние устройства, а условия пилота и будущего обновления подтверждаются отдельно до участия."
         : "Так выглядит сжатый смысл Passport: не абстрактное обещание, а несколько проверенных фактов до решения.";
 
   return (

@@ -26,8 +26,8 @@ VALUES (
   'catalog',
   'catalog',
   'published',
-  'ISVOI Store — вещи в кругу',
-  'Проверенные вещи с ISVOI Passport, гарантией и понятной ценой выхода. Сейчас в наличии в кругу ISVOI.'
+  'Каталог проверенной б/у Apple‑техники — I СВОИ',
+  'Проверенная б/у Apple‑техника: реальные фото, состояние, батарея, известный ремонт, цена и наличие.'
 )
 ON CONFLICT (slug) DO UPDATE SET
   template = EXCLUDED.template,
@@ -42,15 +42,15 @@ SET variant = 'catalog.grid',
     WHEN btrim(ps.eyebrow) IN ('Store', 'Каталог', 'Главная / Store', 'Главная / Каталог') THEN 'I СВОИ · Каталог'
     ELSE ps.eyebrow
   END,
-  headline = COALESCE(NULLIF(ps.headline, ''), 'Вещи в кругу — сейчас в наличии.'),
+  headline = COALESCE(NULLIF(ps.headline, ''), 'Проверенная б/у Apple‑техника в наличии.'),
   subheadline = COALESCE(NULLIF(ps.subheadline, ''), 'Фильтры каталога'),
   body = COALESCE(
     NULLIF(ps.body, ''),
-    'Актуальные устройства с фото, грейдом, ценой, Passport и ориентиром выхода. Выберите вещь под задачу и оставьте заявку прямо из карточки.'
+    'Реальные фото, грейд, батарея, известный ремонт, цена и наличие. Подробности проверки — в карточке устройства.'
   ),
-  primary_cta_label = COALESCE(NULLIF(ps.primary_cta_label, ''), 'Подобрать под задачу'),
+  primary_cta_label = COALESCE(NULLIF(ps.primary_cta_label, ''), 'Получить варианты'),
   primary_cta_url = COALESCE(NULLIF(ps.primary_cta_url, ''), '/#final'),
-  secondary_cta_label = COALESCE(NULLIF(ps.secondary_cta_label, ''), 'Как устроен Store'),
+  secondary_cta_label = COALESCE(NULLIF(ps.secondary_cta_label, ''), 'Магазин в Северодвинске'),
   secondary_cta_url = COALESCE(NULLIF(ps.secondary_cta_url, ''), '/store'),
   sort_order = 1,
   is_active = true,
@@ -60,8 +60,7 @@ SET variant = 'catalog.grid',
       { "label": "Все", "value": "all" },
       { "label": "iPhone", "value": "iphone" },
       { "label": "MacBook", "value": "macbook" },
-      { "label": "iPad", "value": "ipad" },
-      { "label": "Для Club", "value": "club" }
+      { "label": "iPad", "value": "ipad" }
     ],
     "statusFilters": [
       { "label": "Все статусы", "value": "all" },
@@ -83,7 +82,7 @@ SET variant = 'catalog.grid',
     "emptyState": {
       "headline": "Каталог скоро обновится.",
       "body": "Сейчас нет опубликованных устройств. Оставьте заявку — подберём вещь под задачу.",
-      "ctaLabel": "Оставить заявку",
+      "ctaLabel": "Получить варианты",
       "ctaUrl": "/#final"
     }
   }'::jsonb || COALESCE(ps.content::jsonb, '{}'::jsonb))::json
@@ -113,12 +112,12 @@ SELECT
   'catalog_page_live',
   'catalog.grid',
   'I СВОИ · Каталог',
-  'Вещи в кругу — сейчас в наличии.',
+  'Проверенная б/у Apple‑техника в наличии.',
   'Фильтры каталога',
-  'Актуальные устройства с фото, грейдом, ценой, Passport и ориентиром выхода. Выберите вещь под задачу и оставьте заявку прямо из карточки.',
-  'Подобрать под задачу',
+  'Реальные фото, грейд, батарея, известный ремонт, цена и наличие. Подробности проверки — в карточке устройства.',
+  'Получить варианты',
   '/#final',
-  'Как устроен Store',
+  'Магазин в Северодвинске',
   '/store',
   1,
   true,
@@ -128,8 +127,7 @@ SELECT
       { "label": "Все", "value": "all" },
       { "label": "iPhone", "value": "iphone" },
       { "label": "MacBook", "value": "macbook" },
-      { "label": "iPad", "value": "ipad" },
-      { "label": "Для Club", "value": "club" }
+      { "label": "iPad", "value": "ipad" }
     ],
     "statusFilters": [
       { "label": "Все статусы", "value": "all" },
@@ -151,7 +149,7 @@ SELECT
     "emptyState": {
       "headline": "Каталог скоро обновится.",
       "body": "Сейчас нет опубликованных устройств. Оставьте заявку — подберём вещь под задачу.",
-      "ctaLabel": "Оставить заявку",
+      "ctaLabel": "Получить варианты",
       "ctaUrl": "/#final"
     }
   }'::json

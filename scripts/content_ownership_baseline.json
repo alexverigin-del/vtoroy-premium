@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T18:13:51.576Z",
+  "updatedAt": "2026-07-25T19:23:45.230Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -231,8 +231,8 @@
       "file": "apps/web/app/blog/page.tsx",
       "kind": "string",
       "line": 13,
-      "text": "Практические разборы I СВОИ: диагностика, состояние, батарея, ремонт, цена выхода и спокойная покупка без чужой неизвестности.",
-      "id": "d10de7c10d5eb7c8"
+      "text": "Практические разборы I СВОИ: диагностика, состояние, батарея, ремонт и спокойная покупка техники с понятной историей.",
+      "id": "065c5e44b57358ac"
     },
     {
       "file": "apps/web/app/blog/page.tsx",
@@ -588,15 +588,15 @@
       "file": "apps/web/app/site-metadata.ts",
       "kind": "string",
       "line": 1,
-      "text": "I СВОИ — клуб разумного владения",
-      "id": "305687570c166131"
+      "text": "I СВОИ — проверенная б/у Apple‑техника",
+      "id": "9351338c1836382a"
     },
     {
       "file": "apps/web/app/site-metadata.ts",
       "kind": "string",
       "line": 4,
-      "text": "I СВОИ — проверенная техника для своих: устройства с I СВОИ Passport, гарантией и понятной ценой выхода. Store, Trade и Club без случайного рынка.",
-      "id": "0e09bd03b9529630"
+      "text": "Проверенная б/у Apple‑техника с реальными фото, диагностикой, известной историей ремонта и письменной гарантией 90 дней.",
+      "id": "dd6e3310027c7287"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
@@ -650,128 +650,121 @@
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 21,
-      "text": "Для Club",
-      "id": "c50fb7e132dc793a"
-    },
-    {
-      "file": "apps/web/components/CatalogClientControls.tsx",
-      "kind": "string",
-      "line": 25,
+      "line": 24,
       "text": "Все статусы",
       "id": "493f3153aa4a86b0"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 26,
+      "line": 25,
       "text": "В наличии",
       "id": "772b09eb58e14143"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 27,
+      "line": 26,
       "text": "Бронь",
       "id": "24f6be6b25d6e02b"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 28,
+      "line": 27,
       "text": "Продано",
       "id": "4a87dbd252e8804b"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 32,
+      "line": 31,
       "text": "По рекомендации",
       "id": "cc5afc6372be12e5"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 33,
+      "line": 32,
       "text": "Сначала обновленные",
       "id": "7318e4877ca2f5bf"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 34,
+      "line": 33,
       "text": "По статусу",
       "id": "0e18656823adc8d4"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 35,
+      "line": 34,
       "text": "Цена ↑",
       "id": "936b5e22005e277c"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 36,
+      "line": 35,
       "text": "Цена ↓",
       "id": "5f09a6cd2c5d5550"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 176,
+      "line": 175,
       "text": "Фильтры каталога",
       "id": "601ccfbad57068ad"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 177,
+      "line": 176,
       "text": "Статус устройства",
       "id": "a747b9abc1ffcdaa"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 178,
+      "line": 177,
       "text": "Сортировка",
       "id": "d4119a240c35efef"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "string",
-      "line": 179,
+      "line": 178,
       "text": "Сортировка каталога",
       "id": "66e7b4903b30f751"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "jsx-text",
-      "line": 318,
+      "line": 317,
       "text": "Не нашли свою модель?",
       "id": "fba92dc097d4fd81"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "jsx-text",
-      "line": 321,
-      "text": "Оставьте контакт и задачу. Мы проверим ближайшие поступления, предложим похожую вещь или подскажем спокойный сценарий Trade.",
-      "id": "b115ae9f06b0f41f"
+      "line": 320,
+      "text": "Оставьте модель, необязательный бюджет и удобный контакт. Предложим доступные варианты или сообщим о ближайшем поступлении.",
+      "id": "93704c815ddf9e62"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "jsx-text",
-      "line": 326,
-      "text": "Оставить заявку",
-      "id": "eb83dfa754d99792"
+      "line": 325,
+      "text": "Получить варианты",
+      "id": "2637e5d4239a0d51"
     },
     {
       "file": "apps/web/components/CatalogClientControls.tsx",
       "kind": "jsx-text",
-      "line": 329,
-      "text": "Рассчитать Trade",
-      "id": "2a4deeed17edb74e"
+      "line": 328,
+      "text": "Получить предварительную оценку",
+      "id": "4e530ebf3d7f0ce2"
     },
     {
       "file": "apps/web/components/CatalogGrid.tsx",
@@ -791,15 +784,15 @@
       "file": "apps/web/components/CatalogGrid.tsx",
       "kind": "string",
       "line": 67,
-      "text": "Вещи в кругу — сейчас в наличии.",
-      "id": "68222d09c78187b6"
+      "text": "Проверенная б/у Apple‑техника в наличии.",
+      "id": "0ea17221d7887549"
     },
     {
       "file": "apps/web/components/CatalogGrid.tsx",
       "kind": "string",
       "line": 71,
-      "text": "В наличии только проверенные вещи: фото, грейд, гарантия и ориентир выхода обновляются после проверки.",
-      "id": "bbfe3be586572789"
+      "text": "Реальные фото, грейд, батарея, известный ремонт, цена и наличие. Подробности проверки — в карточке устройства.",
+      "id": "bb1719e6d2d545ce"
     },
     {
       "file": "apps/web/components/CatalogGrid.tsx",
@@ -1098,42 +1091,42 @@
     {
       "file": "apps/web/components/DiagnosticsCompareSection.tsx",
       "kind": "string",
-      "line": 86,
-      "text": "ориентир выхода понятен",
-      "id": "dc144342876a0fa1"
-    },
-    {
-      "file": "apps/web/components/DiagnosticsCompareSection.tsx",
-      "kind": "string",
-      "line": 86,
-      "text": "только сегодня",
-      "id": "bb2f50ec580fb97c"
-    },
-    {
-      "file": "apps/web/components/DiagnosticsCompareSection.tsx",
-      "kind": "string",
-      "line": 86,
-      "text": "Цена",
-      "id": "2e6546837b553f54"
-    },
-    {
-      "file": "apps/web/components/DiagnosticsCompareSection.tsx",
-      "kind": "string",
       "line": 87,
+      "text": "Обновление",
+      "id": "afb1e82cfcfc39bb"
+    },
+    {
+      "file": "apps/web/components/DiagnosticsCompareSection.tsx",
+      "kind": "string",
+      "line": 88,
+      "text": "условия неизвестны",
+      "id": "7ae5679c8a6ea2fa"
+    },
+    {
+      "file": "apps/web/components/DiagnosticsCompareSection.tsx",
+      "kind": "string",
+      "line": 89,
+      "text": "стоимость уточняется после повторной диагностики",
+      "id": "f835934d691b2104"
+    },
+    {
+      "file": "apps/web/components/DiagnosticsCompareSection.tsx",
+      "kind": "string",
+      "line": 91,
       "text": "вера на слово",
       "id": "de653a3e09deb8ef"
     },
     {
       "file": "apps/web/components/DiagnosticsCompareSection.tsx",
       "kind": "string",
-      "line": 87,
+      "line": 91,
       "text": "проверка при вас",
       "id": "8b6620c417986480"
     },
     {
       "file": "apps/web/components/DiagnosticsCompareSection.tsx",
       "kind": "string",
-      "line": 87,
+      "line": 91,
       "text": "Состояние",
       "id": "efc6b17cc3b9d5d5"
     },
@@ -1378,98 +1371,98 @@
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 170,
-      "text": "Ориентир выхода через 6 мес",
-      "id": "fea52e322ee4ec68"
+      "line": 174,
+      "text": "Предварительная стоимость при обновлении через 6 месяцев",
+      "id": "a4e3326204d44287"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 171,
+      "line": 176,
       "text": "до 42 000 ₽",
       "id": "308650ab066401fe"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 172,
+      "line": 177,
       "text": "Гарантия",
       "id": "6508b3958454e966"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 173,
+      "line": 178,
       "text": "90 дней",
       "id": "11c3a150801605e7"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 215,
+      "line": 220,
       "text": "Подобрать проверенную вещь",
       "id": "87aebe5ab3724cd6"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 217,
+      "line": 222,
       "text": "Оценить свою вещь",
       "id": "e3b53ff6f5e2adbf"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 222,
+      "line": 227,
       "text": "В кругу своих",
       "id": "cf6f8eb7b0513f1d"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 222,
+      "line": 227,
       "text": "С историей и проверкой",
       "id": "b7823b9812c2358a"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 222,
+      "line": 227,
       "text": "Store в Северодвинске",
       "id": "4541b0805ab233f9"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 253,
+      "line": 258,
       "text": "Принципы клуба",
       "id": "e22925e6bb4dcbc8"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 394,
+      "line": 399,
       "text": "Правила круга",
       "id": "905d150da09930ae"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 471,
+      "line": 476,
       "text": "Отзывы",
       "id": "849a24d49ca97907"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 519,
+      "line": 524,
       "text": "Частые вопросы",
       "id": "286a800bddd544d1"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 556,
+      "line": 561,
       "text": "Выберите свой сценарий",
       "id": "8fe5a2c8f1466b70"
     },
@@ -1491,8 +1484,8 @@
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 84,
-      "text": "Карточки показывают грейд, наличие, гарантию и цену выхода до решения.",
-      "id": "dffab699d31ff4a5"
+      "text": "Карточки показывают грейд, наличие, гарантию и известную историю до решения.",
+      "id": "248765d9502b91b2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
@@ -1645,50 +1638,43 @@
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 126,
-      "text": "Выход",
-      "id": "8a9399084b05590c"
+      "text": "Обновление",
+      "id": "1e5f52a1d3f82d14"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 127,
-      "text": "понятный ориентир",
-      "id": "c0543fb8f336c398"
+      "text": "предварительная стоимость",
+      "id": "dca5afc58b9026a6"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 128,
-      "text": "Passport помогает оценивать не только покупку, но и будущую передачу вещи.",
-      "id": "ff4896aab04893f4"
+      "text": "Расчёт подтверждается после повторной диагностики устройства.",
+      "id": "0071a23a954c2e3f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 133,
-      "text": "Круг",
-      "id": "81953846cbb1bf24"
+      "text": "Формат",
+      "id": "32711b62f00dca62"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 134,
-      "text": "разумное владение",
-      "id": "191865278b1a03fe"
+      "text": "пилот",
+      "id": "8f9b77630b6dcad2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 135,
-      "text": "Устройства не теряются на случайном рынке, а переходят через своих.",
-      "id": "5ea5ba3212f2851c"
-    },
-    {
-      "file": "apps/web/components/MarketingSectionRenderer.tsx",
-      "kind": "string",
-      "line": 138,
-      "text": "Обновление",
-      "id": "1e5f52a1d3f82d14"
+      "text": "Условия обсуждаются только вокруг конкретного устройства.",
+      "id": "a5e289f0488960ad"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
@@ -1708,22 +1694,22 @@
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 143,
-      "text": "Отношения",
-      "id": "425082a34696bd75"
+      "text": "Расчёт",
+      "id": "c9735831ba167455"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 144,
-      "text": "после первой сделки",
-      "id": "f40ea7c28bbd8b7f"
+      "text": "до участия",
+      "id": "de873d2a68f8d8b2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 145,
-      "text": "Club удерживает историю, доверие и понятные правила следующего шага.",
-      "id": "ba62212d0aa8aedf"
+      "text": "Стоимость и обязательства подтверждаются отдельно до решения.",
+      "id": "ff16aa4ac50afd1c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
@@ -1750,8 +1736,8 @@
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 154,
-      "text": "I СВОИ · Club",
-      "id": "ad51fab9b77e9e29"
+      "text": "I СВОИ · Club — пилот",
+      "id": "d906dc731785dad9"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
@@ -1820,15 +1806,15 @@
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 785,
-      "text": "Рассчитать Trade",
-      "id": "b6fe8530c8859607"
+      "text": "Получить предварительную оценку",
+      "id": "bdfce1eada61830a"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 787,
-      "text": "Узнать условия Club",
-      "id": "8452de889538b603"
+      "text": "Узнать условия пилота",
+      "id": "a271fa9afc130902"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
@@ -1869,15 +1855,15 @@
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 803,
-      "text": "Берём реальную вещь из Store как цель обновления: цена, состояние и ориентир выхода видны до расчёта зачёта вашей вещи.",
-      "id": "0bc096dd2d4a5b1e"
+      "text": "Берём реальное устройство из Store как цель обновления: цена и состояние известны, а стоимость вашей техники уточняется после диагностики.",
+      "id": "abf7a8fc5f727704"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
       "line": 805,
-      "text": "Один и тот же Passport помогает выбрать вещь, пользоваться с понятными условиями и потом спокойно обновиться через Trade.",
-      "id": "5eec5c3e9dd9f6e9"
+      "text": "Passport фиксирует состояние устройства, а условия пилота и будущего обновления подтверждаются отдельно до участия.",
+      "id": "866116e9246992ed"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
@@ -1892,6 +1878,13 @@
       "line": 838,
       "text": "Гарантия",
       "id": "f3e046ebc0fd28be"
+    },
+    {
+      "file": "apps/web/components/MarketingSectionRenderer.tsx",
+      "kind": "string",
+      "line": 840,
+      "text": "Выход",
+      "id": "8a9399084b05590c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
@@ -1960,15 +1953,15 @@
       "file": "apps/web/components/PassportPreviewSection.tsx",
       "kind": "string",
       "line": 49,
-      "text": "Ориентир выхода",
-      "id": "9000b0f32e895596"
+      "text": "Предварительная стоимость при обновлении",
+      "id": "008ed8bc7c29a84b"
     },
     {
       "file": "apps/web/components/PassportPreviewSection.tsx",
       "kind": "string",
       "line": 50,
-      "text": "Сколько вещь будет стоить, когда пойдёт дальше через своих - известно заранее.",
-      "id": "2a54d9e07cb69f99"
+      "text": "Расчёт подтверждается после повторной диагностики и не является обещанием выкупа.",
+      "id": "776b4369f5abb792"
     },
     {
       "file": "apps/web/components/PassportPreviewSection.tsx",
@@ -2043,35 +2036,35 @@
     {
       "file": "apps/web/components/PassportPreviewSection.tsx",
       "kind": "string",
-      "line": 113,
-      "text": "Ориентир выхода через 6 мес",
-      "id": "1336566bc76175c7"
+      "line": 117,
+      "text": "Предварительная стоимость при обновлении через 6 месяцев",
+      "id": "a97a1d097464c6f7"
     },
     {
       "file": "apps/web/components/PassportPreviewSection.tsx",
       "kind": "string",
-      "line": 114,
+      "line": 119,
       "text": "до 42 000 ₽",
       "id": "2463c93e299a4b2d"
     },
     {
       "file": "apps/web/components/PassportPreviewSection.tsx",
       "kind": "string",
-      "line": 115,
+      "line": 120,
       "text": "Гарантия",
       "id": "19a0ec97995fb5ac"
     },
     {
       "file": "apps/web/components/PassportPreviewSection.tsx",
       "kind": "string",
-      "line": 116,
+      "line": 121,
       "text": "90 дней",
       "id": "33c3c7cc71dbe9e2"
     },
     {
       "file": "apps/web/components/PassportPreviewSection.tsx",
       "kind": "jsx-text",
-      "line": 312,
+      "line": 317,
       "text": "· проверка пройдена",
       "id": "34767fbb15c00a74"
     },
@@ -2562,8 +2555,8 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 27,
-      "text": "Ориентир выхода до 42 000 ₽",
-      "id": "82ca0b6fb938251a"
+      "text": "Предварительная стоимость при обновлении — до 42 000 ₽ после повторной диагностики",
+      "id": "ce95a865c3e160ab"
     },
     {
       "file": "apps/web/data/devices.ts",
@@ -2576,8 +2569,8 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 30,
-      "text": "256 GB · Graphite · грейд A− · батарея 89% · гарантия 90 дней · ориентир выхода до 42 000 ₽.",
-      "id": "939ccc9f3b17aaea"
+      "text": "256 GB · Graphite · грейд A− · батарея 89% · гарантия 90 дней · предварительная стоимость при обновлении до 42 000 ₽ после повторной диагностики.",
+      "id": "1dada87c43861a49"
     },
     {
       "file": "apps/web/data/devices.ts",
@@ -2597,8 +2590,8 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 34,
-      "text": "Проверить наличие",
-      "id": "3a5ee19b5008bea9"
+      "text": "Смотреть устройство",
+      "id": "b50edcc772a3333d"
     },
     {
       "file": "apps/web/data/devices.ts",
@@ -2842,8 +2835,8 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 146,
-      "text": "Ориентир выхода не является безусловным обещанием выкупа: финальная сумма зависит от состояния, комплектации, спроса и результатов повторной диагностики.",
-      "id": "2895c5b697fe8dca"
+      "text": "Предварительная стоимость при обновлении не является обещанием выкупа: итог зависит от состояния, комплектации, спроса и результатов повторной диагностики.",
+      "id": "99ce6c496022633f"
     },
     {
       "file": "apps/web/data/devices.ts",
@@ -2863,15 +2856,15 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 185,
-      "text": "Ориентир выхода до 45 000 ₽",
-      "id": "35cfe5281cb84d63"
+      "text": "Предварительная стоимость при обновлении — до 45 000 ₽ после повторной диагностики",
+      "id": "9c8ba71659079c23"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 188,
-      "text": "128 GB · Starlight · грейд A · батарея 94% · гарантия 90 дней · ориентир выхода до 45 000 ₽.",
-      "id": "35dd8e60c269e947"
+      "text": "128 GB · Starlight · грейд A · батарея 94% · гарантия 90 дней · предварительная стоимость при обновлении до 45 000 ₽ после повторной диагностики.",
+      "id": "1bae50f3e4cf47be"
     },
     {
       "file": "apps/web/data/devices.ts",
@@ -3010,15 +3003,15 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 344,
-      "text": "Ориентир выхода до 49 000 ₽",
-      "id": "39bf51a4def31da1"
+      "text": "Предварительная стоимость при обновлении — до 49 000 ₽ после повторной диагностики",
+      "id": "72a110a95825bcc6"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 347,
-      "text": "8 / 256 GB · Silver · грейд B+ · 214 циклов · гарантия 90 дней · ориентир выхода до 49 000 ₽.",
-      "id": "727ad492b2a39b2b"
+      "text": "8 / 256 GB · Silver · грейд B+ · 214 циклов · гарантия 90 дней · предварительная стоимость при обновлении до 49 000 ₽ после повторной диагностики.",
+      "id": "af719ba4b4dd9b40"
     },
     {
       "file": "apps/web/data/devices.ts",
@@ -3192,8 +3185,8 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 459,
-      "text": "Ориентир выхода не является безусловным обещанием выкупа: финальная сумма зависит от состояния, числа циклов, спроса и результатов повторной диагностики.",
-      "id": "296e67ceb8565510"
+      "text": "Предварительная стоимость при обновлении не является обещанием выкупа: итог зависит от состояния, числа циклов, спроса и результатов повторной диагностики.",
+      "id": "0a4b20a8e537bb4a"
     },
     {
       "file": "apps/web/data/devices.ts",
@@ -3227,125 +3220,125 @@
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 498,
-      "text": "Ориентир выхода до 31 000 ₽",
-      "id": "23cede972d8f0364"
-    },
-    {
-      "file": "apps/web/data/devices.ts",
-      "kind": "string",
-      "line": 500,
-      "text": "64 GB · Wi‑Fi · грейд A · гарантия 90 дней · ориентир выхода до 31 000 ₽.",
-      "id": "ca3e03e939f8f90e"
+      "text": "Предварительная стоимость при обновлении — до 31 000 ₽ после повторной диагностики",
+      "id": "09f6331e46010d43"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
       "line": 501,
+      "text": "64 GB · Wi‑Fi · грейд A · гарантия 90 дней · предварительная стоимость при обновлении до 31 000 ₽ после повторной диагностики.",
+      "id": "8d37b8c9f9529512"
+    },
+    {
+      "file": "apps/web/data/devices.ts",
+      "kind": "string",
+      "line": 502,
       "text": "iPad Air. Проверен. Идёт дальше.",
       "id": "426ad121bcfa7f70"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 503,
+      "line": 504,
       "text": "Светлый планшет на минималистичной студийной поверхности",
       "id": "8e0b4f7ffd864d09"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 512,
+      "line": 513,
       "text": "iPad Air на минималистичной студийной поверхности",
       "id": "ddc9ba24c4d9e813"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 517,
+      "line": 518,
       "text": "Экран iPad Air с выключенным чёрным стеклом и отражениями",
       "id": "690fcd993215a8c3"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 522,
+      "line": 523,
       "text": "Корпус iPad Air крупным планом с минимальными следами использования",
       "id": "35367a3d9395d334"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 527,
+      "line": 528,
       "text": "Крупный план кромки корпуса iPad Air с небольшим следом использования",
       "id": "6d0b8b236d217aaf"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 534,
+      "line": 535,
       "text": "в норме",
       "id": "b0b83a49402ae81a"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 559,
+      "line": 560,
       "text": "Touch ID работает",
       "id": "2dd8e4ca47922a98"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 575,
+      "line": 576,
       "text": "Сенсор и кнопки проверены",
       "id": "d227e586e29130d0"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 586,
+      "line": 587,
       "text": "Планшет в отличном состоянии. Корпус грейда A, экран без значимых дефектов, аккумулятор в норме.",
       "id": "a673bab4601344a0"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 596,
+      "line": 597,
       "text": "Домашний планшет с понятным сценарием",
       "id": "ccde4ddfe3c1cf80"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 597,
+      "line": 598,
       "text": "iPad был домашним устройством для чтения, видео и поездок, без тяжёлых рабочих нагрузок и спорного ремонта. Перед публикацией его проверили по экрану, Touch ID, камерам, динамикам и зарядке, а небольшой след на кромке зафиксировали отдельно.",
       "id": "aed16e9f7c0f3295"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 599,
+      "line": 600,
       "text": "Домашний сценарий использования",
       "id": "48391b8cd2673851"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 600,
+      "line": 601,
       "text": "Touch ID и экран проверены",
       "id": "038fc88d3da86236"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 601,
+      "line": 602,
       "text": "Нюанс корпуса раскрыт заранее",
       "id": "32c1a728f36ded64"
     },
     {
       "file": "apps/web/data/devices.ts",
       "kind": "string",
-      "line": 607,
+      "line": 608,
       "text": "Заявленные функции устройства: экран, Touch ID, камеры, разъёмы, динамики, микрофоны, Wi‑Fi и базовая работоспособность.",
       "id": "4cc87dbc31b90c29"
     },
@@ -3458,8 +3451,8 @@
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
       "line": 69,
-      "text": "Гарантия и ориентир выхода",
-      "id": "47469046435ef8dd"
+      "text": "Гарантия и условия обновления",
+      "id": "47caca565fd0be41"
     },
     {
       "file": "apps/web/lib/directus.ts",
@@ -3472,8 +3465,8 @@
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
       "line": 71,
-      "text": "Ориентир выхода",
-      "id": "c9e1475bad5d18d2"
+      "text": "Предварительная стоимость при обновлении",
+      "id": "88ccb10ba106f2e9"
     },
     {
       "file": "apps/web/lib/directus.ts",
@@ -3521,15 +3514,15 @@
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
       "line": 78,
-      "text": "зачет до",
-      "id": "317f44ad414f8067"
+      "text": "Предварительная оценка",
+      "id": "5a2b70d48f10a0cb"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
       "line": 79,
-      "text": "Рассчитать Trade",
-      "id": "0879f5d9e3eb04be"
+      "text": "Получить предварительную оценку",
+      "id": "88e0ad0875b447eb"
     },
     {
       "file": "apps/web/lib/directus.ts",
@@ -3892,671 +3885,657 @@
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
       "line": 40,
-      "text": "I СВОИ — клуб разумного владения: проверенные вещи проходят дальше через своих. Наличие, цены, грейды, гарантия и условия выхода подтверждаются перед сделкой. Названия и товарные знаки принадлежат их правообладателям.",
-      "id": "bf7177e359d9b791"
+      "text": "I СВОИ — проверенная б/у Apple‑техника с открытой диагностикой и письменной гарантией. Наличие, цены и состояние подтверждаются перед сделкой.",
+      "id": "517a66a2eb633b1f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 41,
-      "text": "Клуб разумного владения. Хорошие вещи проходят через своих. Северодвинск.",
-      "id": "f9711b428daf1dc7"
+      "line": 42,
+      "text": "Б/у Apple‑техника с прозрачной историей. Хорошие вещи проходят через своих. Северодвинск.",
+      "id": "7536b2cd868abc51"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 43,
+      "line": 44,
       "text": "© 2026 I СВОИ.",
       "id": "4915f8658fac9adf"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 49,
+      "line": 50,
       "text": "Каталог",
       "id": "10b545ae32293186"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 80,
-      "text": "Клуб",
-      "id": "afa562f452ffeb0f"
+      "line": 83,
+      "text": "Навигация",
+      "id": "79be0687172fa520"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 101,
-      "text": "I СВОИ Passport",
-      "id": "48905271f9a58ca7"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 110,
-      "text": "Сервисы",
-      "id": "48775f2c530a5a88"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 136,
-      "text": "Открытая проверка",
-      "id": "6b744d7a8ef3c539"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 145,
-      "text": "Контакты",
-      "id": "258d17a87ce2ca6d"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 162,
-      "text": "Записаться на проверку",
-      "id": "27ab50feb090f3fa"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 171,
-      "text": "Передать вещь дальше",
-      "id": "45d6967f9699a4df"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 184,
-      "text": "В наличии",
-      "id": "52a09d2f7c0d89e0"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 185,
-      "text": "Проверенные устройства Apple.",
-      "id": "2a2d56728d638951"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 186,
-      "text": "Точная модель, память, цвет, состояние, батарея, ремонт, цена и наличие.",
-      "id": "4297c927bf0c7d40"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 187,
-      "text": "Смотреть все устройства",
-      "id": "20d91f44055986f5"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 189,
-      "text": "Получить варианты",
-      "id": "12fc115600280538"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 203,
-      "text": "I СВОИ · Северодвинск",
-      "id": "f865797849d4c8ce"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 204,
-      "text": "Б/у Apple‑техника, о которой всё известно до покупки.",
-      "id": "e5272e3643a72b09"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 205,
-      "text": "Реальные фотографии, состояние батареи, история ремонта, отмеченные дефекты, открытая проверка и письменная гарантия 90 дней.",
-      "id": "f8d4d8ba1f2122a8"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 208,
-      "text": "Оценить свою технику",
-      "id": "14ac562b2351ef70"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 214,
-      "text": "Гарантия 90 дней",
-      "id": "644e184c45d220cd"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 214,
-      "text": "Проверка при посетителе",
-      "id": "a1703d2a3867fd2b"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 214,
-      "text": "Реальные фото",
-      "id": "9b18be453b7ad64a"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 216,
-      "text": "Премиальный графитовый смартфон на светло-серой студийной поверхности",
-      "id": "d77a64f12f0aec33"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 219,
-      "text": "I СВОИ Passport вещи",
-      "id": "bf8aae8924cad007"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 221,
-      "text": "256 GB · Графитовый",
-      "id": "b353f57e351a193e"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 223,
-      "text": "Грейд",
-      "id": "3db5311e00dac24a"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 225,
-      "text": "Батарея",
-      "id": "998da4ee55b85f50"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 226,
-      "text": "не вскрывался",
-      "id": "edac640d7f1f8fdc"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 226,
-      "text": "Ремонт",
-      "id": "9daa8fe0a6c4106f"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 227,
-      "text": "работает",
-      "id": "e8b7d976aae55d5f"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 228,
-      "text": "Влага",
-      "id": "3e7def4e8b9d1d97"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 228,
-      "text": "следов нет",
-      "id": "b89991e7e84f6632"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 230,
-      "text": "Предварительная стоимость при обновлении через 6 месяцев",
-      "id": "b4ec7acdfbda2d35"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 231,
-      "text": "после повторной диагностики",
-      "id": "868fdde79aefd235"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 232,
-      "text": "Гарантия",
-      "id": "1b42fcf5db418e23"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 233,
-      "text": "90 дней",
-      "id": "154d6a6e5d51e92a"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 242,
-      "text": "До оплаты",
-      "id": "43691e3f87ddcbcb"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 243,
-      "text": "Что вы узнаете об устройстве заранее.",
-      "id": "eb5e583f7663aeda"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 248,
-      "text": "Грейд и заметные дефекты.",
-      "id": "dba5d26da991be60"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 248,
-      "text": "Состояние",
-      "id": "26e8dea6c210e6d7"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 249,
-      "text": "Батарея и функции",
-      "id": "a90a633e26e4cb83"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 249,
-      "text": "Результаты диагностики.",
-      "id": "1a4162af6fa780ea"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 250,
-      "text": "Подтверждённая история вмешательств.",
-      "id": "955a46661dbf6e93"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 251,
-      "text": "Письменные условия на 90 дней.",
-      "id": "2e7935efc62928b8"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 260,
-      "text": "Passport · документ о проверке",
-      "id": "094b659ddfd8dcb4"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 261,
-      "text": "Состояние видно до решения о покупке.",
-      "id": "6cbfff10fd874ee2"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 262,
-      "text": "Дата диагностики, грейд, ремонт, функции и отмеченные дефекты — в одном документе.",
-      "id": "d8db1628c4ecad67"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 263,
-      "text": "Как мы проверяем",
-      "id": "6ddacab94680bc71"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 274,
+      "line": 100,
       "text": "Магазин в Северодвинске",
       "id": "4830981484fa0636"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 275,
-      "text": "Как проходит покупка.",
-      "id": "1cd99ab79e332b34"
+      "line": 109,
+      "text": "Как мы проверяем",
+      "id": "6ddacab94680bc71"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 276,
-      "text": "Выберите устройство, проверьте его в магазине и получите документы с гарантией.",
-      "id": "974a3db145568d51"
+      "line": 118,
+      "text": "Сервисы",
+      "id": "48775f2c530a5a88"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 277,
-      "text": "Условия визита",
-      "id": "d9bd24ef99d5e604"
+      "line": 126,
+      "text": "Trade — продать или обменять",
+      "id": "fca82f4a47b581b7"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 288,
-      "text": "Trade · продажа или обмен",
-      "id": "430891f1452b4c8f"
+      "line": 144,
+      "text": "Открытая проверка",
+      "id": "6b744d7a8ef3c539"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 289,
-      "text": "Оцените свою технику без объявлений.",
-      "id": "77ca28d24b8fcf33"
+      "line": 153,
+      "text": "Контакты",
+      "id": "258d17a87ce2ca6d"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 290,
-      "text": "Предварительная оценка уточняется после диагностики.",
-      "id": "b30dd202d2384610"
-    },
-    {
-      "file": "apps/web/lib/site-content.ts",
-      "kind": "string",
-      "line": 291,
+      "line": 179,
       "text": "Получить предварительную оценку",
       "id": "4e8e8244f58fe386"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 302,
+      "line": 192,
+      "text": "В наличии",
+      "id": "52a09d2f7c0d89e0"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 193,
+      "text": "Проверенные устройства Apple.",
+      "id": "2a2d56728d638951"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 194,
+      "text": "Точная модель, память, цвет, состояние, батарея, ремонт, цена и наличие.",
+      "id": "4297c927bf0c7d40"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 195,
+      "text": "Смотреть все устройства",
+      "id": "20d91f44055986f5"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 197,
+      "text": "Получить варианты",
+      "id": "12fc115600280538"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 211,
+      "text": "I СВОИ · Северодвинск",
+      "id": "f865797849d4c8ce"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 212,
+      "text": "Б/у Apple‑техника, о которой всё известно до покупки.",
+      "id": "e5272e3643a72b09"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 213,
+      "text": "Реальные фотографии, состояние батареи, история ремонта, отмеченные дефекты, открытая проверка и письменная гарантия 90 дней.",
+      "id": "f8d4d8ba1f2122a8"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 216,
+      "text": "Оценить свою технику",
+      "id": "14ac562b2351ef70"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 222,
+      "text": "Гарантия 90 дней",
+      "id": "644e184c45d220cd"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 222,
+      "text": "Проверка при посетителе",
+      "id": "a1703d2a3867fd2b"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 222,
+      "text": "Реальные фото",
+      "id": "9b18be453b7ad64a"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 224,
+      "text": "Премиальный графитовый смартфон на светло-серой студийной поверхности",
+      "id": "d77a64f12f0aec33"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 227,
+      "text": "I СВОИ Passport вещи",
+      "id": "bf8aae8924cad007"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 229,
+      "text": "256 GB · Графитовый",
+      "id": "b353f57e351a193e"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 231,
+      "text": "Грейд",
+      "id": "3db5311e00dac24a"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 233,
+      "text": "Батарея",
+      "id": "998da4ee55b85f50"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 234,
+      "text": "не вскрывался",
+      "id": "edac640d7f1f8fdc"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 234,
+      "text": "Ремонт",
+      "id": "9daa8fe0a6c4106f"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 235,
+      "text": "работает",
+      "id": "e8b7d976aae55d5f"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 236,
+      "text": "Влага",
+      "id": "3e7def4e8b9d1d97"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 236,
+      "text": "следов нет",
+      "id": "b89991e7e84f6632"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 238,
+      "text": "Предварительная стоимость при обновлении через 6 месяцев",
+      "id": "b4ec7acdfbda2d35"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 239,
+      "text": "после повторной диагностики",
+      "id": "868fdde79aefd235"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 240,
+      "text": "Гарантия",
+      "id": "1b42fcf5db418e23"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 241,
+      "text": "90 дней",
+      "id": "154d6a6e5d51e92a"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 250,
+      "text": "До оплаты",
+      "id": "43691e3f87ddcbcb"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 251,
+      "text": "Что вы узнаете об устройстве заранее.",
+      "id": "eb5e583f7663aeda"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 256,
+      "text": "Грейд и заметные дефекты.",
+      "id": "dba5d26da991be60"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 256,
+      "text": "Состояние",
+      "id": "26e8dea6c210e6d7"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 257,
+      "text": "Батарея и функции",
+      "id": "a90a633e26e4cb83"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 257,
+      "text": "Результаты диагностики.",
+      "id": "1a4162af6fa780ea"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 258,
+      "text": "Подтверждённая история вмешательств.",
+      "id": "955a46661dbf6e93"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 259,
+      "text": "Письменные условия на 90 дней.",
+      "id": "2e7935efc62928b8"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 268,
+      "text": "Passport · документ о проверке",
+      "id": "094b659ddfd8dcb4"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 269,
+      "text": "Состояние видно до решения о покупке.",
+      "id": "6cbfff10fd874ee2"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 270,
+      "text": "Дата диагностики, грейд, ремонт, функции и отмеченные дефекты — в одном документе.",
+      "id": "d8db1628c4ecad67"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 283,
+      "text": "Как проходит покупка.",
+      "id": "1cd99ab79e332b34"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 284,
+      "text": "Выберите устройство, проверьте его в магазине и получите документы с гарантией.",
+      "id": "974a3db145568d51"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 285,
+      "text": "Условия визита",
+      "id": "d9bd24ef99d5e604"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 296,
+      "text": "Trade · продажа или обмен",
+      "id": "430891f1452b4c8f"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 297,
+      "text": "Оцените свою технику без объявлений.",
+      "id": "77ca28d24b8fcf33"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 298,
+      "text": "Предварительная оценка уточняется после диагностики.",
+      "id": "b30dd202d2384610"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 310,
       "text": "Коротко о главном",
       "id": "33505e1f7ae5be35"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 303,
+      "line": 311,
       "text": "Частые вопросы.",
       "id": "c7c870809951b61d"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 309,
+      "line": 317,
       "text": "Можно проверить устройство перед покупкой?",
       "id": "4f6460be254d012f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 310,
+      "line": 318,
       "text": "Да. Состояние и функции сверяются в магазине до решения о покупке.",
       "id": "aaf8cffa138a7828"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 313,
+      "line": 321,
       "text": "Предварительная оценка Trade окончательная?",
       "id": "0c0b596111a875af"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 314,
+      "line": 322,
       "text": "Нет. Итоговая сумма подтверждается после повторной диагностики.",
       "id": "ed1bd0299ce7f997"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 324,
+      "line": 332,
       "text": "Подбор",
       "id": "503d9f2dc9a78167"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 325,
+      "line": 333,
       "text": "Не нашли подходящую модель?",
       "id": "c3ca5087385f72ea"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 326,
+      "line": 334,
       "text": "Оставьте модель, необязательный бюджет и удобный контакт — предложим доступные варианты.",
       "id": "4e31844a730458a8"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 333,
+      "line": 341,
       "text": "Найти устройство",
       "id": "a63293afa8f1f4b7"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 333,
+      "line": 341,
       "text": "Подобрать несколько вариантов",
       "id": "2c21bb2c4b5f6a78"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 335,
+      "line": 343,
       "text": "Ответим по указанному контакту.",
       "id": "5c120742e14e19fc"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 344,
+      "line": 352,
       "text": "Не просто витрина",
       "id": "788f22c33aed5755"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 345,
+      "line": 353,
       "text": "Покупка начинается с ответа: чему здесь можно доверять?",
       "id": "d95e00eb9b1a6b8a"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 346,
+      "line": 354,
       "text": "Мы показываем разницу до карточки товара: не обещание «как новая», а проверка, нюансы, гарантия и понятный следующий шаг.",
       "id": "2b6db3acdecebe60"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 351,
+      "line": 359,
       "text": "Что решает покупатель",
       "id": "9c192ca1a23e1e9f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 352,
+      "line": 360,
       "text": "Случайный рынок",
       "id": "d526b5e50bd0787f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 356,
+      "line": 364,
       "text": "История вещи",
       "id": "f58c264d443858ba"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 357,
+      "line": 365,
       "text": "зависит от слов продавца",
       "id": "ab7eb7f334b95202"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 358,
+      "line": 366,
       "text": "собрана в Passport до решения",
       "id": "7268c8bfa1ddac35"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 362,
+      "line": 370,
       "text": "нюансы всплывают после встречи",
       "id": "4dd799b75789131a"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 363,
+      "line": 371,
       "text": "фиксируется открыто, включая дефекты",
       "id": "2776eebd3eccea17"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 366,
+      "line": 374,
       "text": "После покупки",
       "id": "b3027dc486fa96d1"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 367,
+      "line": 375,
       "text": "дальше вы снова одни",
       "id": "0336d88b743f37ee"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 368,
-      "text": "есть гарантия, Trade и ориентир выхода",
-      "id": "3f25821fb2a4f949"
+      "line": 376,
+      "text": "есть гарантия и предварительная оценка Trade",
+      "id": "8c89a775bc06025c"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 379,
+      "line": 387,
       "text": "Правила круга",
       "id": "b96438e29d7f95fa"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 380,
+      "line": 388,
       "text": "Доверие держится на проверяемых вещах.",
       "id": "349d3eb58ac1ae2b"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 381,
+      "line": 389,
       "text": "Каждое правило должно быть видно в карточке, в Store и в разговоре перед сделкой.",
       "id": "c0b616dbc93f516e"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 388,
+      "line": 396,
       "text": "Экран, корпус, аккумулятор, связь, камеры и следы влаги проверяются при вас.",
       "id": "3d39e7d688815460"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 391,
+      "line": 399,
       "text": "Фиксация нюансов",
       "id": "3aaf50d464b5b381"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 392,
+      "line": 400,
       "text": "Дефекты и следы использования не прячутся: они влияют на грейд и цену.",
       "id": "bfa3152efd6d34f4"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 395,
+      "line": 403,
       "text": "Письменная гарантия",
       "id": "f44c6a5a5f47f756"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 396,
+      "line": 404,
       "text": "Условия гарантии показываются до покупки и остаются частью сделки.",
       "id": "84f112ef389a0235"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 399,
-      "text": "Ориентир выхода",
-      "id": "f6fdda8a92325fe2"
+      "line": 407,
+      "text": "Предварительная стоимость при обновлении",
+      "id": "157636d8860197f2"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 400,
-      "text": "Ориентир выхода помогает планировать обновление, но подтверждается повторной проверкой.",
-      "id": "45f03237bc55c496"
+      "line": 408,
+      "text": "Расчёт помогает планировать обновление и подтверждается повторной диагностикой.",
+      "id": "268e7392667e896b"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 432,
+      "line": 440,
       "text": "Продать или обменять",
       "id": "b6dd3b92804bd510"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 434,
+      "line": 442,
       "text": "Блог",
       "id": "d4f8137e8de4362b"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 451,
+      "line": 459,
       "text": "Club — пилот",
       "id": "2bc47fdbe9fcfe1a"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 569,
+      "line": 577,
       "text": "Оставить заявку",
       "id": "933c4d020613ed34"
     },

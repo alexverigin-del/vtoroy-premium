@@ -10,7 +10,7 @@ import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
 const title = "Разумный выбор и владение техникой";
 const description =
-  "Практические разборы I СВОИ: диагностика, состояние, батарея, ремонт, цена выхода и спокойная покупка без чужой неизвестности.";
+  "Практические разборы I СВОИ: диагностика, состояние, батарея, ремонт и спокойная покупка техники с понятной историей.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getSitePage("blog");

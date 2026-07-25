@@ -275,7 +275,7 @@ SELECT isvoi_upsert_directus_field('device_passports', 'group_identity', 'group-
 SELECT isvoi_upsert_directus_field('device_passports', 'group_summary', 'group-detail', NULL, '{"headerIcon":"fact_check","start":"open"}'::json, 'full', 20, 'Краткая сводка, ремонт, влага и диагностика.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'group_condition', 'group-detail', NULL, '{"headerIcon":"build","start":"open"}'::json, 'full', 50, 'Состояние, грейд, заметки и фото дефекта.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'group_story', 'group-detail', NULL, '{"headerIcon":"history","start":"open"}'::json, 'full', 70, 'Публичная история вещи без персональных данных.', false, 'alias,no-data,group');
-SELECT isvoi_upsert_directus_field('device_passports', 'group_warranty', 'group-detail', NULL, '{"headerIcon":"shield","start":"open"}'::json, 'full', 80, 'Гарантия и цена выхода.', false, 'alias,no-data,group');
+SELECT isvoi_upsert_directus_field('device_passports', 'group_warranty', 'group-detail', NULL, '{"headerIcon":"shield","start":"open"}'::json, 'full', 80, 'Гарантия и условия обновления.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'group_system', 'group-detail', NULL, '{"headerIcon":"settings","start":"closed"}'::json, 'full', 120, 'Системные поля.', false, 'alias,no-data,group');
 SELECT isvoi_upsert_directus_field('device_passports', 'id', 'input', NULL, NULL, 'half', 121, 'Системный ID.', true, 'uuid', 'group_system', false, true);
 SELECT isvoi_upsert_directus_field('device_passports', 'device', 'select-dropdown-m2o', 'related-values', '{"template":"{{title}} · {{price_text}} · {{stock_status}}"}'::json, 'full', 2, 'Устройство, для которого заполнен Passport. Один Passport на одно устройство.', false, 'm2o', 'group_identity', true);
@@ -295,7 +295,7 @@ SELECT isvoi_upsert_directus_field('device_passports', 'story_facts', 'list', NU
 SELECT isvoi_upsert_directus_field('device_passports', 'warranty_duration', 'input', NULL, NULL, 'half', 81, 'Срок гарантии.', false, NULL, 'group_warranty');
 SELECT isvoi_upsert_directus_field('device_passports', 'warranty_covered', 'input-multiline', NULL, NULL, 'full', 82, 'Что покрывает гарантия.', false, NULL, 'group_warranty');
 SELECT isvoi_upsert_directus_field('device_passports', 'warranty_not_covered', 'input-multiline', NULL, NULL, 'full', 83, 'Что не покрывает гарантия.', false, NULL, 'group_warranty');
-SELECT isvoi_upsert_directus_field('device_passports', 'exit_headline', 'input', NULL, NULL, 'half', 84, 'Короткая цена выхода.', false, NULL, 'group_warranty');
+SELECT isvoi_upsert_directus_field('device_passports', 'exit_headline', 'input', NULL, NULL, 'half', 84, 'Предварительная стоимость при обновлении.', false, NULL, 'group_warranty');
 SELECT isvoi_upsert_directus_field('device_passports', 'exit_buy_today', 'input', NULL, NULL, 'half', 85, 'Цена покупки сегодня.', false, NULL, 'group_warranty');
 SELECT isvoi_upsert_directus_field('device_passports', 'exit_trade_in_estimate', 'input', NULL, NULL, 'half', 86, 'Оценка Trade-in.', false, NULL, 'group_warranty');
 SELECT isvoi_upsert_directus_field('device_passports', 'exit_condition', 'input', NULL, NULL, 'half', 87, 'Условие цены выхода.', false, NULL, 'group_warranty');

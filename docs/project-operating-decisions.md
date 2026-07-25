@@ -1122,6 +1122,12 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   first-viewport hero/chrome assets, not a general media workflow. New editorial
   and product media still belongs in Directus Files; replacing an asset in
   Directus should safely bypass the old local override.
+- Exception as of 2026-07-25: blog article covers are LCP-critical editorial
+  images and bypass the Next `/_next/image` optimizer. The article template
+  renders a plain eager `<img>` with Directus responsive transforms
+  (`640/828/1200w`), `fetchPriority="high"` and
+  `data-component="BlogCoverImage"`. This avoids the cold Next optimizer path
+  while keeping Directus Files as the source of truth.
 - Strategic target for a larger catalog is Directus-first image delivery:
   Directus asset transforms own resize/crop/format/focal-point behavior, Next
   Image becomes layout/lazy-loading only with `unoptimized`, and
@@ -1147,7 +1153,7 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
 - `/lead-intake` uses honeypot plus a lightweight in-process rate limit in
   Next.js. Since 2026-07-25, production nginx also rate-limits the exact
   `/lead-intake` location with `limit_req zone=isvoi_lead_intake burst=4
-  nodelay` and returns 429 when the edge limit is exceeded.
+nodelay` and returns 429 when the edge limit is exceeded.
 - Cloudflare Turnstile is implemented as opt-in code. It is enforced only when
   `TURNSTILE_SECRET_KEY` is set; the browser widget is rendered only when
   `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set. As of 2026-07-25, production has no
@@ -1538,10 +1544,14 @@ Next content-editing priorities:
   audits, API/ops/content audits, HTTP/SEO, image, copy and desktop/mobile visual
   smokes pass. Structured-image smoke now scrolls both lazy images into view and
   verifies non-zero intrinsic dimensions.
-- The normal release performance smoke passes. The final full run measured blog
-  index LCP at 2176 ms desktop / 2240 ms mobile and the pilot article at
-  2660 ms / 2520 ms. The stricter 2500 ms article target remains a small
-  performance gap; cold targeted runs observed 3876 ms and 3124 ms desktop.
+- The normal release performance smoke passes. The 2026-07-25 blog cover
+  optimization moved the pilot article cover off the cold Next image optimizer
+  path and added a strict targeted check:
+  ```bash
+  PERFORMANCE_SMOKE_ROUTES=/blog/chto-pokazyvaet-diagnostika-iphone PERFORMANCE_BLOG_ARTICLE_LCP_BUDGET_MS=2500 npm run smoke:performance
+  ```
+  If future cold runs regress, treat the next step as `api.isvoi.ru/assets/*`
+  proxy cache/CDN hardening rather than a schema or Studio problem.
 
 ### Blog Studio Editing Verification (2026-07-19)
 
@@ -1582,8 +1592,9 @@ Next content-editing priorities:
 
 1. Establish an editorial owner and cadence, then monitor the existing
    article-to-device and article-to-lead UTM values in Directus Leads.
-2. Optimize the article cover cold path until desktop and mobile LCP are
-   consistently at or below 2500 ms without weakening image quality.
+2. Keep the article cover cold path under observation with the strict 2500 ms
+   targeted smoke after deploys that touch blog, image delivery, nginx or
+   Directus cache behavior.
 3. Open a second category only when three complete materials are ready. Keep
    search, newsletter, comments and pagination deferred until volume justifies
    them; pagination starts before the 25th article.

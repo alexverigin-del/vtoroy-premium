@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Blog covers intentionally bypass Next image optimization for cold LCP. */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
@@ -8,7 +9,7 @@ import { BlogArticleContent } from "@/components/BlogArticleContent";
 import { SiteShell } from "@/components/SiteShell";
 import { detailBackLinkClass } from "@/components/ui-classes";
 import { getBlogPostPreview, getPublishedBlogPost, getPublishedBlogPosts } from "@/lib/blog";
-import { getNavigationItems, getSiteSettings } from "@/lib/directus";
+import { directusAssetUrl, getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 import { blogPostingJsonLd, breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "@/app/site-metadata";
@@ -19,6 +20,9 @@ type BlogPostPageProps = {
 };
 
 export const revalidate = 300;
+
+const BLOG_COVER_WIDTHS = [640, 828, 1200] as const;
+const BLOG_COVER_RATIO = 1000 / 1600;
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("ru-RU", {
@@ -56,6 +60,56 @@ function attributedHref(path: string, slug: string, content: string, hash = ""):
 function previewAssetUrl(assetId: string, postId: string, version: string, width: number): string {
   const params = new URLSearchParams({ post: postId, version, width: String(width) });
   return `/api/draft/blog-asset/${assetId}?${params}`;
+}
+
+function blogCoverHeight(width: number): number {
+  return Math.round(width * BLOG_COVER_RATIO);
+}
+
+function directusBlogCoverUrl(assetId: string, width: number): string {
+  return directusAssetUrl(assetId, {
+    width,
+    height: blogCoverHeight(width),
+    quality: 84,
+    fit: "cover",
+    format: "auto",
+    withoutEnlargement: true,
+  });
+}
+
+function blogCoverImageSource({
+  assetId,
+  fallback,
+  postId,
+  previewVersion,
+}: {
+  assetId?: string;
+  fallback: string;
+  postId: string;
+  previewVersion?: string;
+}): { src: string; srcSet?: string } {
+  if (assetId && previewVersion) {
+    return {
+      src: previewAssetUrl(assetId, postId, previewVersion, 1200),
+      srcSet: BLOG_COVER_WIDTHS.map(
+        (width) => `${previewAssetUrl(assetId, postId, previewVersion, width)} ${width}w`,
+      ).join(", "),
+    };
+  }
+
+  if (assetId) {
+    const src = directusBlogCoverUrl(assetId, 1200);
+    if (src) {
+      return {
+        src,
+        srcSet: BLOG_COVER_WIDTHS.map(
+          (width) => `${directusBlogCoverUrl(assetId, width)} ${width}w`,
+        ).join(", "),
+      };
+    }
+  }
+
+  return { src: fallback };
 }
 
 function deviceFacts(device: { batteryText?: string; warrantyText?: string }): string[] {
@@ -133,6 +187,14 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
         .filter((candidate) => candidate.id !== post.id)
         .slice(0, 3)
     : [];
+  const coverSource = post.coverImage
+    ? blogCoverImageSource({
+        assetId: post.coverAssetId,
+        fallback: post.coverImage,
+        postId: post.id,
+        previewVersion: preview ? query.version : undefined,
+      })
+    : null;
 
   return (
     <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
@@ -196,21 +258,19 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
             </div>
           </header>
 
-          {post.coverImage ? (
+          {coverSource ? (
             <figure className="mx-auto max-w-content px-5 sm:px-8">
               <div className="relative aspect-blog-cover overflow-hidden rounded-card bg-surface">
-                <ProductImage
-                  src={
-                    preview && query.version && post.coverAssetId
-                      ? previewAssetUrl(post.coverAssetId, post.id, query.version, 1600)
-                      : post.coverImage
-                  }
+                <img
+                  src={coverSource.src}
+                  srcSet={coverSource.srcSet}
                   alt={post.coverAlt || ""}
-                  fill
-                  priority
                   sizes="(max-width: 1199px) 100vw, 1200px"
-                  className="object-cover"
-                  unoptimized={preview && Boolean(query.version && post.coverAssetId)}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  data-component="BlogCoverImage"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
               {post.coverCaption ? (

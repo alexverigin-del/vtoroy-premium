@@ -5,6 +5,7 @@
  * Usage:
  *   npm run smoke:performance
  *   SMOKE_BASE_URL=http://127.0.0.1:3113 PERFORMANCE_SMOKE_ROUTES=/,/catalog,/store npm run smoke:performance
+ *   PERFORMANCE_SMOKE_ROUTES=/blog/chto-pokazyvaet-diagnostika-iphone PERFORMANCE_BLOG_ARTICLE_LCP_BUDGET_MS=2500 npm run smoke:performance
  */
 
 import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs";
@@ -49,6 +50,13 @@ function routeList() {
 
 function joinUrl(baseUrl, route) {
   return `${baseUrl}${route.startsWith("/") ? route : `/${route}`}`;
+}
+
+function lcpBudgetFor(route, viewport) {
+  const blogArticleBudget = Number(process.env.PERFORMANCE_BLOG_ARTICLE_LCP_BUDGET_MS || 0);
+  const isBlogArticle = /^\/blog\/[^/]+\/?$/.test(route);
+  if (isBlogArticle && blogArticleBudget > 0) return blogArticleBudget;
+  return viewport.lcpBudgetMs;
 }
 
 function assert(condition, message) {
@@ -97,7 +105,9 @@ async function installLcpObserver(page) {
       (event) => {
         const target = event.target;
         if (target?.tagName === "IMG") {
-          window.__isvoiPerf.imageErrors.push(target.currentSrc || target.src || target.alt || "unknown image");
+          window.__isvoiPerf.imageErrors.push(
+            target.currentSrc || target.src || target.alt || "unknown image",
+          );
         }
       },
       true,
@@ -113,7 +123,9 @@ async function collectMetrics(page) {
     const navigation = performance.getEntriesByType("navigation")[0];
     const resources = performance
       .getEntriesByType("resource")
-      .filter((entry) => entry.initiatorType === "img" || /\/(_next\/image|assets\/)/.test(entry.name))
+      .filter(
+        (entry) => entry.initiatorType === "img" || /\/(_next\/image|assets\/)/.test(entry.name),
+      )
       .map((entry) => ({
         name: entry.name,
         duration: Math.round(entry.duration),
@@ -131,7 +143,8 @@ async function collectMetrics(page) {
         loading: image.loading || "",
         complete: image.complete,
         naturalWidth: image.naturalWidth,
-        inNearViewport: rect.top < window.innerHeight * 1.5 && rect.bottom > -window.innerHeight * 0.25,
+        inNearViewport:
+          rect.top < window.innerHeight * 1.5 && rect.bottom > -window.innerHeight * 0.25,
       };
     });
 
@@ -170,10 +183,11 @@ async function smokeRoute(browser, baseUrl, route, viewport) {
 
     const metrics = await collectMetrics(page);
     const lcpMs = metrics.lcp ? Math.round(metrics.lcp.startTime) : null;
+    const lcpBudgetMs = lcpBudgetFor(route, viewport);
     const issues = [];
     if (lcpMs == null) issues.push("LCP entry was not recorded");
-    if (lcpMs != null && lcpMs > viewport.lcpBudgetMs) {
-      issues.push(`LCP ${lcpMs}ms exceeds ${viewport.lcpBudgetMs}ms budget`);
+    if (lcpMs != null && lcpMs > lcpBudgetMs) {
+      issues.push(`LCP ${lcpMs}ms exceeds ${lcpBudgetMs}ms budget`);
     }
     if (metrics.pendingImages.length > 0) {
       issues.push(`${metrics.pendingImages.length} near-viewport image(s) still pending`);
@@ -188,7 +202,7 @@ async function smokeRoute(browser, baseUrl, route, viewport) {
     const slowestImage = metrics.resourceImages[0];
     const slowestLabel = slowestImage ? ` slowestImage=${slowestImage.duration}ms` : "";
     console.log(
-      `ok ${viewport.name} ${route} lcp=${lcpMs}ms budget=${viewport.lcpBudgetMs}ms images=${metrics.imageCount}${slowestLabel} lcpElement="${lcpLabel}"`,
+      `ok ${viewport.name} ${route} lcp=${lcpMs}ms budget=${lcpBudgetMs}ms images=${metrics.imageCount}${slowestLabel} lcpElement="${lcpLabel}"`,
     );
   } finally {
     await context.close();

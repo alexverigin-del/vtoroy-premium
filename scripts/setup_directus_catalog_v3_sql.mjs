@@ -236,7 +236,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS products_source_unique_idx ON products (source
 CREATE INDEX IF NOT EXISTS product_images_product_idx ON product_images (product, status, sort);
 CREATE INDEX IF NOT EXISTS compatible_models_product_idx ON product_compatible_models (product);
 CREATE INDEX IF NOT EXISTS compatible_models_model_idx ON product_compatible_models (device_models_id);
-CREATE UNIQUE INDEX IF NOT EXISTS device_passports_product_unique_idx ON device_passports (product) WHERE product IS NOT NULL;
+DROP INDEX IF EXISTS device_passports_product_unique_idx;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='device_passports_product_key') THEN
+    ALTER TABLE device_passports
+      ADD CONSTRAINT device_passports_product_key UNIQUE (product);
+  END IF;
+END;
+$$;
 CREATE INDEX IF NOT EXISTS trade_options_product_idx ON trade_options (product, sort);
 CREATE INDEX IF NOT EXISTS leads_product_idx ON leads (product);
 

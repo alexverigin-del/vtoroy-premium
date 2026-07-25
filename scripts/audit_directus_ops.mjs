@@ -4,18 +4,30 @@
  */
 
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import process from "node:process";
 
 const sshKey = process.env.DIRECTUS_AUDIT_SSH_KEY || "C:\\Users\\1\\.ssh\\isvoi_beget_ed25519";
 const sshTarget = process.env.DIRECTUS_AUDIT_SSH_TARGET || "deploy@217.114.14.32";
 const stackDir = process.env.DIRECTUS_AUDIT_STACK_DIR || "/opt/isvoi/infra/directus-beget";
+const canRunLocally =
+  process.env.DIRECTUS_AUDIT_LOCAL_OPS === "1" ||
+  (process.platform !== "win32" &&
+    process.cwd().startsWith("/opt/isvoi") &&
+    fs.existsSync(`${stackDir}/docker-compose.yml`));
 
-function ssh(command) {
-  const result = spawnSync("ssh", ["-i", sshKey, sshTarget, command], {
-    encoding: "utf8",
-    maxBuffer: 1024 * 1024 * 10,
-  });
+function run(command) {
+  const result = canRunLocally
+    ? spawnSync("bash", ["-lc", command], {
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024 * 10,
+      })
+    : spawnSync("ssh", ["-i", sshKey, sshTarget, command], {
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024 * 10,
+      });
   if (result.status !== 0) {
-    throw new Error(result.stderr || result.stdout || `ssh command failed: ${command}`);
+    throw new Error(result.stderr || result.stdout || `ops command failed: ${command}`);
   }
   return result.stdout;
 }
@@ -30,19 +42,19 @@ function expectIncludes(label, value, expected) {
   else console.log(`${label}: ok`);
 }
 
-const ps = ssh(`cd ${stackDir} && docker compose ps`);
+const ps = run(`cd ${stackDir} && docker compose ps`);
 expectIncludes("directus.port.localhost", ps, "127.0.0.1:8055->8055/tcp");
 expectIncludes("directus.container.up", ps, "directus-beget-directus-1");
 expectIncludes("redis.container.up", ps, "directus-beget-cache-1");
 expectIncludes("postgres.container.healthy", ps, "directus-beget-database-1");
 
-const images = ssh(`cd ${stackDir} && docker compose images`);
+const images = run(`cd ${stackDir} && docker compose images`);
 expectIncludes("directus.image.pinned", images, "directus/directus");
 expectIncludes("directus.image.version", images, "11.17.4");
 expectIncludes("redis.image", images, "redis");
 expectIncludes("postgres.image", images, "postgres");
 
-const envOutput = ssh(
+const envOutput = run(
   `cd ${stackDir} && grep -E '^(PUBLIC_URL|CORS_ORIGIN|CACHE_ENABLED|CACHE_TTL|CACHE_AUTO_PURGE|CACHE_NAMESPACE|MARKETPLACE_TRUST|FILES_MAX_UPLOAD_SIZE|FILES_MIME_TYPE_ALLOW_LIST|IMPORT_IP_DENY_LIST|WEBSOCKETS_ENABLED)=' .env`,
 );
 const env = Object.fromEntries(
@@ -87,7 +99,7 @@ for (const type of [
   expectIncludes("FILES_MIME_TYPE_ALLOW_LIST", mime, type);
 }
 
-const backupStatus = ssh(
+const backupStatus = run(
   `if [ -d /opt/isvoi/backups/directus ]; then find /opt/isvoi/backups/directus -maxdepth 2 -name SHA256SUMS | sort | tail -1; fi`,
 ).trim();
 if (!backupStatus) {
@@ -96,7 +108,7 @@ if (!backupStatus) {
   console.log(`backup.latest_sha256: ${backupStatus}`);
 }
 
-const revalidationSecret = ssh(
+const revalidationSecret = run(
   `if grep -Eq '^SITE_REVALIDATION_SECRET=.{32,}$' /opt/isvoi/apps/web/.env.local; then echo configured; fi`,
 ).trim();
 if (revalidationSecret !== "configured") {

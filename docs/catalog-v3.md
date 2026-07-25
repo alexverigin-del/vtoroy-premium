@@ -50,7 +50,7 @@ QA-позиции не публикуются и не подменяют под�
 npm run directus:setup:catalog-v3
 npm run directus:audit-catalog-v3
 npm run directus:audit:prod
-npm run directus:test:catalog-v3-editability
+bash scripts/run_beget_catalog_v3_editability_test.sh
 npm run catalog:v3:template
 npm run catalog:v3:import -- --file path/to/catalog.xlsx --dry-run
 ```

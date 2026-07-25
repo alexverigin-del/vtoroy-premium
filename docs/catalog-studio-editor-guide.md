@@ -72,7 +72,7 @@ npm run catalog:v3:import -- --file path/to/catalog.xlsx --dry-run
 ```bash
 npm run directus:audit-catalog-v3
 npm run directus:audit:prod
-npm run directus:test:catalog-v3-editability
+bash scripts/run_beget_catalog_v3_editability_test.sh
 ```
 
 Публичную карточку проверяйте на `/product/{slug}`. Старый

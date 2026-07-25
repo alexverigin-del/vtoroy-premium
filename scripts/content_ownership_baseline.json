@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T20:39:35.180Z",
+  "updatedAt": "2026-07-25T20:41:31.845Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -293,105 +293,133 @@
     {
       "file": "apps/web/app/catalog/accessories/page.tsx",
       "kind": "string",
-      "line": 8,
+      "line": 9,
       "text": "Новые аксессуары — I СВОИ",
       "id": "b549abfd91dba0d3"
     },
     {
       "file": "apps/web/app/catalog/accessories/page.tsx",
       "kind": "string",
-      "line": 10,
+      "line": 11,
       "text": "Новые аксессуары разных брендов с точной совместимостью, гарантией и актуальным наличием.",
       "id": "7788dc64fe727f93"
     },
     {
       "file": "apps/web/app/catalog/accessories/page.tsx",
       "kind": "string",
-      "line": 21,
+      "line": 15,
+      "text": "Новые аксессуары с точной совместимостью и гарантией.",
+      "id": "65a029bc43e9bbc0"
+    },
+    {
+      "file": "apps/web/app/catalog/accessories/page.tsx",
+      "kind": "string",
+      "line": 28,
       "text": "Аксессуары",
       "id": "b1883f9f23729ff7"
     },
     {
       "file": "apps/web/app/catalog/brand/[slug]/page.tsx",
       "kind": "string",
-      "line": 15,
+      "line": 16,
       "text": "Бренд",
       "id": "22031ffabfc84630"
     },
     {
       "file": "apps/web/app/catalog/brand/[slug]/page.tsx",
       "kind": "string",
-      "line": 17,
+      "line": 18,
       "text": "${name} — каталог I СВОИ",
       "id": "5e87d1bc3efec0cc"
     },
     {
       "file": "apps/web/app/catalog/brand/[slug]/page.tsx",
       "kind": "string",
-      "line": 18,
+      "line": 19,
       "text": "${name}: новая и проверенная б/у техника, аксессуары, цены и наличие.",
       "id": "07b2a8a283081474"
     },
     {
+      "file": "apps/web/app/catalog/brand/[slug]/page.tsx",
+      "kind": "string",
+      "line": 23,
+      "text": "${name}: техника и аксессуары, цены и наличие.",
+      "id": "a9b23e8d673cf897"
+    },
+    {
       "file": "apps/web/app/catalog/category/[slug]/page.tsx",
       "kind": "string",
-      "line": 15,
+      "line": 16,
       "text": "Категория",
       "id": "3560a365fde6406f"
     },
     {
       "file": "apps/web/app/catalog/category/[slug]/page.tsx",
       "kind": "string",
-      "line": 17,
+      "line": 18,
       "text": "${name} — каталог I СВОИ",
       "id": "d95e42864ec273f5"
     },
     {
       "file": "apps/web/app/catalog/category/[slug]/page.tsx",
       "kind": "string",
-      "line": 18,
+      "line": 19,
       "text": "${name}: актуальные товары, цены, совместимость и наличие в I СВОИ.",
       "id": "5ebe3e9a2b64bd1b"
     },
     {
+      "file": "apps/web/app/catalog/category/[slug]/page.tsx",
+      "kind": "string",
+      "line": 23,
+      "text": "${name}: актуальные товары, цены и наличие.",
+      "id": "3fb49621fc23bd00"
+    },
+    {
       "file": "apps/web/app/catalog/page.tsx",
       "kind": "string",
-      "line": 8,
+      "line": 9,
       "text": "Каталог техники и аксессуаров — I СВОИ",
       "id": "b7ef43bd5cae56fa"
     },
     {
       "file": "apps/web/app/catalog/page.tsx",
       "kind": "string",
-      "line": 10,
+      "line": 11,
       "text": "Новая и проверенная б/у техника разных производителей, новые аксессуары, точная совместимость, гарантия и актуальное наличие.",
       "id": "b81bdc2d42e74e39"
     },
     {
       "file": "apps/web/app/catalog/page.tsx",
       "kind": "string",
-      "line": 14,
+      "line": 15,
       "text": "Техника и аксессуары, о которых всё известно до покупки.",
       "id": "ed69132fdad6540f"
     },
     {
       "file": "apps/web/app/catalog/tech/page.tsx",
       "kind": "string",
-      "line": 8,
+      "line": 9,
       "text": "Новая и б/у техника — I СВОИ",
       "id": "b66752bdba000cd0"
     },
     {
       "file": "apps/web/app/catalog/tech/page.tsx",
       "kind": "string",
-      "line": 10,
+      "line": 11,
       "text": "Техника разных производителей: новые товары и проверенные б/у устройства с Passport.",
       "id": "97311788d8d7de42"
     },
     {
       "file": "apps/web/app/catalog/tech/page.tsx",
       "kind": "string",
-      "line": 21,
+      "line": 15,
+      "text": "Техника разных производителей: новая и проверенная б/у.",
+      "id": "c4a39025291f0b6a"
+    },
+    {
+      "file": "apps/web/app/catalog/tech/page.tsx",
+      "kind": "string",
+      "line": 28,
       "text": "Техника",
       "id": "ac43c2eaa3c91bf2"
     },

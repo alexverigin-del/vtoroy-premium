@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { ProductCatalogRoute, type CatalogSearchParams } from "@/components/ProductCatalogRoute";
 import { getProductCatalogFacets } from "@/lib/product-catalog";
+import { DEFAULT_SOCIAL_IMAGE } from "../../../site-metadata";
 
 export const revalidate = 300;
 
@@ -17,6 +18,12 @@ export async function generateMetadata({
     title: `${name} — каталог I СВОИ`,
     description: `${name}: актуальные товары, цены, совместимость и наличие в I СВОИ.`,
     alternates: { canonical: `/catalog/category/${slug}` },
+    openGraph: {
+      title: `${name} — каталог I СВОИ`,
+      description: `${name}: актуальные товары, цены и наличие.`,
+      url: `/catalog/category/${slug}`,
+      images: [DEFAULT_SOCIAL_IMAGE],
+    },
   };
 }
 

@@ -1659,3 +1659,31 @@ Next content-editing priorities:
   production. The sanitized production schema snapshot was regenerated; one
   sensitive preview query value is stored as `__REDACTED__`, and the raw
   temporary snapshot was removed.
+
+### Conversion Consistency Rollout (2026-07-25)
+
+- Before the follow-up mutation, a fresh VPS backup was created at
+  `/opt/isvoi/backups/directus/20260725T192650Z`. PostgreSQL and uploads
+  archives passed checksum verification. Offsite upload was skipped because
+  `OFFSITE_BACKUP_DEST` is still not configured.
+- Commits `4b39104`, `33bdf35` and `7870145` aligned Catalog, Store, Passport,
+  Trade, Club, device cards and Blog with the conversion-v2 flow. Catalog no
+  longer exposes the Club filter; Store no longer promotes Club; Trade CTAs
+  target its own form; Club is explicitly a pilot; and all public update-value
+  language states that the amount is preliminary and requires repeat
+  diagnostics.
+- The forward-only consistency migration also removed the remaining damaged
+  consent placeholders from page and device forms, reconciled the iPhone 14
+  repair story with its structured passport and applied explicit field lists
+  to Editor and Importer permissions. The SQL audit now covers device-form
+  consent copy so this encoding regression cannot pass silently.
+- Directus production audit passes for schema, Studio metadata, Editor
+  bookmarks/layout groups, permissions, public/API policy, content ownership,
+  page sections, leads, files, Blog and conversion consistency. The same four
+  test devices retain the non-blocking incomplete-diagnostics warning; their
+  missing facts were not fabricated.
+- Linux `web:verify` and production HTTP, copy, link, 14-route consistency,
+  image-latency, performance and desktop/mobile visual smokes all pass.
+  Protected content revalidation succeeded and PM2 reports `isvoi-web`
+  online. The sanitized production schema snapshot was regenerated and its
+  raw temporary source removed.

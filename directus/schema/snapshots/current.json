@@ -276,13 +276,13 @@
         "archive_value": "archived",
         "collapse": "open",
         "collection": "device_images",
-        "color": "#2563eb",
-        "display_template": "{{device.title}} · {{role}} · {{label}}",
+        "color": "#10b981",
+        "display_template": "{{device}} · {{role}} · {{label}}",
         "group": null,
         "hidden": false,
         "icon": "photo_library",
         "item_duplication_fields": null,
-        "note": "Управляемые фото устройств. Для публикации нужны status=published и shot_status=approved.",
+        "note": "Фотографии устройств. Для карточки используйте role=card, для галереи main/screen/body/defect/other. Публикуются только approved + published.",
         "preview_url": null,
         "singleton": false,
         "sort": 11,
@@ -370,13 +370,13 @@
         "archive_value": "archived",
         "collapse": "open",
         "collection": "devices",
-        "color": "#111827",
+        "color": "#0071e3",
         "display_template": "{{title}} · {{price_text}} · {{stock_status}}",
         "group": null,
         "hidden": false,
         "icon": "devices",
         "item_duplication_fields": null,
-        "note": "Редакторский каталог устройств. Заполняйте публикацию, цену, основные характеристики, фото и тексты; import/source поля обычно меняются импорт-скриптами.",
+        "note": "Большой каталог устройств. Public сайт читает только status=published; редакторы сначала доводят content_status и фото до ready/approved.",
         "preview_url": null,
         "singleton": false,
         "sort": 10,
@@ -404,12 +404,12 @@
         "collapse": "open",
         "collection": "faq_items",
         "color": "#ca8a04",
-        "display_template": "{{category}} · {{page.slug}} · {{question}}",
+        "display_template": "{{category}} · {{question}}",
         "group": null,
         "hidden": false,
         "icon": "quiz",
         "item_duplication_fields": null,
-        "note": "Переиспользуемые вопросы и ответы для сайта. Редактор обычно меняет вопрос, ответ, страницу, категорию, порядок и переключатель показа. Ключ нужен для явных связок с FAQ-секциями и должен оставаться стабильным.",
+        "note": "Переиспользуемые вопросы и ответы. FAQ можно привязать к странице или категории; на сайте выводятся только активные строки.",
         "preview_url": null,
         "singleton": false,
         "sort": 24,
@@ -475,7 +475,7 @@
         "hidden": false,
         "icon": "support_agent",
         "item_duplication_fields": null,
-        "note": "Заявки с сайта. Ежедневный цикл: новая, в работе, ждем ответа, успешная или закрыта.",
+        "note": "Заявки с сайта. Ежедневный сценарий: открыть новую заявку, назначить ответственного, оставить короткую заметку/комментарий, поставить следующий шаг и перевести статус.",
         "preview_url": null,
         "singleton": false,
         "sort": 30,
@@ -5285,7 +5285,7 @@
         "readonly": true,
         "required": false,
         "searchable": false,
-        "sort": 2,
+        "sort": 1,
         "special": [
           "uuid"
         ],
@@ -5349,7 +5349,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 3,
+        "sort": 2,
         "special": null,
         "translations": null,
         "validation": null,
@@ -5393,7 +5393,7 @@
         "readonly": false,
         "required": false,
         "searchable": false,
-        "sort": 7,
+        "sort": 6,
         "special": null,
         "translations": [
           {
@@ -5439,12 +5439,12 @@
         "interface": "select-dropdown-m2o",
         "note": "Связанное устройство.",
         "options": {
-          "template": "{{title}} · {{price_text}} · {{stock_status}}"
+          "template": "{{title}} · {{price_text}}"
         },
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 5,
+        "sort": 4,
         "special": [
           "m2o"
         ],
@@ -5522,7 +5522,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 6,
+        "sort": 5,
         "special": null,
         "translations": [
           {
@@ -5571,7 +5571,7 @@
         "readonly": false,
         "required": true,
         "searchable": false,
-        "sort": 8,
+        "sort": 7,
         "special": [
           "m2o"
         ],
@@ -5622,7 +5622,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 9,
+        "sort": 8,
         "special": null,
         "translations": [
           {
@@ -5671,7 +5671,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 10,
+        "sort": 9,
         "special": null,
         "translations": [
           {
@@ -5738,7 +5738,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 4,
+        "sort": 3,
         "special": null,
         "translations": null,
         "validation": null,
@@ -5782,7 +5782,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 91,
+        "sort": 90,
         "special": null,
         "translations": null,
         "validation": null,
@@ -5826,7 +5826,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 92,
+        "sort": 91,
         "special": null,
         "translations": null,
         "validation": null,
@@ -5870,7 +5870,7 @@
         "readonly": true,
         "required": false,
         "searchable": true,
-        "sort": 93,
+        "sort": 92,
         "special": [
           "date-created"
         ],
@@ -5916,7 +5916,7 @@
         "readonly": true,
         "required": false,
         "searchable": true,
-        "sort": 94,
+        "sort": 93,
         "special": [
           "date-updated"
         ],
@@ -11937,7 +11937,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 2,
+        "sort": 1,
         "special": null,
         "translations": null,
         "validation": null,
@@ -11999,7 +11999,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 3,
+        "sort": 2,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12038,12 +12038,12 @@
         "group": "group_publish",
         "hidden": false,
         "interface": "input",
-        "note": "Порядок в каталоге. Меньше число — выше карточка.",
+        "note": "Порядок в каталоге.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 6,
+        "sort": 5,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12160,7 +12160,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 11,
+        "sort": 6,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12204,7 +12204,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 13,
+        "sort": 7,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12243,12 +12243,12 @@
         "group": "group_identity",
         "hidden": false,
         "interface": "input",
-        "note": "Модель/линейка для похожих устройств.",
+        "note": "Модель/линейка.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 14,
+        "sort": 8,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12468,7 +12468,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 31,
+        "sort": 9,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12512,7 +12512,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 32,
+        "sort": 10,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12952,7 +12952,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 71,
+        "sort": 14,
         "special": null,
         "translations": null,
         "validation": null,
@@ -12996,7 +12996,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 72,
+        "sort": 15,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13035,12 +13035,12 @@
         "group": "group_media",
         "hidden": false,
         "interface": "input",
-        "note": "Legacy fallback path. Для новых устройств оставляйте пустым.",
+        "note": "Legacy fallback path. Для новых устройств оставляйте пустым и используйте listing_file/device_images.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 52,
+        "sort": 12,
         "special": null,
         "translations": [
           {
@@ -13089,7 +13089,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 53,
+        "sort": 13,
         "special": null,
         "translations": [
           {
@@ -13471,12 +13471,12 @@
         "group": "group_media",
         "hidden": false,
         "interface": "file-image",
-        "note": "Основное фото карточки из Directus Files. Для новых устройств используйте это поле или device_images role=card.",
+        "note": "Основное фото карточки из Directus Files. Используется раньше legacy listing_image.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 51,
+        "sort": 11,
         "special": [
           "m2o"
         ],
@@ -13550,7 +13550,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 4,
+        "sort": 3,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13617,7 +13617,7 @@
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 5,
+        "sort": 4,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13661,7 +13661,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 115,
+        "sort": 16,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13705,7 +13705,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 111,
+        "sort": 90,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13749,7 +13749,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 112,
+        "sort": 91,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13793,7 +13793,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 113,
+        "sort": 92,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13837,7 +13837,7 @@
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 114,
+        "sort": 93,
         "special": null,
         "translations": null,
         "validation": null,
@@ -13881,7 +13881,7 @@
         "readonly": true,
         "required": false,
         "searchable": true,
-        "sort": 116,
+        "sort": 94,
         "special": [
           "date-created"
         ],
@@ -13927,7 +13927,7 @@
         "readonly": true,
         "required": false,
         "searchable": true,
-        "sort": 117,
+        "sort": 95,
         "special": [
           "date-updated"
         ],
@@ -14312,6 +14312,495 @@
         "validation": null,
         "validation_message": null,
         "width": "full"
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "brand",
+      "type": "string",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "brand",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Бренд устройства. Для Apple-каталога используйте Apple.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 17,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "brand",
+        "table": "devices",
+        "data_type": "character varying",
+        "default_value": "Apple",
+        "max_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "year",
+      "type": "integer",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "year",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Год выпуска или поколение.",
+        "options": {
+          "max": 2100,
+          "min": 2000
+        },
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 18,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "year",
+        "table": "devices",
+        "data_type": "integer",
+        "default_value": null,
+        "max_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "model_identifier",
+      "type": "string",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "model_identifier",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Точный идентификатор модели, если подтверждён диагностикой.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 19,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "model_identifier",
+        "table": "devices",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 160,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "region",
+      "type": "string",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "region",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Регион устройства.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 20,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "region",
+        "table": "devices",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 120,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "sim",
+      "type": "string",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "sim",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Конфигурация SIM/eSIM.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 21,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "sim",
+        "table": "devices",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 160,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "battery_cycles",
+      "type": "integer",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "battery_cycles",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Количество циклов батареи на дату диагностики.",
+        "options": {
+          "min": 0
+        },
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 22,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "battery_cycles",
+        "table": "devices",
+        "data_type": "integer",
+        "default_value": null,
+        "max_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "diagnostic_date",
+      "type": "date",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": "datetime",
+        "display_options": null,
+        "field": "diagnostic_date",
+        "group": null,
+        "hidden": false,
+        "interface": "datetime",
+        "note": "Дата последней полной диагностики.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 23,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "diagnostic_date",
+        "table": "devices",
+        "data_type": "date",
+        "default_value": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "activation_lock",
+      "type": "string",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "activation_lock",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Результат проверки Activation Lock.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 24,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "activation_lock",
+        "table": "devices",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 160,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "mdm",
+      "type": "string",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "mdm",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Результат проверки MDM.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 25,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "mdm",
+        "table": "devices",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 160,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "completeness",
+      "type": "text",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "completeness",
+        "group": null,
+        "hidden": false,
+        "interface": "input-multiline",
+        "note": "Комплект поставки.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 26,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "full"
+      },
+      "schema": {
+        "name": "completeness",
+        "table": "devices",
+        "data_type": "text",
+        "default_value": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "devices",
+      "field": "diagnostic_by",
+      "type": "string",
+      "meta": {
+        "collection": "devices",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "diagnostic_by",
+        "group": null,
+        "hidden": false,
+        "interface": "input",
+        "note": "Имя или роль ответственного за диагностику.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 27,
+        "special": null,
+        "translations": null,
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "diagnostic_by",
+        "table": "devices",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 200,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
       }
     },
     {
@@ -14866,13 +15355,8 @@
         "group": "group_placement",
         "hidden": false,
         "interface": "select-dropdown-m2o",
-        "note": "Страница, к которой относится вопрос. Если вопрос общий, оставьте поле пустым и выберите категорию general.",
+        "note": "Страница, к которой относится вопрос. Можно оставить пустым для общего FAQ.",
         "options": {
-          "filter": {
-            "status": {
-              "_eq": "published"
-            }
-          },
           "template": "{{title}} · {{slug}}"
         },
         "readonly": false,
@@ -14924,21 +15408,12 @@
         "group": "group_answer",
         "hidden": false,
         "interface": "input-rich-text-html",
-        "note": "Ответ обычным человеческим текстом. Не вставляйте сложную HTML-вёрстку, скрипты и стили.",
-        "options": {
-          "folder": "ISVOI Editorial",
-          "toolbar": [
-            "bold",
-            "italic",
-            "bullist",
-            "link",
-            "removeformat"
-          ]
-        },
+        "note": "Ответ. Пишите обычный текст; сложную вёрстку не вставлять.",
+        "options": null,
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 3,
+        "sort": 5,
         "special": null,
         "translations": [
           {
@@ -14986,7 +15461,7 @@
         "group": "group_placement",
         "hidden": false,
         "interface": "input",
-        "note": "Порядок показа внутри страницы или категории. Меньшее число будет выше.",
+        "note": "Порядок показа.",
         "options": {
           "min": 1,
           "step": 1
@@ -15038,7 +15513,7 @@
         "group": "group_placement",
         "hidden": false,
         "interface": "boolean",
-        "note": "Выключите, чтобы временно скрыть вопрос с сайта без удаления.",
+        "note": "На сайте выводятся только активные вопросы.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -15048,7 +15523,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Показывать на сайте"
+            "translation": "Показывать"
           }
         ],
         "validation": null,
@@ -15087,18 +15562,13 @@
         "group": "group_placement",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Категория нужна для фильтров в Studio и автоматического подбора FAQ на странице.",
+        "note": "Категория для фильтрации FAQ.",
         "options": {
           "choices": [
             {
               "color": "#6b7280",
               "text": "Общее",
               "value": "general"
-            },
-            {
-              "color": "#111827",
-              "text": "Каталог",
-              "value": "catalog"
             },
             {
               "color": "#2563eb",
@@ -15119,6 +15589,11 @@
               "color": "#ca8a04",
               "text": "Club",
               "value": "club"
+            },
+            {
+              "color": "#111827",
+              "text": "Каталог",
+              "value": "catalog"
             }
           ]
         },
@@ -15177,7 +15652,7 @@
         "display": null,
         "display_options": null,
         "field": "id",
-        "group": "group_system",
+        "group": "group_answer",
         "hidden": true,
         "interface": "input",
         "note": "Системный ID.",
@@ -15185,7 +15660,7 @@
         "readonly": true,
         "required": false,
         "searchable": true,
-        "sort": 92,
+        "sort": 2,
         "special": [
           "uuid"
         ],
@@ -15231,14 +15706,12 @@
         "group": "group_answer",
         "hidden": false,
         "interface": "input",
-        "note": "Короткий вопрос одним предложением. Лучше писать так, как его задал бы клиент.",
-        "options": {
-          "placeholder": "Например: Можно ли посмотреть диагностику?"
-        },
+        "note": "Текст вопроса.",
+        "options": null,
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 2,
+        "sort": 4,
         "special": null,
         "translations": [
           {
@@ -15283,17 +15756,15 @@
         "display": null,
         "display_options": null,
         "field": "key",
-        "group": "group_system",
+        "group": "group_answer",
         "hidden": false,
         "interface": "input",
-        "note": "Стабильный ключ латиницей. Используется в page_sections.content.faqKeys/faq_keys для ручного выбора конкретных вопросов.",
-        "options": {
-          "placeholder": "passport-warranty"
-        },
+        "note": "Стабильный ключ для ссылок из page_sections.content. Лучше латиницей, например passport-warranty.",
+        "options": null,
         "readonly": false,
         "required": true,
         "searchable": true,
-        "sort": 91,
+        "sort": 3,
         "special": null,
         "translations": [
           {
@@ -15341,7 +15812,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Основной текст FAQ. Это то, что видит посетитель сайта.",
+        "note": "Вопрос и ответ.",
         "options": {
           "headerIcon": "quiz",
           "start": "open"
@@ -15358,7 +15829,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Вопрос и ответ"
+            "translation": "Вопрос"
           }
         ],
         "validation": null,
@@ -15379,9 +15850,9 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Где показывать вопрос: страница, категория, порядок и видимость.",
+        "note": "Где и в каком порядке показывать FAQ.",
         "options": {
-          "headerIcon": "filter_alt",
+          "headerIcon": "rule",
           "start": "open"
         },
         "readonly": false,
@@ -15396,7 +15867,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Показ на сайте"
+            "translation": "Публикация"
           }
         ],
         "validation": null,
@@ -17642,7 +18113,7 @@
         "group": "group_placement",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Navigation area.",
+        "note": "Область навигации.",
         "options": {
           "choices": [
             {
@@ -17654,16 +18125,6 @@
               "color": "#0f766e",
               "text": "Footer",
               "value": "footer"
-            },
-            {
-              "color": "#0891b2",
-              "text": "Mobile",
-              "value": "mobile"
-            },
-            {
-              "color": "#6b7280",
-              "text": "Utility",
-              "value": "utility"
             }
           ]
         },
@@ -17866,17 +18327,17 @@
         "group": "group_link",
         "hidden": false,
         "interface": "input",
-        "note": "Legacy fallback URL. Prefer link_type/page/custom_url for new links.",
+        "note": "Внутренний путь (/catalog) или внешний URL.",
         "options": null,
         "readonly": false,
-        "required": false,
+        "required": true,
         "searchable": true,
-        "sort": 11,
+        "sort": 4,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "URL fallback"
+            "translation": "URL"
           }
         ],
         "validation": null,
@@ -18078,7 +18539,7 @@
         "group": "group_placement",
         "hidden": false,
         "interface": "list-o2m",
-        "note": "Nested footer/mobile links.",
+        "note": "Вложенные ссылки, если используются.",
         "options": {
           "enableCreate": true,
           "enableSelect": true,
@@ -18086,9 +18547,7 @@
             "sort",
             "is_active",
             "label",
-            "link_type",
-            "page",
-            "custom_url",
+            "url",
             "location"
           ],
           "layout": "table"
@@ -18711,7 +19170,7 @@
         "group": "group_advanced",
         "hidden": false,
         "interface": "input-code",
-        "note": "JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Обычный редактор видит поле для диагностики; расширенный редактор может править JSON после проверки структуры.\n\n??? ????? final_cta ? JSON-?????????? ????? ????????????? form.consent_note ? ???????? ????? ???????? ??? ??????? ??????.",
+        "note": "JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Обычный редактор видит поле для диагностики; расширенный редактор может править JSON после проверки структуры.",
         "options": {
           "language": "json",
           "lineWrapping": true
@@ -19225,6 +19684,16 @@
               "color": "#ca8a04",
               "text": "FAQ",
               "value": "faq"
+            },
+            {
+              "color": "#64748b",
+              "text": "Rich text",
+              "value": "rich.text"
+            },
+            {
+              "color": "#16a34a",
+              "text": "Отзывы",
+              "value": "social.proof"
             },
             {
               "color": "#f97316",
@@ -19915,18 +20384,13 @@
         "group": "group_page",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Шаблон рендера в Next. Обычно не менять. Блог использует template=blog и секцию blog.index.",
+        "note": "Шаблон рендера в Next. Обычно не менять.",
         "options": {
           "choices": [
             {
               "color": "#0f766e",
               "text": "Главная",
               "value": "home"
-            },
-            {
-              "color": "#111827",
-              "text": "Каталог",
-              "value": "catalog"
             },
             {
               "color": "#2563eb",
@@ -19949,9 +20413,9 @@
               "value": "club"
             },
             {
-              "color": "#2563eb",
-              "text": "Блог",
-              "value": "blog"
+              "color": "#64748b",
+              "text": "Информационная",
+              "value": "info"
             }
           ]
         },
@@ -21516,6 +21980,300 @@
         "data_type": "character varying",
         "default_value": null,
         "max_length": -5,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "business_hours",
+      "type": "string",
+      "meta": {
+        "collection": "site_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "business_hours",
+        "group": "group_contacts",
+        "hidden": false,
+        "interface": "input",
+        "note": "Публичные часы работы в понятной человеку форме.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 25,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "Часы работы"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "business_hours",
+        "table": "site_settings",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 240,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "map_url",
+      "type": "text",
+      "meta": {
+        "collection": "site_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "map_url",
+        "group": "group_contacts",
+        "hidden": false,
+        "interface": "input",
+        "note": "Ссылка на карту или карточку организации.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 26,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "Карта"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "map_url",
+        "table": "site_settings",
+        "data_type": "text",
+        "default_value": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "legal_name",
+      "type": "text",
+      "meta": {
+        "collection": "site_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "legal_name",
+        "group": "group_contacts",
+        "hidden": false,
+        "interface": "input",
+        "note": "Юридическое наименование продавца. Публиковать только после проверки.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 27,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "Юридическое наименование"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "full"
+      },
+      "schema": {
+        "name": "legal_name",
+        "table": "site_settings",
+        "data_type": "text",
+        "default_value": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "inn",
+      "type": "string",
+      "meta": {
+        "collection": "site_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "inn",
+        "group": "group_contacts",
+        "hidden": false,
+        "interface": "input",
+        "note": "ИНН продавца.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 28,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "ИНН"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "inn",
+        "table": "site_settings",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 32,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "ogrn",
+      "type": "string",
+      "meta": {
+        "collection": "site_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "ogrn",
+        "group": "group_contacts",
+        "hidden": false,
+        "interface": "input",
+        "note": "ОГРН или ОГРНИП продавца.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 29,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "ОГРН / ОГРНИП"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "half"
+      },
+      "schema": {
+        "name": "ogrn",
+        "table": "site_settings",
+        "data_type": "character varying",
+        "default_value": null,
+        "max_length": 32,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "site_settings",
+      "field": "privacy_url",
+      "type": "text",
+      "meta": {
+        "collection": "site_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "privacy_url",
+        "group": "group_contacts",
+        "hidden": false,
+        "interface": "input",
+        "note": "Путь к опубликованной политике обработки данных, обычно /privacy.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 30,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "Политика данных"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "full"
+      },
+      "schema": {
+        "name": "privacy_url",
+        "table": "site_settings",
+        "data_type": "text",
+        "default_value": null,
+        "max_length": null,
         "numeric_precision": null,
         "numeric_scale": null,
         "is_nullable": true,

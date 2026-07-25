@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-07-06.
+Last updated: 2026-07-25.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -1624,3 +1624,38 @@ Next content-editing priorities:
    invalidation before using real editorial content.
 6. Run production HTTP, SEO, RSS, sitemap, desktop/mobile visual and copy smoke.
    Add `Блог` to Directus header/footer navigation only after those checks pass.
+
+### Conversion V2 Production Rollout (2026-07-25)
+
+- A fresh pre-migration VPS backup was created at
+  `/opt/isvoi/backups/directus/20260725T182244Z`; both `postgres.sql.gz` and
+  `uploads.tar.gz` passed checksum verification. Offsite upload remains
+  deferred because `OFFSITE_BACKUP_DEST` is not configured.
+- Production deployed the conversion-v2 content contract and storefront flow
+  through commits `f4cdf3a`, `cc5a559`, `eb83e13`, `58ad6e8`, `b4b8c70` and
+  `1871fa0`. The release keeps Directus as the public-copy source while the web
+  application provides compatible section contracts and safe fallbacks.
+- Six informational pages and twelve page sections were created as drafts or
+  inactive records. Three explicitly labelled QA testimonials remain inactive.
+  No test legal details, testimonials or invented device facts were published.
+  Footer links to informational pages stay inactive until the corresponding
+  page is published; a null `privacy_url` no longer falls back to `/privacy`.
+- A real temporary Editor account verified the Directus Studio workflow
+  end-to-end: the draft `about` page title was edited, saved, reread and restored;
+  the inactive rich-text section opened with its publishing controls; and the
+  expanded Site Settings fields were visible. The test exposed missing alias
+  layout groups in the Editor field scope. The setup scripts and audit now
+  enforce those groups. Directus permission changes required `FLUSHDB` on the
+  dedicated Redis cache; restarting Directus alone retained stale effective
+  permissions. The temporary user was deleted and no static QA token remains.
+- The aggregate Directus audit passes, including Studio metadata, public/API
+  policy, operations, content ownership, conversion copy, internal known links,
+  repair-history consistency and unpublished social-proof checks. Four
+  published devices still report the non-blocking
+  `published_devices_missing_required_fields.warning`; those diagnostic facts
+  must be completed from verified source data rather than test values.
+- `web:verify`, protected site-content revalidation, HTTP/SEO, copy, internal
+  link, image-latency, performance and desktop/mobile visual smokes pass on
+  production. The sanitized production schema snapshot was regenerated; one
+  sensitive preview query value is stored as `__REDACTED__`, and the raw
+  temporary snapshot was removed.

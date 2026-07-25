@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-19T16:22:10.864Z",
+  "updatedAt": "2026-07-25T17:02:53.928Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -1161,6 +1161,13 @@
     {
       "file": "apps/web/components/FinalCtaSection.tsx",
       "kind": "string",
+      "line": 71,
+      "text": "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
+      "id": "ea7f34c0fa1bae11"
+    },
+    {
+      "file": "apps/web/components/FinalCtaSection.tsx",
+      "kind": "string",
       "line": 76,
       "text": "без агрессивных продаж",
       "id": "4a02bfd8441ff8c5"
@@ -2109,6 +2116,13 @@
       "line": 28,
       "text": "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
       "id": "0d36063365e5f1bb"
+    },
+    {
+      "file": "apps/web/components/ProductLeadForm.tsx",
+      "kind": "string",
+      "line": 29,
+      "text": "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
+      "id": "786661912b6dd0ed"
     },
     {
       "file": "apps/web/components/ProductLeadForm.tsx",
@@ -3635,6 +3649,13 @@
       "line": 121,
       "text": "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
       "id": "9cd3825c44ab2cc1"
+    },
+    {
+      "file": "apps/web/lib/directus.ts",
+      "kind": "string",
+      "line": 122,
+      "text": "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
+      "id": "f52b98978741f53a"
     },
     {
       "file": "apps/web/lib/directus.ts",

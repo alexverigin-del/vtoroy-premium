@@ -38,5 +38,21 @@ UNION ALL
 SELECT 'leads.device_slug_without_relation', count(*)::text
 FROM leads
 WHERE nullif(device, '') IS NOT NULL
-  AND device_id IS NULL;
+  AND device_id IS NULL
+UNION ALL
+SELECT 'lead_hardening.device_consent_fields_missing', (3 - count(*))::text
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'device_page_settings'
+  AND column_name IN (
+    'lead_available_consent_note',
+    'lead_reserved_consent_note',
+    'lead_sold_consent_note'
+  )
+UNION ALL
+SELECT 'lead_hardening.final_cta_consent_copy_missing', count(*)::text
+FROM page_sections
+WHERE section_key = 'final_cta'
+  AND COALESCE(is_active, false) = true
+  AND NULLIF(content::jsonb #>> '{form,consent_note}', '') IS NULL;
 `);

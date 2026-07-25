@@ -91,6 +91,8 @@ allowed_keys(key) AS (
     ('cards'),
     ('choices'),
     ('comparison'),
+    ('consentNote'),
+    ('consent_note'),
     ('contact_label'),
     ('contact_placeholder'),
     ('ctaLabel'),

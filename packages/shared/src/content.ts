@@ -158,6 +158,8 @@ export interface SectionContent {
     contact_placeholder?: string;
     submitLabel?: string;
     submit_label?: string;
+    consentNote?: string;
+    consent_note?: string;
     note?: string;
   };
   footerNote?: string;
@@ -322,6 +324,7 @@ export interface ProductLeadFormMode {
   successNote: string;
   errorNote: string;
   statusNote: string;
+  consentNote: string;
 }
 
 export interface DevicePageSettings {

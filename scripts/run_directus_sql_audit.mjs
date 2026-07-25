@@ -142,6 +142,8 @@ const auditDefinitions = {
       "leads.in_progress_without_assignee",
       "leads.closed_without_manager_note",
       "leads.device_slug_without_relation",
+      "lead_hardening.device_consent_fields_missing",
+      "lead_hardening.final_cta_consent_copy_missing",
     ],
   },
   files: {

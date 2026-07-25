@@ -1144,15 +1144,18 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   - `FILES_MIME_TYPE_ALLOW_LIST`
   - `IMPORT_IP_DENY_LIST`
 - The public site sets baseline security headers in `apps/web/next.config.mjs`.
-- `/lead-intake` uses honeypot plus a lightweight in-process rate limit.
-  Nginx rate-limit config and opt-in Cloudflare Turnstile are available for
-  production hardening. Turnstile is enforced only when `TURNSTILE_SECRET_KEY`
-  is set; the browser widget is rendered only when
-  `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set.
-- As of 2026-06-28, Turnstile support is implemented as opt-in code and the
-  nginx rate-limit snippet is documented in repo. Live Turnstile requires real
-  Cloudflare keys in production env; live nginx rate limiting requires applying
-  the snippet to `/etc/nginx` with root/sudo access.
+- `/lead-intake` uses honeypot plus a lightweight in-process rate limit in
+  Next.js. Since 2026-07-25, production nginx also rate-limits the exact
+  `/lead-intake` location with `limit_req zone=isvoi_lead_intake burst=4
+  nodelay` and returns 429 when the edge limit is exceeded.
+- Cloudflare Turnstile is implemented as opt-in code. It is enforced only when
+  `TURNSTILE_SECRET_KEY` is set; the browser widget is rendered only when
+  `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set. As of 2026-07-25, production has no
+  Turnstile keys yet, so the feature is ready but not active.
+- Lead consent copy is editor-owned. Product-page variants
+  `available/reserved/sold` read `lead_*_consent_note` from
+  `device_page_settings`; the homepage final CTA reads
+  `page_sections.content.form.consent_note`.
 - `/api/admin/catalog-import/run` accepts catalog import authorization only via
   `x-isvoi-import-secret` or bearer auth, never query-string secrets.
 - `ALLOW_CATALOG_FALLBACK` should stay unset in production unless stale bundled
@@ -1258,11 +1261,11 @@ Next content-editing priorities:
 
 1. Configure real production `isvoi-backups` rclone credentials, run a real
    off-server backup upload and run `npm run directus:restore-rehearsal`.
-2. Apply the nginx `/lead-intake` rate-limit snippet on Beget and enable
-   Turnstile keys when public traffic requires it.
-3. Prepare approved privacy/personal-data consent text, add legal/trust links
-   near lead forms and footer, and include those routes in copy/visual smoke
-   checks before release. Do not publish placeholder consent UI.
+2. Configure real Cloudflare Turnstile keys when public traffic or spam volume
+   justifies it, then run a test lead through the widget path.
+3. Add a full privacy/personal-data policy page and footer/legal link when the
+   approved legal text is ready. Current lead forms already show managed
+   short consent copy, but there is no dedicated `/privacy` route yet.
 4. Continue growing the catalog through the operator import workflow. The first
    safe demo batch is already proven; the next catalog step is a small real
    stock batch with the same workbook + ZIP process.

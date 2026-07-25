@@ -60,3 +60,10 @@ npm run directus:setup:leads
 Turnstile не нужен для локальной разработки: если ключи не заданы, форма и
 endpoint работают по прежнему контракту.
 
+Текст короткого согласия под формами управляется в Directus:
+
+- товарные карточки: `Device Page Settings` -> блоки формы для
+  `available/reserved/sold` -> поле `Согласие под формой`;
+- финальная форма на главной: `Site Pages` -> `home` -> блок `final_cta` ->
+  `JSON-настройки блока` -> `form.consent_note`.
+

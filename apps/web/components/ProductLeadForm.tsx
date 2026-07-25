@@ -26,6 +26,7 @@ const fallbackLeadCopy: ProductLeadCopy = {
     successNote: "Заявка принята. Мы свяжемся и подтвердим наличие.",
     errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
     statusNote: "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
+    consentNote: "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
   },
   reserved: {
     kind: "purchase",
@@ -41,6 +42,7 @@ const fallbackLeadCopy: ProductLeadCopy = {
     errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
     statusNote:
       "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
+    consentNote: "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
   },
   sold: {
     kind: "selection",
@@ -55,6 +57,7 @@ const fallbackLeadCopy: ProductLeadCopy = {
       "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
     errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
     statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
+    consentNote: "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
   },
 };
 
@@ -187,6 +190,9 @@ export function ProductLeadForm({
         aria-hidden="true"
         className={leadHoneypotClass}
       />
+      {mode.consentNote ? (
+        <p className="mt-3 text-xs leading-relaxed text-muted">{mode.consentNote}</p>
+      ) : null}
       <button
         type="submit"
         disabled={state === "submitting" || !turnstileReady}

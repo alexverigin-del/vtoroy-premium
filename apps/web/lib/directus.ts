@@ -119,6 +119,7 @@ export const fallbackDevicePageSettings: DevicePageSettings = {
       errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
       statusNote:
         "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
+      consentNote: "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
     },
     reserved: {
       kind: "purchase",
@@ -134,6 +135,7 @@ export const fallbackDevicePageSettings: DevicePageSettings = {
       errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
       statusNote:
         "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
+      consentNote: "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
     },
     sold: {
       kind: "selection",
@@ -148,6 +150,7 @@ export const fallbackDevicePageSettings: DevicePageSettings = {
         "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
       errorNote: "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
       statusNote: "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
+      consentNote: "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
     },
   },
 };
@@ -1184,6 +1187,7 @@ function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): Device
       successNote: str(row[`${prefix}success_note`], fallback.successNote),
       errorNote: str(row[`${prefix}error_note`], fallback.errorNote),
       statusNote: str(row[`${prefix}status_note`], fallback.statusNote),
+      consentNote: str(row[`${prefix}consent_note`], fallback.consentNote),
     };
   };
 

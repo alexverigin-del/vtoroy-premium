@@ -22,6 +22,7 @@ type FinalCtaForm = {
   contactLabel: string;
   contactPlaceholder: string;
   submitLabel: string;
+  consentNote: string;
   note: string;
 };
 
@@ -64,6 +65,11 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
     contactLabel: text("contactLabel", "contact_label", "Контакт для ответа"),
     contactPlaceholder: text("contactPlaceholder", "contact_placeholder", "Телефон или Telegram"),
     submitLabel: text("submitLabel", "submit_label", "Оставить заявку"),
+    consentNote: text(
+      "consentNote",
+      "consent_note",
+      "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
+    ),
     note: text("note", "note", "Оставьте контакт, и мы предложим спокойный следующий шаг."),
   };
 }
@@ -210,6 +216,10 @@ export function FinalCtaSection({ section }: { section: PageSection }) {
 
             {turnstileRequired ? (
               <div ref={turnstileElementRef} className="mt-4 min-h-turnstile" />
+            ) : null}
+
+            {form.consentNote ? (
+              <p className="mt-3 text-xs leading-relaxed text-ash">{form.consentNote}</p>
             ) : null}
 
             <button

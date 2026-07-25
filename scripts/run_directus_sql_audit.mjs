@@ -6,6 +6,7 @@
  */
 
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
@@ -15,6 +16,11 @@ const sshTarget = process.env.DIRECTUS_AUDIT_SSH_TARGET || "deploy@217.114.14.32
 const remoteCommand =
   process.env.DIRECTUS_AUDIT_REMOTE_PSQL ||
   "cd /opt/isvoi/infra/directus-beget && docker compose exec -T database psql -U isvoi -d isvoi -v ON_ERROR_STOP=1 -A -F '|'";
+const canRunLocalPsql =
+  process.env.DIRECTUS_AUDIT_LOCAL_PSQL === "1" ||
+  (process.platform !== "win32" &&
+    root.startsWith("/opt/isvoi") &&
+    fs.existsSync("/opt/isvoi/infra/directus-beget/docker-compose.yml"));
 
 const auditDefinitions = {
   schema: {
@@ -269,11 +275,17 @@ function runNodeScript(script) {
 }
 
 function runPsql(sql) {
-  const result = spawnSync("ssh", ["-i", sshKey, sshTarget, remoteCommand], {
-    input: sql,
-    encoding: "utf8",
-    maxBuffer: 1024 * 1024 * 20,
-  });
+  const result = canRunLocalPsql
+    ? spawnSync("bash", ["-lc", remoteCommand], {
+        input: sql,
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024 * 20,
+      })
+    : spawnSync("ssh", ["-i", sshKey, sshTarget, remoteCommand], {
+        input: sql,
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024 * 20,
+      });
   if (result.status !== 0) {
     throw new Error(`psql audit failed:\n${result.stderr || result.stdout}`);
   }

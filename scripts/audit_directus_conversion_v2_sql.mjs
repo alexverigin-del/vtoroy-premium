@@ -91,10 +91,21 @@ FROM (
 WHERE lower(public_copy) ~ '(ориентир|цена)[[:space:]]+выхода'
 UNION ALL
 SELECT 'conversion_v2.public_question_mark_placeholders', count(*)::text
-FROM page_sections ps
-JOIN site_pages sp ON sp.id = ps.page
-WHERE sp.status = 'published' AND ps.is_active = true
-  AND concat_ws(' ', ps.body, ps.content::text) ~ '\?{5,}'
+FROM (
+  SELECT concat_ws(' ', ps.body, ps.content::text) AS public_copy
+  FROM page_sections ps
+  JOIN site_pages sp ON sp.id = ps.page
+  WHERE sp.status = 'published' AND ps.is_active = true
+  UNION ALL
+  SELECT concat_ws(
+    ' ',
+    lead_available_consent_note,
+    lead_reserved_consent_note,
+    lead_sold_consent_note
+  )
+  FROM device_page_settings
+) public_rows
+WHERE public_copy ~ '\?{5,}'
 UNION ALL
 SELECT 'conversion_v2.store_club_promotion', count(*)::text
 FROM page_sections ps

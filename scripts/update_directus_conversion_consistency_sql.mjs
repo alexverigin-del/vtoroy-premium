@@ -149,7 +149,10 @@ SET
   warranty_title = 'Гарантия и условия обновления',
   exit_price_label = 'Предварительная стоимость при обновлении',
   trade_value_prefix = 'Предварительная оценка',
-  trade_cta_label = 'Получить предварительную оценку';
+  trade_cta_label = 'Получить предварительную оценку',
+  lead_available_consent_note = 'Отправляя форму, вы соглашаетесь с обработкой контакта для ответа по заявке.',
+  lead_reserved_consent_note = 'Отправляя форму, вы соглашаетесь с обработкой контакта для ответа по заявке.',
+  lead_sold_consent_note = 'Отправляя форму, вы соглашаетесь с обработкой контакта для ответа по заявке.';
 
 -- iPhone 14: structured repair value is canonical; remove the contradictory
 -- "no opening traces" statement from free copy.

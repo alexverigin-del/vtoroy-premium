@@ -400,6 +400,15 @@ UPDATE device_passports SET product = device WHERE product IS NULL AND device IS
 UPDATE trade_options SET product = device WHERE product IS NULL AND device IS NOT NULL;
 UPDATE leads SET product = device_id, product_type = 'device'
 WHERE product IS NULL AND device_id IS NOT NULL;
+UPDATE leads
+SET product = COALESCE(product, 'iphone-13-pro'),
+    product_type = COALESCE(product_type, 'device'),
+    device_id = COALESCE(device_id, 'iphone-13-pro'),
+    manager_note = COALESCE(
+      NULLIF(manager_note, ''),
+      'QA catalog_v3: тестовая заявка, контакт .invalid, не связываться.'
+    )
+WHERE contact LIKE 'qa+catalog-v3%@isvoi.invalid';
 
 -- Draft QA rows: editable and auditable, never public until real photos and facts replace them.
 INSERT INTO device_models (slug, brand, name, family, year, sort)

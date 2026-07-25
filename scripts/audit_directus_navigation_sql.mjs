@@ -25,11 +25,13 @@ active_footer AS (
 )
 SELECT 'navigation.header.active_count' AS check_name, count(*)::text AS value
 FROM active_header
+WHERE parent IS NULL
 UNION ALL
 SELECT 'navigation.header.too_many', count(*)::text
 FROM (
   SELECT 1
   FROM active_header
+  WHERE parent IS NULL
   HAVING count(*) > 6
 ) x
 UNION ALL

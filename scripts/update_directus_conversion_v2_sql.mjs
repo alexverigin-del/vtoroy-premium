@@ -278,6 +278,7 @@ const lines = [
   "",
   "-- P0 public copy and global CTA",
   "UPDATE site_settings SET brand_name = 'I СВОИ', header_cta_label = 'Смотреть устройства', header_cta_url = '/catalog';",
+  "UPDATE site_settings SET privacy_url = NULL WHERE privacy_url = '/privacy' AND NOT EXISTS (SELECT 1 FROM site_pages WHERE slug = 'privacy' AND status = 'published');",
   "UPDATE page_sections SET content = jsonb_set((content::jsonb #- '{form,note}'), '{form,note}', to_jsonb('Ответим по указанному контакту.'::text), true)::json WHERE section_key = 'final_cta';",
   "UPDATE navigation_items SET custom_url = '/passport', url = '/passport', section_anchor = NULL WHERE coalesce(custom_url, url) = '/store#diagnostics';",
   "UPDATE navigation_items SET custom_url = '/#final', url = '/#final', section_anchor = NULL WHERE coalesce(custom_url, url) = '/store#final';",

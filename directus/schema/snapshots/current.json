@@ -310,12 +310,12 @@
         "collapse": "open",
         "collection": "device_page_settings",
         "color": null,
-        "display_template": "Шаблон товарной страницы",
+        "display_template": "?????? ???????? ????????",
         "group": null,
         "hidden": false,
         "icon": "view_carousel",
         "item_duplication_fields": null,
-        "note": "Singleton: общий шаблон товарной страницы. Здесь редактируются breadcrumbs, подписи секций, CTA, Passport и блок похожих устройств.",
+        "note": "Singleton: ????? ?????? ???????? ????????. ????? ????????????? breadcrumbs, ??????? ??????, CTA, Passport ? ???? ??????? ?????????.",
         "preview_url": null,
         "singleton": true,
         "sort": null,
@@ -878,7 +878,7 @@
         "interface": "file-image",
         "note": "Портрет из папки ISVOI Blog.",
         "options": {
-          "folder": "ISVOI Blog"
+          "folder": "34872b7e-fd67-4f76-9485-e91a8becfee9"
         },
         "readonly": false,
         "required": false,
@@ -1818,7 +1818,7 @@
         "interface": "input-rich-text-html",
         "note": "Текст блока: короткие абзацы, H2/H3, списки, цитаты и ссылки. Для блока изображения оставьте пустым.",
         "options": {
-          "folder": "ISVOI Blog",
+          "folder": "34872b7e-fd67-4f76-9485-e91a8becfee9",
           "toolbar": [
             "bold",
             "italic",
@@ -1878,7 +1878,7 @@
         "interface": "file-image",
         "note": "Изображение блока. Перед публикацией переместите одобренный файл в ISVOI Editorial.",
         "options": {
-          "folder": "ISVOI Blog"
+          "folder": "34872b7e-fd67-4f76-9485-e91a8becfee9"
         },
         "readonly": false,
         "required": false,
@@ -2835,7 +2835,7 @@
         "interface": "input-rich-text-html",
         "note": "Устаревший текст сохранён для обратной совместимости. Новые материалы собирайте в поле «Блоки статьи».",
         "options": {
-          "folder": "ISVOI Blog",
+          "folder": "34872b7e-fd67-4f76-9485-e91a8becfee9",
           "toolbar": [
             "bold",
             "italic",
@@ -2895,7 +2895,7 @@
         "interface": "file-image",
         "note": "Основная обложка из папки ISVOI Blog.",
         "options": {
-          "folder": "ISVOI Blog"
+          "folder": "34872b7e-fd67-4f76-9485-e91a8becfee9"
         },
         "readonly": false,
         "required": false,
@@ -3442,7 +3442,7 @@
         "interface": "file-image",
         "note": "Отдельная social preview-картинка. Если пусто, используется обложка.",
         "options": {
-          "folder": "ISVOI Blog"
+          "folder": "34872b7e-fd67-4f76-9485-e91a8becfee9"
         },
         "readonly": false,
         "required": false,
@@ -6027,7 +6027,7 @@
         "group": null,
         "hidden": true,
         "interface": "input",
-        "note": "Системный id singleton.",
+        "note": "????????? id singleton.",
         "options": null,
         "readonly": true,
         "required": false,
@@ -6076,7 +6076,7 @@
         "group": null,
         "hidden": true,
         "interface": "input",
-        "note": "Системный ключ singleton. Не менять.",
+        "note": "????????? ???? singleton. ?? ??????.",
         "options": null,
         "readonly": true,
         "required": true,
@@ -6086,7 +6086,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Системный ключ"
+            "translation": "????????? ????"
           }
         ],
         "validation": null,
@@ -6125,7 +6125,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Навигация и хлебные крошки товарной страницы.",
+        "note": "????????? ? ??????? ?????? ???????? ????????.",
         "options": {
           "headerIcon": "account_tree",
           "start": "open"
@@ -6142,7 +6142,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Навигация"
+            "translation": "?????????"
           }
         ],
         "validation": null,
@@ -6163,7 +6163,7 @@
         "group": "group_breadcrumbs",
         "hidden": false,
         "interface": "input",
-        "note": "Название первого пункта в structured breadcrumbs.",
+        "note": "???????? ??????? ?????? ? structured breadcrumbs.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6173,7 +6173,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Главная"
+            "translation": "???????"
           }
         ],
         "validation": null,
@@ -6212,7 +6212,7 @@
         "group": "group_breadcrumbs",
         "hidden": false,
         "interface": "input",
-        "note": "URL первого пункта breadcrumbs. Обычно /.",
+        "note": "URL ??????? ?????? breadcrumbs. ?????? /.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6222,7 +6222,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ссылка главной"
+            "translation": "?????? ???????"
           }
         ],
         "validation": null,
@@ -6261,7 +6261,7 @@
         "group": "group_breadcrumbs",
         "hidden": false,
         "interface": "input",
-        "note": "Название пункта каталога в breadcrumbs.",
+        "note": "???????? ?????? ???????? ? breadcrumbs.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6271,7 +6271,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Каталог"
+            "translation": "???????"
           }
         ],
         "validation": null,
@@ -6310,7 +6310,7 @@
         "group": "group_breadcrumbs",
         "hidden": false,
         "interface": "input",
-        "note": "URL каталога. Обычно /catalog.",
+        "note": "URL ????????. ?????? /catalog.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6320,7 +6320,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ссылка каталога"
+            "translation": "?????? ????????"
           }
         ],
         "validation": null,
@@ -6359,7 +6359,7 @@
         "group": "group_breadcrumbs",
         "hidden": false,
         "interface": "input",
-        "note": "Видимая ссылка над карточкой устройства.",
+        "note": "??????? ?????? ??? ????????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6369,7 +6369,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ссылка назад"
+            "translation": "?????? ?????"
           }
         ],
         "validation": null,
@@ -6408,7 +6408,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Короткие подписи статусов, грейда и цены.",
+        "note": "???????? ??????? ????????, ?????? ? ????.",
         "options": {
           "headerIcon": "sell",
           "start": "open"
@@ -6425,7 +6425,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Статусы и цена"
+            "translation": "??????? ? ????"
           }
         ],
         "validation": null,
@@ -6446,7 +6446,7 @@
         "group": "group_status",
         "hidden": false,
         "interface": "input",
-        "note": "Префикс перед грейдом устройства.",
+        "note": "??????? ????? ??????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6456,7 +6456,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Префикс грейда"
+            "translation": "??????? ??????"
           }
         ],
         "validation": null,
@@ -6495,7 +6495,7 @@
         "group": "group_status",
         "hidden": false,
         "interface": "input",
-        "note": "Префикс перед датой обновления карточки.",
+        "note": "??????? ????? ????? ?????????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6505,7 +6505,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Префикс даты"
+            "translation": "??????? ????"
           }
         ],
         "validation": null,
@@ -6544,7 +6544,7 @@
         "group": "group_status",
         "hidden": false,
         "interface": "input",
-        "note": "Публичная подпись stock_status=available.",
+        "note": "????????? ??????? stock_status=available.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6554,7 +6554,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "В наличии"
+            "translation": "? ???????"
           }
         ],
         "validation": null,
@@ -6593,7 +6593,7 @@
         "group": "group_status",
         "hidden": false,
         "interface": "input",
-        "note": "Публичная подпись stock_status=reserved.",
+        "note": "????????? ??????? stock_status=reserved.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6603,7 +6603,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Бронь"
+            "translation": "?????"
           }
         ],
         "validation": null,
@@ -6642,7 +6642,7 @@
         "group": "group_status",
         "hidden": false,
         "interface": "input",
-        "note": "Публичная подпись stock_status=sold.",
+        "note": "????????? ??????? stock_status=sold.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6652,7 +6652,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Продано"
+            "translation": "???????"
           }
         ],
         "validation": null,
@@ -6691,7 +6691,7 @@
         "group": "group_status",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Мелкое пояснение под CTA в карточке устройства.",
+        "note": "?????? ????????? ??? CTA ? ???????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6701,7 +6701,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Примечание к цене"
+            "translation": "?????????? ? ????"
           }
         ],
         "validation": null,
@@ -6740,7 +6740,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Заголовки секций и fallback-тексты гарантии.",
+        "note": "????????? ?????? ? fallback-?????? ????????.",
         "options": {
           "headerIcon": "view_agenda",
           "start": "open"
@@ -6757,7 +6757,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Секции"
+            "translation": "??????"
           }
         ],
         "validation": null,
@@ -6778,7 +6778,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок блока состояния.",
+        "note": "????????? ????? ?????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6788,7 +6788,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Состояние"
+            "translation": "?????????"
           }
         ],
         "validation": null,
@@ -6827,7 +6827,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Верхняя подпись блока истории вещи.",
+        "note": "??????? ??????? ????? ??????? ????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6837,7 +6837,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Eyebrow истории"
+            "translation": "Eyebrow ???????"
           }
         ],
         "validation": null,
@@ -6876,7 +6876,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок истории, если у конкретного устройства он не заполнен.",
+        "note": "????????? ???????, ???? ? ??????????? ?????????? ?? ?? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6886,7 +6886,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Fallback истории"
+            "translation": "Fallback ???????"
           }
         ],
         "validation": null,
@@ -6925,7 +6925,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок блока гарантии и цены выхода.",
+        "note": "????????? ????? ???????? ? ???? ??????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6935,7 +6935,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Гарантия"
+            "translation": "????????"
           }
         ],
         "validation": null,
@@ -6974,7 +6974,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Подпись карточки срока гарантии.",
+        "note": "??????? ???????? ????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -6984,7 +6984,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Срок гарантии"
+            "translation": "???? ????????"
           }
         ],
         "validation": null,
@@ -7023,7 +7023,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Подпись карточки цены выхода.",
+        "note": "??????? ???????? ???? ??????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7033,7 +7033,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ориентир выхода"
+            "translation": "???????? ??????"
           }
         ],
         "validation": null,
@@ -7072,7 +7072,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Подпись абзаца, что покрывается гарантией.",
+        "note": "??????? ??????, ??? ??????????? ?????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7082,7 +7082,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Покрывается"
+            "translation": "???????????"
           }
         ],
         "validation": null,
@@ -7121,7 +7121,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Подпись абзаца, что не покрывается гарантией.",
+        "note": "??????? ??????, ??? ?? ??????????? ?????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7131,7 +7131,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Не покрывается"
+            "translation": "?? ???????????"
           }
         ],
         "validation": null,
@@ -7170,7 +7170,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Fallback, если у конкретного Passport не заполнено поле warranty_covered.",
+        "note": "Fallback, ???? ? ??????????? Passport ?? ????????? ???? warranty_covered.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7180,7 +7180,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Fallback покрытия"
+            "translation": "Fallback ????????"
           }
         ],
         "validation": null,
@@ -7219,7 +7219,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Fallback, если у конкретного Passport не заполнено поле warranty_not_covered.",
+        "note": "Fallback, ???? ? ??????????? Passport ?? ????????? ???? warranty_not_covered.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7229,7 +7229,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Fallback исключений"
+            "translation": "Fallback ??????????"
           }
         ],
         "validation": null,
@@ -7268,7 +7268,7 @@
         "group": "group_sections",
         "hidden": false,
         "interface": "input",
-        "note": "Fallback срока гарантии, если в устройстве и Passport пусто.",
+        "note": "Fallback ????? ????????, ???? ? ?????????? ? Passport ?????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7278,7 +7278,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Fallback срока"
+            "translation": "Fallback ?????"
           }
         ],
         "validation": null,
@@ -7317,7 +7317,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Подписи Trade на товарной странице.",
+        "note": "??????? Trade ?? ???????? ????????.",
         "options": {
           "headerIcon": "sync_alt",
           "start": "closed"
@@ -7355,7 +7355,7 @@
         "group": "group_trade",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок блока Trade options.",
+        "note": "????????? ????? Trade options.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7365,7 +7365,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Заголовок Trade"
+            "translation": "????????? Trade"
           }
         ],
         "validation": null,
@@ -7404,7 +7404,7 @@
         "group": "group_trade",
         "hidden": false,
         "interface": "input",
-        "note": "Префикс перед суммой зачёта.",
+        "note": "??????? ????? ?????? ??????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7414,7 +7414,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Префикс суммы"
+            "translation": "??????? ?????"
           }
         ],
         "validation": null,
@@ -7453,7 +7453,7 @@
         "group": "group_trade",
         "hidden": false,
         "interface": "input",
-        "note": "Подпись кнопки Trade рядом с заявкой.",
+        "note": "??????? ?????? Trade ????? ? ???????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7502,7 +7502,7 @@
         "group": "group_trade",
         "hidden": false,
         "interface": "input",
-        "note": "URL кнопки Trade.",
+        "note": "URL ?????? Trade.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7512,7 +7512,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ссылка Trade"
+            "translation": "?????? Trade"
           }
         ],
         "validation": null,
@@ -7551,7 +7551,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Тексты виджета Passport на товарной странице.",
+        "note": "?????? ??????? Passport ?? ???????? ????????.",
         "options": {
           "headerIcon": "verified_user",
           "start": "closed"
@@ -7589,7 +7589,7 @@
         "group": "group_passport",
         "hidden": false,
         "interface": "input",
-        "note": "Верхняя подпись блока Passport.",
+        "note": "??????? ??????? ????? Passport.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7638,7 +7638,7 @@
         "group": "group_passport",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок блока Passport.",
+        "note": "????????? ????? Passport.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7648,7 +7648,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Заголовок Passport"
+            "translation": "????????? Passport"
           }
         ],
         "validation": null,
@@ -7687,7 +7687,7 @@
         "group": "group_passport",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Короткое пояснение под заголовком Passport.",
+        "note": "???????? ????????? ??? ?????????? Passport.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7697,7 +7697,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Описание Passport"
+            "translation": "???????? Passport"
           }
         ],
         "validation": null,
@@ -7736,7 +7736,7 @@
         "group": "group_passport",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок внутреннего блока диагностики.",
+        "note": "????????? ??????????? ????? ???????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7746,7 +7746,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Диагностика"
+            "translation": "???????????"
           }
         ],
         "validation": null,
@@ -7785,7 +7785,7 @@
         "group": "group_passport",
         "hidden": false,
         "interface": "input",
-        "note": "Префикс перед статусом диагностики.",
+        "note": "??????? ????? ???????? ???????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7795,7 +7795,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Префикс статуса"
+            "translation": "??????? ???????"
           }
         ],
         "validation": null,
@@ -7834,7 +7834,7 @@
         "group": "group_passport",
         "hidden": false,
         "interface": "input",
-        "note": "Fallback статуса диагностики.",
+        "note": "Fallback ??????? ???????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7844,7 +7844,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Fallback статуса"
+            "translation": "Fallback ???????"
           }
         ],
         "validation": null,
@@ -7883,7 +7883,7 @@
         "group": "group_passport",
         "hidden": false,
         "interface": "input",
-        "note": "Текст бейджа проверки.",
+        "note": "????? ?????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -7893,7 +7893,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Бейдж проверки"
+            "translation": "????? ????????"
           }
         ],
         "validation": null,
@@ -7932,7 +7932,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Блок похожих устройств и prompt при малом количестве карточек.",
+        "note": "???? ??????? ????????? ? prompt ??? ????? ?????????? ????????.",
         "options": {
           "headerIcon": "devices_other",
           "start": "closed"
@@ -7949,7 +7949,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Похожие устройства"
+            "translation": "??????? ??????????"
           }
         ],
         "validation": null,
@@ -7970,7 +7970,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input",
-        "note": "Eyebrow блока похожих устройств.",
+        "note": "Eyebrow ????? ??????? ?????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8019,7 +8019,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок блока похожих устройств.",
+        "note": "????????? ????? ??????? ?????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8029,7 +8029,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Заголовок"
+            "translation": "?????????"
           }
         ],
         "validation": null,
@@ -8068,7 +8068,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input",
-        "note": "Кнопка на весь каталог, когда похожих карточек достаточно.",
+        "note": "?????? ?? ???? ???????, ????? ??????? ???????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8078,7 +8078,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "CTA каталога"
+            "translation": "CTA ????????"
           }
         ],
         "validation": null,
@@ -8117,7 +8117,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input",
-        "note": "URL кнопки на весь каталог.",
+        "note": "URL ?????? ?? ???? ???????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8127,7 +8127,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ссылка CTA"
+            "translation": "?????? CTA"
           }
         ],
         "validation": null,
@@ -8166,7 +8166,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок prompt-карточки, если похожих устройств меньше трёх.",
+        "note": "????????? prompt-????????, ???? ??????? ????????? ?????? ????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8176,7 +8176,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Заголовок prompt"
+            "translation": "????????? prompt"
           }
         ],
         "validation": null,
@@ -8215,7 +8215,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст prompt-карточки.",
+        "note": "????? prompt-????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8225,7 +8225,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Текст prompt"
+            "translation": "????? prompt"
           }
         ],
         "validation": null,
@@ -8264,7 +8264,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input",
-        "note": "Кнопка prompt-карточки.",
+        "note": "?????? prompt-????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8313,7 +8313,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "input",
-        "note": "URL prompt-кнопки.",
+        "note": "URL prompt-??????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8323,7 +8323,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ссылка prompt"
+            "translation": "?????? prompt"
           }
         ],
         "validation": null,
@@ -8362,7 +8362,7 @@
         "group": "group_related",
         "hidden": false,
         "interface": "list",
-        "note": "Короткие подсказки в prompt-карточке: массив строк.",
+        "note": "???????? ????????? ? prompt-????????: ?????? ?????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8374,7 +8374,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Подсказки prompt"
+            "translation": "????????? prompt"
           }
         ],
         "validation": null,
@@ -8418,7 +8418,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Короткие подписи мобильной sticky-панели.",
+        "note": "???????? ??????? ????????? sticky-??????.",
         "options": {
           "headerIcon": "smartphone",
           "start": "closed"
@@ -8456,7 +8456,7 @@
         "group": "group_mobile",
         "hidden": false,
         "interface": "input",
-        "note": "Кнопка для устройства в брони.",
+        "note": "?????? ??? ?????????? ? ?????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8466,7 +8466,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Бронь"
+            "translation": "?????"
           }
         ],
         "validation": null,
@@ -8505,7 +8505,7 @@
         "group": "group_mobile",
         "hidden": false,
         "interface": "input",
-        "note": "Кнопка для проданного устройства.",
+        "note": "?????? ??? ?????????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8515,7 +8515,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Продано"
+            "translation": "???????"
           }
         ],
         "validation": null,
@@ -8554,7 +8554,7 @@
         "group": "group_mobile",
         "hidden": false,
         "interface": "input",
-        "note": "Кнопка для устройства в наличии.",
+        "note": "?????? ??? ?????????? ? ???????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8564,7 +8564,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "В наличии"
+            "translation": "? ???????"
           }
         ],
         "validation": null,
@@ -8603,7 +8603,7 @@
         "group": "group_mobile",
         "hidden": false,
         "interface": "input",
-        "note": "Короткая подпись второй кнопки.",
+        "note": "???????? ??????? ?????? ??????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8652,7 +8652,7 @@
         "group": "group_mobile",
         "hidden": false,
         "interface": "input",
-        "note": "ARIA label мобильной панели.",
+        "note": "ARIA label ????????? ??????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8662,7 +8662,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "ARIA панели"
+            "translation": "ARIA ??????"
           }
         ],
         "validation": null,
@@ -8701,7 +8701,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Тексты формы заявки для stock_status=available. Эти поля управляют сайтом и тем, что видит менеджер в сценарии заявки.",
+        "note": "?????? ????? ?????? ??? stock_status=available. ??? ???? ????????? ?????? ? ???, ??? ????? ???????? ? ???????? ??????.",
         "options": {
           "headerIcon": "edit_note",
           "start": "closed"
@@ -8718,7 +8718,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Форма заявки: В наличии"
+            "translation": "????? ??????: ? ???????"
           }
         ],
         "validation": null,
@@ -8739,15 +8739,15 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Тип заявки, который попадёт в leads.kind.",
+        "note": "??? ??????, ??????? ??????? ? leads.kind.",
         "options": {
           "choices": [
             {
-              "text": "Покупка / бронь",
+              "text": "??????? / ?????",
               "value": "purchase"
             },
             {
-              "text": "Подбор",
+              "text": "??????",
               "value": "selection"
             }
           ]
@@ -8760,7 +8760,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Тип заявки"
+            "translation": "??? ??????"
           }
         ],
         "validation": null,
@@ -8799,7 +8799,7 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input",
-        "note": "Сценарий заявки, который попадёт менеджеру в leads.scenario.",
+        "note": "???????? ??????, ??????? ??????? ????????? ? leads.scenario.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8809,7 +8809,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Сценарий"
+            "translation": "????????"
           }
         ],
         "validation": null,
@@ -8848,7 +8848,7 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок формы на товарной странице.",
+        "note": "????????? ????? ?? ???????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8858,7 +8858,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Заголовок формы"
+            "translation": "????????? ?????"
           }
         ],
         "validation": null,
@@ -8897,7 +8897,7 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input",
-        "note": "Placeholder поля контакта.",
+        "note": "Placeholder ???? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8907,7 +8907,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Placeholder контакта"
+            "translation": "Placeholder ????????"
           }
         ],
         "validation": null,
@@ -8946,7 +8946,7 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Placeholder поля комментария.",
+        "note": "Placeholder ???? ???????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -8956,7 +8956,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Placeholder комментария"
+            "translation": "Placeholder ???????????"
           }
         ],
         "validation": null,
@@ -8995,7 +8995,7 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input",
-        "note": "Текст кнопки отправки.",
+        "note": "????? ?????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9005,7 +9005,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Кнопка"
+            "translation": "??????"
           }
         ],
         "validation": null,
@@ -9044,7 +9044,7 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input",
-        "note": "Текст кнопки во время отправки.",
+        "note": "????? ?????? ?? ????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9054,7 +9054,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Кнопка при отправке"
+            "translation": "?????? ??? ????????"
           }
         ],
         "validation": null,
@@ -9093,7 +9093,7 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Пояснение под заголовком формы для текущего статуса устройства.",
+        "note": "????????? ??? ?????????? ????? ??? ???????? ??????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9103,7 +9103,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Статусный текст"
+            "translation": "????????? ?????"
           }
         ],
         "validation": null,
@@ -9142,17 +9142,17 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст под формой до отправки.",
+        "note": "????? ??? ?????? ?? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 159,
+        "sort": 160,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Текст до отправки"
+            "translation": "????? ?? ????????"
           }
         ],
         "validation": null,
@@ -9191,17 +9191,17 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст успешной отправки.",
+        "note": "????? ???????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 160,
+        "sort": 161,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Успешная отправка"
+            "translation": "???????? ????????"
           }
         ],
         "validation": null,
@@ -9240,17 +9240,17 @@
         "group": "group_lead_available",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст ошибки отправки.",
+        "note": "????? ?????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 161,
+        "sort": 162,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ошибка отправки"
+            "translation": "?????? ????????"
           }
         ],
         "validation": null,
@@ -9289,7 +9289,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Тексты формы заявки для stock_status=reserved. Эти поля управляют сайтом и тем, что видит менеджер в сценарии заявки.",
+        "note": "?????? ????? ?????? ??? stock_status=reserved. ??? ???? ????????? ?????? ? ???, ??? ????? ???????? ? ???????? ??????.",
         "options": {
           "headerIcon": "edit_note",
           "start": "closed"
@@ -9306,7 +9306,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Форма заявки: Бронь"
+            "translation": "????? ??????: ?????"
           }
         ],
         "validation": null,
@@ -9327,15 +9327,15 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Тип заявки, который попадёт в leads.kind.",
+        "note": "??? ??????, ??????? ??????? ? leads.kind.",
         "options": {
           "choices": [
             {
-              "text": "Покупка / бронь",
+              "text": "??????? / ?????",
               "value": "purchase"
             },
             {
-              "text": "Подбор",
+              "text": "??????",
               "value": "selection"
             }
           ]
@@ -9348,7 +9348,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Тип заявки"
+            "translation": "??? ??????"
           }
         ],
         "validation": null,
@@ -9387,7 +9387,7 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input",
-        "note": "Сценарий заявки, который попадёт менеджеру в leads.scenario.",
+        "note": "???????? ??????, ??????? ??????? ????????? ? leads.scenario.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9397,7 +9397,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Сценарий"
+            "translation": "????????"
           }
         ],
         "validation": null,
@@ -9436,7 +9436,7 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок формы на товарной странице.",
+        "note": "????????? ????? ?? ???????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9446,7 +9446,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Заголовок формы"
+            "translation": "????????? ?????"
           }
         ],
         "validation": null,
@@ -9485,7 +9485,7 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input",
-        "note": "Placeholder поля контакта.",
+        "note": "Placeholder ???? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9495,7 +9495,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Placeholder контакта"
+            "translation": "Placeholder ????????"
           }
         ],
         "validation": null,
@@ -9534,7 +9534,7 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Placeholder поля комментария.",
+        "note": "Placeholder ???? ???????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9544,7 +9544,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Placeholder комментария"
+            "translation": "Placeholder ???????????"
           }
         ],
         "validation": null,
@@ -9583,7 +9583,7 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input",
-        "note": "Текст кнопки отправки.",
+        "note": "????? ?????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9593,7 +9593,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Кнопка"
+            "translation": "??????"
           }
         ],
         "validation": null,
@@ -9632,7 +9632,7 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input",
-        "note": "Текст кнопки во время отправки.",
+        "note": "????? ?????? ?? ????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9642,7 +9642,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Кнопка при отправке"
+            "translation": "?????? ??? ????????"
           }
         ],
         "validation": null,
@@ -9681,7 +9681,7 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Пояснение под заголовком формы для текущего статуса устройства.",
+        "note": "????????? ??? ?????????? ????? ??? ???????? ??????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9691,7 +9691,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Статусный текст"
+            "translation": "????????? ?????"
           }
         ],
         "validation": null,
@@ -9730,17 +9730,17 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст под формой до отправки.",
+        "note": "????? ??? ?????? ?? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 179,
+        "sort": 180,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Текст до отправки"
+            "translation": "????? ?? ????????"
           }
         ],
         "validation": null,
@@ -9779,17 +9779,17 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст успешной отправки.",
+        "note": "????? ???????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 180,
+        "sort": 181,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Успешная отправка"
+            "translation": "???????? ????????"
           }
         ],
         "validation": null,
@@ -9828,17 +9828,17 @@
         "group": "group_lead_reserved",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст ошибки отправки.",
+        "note": "????? ?????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 181,
+        "sort": 182,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ошибка отправки"
+            "translation": "?????? ????????"
           }
         ],
         "validation": null,
@@ -9877,7 +9877,7 @@
         "group": null,
         "hidden": false,
         "interface": "group-detail",
-        "note": "Тексты формы заявки для stock_status=sold. Эти поля управляют сайтом и тем, что видит менеджер в сценарии заявки.",
+        "note": "?????? ????? ?????? ??? stock_status=sold. ??? ???? ????????? ?????? ? ???, ??? ????? ???????? ? ???????? ??????.",
         "options": {
           "headerIcon": "edit_note",
           "start": "closed"
@@ -9894,7 +9894,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Форма заявки: Продано"
+            "translation": "????? ??????: ???????"
           }
         ],
         "validation": null,
@@ -9915,15 +9915,15 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "select-dropdown",
-        "note": "Тип заявки, который попадёт в leads.kind.",
+        "note": "??? ??????, ??????? ??????? ? leads.kind.",
         "options": {
           "choices": [
             {
-              "text": "Покупка / бронь",
+              "text": "??????? / ?????",
               "value": "purchase"
             },
             {
-              "text": "Подбор",
+              "text": "??????",
               "value": "selection"
             }
           ]
@@ -9936,7 +9936,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Тип заявки"
+            "translation": "??? ??????"
           }
         ],
         "validation": null,
@@ -9975,7 +9975,7 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input",
-        "note": "Сценарий заявки, который попадёт менеджеру в leads.scenario.",
+        "note": "???????? ??????, ??????? ??????? ????????? ? leads.scenario.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -9985,7 +9985,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Сценарий"
+            "translation": "????????"
           }
         ],
         "validation": null,
@@ -10024,7 +10024,7 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input",
-        "note": "Заголовок формы на товарной странице.",
+        "note": "????????? ????? ?? ???????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -10034,7 +10034,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Заголовок формы"
+            "translation": "????????? ?????"
           }
         ],
         "validation": null,
@@ -10073,7 +10073,7 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input",
-        "note": "Placeholder поля контакта.",
+        "note": "Placeholder ???? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -10083,7 +10083,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Placeholder контакта"
+            "translation": "Placeholder ????????"
           }
         ],
         "validation": null,
@@ -10122,7 +10122,7 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Placeholder поля комментария.",
+        "note": "Placeholder ???? ???????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -10132,7 +10132,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Placeholder комментария"
+            "translation": "Placeholder ???????????"
           }
         ],
         "validation": null,
@@ -10171,7 +10171,7 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input",
-        "note": "Текст кнопки отправки.",
+        "note": "????? ?????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -10181,7 +10181,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Кнопка"
+            "translation": "??????"
           }
         ],
         "validation": null,
@@ -10220,7 +10220,7 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input",
-        "note": "Текст кнопки во время отправки.",
+        "note": "????? ?????? ?? ????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -10230,7 +10230,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Кнопка при отправке"
+            "translation": "?????? ??? ????????"
           }
         ],
         "validation": null,
@@ -10269,7 +10269,7 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Пояснение под заголовком формы для текущего статуса устройства.",
+        "note": "????????? ??? ?????????? ????? ??? ???????? ??????? ??????????.",
         "options": null,
         "readonly": false,
         "required": false,
@@ -10279,7 +10279,7 @@
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Статусный текст"
+            "translation": "????????? ?????"
           }
         ],
         "validation": null,
@@ -10318,17 +10318,17 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст под формой до отправки.",
+        "note": "????? ??? ?????? ?? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 199,
+        "sort": 200,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Текст до отправки"
+            "translation": "????? ?? ????????"
           }
         ],
         "validation": null,
@@ -10367,17 +10367,17 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст успешной отправки.",
+        "note": "????? ???????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 200,
+        "sort": 201,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Успешная отправка"
+            "translation": "???????? ????????"
           }
         ],
         "validation": null,
@@ -10416,17 +10416,17 @@
         "group": "group_lead_sold",
         "hidden": false,
         "interface": "input-multiline",
-        "note": "Текст ошибки отправки.",
+        "note": "????? ?????? ????????.",
         "options": null,
         "readonly": false,
         "required": false,
         "searchable": true,
-        "sort": 201,
+        "sort": 202,
         "special": null,
         "translations": [
           {
             "language": "ru-RU",
-            "translation": "Ошибка отправки"
+            "translation": "?????? ????????"
           }
         ],
         "validation": null,
@@ -10438,6 +10438,153 @@
         "table": "device_page_settings",
         "data_type": "text",
         "default_value": "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "device_page_settings",
+      "field": "lead_available_consent_note",
+      "type": "text",
+      "meta": {
+        "collection": "device_page_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "lead_available_consent_note",
+        "group": "group_lead_available",
+        "hidden": false,
+        "interface": "input-multiline",
+        "note": "????? ???????? ??? ??????. ???????????? ????? ? ??????? ??????.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 159,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "???????? ??? ??????"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "full"
+      },
+      "schema": {
+        "name": "lead_available_consent_note",
+        "table": "device_page_settings",
+        "data_type": "text",
+        "default_value": "??????? ??????, ?? ???????????? ?? ????????? ???????? ??? ?????? ?? ??????.",
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "device_page_settings",
+      "field": "lead_reserved_consent_note",
+      "type": "text",
+      "meta": {
+        "collection": "device_page_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "lead_reserved_consent_note",
+        "group": "group_lead_reserved",
+        "hidden": false,
+        "interface": "input-multiline",
+        "note": "????? ???????? ??? ??????. ???????????? ????? ? ??????? ??????.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 179,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "???????? ??? ??????"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "full"
+      },
+      "schema": {
+        "name": "lead_reserved_consent_note",
+        "table": "device_page_settings",
+        "data_type": "text",
+        "default_value": "??????? ??????, ?? ???????????? ?? ????????? ???????? ??? ?????? ?? ??????.",
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "is_generated": false,
+        "generation_expression": null,
+        "has_auto_increment": false,
+        "foreign_key_table": null,
+        "foreign_key_column": null
+      }
+    },
+    {
+      "collection": "device_page_settings",
+      "field": "lead_sold_consent_note",
+      "type": "text",
+      "meta": {
+        "collection": "device_page_settings",
+        "conditions": null,
+        "display": null,
+        "display_options": null,
+        "field": "lead_sold_consent_note",
+        "group": "group_lead_sold",
+        "hidden": false,
+        "interface": "input-multiline",
+        "note": "????? ???????? ??? ??????. ???????????? ????? ? ??????? ??????.",
+        "options": null,
+        "readonly": false,
+        "required": false,
+        "searchable": true,
+        "sort": 199,
+        "special": null,
+        "translations": [
+          {
+            "language": "ru-RU",
+            "translation": "???????? ??? ??????"
+          }
+        ],
+        "validation": null,
+        "validation_message": null,
+        "width": "full"
+      },
+      "schema": {
+        "name": "lead_sold_consent_note",
+        "table": "device_page_settings",
+        "data_type": "text",
+        "default_value": "??????? ??????, ?? ???????????? ?? ????????? ???????? ??? ?????? ?? ??????.",
         "max_length": null,
         "numeric_precision": null,
         "numeric_scale": null,
@@ -18564,7 +18711,7 @@
         "group": "group_advanced",
         "hidden": false,
         "interface": "input-code",
-        "note": "JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Обычный редактор видит поле для диагностики; расширенный редактор может править JSON после проверки структуры.",
+        "note": "JSON-настройки для карточек, шагов, таблиц, FAQ и других сложных блоков. Обычный редактор видит поле для диагностики; расширенный редактор может править JSON после проверки структуры.\n\n??? ????? final_cta ? JSON-?????????? ????? ????????????? form.consent_note ? ???????? ????? ???????? ??? ??????? ??????.",
         "options": {
           "language": "json",
           "lineWrapping": true

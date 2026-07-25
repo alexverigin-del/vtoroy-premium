@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import { HomeSectionRenderer } from "@/components/HomeSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
-import {
-  getNavigationItems,
-  getPublishedDeviceCards,
-  getSitePage,
-  getSiteSettings,
-} from "@/lib/directus";
+import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
+import { getPublishedProducts } from "@/lib/product-catalog";
 import { homeSectionsForPage, siteChrome } from "@/lib/site-content";
 import {
   DEFAULT_SITE_DESCRIPTION,
@@ -44,11 +40,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [page, settings, navigation, devices] = await Promise.all([
+  const [page, settings, navigation, catalog] = await Promise.all([
     getSitePage("home"),
     getSiteSettings(),
     getNavigationItems(),
-    getPublishedDeviceCards(),
+    getPublishedProducts({ pageSize: 8 }),
   ]);
   const chrome = siteChrome(settings, navigation);
   const sections = homeSectionsForPage(page?.sections);
@@ -61,7 +57,7 @@ export default async function HomePage() {
             <HomeSectionRenderer
               key={section.id || section.sectionKey}
               section={section}
-              devices={devices}
+              products={catalog.products}
             />
           ))}
         </main>

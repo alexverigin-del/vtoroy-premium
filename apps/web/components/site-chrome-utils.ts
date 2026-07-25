@@ -15,7 +15,7 @@ export function normalizeSiteUrl(url: string | undefined, fallback = "#top"): st
   if (path === "/index.html") return "/";
   return path
     .replace(/^\/(catalog|store|passport|trade|club)\/index\.html$/, "/$1")
-    .replace(/^\/device\/([^/]+)\/index\.html$/, "/device/$1");
+    .replace(/^\/device\/([^/]+)(?:\/index\.html)?$/, "/product/$1");
 }
 
 function pageSlugToPath(slug: string): string {

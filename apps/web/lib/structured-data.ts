@@ -1,4 +1,4 @@
-import type { BlogPost, SiteSettings } from "@vtoroy/shared";
+import type { BlogPost, ProductCardData, SiteSettings } from "@vtoroy/shared";
 
 import type { DeviceCardData } from "./device-card-data";
 
@@ -87,6 +87,21 @@ export function catalogItemListJsonLd(devices: DeviceCardData[]) {
       position: index + 1,
       url: siteUrl(`/device/${device.id}`),
       name: device.title,
+    })),
+  };
+}
+
+export function productCatalogItemListJsonLd(products: ProductCardData[], name: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: products.length,
+    itemListElement: products.map((product, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: siteUrl(`/product/${product.id}`),
+      name: product.title,
     })),
   };
 }

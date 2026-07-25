@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+
+process.stdout.write(String.raw`
+WITH expected(table_name) AS (
+  VALUES
+    ('products'),('product_brands'),('product_categories'),('device_models'),
+    ('product_images'),('device_details'),('accessory_details'),('product_compatible_models')
+)
+SELECT 'catalog_v3.schema.tables_missing' AS check_name, count(*)::text AS value
+FROM expected e
+WHERE to_regclass('public.' || e.table_name) IS NULL
+UNION ALL
+SELECT 'catalog_v3.schema.product_fields_missing', count(*)::text
+FROM (VALUES
+  ('sku'),('product_type'),('condition'),('sale_mode'),('brand'),('category'),
+  ('device_model'),('price'),('stock_quantity'),('stock_status'),('listing_file')
+) AS expected(field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM information_schema.columns c
+  WHERE c.table_schema='public' AND c.table_name='products' AND c.column_name=expected.field
+)
+UNION ALL
+SELECT 'catalog_v3.schema.lead_fields_missing', count(*)::text
+FROM (VALUES ('product'),('product_type')) AS expected(field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM information_schema.columns c
+  WHERE c.table_schema='public' AND c.table_name='leads' AND c.column_name=expected.field
+)
+UNION ALL
+SELECT 'catalog_v3.studio.collections_missing', count(*)::text
+FROM (VALUES
+  ('products'),('product_brands'),('product_categories'),('device_models'),
+  ('product_images'),('device_details'),('accessory_details'),('product_compatible_models')
+) AS expected(collection)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_collections dc WHERE dc.collection=expected.collection
+)
+UNION ALL
+SELECT 'catalog_v3.studio.product_groups_missing', count(*)::text
+FROM (VALUES
+  ('group_identity'),('group_sale'),('group_content'),('group_media'),('group_details'),('group_system')
+) AS expected(field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields df
+  WHERE df.collection='products' AND df.field=expected.field
+    AND df.special LIKE '%group%'
+)
+UNION ALL
+SELECT 'catalog_v3.studio.presets_missing', count(*)::text
+FROM (VALUES
+  ('Техника'),('Аксессуары'),('Новые'),('Б/у'),('Требует совместимости'),('Не готово к публикации')
+) AS expected(bookmark)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_presets dp
+  WHERE dp.collection='products' AND dp.bookmark=expected.bookmark
+)
+UNION ALL
+SELECT 'catalog_v3.schema.relations_missing', count(*)::text
+FROM (VALUES
+  ('products','brand'),('products','category'),('products','device_model'),
+  ('product_images','product'),('device_details','product'),('accessory_details','product'),
+  ('product_compatible_models','product'),('product_compatible_models','device_models_id'),
+  ('device_passports','product'),('trade_options','product'),('leads','product')
+) AS expected(collection,field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_relations dr
+  WHERE dr.many_collection=expected.collection AND dr.many_field=expected.field
+)
+UNION ALL
+SELECT 'catalog_v3.permissions.public_missing', count(*)::text
+FROM (VALUES
+  ('products'),('product_brands'),('product_categories'),('device_models'),
+  ('product_images'),('device_details'),('accessory_details'),('product_compatible_models'),
+  ('device_passports'),('trade_options')
+) AS expected(collection)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions dp
+  JOIN directus_policies policy ON policy.id=dp.policy
+  WHERE policy.name='ISVOI Public Read' AND dp.collection=expected.collection AND dp.action='read'
+)
+UNION ALL
+SELECT 'catalog_v3.permissions.editor_missing', count(*)::text
+FROM (VALUES
+  ('products'),('product_brands'),('product_categories'),('device_models'),
+  ('product_images'),('device_details'),('accessory_details'),('product_compatible_models')
+) AS expected(collection)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions dp
+  JOIN directus_policies policy ON policy.id=dp.policy
+  WHERE policy.name='ISVOI Editor' AND dp.collection=expected.collection AND dp.action='update'
+)
+UNION ALL
+SELECT 'catalog_v3.publication.invalid_required', count(*)::text
+FROM products p
+WHERE p.status='published' AND (
+  p.content_status <> 'ready' OR NULLIF(p.sku,'') IS NULL OR p.brand IS NULL OR
+  p.category IS NULL OR p.price <= 0 OR NULLIF(p.warranty,'') IS NULL OR
+  p.listing_file IS NULL OR NULLIF(p.stock_status,'') IS NULL
+)
+UNION ALL
+SELECT 'catalog_v3.publication.accessory_not_new', count(*)::text
+FROM products WHERE product_type='accessory' AND condition <> 'new'
+UNION ALL
+SELECT 'catalog_v3.publication.device_details_missing', count(*)::text
+FROM products p
+WHERE p.status='published' AND p.product_type='device'
+  AND (p.device_model IS NULL OR NOT EXISTS (SELECT 1 FROM device_details d WHERE d.product=p.id))
+UNION ALL
+SELECT 'catalog_v3.publication.used_passport_missing', count(*)::text
+FROM products p
+WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
+  AND NOT EXISTS (
+    SELECT 1 FROM device_details d
+    JOIN device_passports dp ON dp.product=p.id
+    WHERE d.product=p.id AND d.diagnostic_date IS NOT NULL AND NULLIF(d.grade,'') IS NOT NULL
+  )
+UNION ALL
+SELECT 'catalog_v3.publication.model_compatibility_missing', count(*)::text
+FROM products p
+JOIN accessory_details ad ON ad.product=p.id
+WHERE p.status='published' AND p.product_type='accessory'
+  AND ad.compatibility_mode='model_specific'
+  AND NOT EXISTS (SELECT 1 FROM product_compatible_models pcm WHERE pcm.product=p.id)
+UNION ALL
+SELECT 'catalog_v3.migration.legacy_products_missing', GREATEST(
+  (SELECT count(*) FROM devices) -
+  (SELECT count(*) FROM products WHERE id IN (SELECT id FROM devices)),
+  0
+)::text
+UNION ALL
+SELECT 'catalog_v3.migration.passport_links_missing', count(*)::text
+FROM device_passports WHERE device IS NOT NULL AND product IS NULL
+UNION ALL
+SELECT 'catalog_v3.migration.trade_links_missing', count(*)::text
+FROM trade_options WHERE device IS NOT NULL AND product IS NULL
+UNION ALL
+SELECT 'catalog_v3.qa.drafts_missing', GREATEST(
+  4 - (SELECT count(*) FROM products WHERE source_system='catalog_v3_qa' AND status='draft'),
+  0
+)::text
+UNION ALL
+SELECT 'catalog_v3.publication.guard_missing',
+  CASE WHEN EXISTS (
+    SELECT 1 FROM pg_trigger WHERE tgname='products_publication_guard' AND NOT tgisinternal
+  ) THEN '0' ELSE '1' END;
+`);

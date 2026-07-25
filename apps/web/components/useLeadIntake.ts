@@ -28,6 +28,9 @@ type LeadPayload = {
   scenario?: string;
   name?: string;
   contact: string;
+  product?: string;
+  product_id?: string;
+  product_type?: "device" | "accessory";
   device?: string;
   device_id?: string;
   message?: string;

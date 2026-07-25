@@ -2,7 +2,8 @@
 
 const baseUrl = String(process.env.SMOKE_BASE_URL || "https://isvoi.ru").replace(/\/+$/, "");
 const routes = String(
-  process.env.LINK_SMOKE_ROUTES || "/,/catalog,/store,/passport,/trade,/club,/device/iphone-14",
+  process.env.LINK_SMOKE_ROUTES ||
+    "/,/catalog,/catalog/tech,/catalog/accessories,/store,/passport,/trade,/club,/product/iphone-14",
 )
   .split(",")
   .map((route) => route.trim())

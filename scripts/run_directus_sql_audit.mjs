@@ -260,6 +260,30 @@ const auditDefinitions = {
       "conversion_v2.footer_legacy_positioning",
     ],
   },
+  "catalog-v3": {
+    script: "scripts/audit_directus_catalog_v3_sql.mjs",
+    zero: [
+      "catalog_v3.schema.tables_missing",
+      "catalog_v3.schema.product_fields_missing",
+      "catalog_v3.schema.lead_fields_missing",
+      "catalog_v3.studio.collections_missing",
+      "catalog_v3.studio.product_groups_missing",
+      "catalog_v3.studio.presets_missing",
+      "catalog_v3.schema.relations_missing",
+      "catalog_v3.permissions.public_missing",
+      "catalog_v3.permissions.editor_missing",
+      "catalog_v3.publication.invalid_required",
+      "catalog_v3.publication.accessory_not_new",
+      "catalog_v3.publication.device_details_missing",
+      "catalog_v3.publication.used_passport_missing",
+      "catalog_v3.publication.model_compatibility_missing",
+      "catalog_v3.migration.legacy_products_missing",
+      "catalog_v3.migration.passport_links_missing",
+      "catalog_v3.migration.trade_links_missing",
+      "catalog_v3.qa.drafts_missing",
+      "catalog_v3.publication.guard_missing",
+    ],
+  },
 };
 
 const prodAuditOrder = [
@@ -275,6 +299,7 @@ const prodAuditOrder = [
   "import",
   "blog",
   "conversion-v2",
+  "catalog-v3",
 ];
 
 function selectedAudits() {

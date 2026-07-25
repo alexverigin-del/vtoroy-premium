@@ -4,13 +4,13 @@
  *
  * Usage:
  *   npm run smoke:prod
- *   SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/device/iphone-13-pro npm run smoke:prod
+ *   SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/product/iphone-13-pro npm run smoke:prod
  */
 
 import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs";
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
-const DEFAULT_DEVICE_PATH = "/device/iphone-13-pro";
+const DEFAULT_DEVICE_PATH = "/product/iphone-13-pro";
 const DEFAULT_BLOG_ARTICLE_PATH = "/blog/chto-pokazyvaet-diagnostika-iphone";
 const MARKETING_ROUTES = [
   "/store",
@@ -19,6 +19,8 @@ const MARKETING_ROUTES = [
   "/club",
   "/blog",
   "/blog/category/buying-guide",
+  "/catalog/tech",
+  "/catalog/accessories",
 ];
 const DIRECTUS_ASSET_RE = /(https:\/\/api\.isvoi\.ru\/assets\/|api\.isvoi\.ru%2fassets%2f)/i;
 const DIRECTUS_ASSET_SOURCE = "api.isvoi.ru/assets/";
@@ -247,7 +249,7 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets) {
   }
   await assertImages(page, "catalog", 1, requireDirectusAssets);
 
-  const cardCount = await page.locator("a[href^='/device/'], a[href*='/device/']").count();
+  const cardCount = await page.locator("a[href^='/product/'], a[href*='/product/']").count();
   if (requireDirectusAssets) {
     assert(cardCount > 0, "catalog: expected at least one device link");
   }
@@ -343,6 +345,18 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
     leadForms: await leadForm.count(),
     jsonLdTypes: seo.jsonLdTypes.length,
   };
+}
+
+async function smokeLegacyDeviceRedirect(baseUrl, productPath) {
+  const slug = productPath.split("/").filter(Boolean).at(-1);
+  const response = await fetch(joinUrl(baseUrl, `/device/${slug}`), { redirect: "manual" });
+  assert(response.status === 301, `legacy device redirect: expected 301, got ${response.status}`);
+  const location = response.headers.get("location") || "";
+  assert(
+    location.endsWith(`/product/${slug}`),
+    `legacy device redirect: expected /product/${slug}, got ${location}`,
+  );
+  return { route: `/device/${slug}`, status: response.status };
 }
 
 async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAssets) {
@@ -476,6 +490,7 @@ async function main() {
     }
     results.push(await smokeBlogArticle(page, baseUrl, blogArticlePath, requireDirectusAssets));
     results.push(await smokeDevice(page, baseUrl, devicePath, requireDirectusAssets));
+    results.push(await smokeLegacyDeviceRedirect(baseUrl, devicePath));
 
     for (const result of results) {
       console.log(`ok ${result.route} ${JSON.stringify(result)}`);

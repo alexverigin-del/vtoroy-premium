@@ -81,6 +81,9 @@ function leadMode(stockStatus: string, copy: ProductLeadCopy): ProductLeadFormMo
 }
 
 export function ProductLeadForm({
+  productId,
+  productTitle,
+  productType = "device",
   deviceId,
   deviceTitle,
   formId,
@@ -88,13 +91,19 @@ export function ProductLeadForm({
   stockStatusLabel = "В наличии",
   leadCopy = fallbackLeadCopy,
 }: {
-  deviceId: string;
-  deviceTitle: string;
+  productId?: string;
+  productTitle?: string;
+  productType?: "device" | "accessory";
+  /** Transitional aliases kept for the legacy device page. */
+  deviceId?: string;
+  deviceTitle?: string;
   formId?: string;
   stockStatus?: string;
   stockStatusLabel?: string;
   leadCopy?: ProductLeadCopy;
 }) {
+  const resolvedId = productId || deviceId || "";
+  const resolvedTitle = productTitle || deviceTitle || "";
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
   const contactId = useId();
@@ -106,7 +115,9 @@ export function ProductLeadForm({
   const mode = leadMode(normalizedStockStatus, leadCopy);
   const submitLabel =
     normalizedStockStatus === "available"
-      ? `Записаться на просмотр ${deviceTitle}`
+      ? productType === "accessory"
+        ? `Забронировать ${resolvedTitle}`
+        : `Записаться на просмотр ${resolvedTitle}`
       : mode.submitLabel;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -127,9 +138,15 @@ export function ProductLeadForm({
 
     const submitted = await submitLead({
       kind: mode.kind,
-      scenario: mode.scenario,
-      device: deviceTitle,
-      device_id: deviceId,
+      scenario:
+        productType === "accessory" && normalizedStockStatus === "available"
+          ? "Забронировать аксессуар"
+          : mode.scenario,
+      product: resolvedTitle,
+      product_id: resolvedId,
+      product_type: productType,
+      device: productType === "device" ? resolvedTitle : undefined,
+      device_id: productType === "device" ? resolvedId : undefined,
       contact,
       message: leadMessage,
       website,

@@ -788,9 +788,9 @@ function MarketingLiveExampleSection({
         : "Смотреть Passport");
   const primaryUrl =
     section.primaryCtaUrl ||
-    (mode === "trade" ? "/trade#final" : mode === "club" ? "/club#final" : `/device/${device.id}`);
+    (mode === "trade" ? "/trade#final" : mode === "club" ? "/club#final" : `/product/${device.id}`);
   const secondaryLabel = section.secondaryCtaLabel || "Открыть карточку";
-  const secondaryUrl = section.secondaryCtaUrl || `/device/${device.id}`;
+  const secondaryUrl = section.secondaryCtaUrl || `/product/${device.id}`;
 
   const modeLabel =
     mode === "trade"

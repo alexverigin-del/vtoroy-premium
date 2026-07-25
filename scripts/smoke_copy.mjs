@@ -8,10 +8,12 @@
  */
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
-const DEFAULT_DEVICE_PATHS = ["/device/iphone-13-pro", "/device/iphone-14"];
+const DEFAULT_DEVICE_PATHS = ["/product/iphone-13-pro", "/product/iphone-14"];
 const DEFAULT_ROUTES = [
   "/",
   "/catalog",
+  "/catalog/tech",
+  "/catalog/accessories",
   "/store",
   "/trade",
   "/passport",

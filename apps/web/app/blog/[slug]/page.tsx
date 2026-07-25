@@ -364,7 +364,7 @@ export default async function BlogPostPage({ params, searchParams }: BlogPostPag
               {post.devices.map((device) => (
                 <Link
                   key={device.id}
-                  href={attributedHref(`/device/${device.id}`, post.slug, "related-device")}
+                  href={attributedHref(`/product/${device.id}`, post.slug, "related-device")}
                   className="focus-ring group grid min-h-48 overflow-hidden rounded-card border border-hairline bg-frost transition hover:border-link-blue hover:bg-white sm:grid-cols-related-device"
                 >
                   <div className="relative aspect-product bg-surface sm:aspect-auto">

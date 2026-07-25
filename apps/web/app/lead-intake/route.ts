@@ -10,6 +10,9 @@ type LeadRequest = {
   scenario?: unknown;
   name?: unknown;
   contact?: unknown;
+  product?: unknown;
+  product_id?: unknown;
+  product_type?: unknown;
   device?: unknown;
   device_id?: unknown;
   message?: unknown;
@@ -36,6 +39,9 @@ type StoredLead = {
   contact_channel: string;
   name: string;
   contact: string;
+  product: string;
+  product_id: string;
+  product_type: string;
   device: string;
   device_id: string;
   scenario: string;
@@ -222,6 +228,9 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       contact_channel: lead.contact_channel,
       name: optionalText(lead.name),
       contact: lead.contact,
+      product: optionalText(lead.product),
+      product_id: optionalText(lead.product_id),
+      product_type: optionalText(lead.product_type),
       device: optionalText(lead.device),
       device_id: optionalText(lead.device_id),
       scenario: optionalText(lead.scenario),
@@ -320,6 +329,11 @@ export async function POST(request: NextRequest) {
     contact_channel: inferContactChannel(contact),
     name: text(body.name, 160),
     contact,
+    product: text(body.product, 255),
+    product_id: text(body.product_id, 255),
+    product_type: ["device", "accessory"].includes(text(body.product_type, 32))
+      ? text(body.product_type, 32)
+      : "",
     device: text(body.device, 255),
     device_id: text(body.device_id, 255),
     scenario,

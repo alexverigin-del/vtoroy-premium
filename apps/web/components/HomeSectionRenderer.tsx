@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { PageSection } from "@vtoroy/shared";
-import type { DeviceCardData } from "@/lib/device-card-data";
-import { CatalogPreviewSection } from "./CatalogPreviewSection";
+import type { PageSection, ProductCardData } from "@vtoroy/shared";
+import { ProductCatalogPreviewSection } from "./ProductCatalogPreviewSection";
 import { ClubPreviewSection } from "./ClubPreviewSection";
 import { DiagnosticsCompareSection } from "./DiagnosticsCompareSection";
 import { FinalCtaSection } from "./FinalCtaSection";
@@ -24,7 +23,7 @@ import {
 
 type HomeSectionRendererProps = {
   section: PageSection;
-  devices?: DeviceCardData[];
+  products?: ProductCardData[];
 };
 
 type HeroPassport = {
@@ -603,14 +602,14 @@ function PathRouterSection({ section }: { section: PageSection }) {
   );
 }
 
-export function HomeSectionRenderer({ section, devices = [] }: HomeSectionRendererProps) {
+export function HomeSectionRenderer({ section, products = [] }: HomeSectionRendererProps) {
   if (section.sectionKey === "hero") return <HomeHeroSection section={section} />;
   if (section.sectionKey === "market_tension") return <MarketTensionSection section={section} />;
   if (section.sectionKey === "circle_rules") return <CircleRulesSection section={section} />;
   if (section.sectionKey === "trust") return <TrustSection section={section} />;
   if (section.sectionKey === "path_router") return <PathRouterSection section={section} />;
   if (section.sectionKey === "catalog_preview")
-    return <CatalogPreviewSection section={section} devices={devices} />;
+    return <ProductCatalogPreviewSection section={section} products={products} />;
   if (section.sectionKey === "passport_preview")
     return <PassportPreviewSection section={section} />;
   if (section.sectionKey === "store_preview") return <StorePreviewSection section={section} />;

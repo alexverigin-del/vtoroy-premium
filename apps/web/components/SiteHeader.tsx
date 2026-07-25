@@ -90,6 +90,12 @@ export function SiteHeader({
       (item) => item.location === "header" && !item.parent && item.itemRole !== "cta",
     ),
   );
+  const childrenFor = (id: string) =>
+    sortNavigation(
+      navigation.filter(
+        (item) => item.location === "header" && item.parent === id && item.isActive,
+      ),
+    );
   const cta = headerCta(settings, navigation);
 
   return (
@@ -101,9 +107,41 @@ export function SiteHeader({
         <SiteLogo settings={settings} />
 
         <nav className="hidden items-center gap-2 md:flex" aria-label="Основная навигация">
-          {headerItems.map((item) => (
-            <NavLink key={item.id} active={isCurrentNavItem(item, pathname)} item={item} />
-          ))}
+          {headerItems.map((item) => {
+            const children = childrenFor(item.id);
+            if (children.length === 0) {
+              return (
+                <NavLink key={item.id} active={isCurrentNavItem(item, pathname)} item={item} />
+              );
+            }
+            const active =
+              isCurrentNavItem(item, pathname) ||
+              children.some((child) => isCurrentNavItem(child, pathname));
+            return (
+              <details key={item.id} className="group relative">
+                <summary
+                  className={cn(
+                    "flex min-h-11 cursor-pointer list-none items-center gap-1 rounded-card px-3 text-sm font-medium outline-none transition focus-visible:shadow-focus",
+                    active ? "bg-ice text-carbon" : "text-graphite opacity-80 hover:text-carbon",
+                  )}
+                >
+                  {item.labelShort || item.label}
+                  <span aria-hidden="true" className="text-xs transition group-open:rotate-180">
+                    ▾
+                  </span>
+                </summary>
+                <div className="absolute left-0 top-full z-20 mt-1 min-w-52 rounded-card border border-hairline bg-white p-2 shadow-product">
+                  {children.map((child) => (
+                    <NavLink
+                      key={child.id}
+                      active={isCurrentNavItem(child, pathname)}
+                      item={child}
+                    />
+                  ))}
+                </div>
+              </details>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -145,14 +183,30 @@ export function SiteHeader({
             className="mx-auto grid max-w-shell gap-1"
             aria-label="Мобильная навигация"
           >
-            {headerItems.map((item) => (
-              <NavLink
-                key={item.id}
-                active={isCurrentNavItem(item, pathname)}
-                item={item}
-                onClick={() => setOpen(false)}
-              />
-            ))}
+            {headerItems.map((item) => {
+              const children = childrenFor(item.id);
+              return (
+                <div key={item.id}>
+                  <NavLink
+                    active={isCurrentNavItem(item, pathname)}
+                    item={item}
+                    onClick={() => setOpen(false)}
+                  />
+                  {children.length > 0 ? (
+                    <div className="ml-4 border-l border-hairline pl-2">
+                      {children.map((child) => (
+                        <NavLink
+                          key={child.id}
+                          active={isCurrentNavItem(child, pathname)}
+                          item={child}
+                          onClick={() => setOpen(false)}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
             {cta ? (
               <a
                 href={navigationHref(cta, "/#final")}

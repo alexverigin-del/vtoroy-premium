@@ -34,12 +34,12 @@ const defaultSiteSettings: SiteSettings = {
   logoHref: "/",
   logoHeight: 22,
   showBrandName: true,
-  headerCtaLabel: "Смотреть устройства",
+  headerCtaLabel: "Смотреть каталог",
   headerCtaUrl: "/catalog",
   footerNote:
-    "I СВОИ — проверенная б/у Apple‑техника с открытой диагностикой и письменной гарантией. Наличие, цены и состояние подтверждаются перед сделкой.",
+    "I СВОИ — новая и проверенная б/у техника разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.",
   footerBrandText:
-    "Б/у Apple‑техника с прозрачной историей. Хорошие вещи проходят через своих. Северодвинск.",
+    "Техника и аксессуары, о которых всё известно до покупки. Хорошие вещи проходят через своих. Северодвинск.",
   footerLegal: "Хорошие вещи проходят через своих.",
   footerCopyright: "© 2026 I СВОИ.",
 };
@@ -51,6 +51,24 @@ const defaultNavigationItems: NavigationItem[] = [
     url: "/catalog",
     location: "header",
     sort: 1,
+    isActive: true,
+  },
+  {
+    id: "header-catalog-tech",
+    label: "Техника",
+    url: "/catalog/tech",
+    location: "header",
+    parent: "header-catalog",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "header-catalog-accessories",
+    label: "Аксессуары",
+    url: "/catalog/accessories",
+    location: "header",
+    parent: "header-catalog",
+    sort: 2,
     isActive: true,
   },
   {
@@ -190,9 +208,9 @@ const defaultCatalogPreviewSection: PageSection = {
   sectionKey: "catalog_preview",
   variant: "catalog.grid",
   eyebrow: "В наличии",
-  headline: "Проверенные устройства Apple.",
+  headline: "Техника и аксессуары в наличии.",
   body: "Точная модель, память, цвет, состояние, батарея, ремонт, цена и наличие.",
-  primaryCtaLabel: "Смотреть все устройства",
+  primaryCtaLabel: "Смотреть весь каталог",
   primaryCtaUrl: "/catalog",
   secondaryCtaLabel: "Получить варианты",
   secondaryCtaUrl: "#final",
@@ -209,9 +227,9 @@ const defaultHeroSection: PageSection = {
   sectionKey: "hero",
   variant: "hero.static",
   eyebrow: "I СВОИ · Северодвинск",
-  headline: "Б/у Apple‑техника, о которой всё известно до покупки.",
+  headline: "Техника и аксессуары, о которых всё известно до покупки.",
   body: "Реальные фотографии, состояние батареи, история ремонта, отмеченные дефекты, открытая проверка и письменная гарантия 90 дней.",
-  primaryCtaLabel: "Смотреть устройства",
+  primaryCtaLabel: "Смотреть каталог",
   primaryCtaUrl: "/catalog",
   secondaryCtaLabel: "Оценить свою технику",
   secondaryCtaUrl: "/trade",
@@ -430,7 +448,7 @@ function normalizeSiteUrl(url: string, fallback = "#top"): string {
   if (path === "/index.html") return "/";
   return path
     .replace(/^\/(catalog|store|passport|trade|club)\/index\.html$/, "/$1")
-    .replace(/^\/device\/([^/]+)\/index\.html$/, "/device/$1");
+    .replace(/^\/device\/([^/]+)(?:\/index\.html)?$/, "/product/$1");
 }
 
 function conversionNavigation(items: NavigationItem[]): NavigationItem[] {

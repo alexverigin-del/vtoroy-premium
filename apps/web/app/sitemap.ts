@@ -1,10 +1,21 @@
 import type { MetadataRoute } from "next";
 import { getBlogCategories, getPublishedBlogPosts } from "@/lib/blog";
-import { getPublishedDeviceCards, getSitePage } from "@/lib/directus";
+import { getSitePage } from "@/lib/directus";
+import { getAllPublishedProductCards, getProductCatalogFacets } from "@/lib/product-catalog";
 
 const SITE_URL = "https://isvoi.ru";
 
-const staticRoutes = ["", "/catalog", "/store", "/passport", "/trade", "/club", "/blog"] as const;
+const staticRoutes = [
+  "",
+  "/catalog",
+  "/catalog/tech",
+  "/catalog/accessories",
+  "/store",
+  "/passport",
+  "/trade",
+  "/club",
+  "/blog",
+] as const;
 const managedInfoRoutes = [
   "/about",
   "/contacts",
@@ -22,8 +33,9 @@ function validDate(value?: string): Date | undefined {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const [devices, blogPosts, blogCategories, infoPages] = await Promise.all([
-    getPublishedDeviceCards(),
+  const [products, facets, blogPosts, blogCategories, infoPages] = await Promise.all([
+    getAllPublishedProductCards(),
+    getProductCatalogFacets(),
     getPublishedBlogPosts({ limit: 100 }),
     getBlogCategories(),
     Promise.all(
@@ -54,9 +66,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "monthly" as const,
         priority: 0.5,
       })),
-    ...devices.map((device) => ({
-      url: `${SITE_URL}/device/${device.id}`,
-      lastModified: validDate(device.updatedAt) ?? now,
+    ...facets.brands.map((brand) => ({
+      url: `${SITE_URL}/catalog/brand/${brand.slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.65,
+    })),
+    ...facets.categories.map((category) => ({
+      url: `${SITE_URL}/catalog/category/${category.slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.65,
+    })),
+    ...products.map((product) => ({
+      url: `${SITE_URL}/product/${product.id}`,
+      lastModified: validDate(product.updatedAt) ?? now,
       changeFrequency: "daily" as const,
       priority: 0.8,
     })),

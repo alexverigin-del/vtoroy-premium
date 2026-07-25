@@ -49,9 +49,9 @@ JOIN devices d ON d.id = dp.device
 WHERE d.status = 'published'
   AND (
     (lower(coalesce(dp.repair, '')) ~ 'не ремонт|не вскрыв|без ремонт'
-      AND lower(coalesce(dp.story_body, '')) ~ 'ремонт|сервис|замен')
+      AND lower(coalesce(dp.story_body, '')) ~ 'после ремонта|был[аио]? в сервис|ремонтировал|замен(или|ена|ён|ен)')
     OR
-    (lower(coalesce(dp.repair, '')) ~ 'ремонт|замен|вскрыв'
+    (lower(coalesce(dp.repair, '')) ~ 'ремонт|замен|вскрыв|сервис'
       AND lower(coalesce(dp.story_body, '')) ~ 'без ремонт|не ремонт|не вскрыв')
   )
 UNION ALL

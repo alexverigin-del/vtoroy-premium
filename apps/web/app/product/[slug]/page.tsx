@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { CatalogProduct } from "@vtoroy/shared";
+import type { CatalogProduct, DevicePageSettings, DeviceStoryInfo } from "@vtoroy/shared";
 
 import { DeviceGallery } from "@/components/DeviceGallery";
 import { PassportSummary } from "@/components/PassportSummary";
@@ -119,6 +119,38 @@ function accessoryFacts(product: CatalogProduct) {
   ].filter((item): item is [string, string] => Boolean(item[1]));
 }
 
+function DeviceStoryCard({
+  settings,
+  story,
+}: {
+  settings: DevicePageSettings;
+  story: DeviceStoryInfo;
+}) {
+  return (
+    <section
+      className="rounded-card bg-ink p-6 text-white shadow-soft"
+      data-component="DeviceStoryCard"
+    >
+      <p className="text-xs font-medium uppercase tracking-eyebrow text-white/55">
+        {settings.sections.storyEyebrow}
+      </p>
+      <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+        {story.title || settings.sections.storyFallbackTitle}
+      </h2>
+      <p className="mt-4 text-sm leading-relaxed text-white/70">{story.body}</p>
+      {story.facts.length > 0 ? (
+        <ul className="mt-5 grid gap-2 sm:grid-cols-3">
+          {story.facts.slice(0, 3).map((fact) => (
+            <li key={fact} className="rounded-card border border-white/15 px-3 py-2 text-sm">
+              {fact}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
   const [product, settings, navigation, devicePageSettings] = await Promise.all([
@@ -212,6 +244,10 @@ export default async function ProductPage({ params }: PageProps) {
                     ))}
                   </dl>
                 </section>
+              ) : null}
+
+              {product.productType === "device" && product.passport?.story.body ? (
+                <DeviceStoryCard settings={devicePageSettings} story={product.passport.story} />
               ) : null}
 
               {usedDevice && product.passport ? (

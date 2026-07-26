@@ -927,6 +927,12 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   under the gallery in the left desktop column, while purchase controls and
   `I СВОИ Passport` form the right column. Keep the mobile order as gallery,
   purchase action, condition, warranty/Trade, then Passport.
+- The universal `/product/[slug]` route must keep the Directus-managed
+  `DeviceStoryCard` for products with `product_type=device` and a non-empty
+  `device_passports.story_body`. Render it in the main content column after
+  characteristics and before Passport; never show it for accessories. The
+  price, availability and lead form remain in the existing `lg:sticky`
+  purchase aside.
 - Device provenance copy belongs in Directus `device_passports`, not React
   hardcode. Use `story_title`, `story_body` and `story_facts` for the public
   "История вещи" block; do not publish personal owner details without explicit

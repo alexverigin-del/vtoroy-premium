@@ -408,6 +408,8 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
 
   const passportBlocks = await page.locator("text=I СВОИ Passport").count();
   assert(passportBlocks > 0, "device: expected I СВОИ Passport block");
+  const storyBlocks = await page.locator('[data-component="DeviceStoryCard"]').count();
+  assert(storyBlocks === 1, `device: expected one story block, got ${storyBlocks}`);
 
   const leadForm = page.locator("form:has(input[name='contact']):has(textarea[name='message'])");
   await leadForm.first().waitFor({ state: "visible", timeout: 10_000 });
@@ -419,6 +421,7 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
     route: devicePath,
     directusImages: await countLoadedDirectusImages(page),
     passportBlocks,
+    storyBlocks,
     leadForms: await leadForm.count(),
     jsonLdTypes: seo.jsonLdTypes.length,
   };

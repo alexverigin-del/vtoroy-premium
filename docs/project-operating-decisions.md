@@ -225,8 +225,11 @@ Keep the full production snapshot in
   manual responsibility outside Directus automation.
 - Directus setup scripts update metadata and permissions through SQL. Restart
   the Directus container after applying them, wait for `/server/health`, then
-  run `directus:audit-api-policy`; this checks the real least-privilege token
-  against current Club fields and catches a stale Directus permission cache.
+  call the protected `/api/revalidate/site-content` endpoint before the live
+  smoke, and run `directus:audit-api-policy`; PM2 restart alone does not clear
+  persistent Next fetch-cache entries created before the SQL change. The API
+  audit checks the real least-privilege token against the complete Club offer
+  payload and catches stale permissions or a broken relation expansion.
 - Studio exposes Club through one translated `I СВОИ Club` collection folder.
   Its six collections have Russian names and ordered operator-facing forms;
   tariffs, offers, processes, rules and legal documents use translated detail

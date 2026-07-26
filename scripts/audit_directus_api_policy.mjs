@@ -33,6 +33,67 @@ function envValue(name) {
 const baseUrl = (process.env.DIRECTUS_PUBLIC_URL || "https://api.isvoi.ru").replace(/\/+$/, "");
 const serviceUrl = (envValue("DIRECTUS_URL") || baseUrl).replace(/\/+$/, "");
 const serviceToken = envValue("DIRECTUS_TOKEN");
+const clubPlanFields = [
+  "id",
+  "slug",
+  "status",
+  "name",
+  "badge",
+  "summary",
+  "min_term_months",
+  "monthly_note",
+  "features",
+  "support_level",
+  "service_response_text",
+  "diagnostics_text",
+  "replacement_text",
+  "early_exit_text",
+  "damage_text",
+  "is_featured",
+  "is_future",
+  "sort",
+].join(",");
+const clubOfferFields = [
+  "id",
+  "status",
+  "offer_status",
+  "term_months",
+  "monthly_from",
+  "pricing_mode",
+  "terms_text",
+  "badge",
+  "cta_label",
+  "sort",
+  "plan." + clubPlanFields.replaceAll(",", ",plan."),
+  "product.id",
+  "product.sku",
+  "product.product_type",
+  "product.condition",
+  "product.status",
+  "product.stock_status",
+  "product.stock_quantity",
+  "product.sort",
+  "product.title",
+  "product.model",
+  "product.color",
+  "product.price",
+  "product.price_text",
+  "product.warranty_text",
+  "product.listing_alt",
+  "product.updated_at",
+  "product.listing_file.id",
+  "product.brand.id",
+  "product.brand.slug",
+  "product.brand.name",
+  "product.category.id",
+  "product.category.slug",
+  "product.category.name",
+  "product.category.catalog_section",
+  "product.device_model.slug",
+  "product.device_details.grade",
+  "product.device_details.battery_text",
+  "product.device_details.diagnostic_date",
+].join(",");
 
 const checks = [
   { name: "health", path: "/server/health", expected: 200 },
@@ -82,6 +143,27 @@ if (serviceToken) {
         );
       },
     },
+    {
+      name: "service.club_offers",
+      path: `/items/club_offers?fields=${clubOfferFields}&filter[status][_eq]=published&filter[offer_status][_in]=approved,waitlist&filter[product][status][_eq]=published&filter[product][stock_status][_eq]=available&filter[product][stock_quantity][_gt]=0&limit=24`,
+      validate(data) {
+        return (
+          Array.isArray(data) &&
+          data.length > 0 &&
+          data.every(
+            (offer) =>
+              offer.id &&
+              offer.product?.id &&
+              offer.product.title &&
+              offer.product.status === "published" &&
+              offer.product.stock_status === "available" &&
+              Number(offer.product.stock_quantity) > 0 &&
+              offer.plan?.id &&
+              offer.plan.name,
+          )
+        );
+      },
+    },
   ];
 
   for (const check of serviceChecks) {
@@ -92,7 +174,10 @@ if (serviceToken) {
     const payload = await response.json().catch(() => null);
     const valid = response.status === 200 && check.validate(payload?.data);
     if (!valid) {
-      console.error(`${check.name}: expected readable current Club fields, got ${response.status}`);
+      const detail = payload?.errors?.[0]?.message ? ` (${payload.errors[0].message})` : "";
+      console.error(
+        `${check.name}: expected readable current Club fields, got ${response.status}${detail}`,
+      );
       failed = true;
     } else {
       console.log(`${check.name}: ${response.status}`);

@@ -222,7 +222,16 @@ function marketingHeroEyebrow(section: PageSection, slug: MarketingSlug): string
   const eyebrow = section.eyebrow?.trim();
   const brandedEyebrow = MARKETING_HERO_EYEBROWS[slug];
   if (!eyebrow) return brandedEyebrow;
-  return /^Главная\s*\/\s*(Store|Trade|Passport|Club)$/i.test(eyebrow) ? brandedEyebrow : eyebrow;
+  const legacyProductEyebrow = eyebrow.match(
+    /^(?:Главная\s*\/\s*)?(?:I\s+СВОИ\s*)?(Store|Trade|Passport)(.*)$/i,
+  );
+  if (legacyProductEyebrow) {
+    const product = legacyProductEyebrow[1].toLowerCase() as "store" | "trade" | "passport";
+    const suffix = legacyProductEyebrow[2].trimStart();
+    return `${MARKETING_HERO_EYEBROWS[product]}${suffix ? ` ${suffix}` : ""}`;
+  }
+
+  return /^Главная\s*\/\s*Club$/i.test(eyebrow) ? brandedEyebrow : eyebrow;
 }
 
 function comparisonRows(value: unknown): ComparisonRow[] {

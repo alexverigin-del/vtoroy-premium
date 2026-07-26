@@ -67,6 +67,74 @@ expected_collections(collection) AS (
     ('club_plans'),('club_offers'),('club_rule_items'),
     ('club_process_items'),('club_legal_documents'),('club_page_settings')
 ),
+expected_group_fields(collection, field_name) AS (
+  VALUES
+    ('club_plans','group_identity'),
+    ('club_plans','group_public'),
+    ('club_plans','group_comparison'),
+    ('club_offers','group_publication'),
+    ('club_offers','group_device'),
+    ('club_offers','group_pricing'),
+    ('club_offers','group_card'),
+    ('club_rule_items','group_publication'),
+    ('club_rule_items','group_content'),
+    ('club_process_items','group_publication'),
+    ('club_process_items','group_content'),
+    ('club_process_items','group_advanced'),
+    ('club_legal_documents','group_publication'),
+    ('club_legal_documents','group_content'),
+    ('club_legal_documents','group_version'),
+    ('club_page_settings','group_publication'),
+    ('club_page_settings','group_hero'),
+    ('club_page_settings','group_offers'),
+    ('club_page_settings','group_story'),
+    ('club_page_settings','group_legal'),
+    ('club_page_settings','group_form'),
+    ('club_page_settings','group_advanced')
+),
+expected_grouped_fields(collection, field_name, group_name) AS (
+  VALUES
+    ('club_plans','status','group_identity'),('club_plans','slug','group_identity'),
+    ('club_plans','name','group_identity'),('club_plans','is_featured','group_identity'),
+    ('club_plans','is_future','group_identity'),('club_plans','sort','group_identity'),
+    ('club_plans','badge','group_public'),('club_plans','summary','group_public'),
+    ('club_plans','features','group_public'),('club_plans','min_term_months','group_public'),
+    ('club_plans','monthly_note','group_public'),
+    ('club_plans','support_level','group_comparison'),
+    ('club_plans','service_response_text','group_comparison'),
+    ('club_plans','diagnostics_text','group_comparison'),
+    ('club_plans','replacement_text','group_comparison'),
+    ('club_plans','early_exit_text','group_comparison'),
+    ('club_plans','damage_text','group_comparison'),
+    ('club_offers','status','group_publication'),('club_offers','offer_status','group_publication'),
+    ('club_offers','sort','group_publication'),('club_offers','product','group_device'),
+    ('club_offers','plan','group_device'),('club_offers','term_months','group_device'),
+    ('club_offers','pricing_mode','group_pricing'),('club_offers','monthly_from','group_pricing'),
+    ('club_offers','terms_text','group_pricing'),('club_offers','badge','group_card'),
+    ('club_offers','cta_label','group_card'),
+    ('club_rule_items','status','group_publication'),
+    ('club_rule_items','category','group_publication'),
+    ('club_rule_items','sort','group_publication'),
+    ('club_rule_items','title','group_content'),('club_rule_items','body','group_content'),
+    ('club_process_items','status','group_publication'),
+    ('club_process_items','group_key','group_publication'),
+    ('club_process_items','sort','group_publication'),
+    ('club_process_items','label','group_content'),
+    ('club_process_items','title','group_content'),
+    ('club_process_items','body','group_content'),
+    ('club_process_items','slug','group_advanced'),
+    ('club_legal_documents','status','group_publication'),
+    ('club_legal_documents','document_type','group_publication'),
+    ('club_legal_documents','legal_reviewed','group_publication'),
+    ('club_legal_documents','sort','group_publication'),
+    ('club_legal_documents','title','group_content'),
+    ('club_legal_documents','summary','group_content'),
+    ('club_legal_documents','body','group_content'),
+    ('club_legal_documents','slug','group_version'),
+    ('club_legal_documents','version','group_version'),
+    ('club_legal_documents','effective_date','group_version'),
+    ('club_legal_documents','file','group_version')
+),
 expected_public_permissions(collection, action) AS (
   VALUES
     ('club_plans','read'),('club_offers','read'),('club_rule_items','read'),
@@ -114,6 +182,46 @@ WHERE NOT EXISTS (
     AND collection.hidden=false
     AND collection.note IS NOT NULL
     AND collection.display_template IS NOT NULL
+)
+UNION ALL
+SELECT 'club.studio.folder_missing', count(*)::text
+FROM (VALUES (1)) expected(value)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_collections collection
+  WHERE collection.collection='isvoi_club'
+    AND collection.hidden=false
+    AND collection."group" IS NULL
+    AND collection.collapse IN ('open','closed','locked')
+    AND collection.translations::text LIKE '%I СВОИ Club%'
+)
+UNION ALL
+SELECT 'club.studio.collection_grouping_missing', count(*)::text
+FROM expected_collections expected
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_collections collection
+  WHERE collection.collection=expected.collection
+    AND collection."group"='isvoi_club'
+    AND collection.translations::text LIKE '%ru-RU%'
+)
+UNION ALL
+SELECT 'club.studio.field_groups_missing', count(*)::text
+FROM expected_group_fields expected
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection=expected.collection
+    AND field.field=expected.field_name
+    AND field.interface='group-detail'
+    AND field.special LIKE '%group%'
+    AND field.translations::text LIKE '%ru-RU%'
+)
+UNION ALL
+SELECT 'club.studio.ungrouped_fields', count(*)::text
+FROM expected_grouped_fields expected
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection=expected.collection
+    AND field.field=expected.field_name
+    AND field."group"=expected.group_name
 )
 UNION ALL
 SELECT 'club.studio.nav_locations_missing', count(*)::text

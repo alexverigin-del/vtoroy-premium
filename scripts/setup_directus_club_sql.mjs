@@ -463,10 +463,58 @@ SELECT isvoi_club_upsert_collection('club_process_items','route','Editable Club 
 SELECT isvoi_club_upsert_collection('club_legal_documents','gavel','Draft and published legal documents for the Club pilot.','{{title}} · {{status}} · {{version}}',false,48);
 SELECT isvoi_club_upsert_collection('club_page_settings','tune','Singleton copy and labels for club.isvoi.ru.','Club page settings',true,43);
 
+INSERT INTO directus_collections (
+  collection, icon, note, hidden, singleton, sort, translations, collapse
+)
+SELECT
+  'isvoi_club',
+  'workspace_premium',
+  'Единый операторский раздел I СВОИ Club.',
+  false,
+  false,
+  43,
+  '[{"language":"ru-RU","translation":"I СВОИ Club"}]'::json,
+  'open'
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_collections WHERE collection='isvoi_club'
+);
+
+UPDATE directus_collections
+SET icon='workspace_premium',
+  note='Единый операторский раздел I СВОИ Club.',
+  hidden=false,
+  singleton=false,
+  sort=43,
+  translations='[{"language":"ru-RU","translation":"I СВОИ Club"}]'::json,
+  collapse='open'
+WHERE collection='isvoi_club';
+
+UPDATE directus_collections collection
+SET "group"='isvoi_club',
+  sort=metadata.sort,
+  note=metadata.note,
+  translations=json_build_array(
+    json_build_object('language','ru-RU','translation',metadata.translation)
+  )
+FROM (
+  VALUES
+    ('club_page_settings',1,'Настройки страницы','Тексты, CTA, форма и режим публикации Club.'),
+    ('club_offers',2,'Предложения устройств','Управляемые предложения устройств для Club.'),
+    ('club_plans',3,'Тарифы','Тарифы Base, Care и будущие форматы Club.'),
+    ('club_process_items',4,'Процесс и сценарии','Сценарии завершения, Passport и этапы участия.'),
+    ('club_rule_items',5,'Правила','Публичные правила Club по категориям.'),
+    ('club_legal_documents',6,'Юридические документы','Версии политики, условий пилота и проекта договора.')
+) metadata(collection,sort,translation,note)
+WHERE collection.collection=metadata.collection;
+
 UPDATE directus_fields
 SET options='{"choices":[{"text":"Шапка","value":"header","color":"#2563eb"},{"text":"Footer","value":"footer","color":"#0f766e"},{"text":"Mobile","value":"mobile","color":"#0891b2"},{"text":"Utility","value":"utility","color":"#6b7280"},{"text":"Club header","value":"club_header","color":"#0f766e"},{"text":"Club footer","value":"club_footer","color":"#047857"}]}'::json,
   note='Navigation area. Use club_header and club_footer only for club.isvoi.ru.'
 WHERE collection='navigation_items' AND field='location';
+
+SELECT isvoi_club_upsert_field('club_plans','group_identity','group-detail',NULL,'{"start":"open","headerIcon":"badge"}'::json,'full',1,'Публикация, ключ и название тарифа.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_plans','group_public','group-detail',NULL,'{"start":"open","headerIcon":"campaign"}'::json,'full',2,'Публичное описание и параметры тарифа.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_plans','group_comparison','group-detail',NULL,'{"start":"open","headerIcon":"compare_arrows"}'::json,'full',3,'Измеримые различия Base и Care.','alias,no-data,group');
 
 SELECT isvoi_club_upsert_field('club_plans','status','select-dropdown','labels', '{"choices":[{"text":"Draft","value":"draft"},{"text":"Published","value":"published"},{"text":"Archived","value":"archived"}]}'::json,'half',1,'Publication status. Only published rows can appear on the public Club page.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_plans','slug','input','raw',NULL,'half',2,'Stable operator-friendly key, for example base, care, flex.',NULL,NULL,true);
@@ -486,6 +534,11 @@ SELECT isvoi_club_upsert_field('club_plans','is_featured','boolean','boolean',NU
 SELECT isvoi_club_upsert_field('club_plans','is_future','boolean','boolean',NULL,'half',16,'Use for future formats such as Flex. Future plans should not look like a ready purchase CTA.');
 SELECT isvoi_club_upsert_field('club_plans','sort','input','raw',NULL,'half',17,'Sort order.');
 
+SELECT isvoi_club_upsert_field('club_offers','group_publication','group-detail',NULL,'{"start":"open","headerIcon":"publish"}'::json,'full',1,'Публикация и готовность предложения.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_offers','group_device','group-detail',NULL,'{"start":"open","headerIcon":"devices"}'::json,'full',2,'Устройство, тариф и срок.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_offers','group_pricing','group-detail',NULL,'{"start":"open","headerIcon":"payments"}'::json,'full',3,'Режим цены и публичные условия.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_offers','group_card','group-detail',NULL,'{"start":"closed","headerIcon":"view_agenda"}'::json,'full',4,'Плашка и подпись CTA карточки.','alias,no-data,group');
+
 SELECT isvoi_club_upsert_field('club_offers','status','select-dropdown','labels', '{"choices":[{"text":"Draft","value":"draft"},{"text":"Published","value":"published"},{"text":"Archived","value":"archived"}]}'::json,'half',1,'Publication status. Public page reads only published rows.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_offers','offer_status','select-dropdown','labels', '{"choices":[{"text":"Draft","value":"draft"},{"text":"Approved","value":"approved"},{"text":"Waitlist","value":"waitlist"},{"text":"Paused","value":"paused"},{"text":"Archived","value":"archived"}]}'::json,'half',2,'Approved offers may show public monthly price. Waitlist offers use request wording.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_offers','product','select-dropdown-m2o','related-values',NULL,'half',3,'Product from the commercial catalog used as the Club device.',NULL,NULL,true);
@@ -498,11 +551,18 @@ SELECT isvoi_club_upsert_field('club_offers','badge','input','raw',NULL,'half',9
 SELECT isvoi_club_upsert_field('club_offers','cta_label','input','raw',NULL,'half',10,'Optional CTA override. Default is from Club settings.');
 SELECT isvoi_club_upsert_field('club_offers','sort','input','raw',NULL,'half',11,'Sort order.');
 
+SELECT isvoi_club_upsert_field('club_rule_items','group_publication','group-detail',NULL,'{"start":"open","headerIcon":"rule"}'::json,'full',1,'Публикация, категория и порядок правила.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_rule_items','group_content','group-detail',NULL,'{"start":"open","headerIcon":"article"}'::json,'full',2,'Заголовок и публичное объяснение.','alias,no-data,group');
+
 SELECT isvoi_club_upsert_field('club_rule_items','status','select-dropdown','labels', '{"choices":[{"text":"Draft","value":"draft"},{"text":"Published","value":"published"},{"text":"Archived","value":"archived"}]}'::json,'half',1,'Publication status.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_rule_items','category','select-dropdown','labels', '{"choices":[{"text":"Нормальный износ","value":"wear"},{"text":"Повреждения","value":"damage"},{"text":"Возврат","value":"return"},{"text":"Выкуп","value":"buyout"},{"text":"Досрочный выход","value":"early_exit"},{"text":"Платежи","value":"payment"},{"text":"Потеря или кража","value":"loss"},{"text":"Данные / Apple ID","value":"data"},{"text":"Сервис","value":"service"}]}'::json,'half',2,'Категория правила. На сайте показывается локализованная подпись.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_rule_items','title','input','raw',NULL,'half',3,'Rule title.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_rule_items','body','input-multiline','raw',NULL,'full',4,'Public rule explanation.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_rule_items','sort','input','raw',NULL,'half',5,'Sort order.');
+
+SELECT isvoi_club_upsert_field('club_process_items','group_publication','group-detail',NULL,'{"start":"open","headerIcon":"route"}'::json,'full',1,'Раздел страницы, публикация и порядок шага.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_process_items','group_content','group-detail',NULL,'{"start":"open","headerIcon":"article"}'::json,'full',2,'Подпись, заголовок и объяснение шага.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_process_items','group_advanced','group-detail',NULL,'{"start":"closed","headerIcon":"settings"}'::json,'full',3,'Стабильный технический ключ.','alias,no-data,group');
 
 SELECT isvoi_club_upsert_field('club_process_items','status','select-dropdown','labels','{"choices":[{"text":"Черновик","value":"draft"},{"text":"Опубликовано","value":"published"},{"text":"Архив","value":"archived"}]}'::json,'half',1,'Only published steps appear on Club.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_process_items','group_key','select-dropdown','labels','{"choices":[{"text":"Сценарии завершения","value":"scenario"},{"text":"Passport","value":"passport"},{"text":"Участие","value":"participation"}]}'::json,'half',2,'Select where this step is displayed.',NULL,NULL,true);
@@ -511,6 +571,10 @@ SELECT isvoi_club_upsert_field('club_process_items','label','input','raw',NULL,'
 SELECT isvoi_club_upsert_field('club_process_items','title','input','raw',NULL,'half',5,'Public title.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_process_items','body','input-multiline','raw',NULL,'full',6,'Public explanation.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_process_items','sort','input','raw',NULL,'half',7,'Sort inside the selected group.');
+
+SELECT isvoi_club_upsert_field('club_legal_documents','group_publication','group-detail',NULL,'{"start":"open","headerIcon":"verified"}'::json,'full',1,'Тип, статус юридической проверки и порядок.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_legal_documents','group_content','group-detail',NULL,'{"start":"open","headerIcon":"description"}'::json,'full',2,'Название, краткое пояснение и текст документа.','alias,no-data,group');
+SELECT isvoi_club_upsert_field('club_legal_documents','group_version','group-detail',NULL,'{"start":"open","headerIcon":"history"}'::json,'full',3,'Версия, дата действия, URL и файл.','alias,no-data,group');
 
 SELECT isvoi_club_upsert_field('club_legal_documents','status','select-dropdown','labels','{"choices":[{"text":"Черновик","value":"draft"},{"text":"Опубликовано","value":"published"},{"text":"Архив","value":"archived"}]}'::json,'half',1,'Publish only after legal review.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_legal_documents','document_type','select-dropdown','labels','{"choices":[{"text":"Политика данных","value":"privacy"},{"text":"Условия пилота","value":"pilot_terms"},{"text":"Проект договора","value":"contract_draft"}]}'::json,'half',2,'Required launch-gate document type.',NULL,NULL,true);
@@ -524,6 +588,81 @@ SELECT isvoi_club_upsert_field('club_legal_documents','file','file','file',NULL,
 SELECT isvoi_club_upsert_field('club_legal_documents','legal_reviewed','boolean','boolean',NULL,'half',10,'Admin confirmation that the exact published version was legally reviewed.');
 SELECT isvoi_club_upsert_field('club_legal_documents','sort','input','raw',NULL,'half',11,'Display order.');
 
+UPDATE directus_fields field
+SET "group"=metadata.group_key
+FROM (
+  VALUES
+    ('club_plans','status','group_identity'),('club_plans','slug','group_identity'),
+    ('club_plans','name','group_identity'),('club_plans','is_featured','group_identity'),
+    ('club_plans','is_future','group_identity'),('club_plans','sort','group_identity'),
+    ('club_plans','badge','group_public'),('club_plans','summary','group_public'),
+    ('club_plans','features','group_public'),('club_plans','min_term_months','group_public'),
+    ('club_plans','monthly_note','group_public'),
+    ('club_plans','support_level','group_comparison'),
+    ('club_plans','service_response_text','group_comparison'),
+    ('club_plans','diagnostics_text','group_comparison'),
+    ('club_plans','replacement_text','group_comparison'),
+    ('club_plans','early_exit_text','group_comparison'),
+    ('club_plans','damage_text','group_comparison'),
+    ('club_offers','status','group_publication'),('club_offers','offer_status','group_publication'),
+    ('club_offers','sort','group_publication'),('club_offers','product','group_device'),
+    ('club_offers','plan','group_device'),('club_offers','term_months','group_device'),
+    ('club_offers','pricing_mode','group_pricing'),('club_offers','monthly_from','group_pricing'),
+    ('club_offers','terms_text','group_pricing'),('club_offers','badge','group_card'),
+    ('club_offers','cta_label','group_card'),
+    ('club_rule_items','status','group_publication'),('club_rule_items','category','group_publication'),
+    ('club_rule_items','sort','group_publication'),('club_rule_items','title','group_content'),
+    ('club_rule_items','body','group_content'),
+    ('club_process_items','status','group_publication'),
+    ('club_process_items','group_key','group_publication'),
+    ('club_process_items','sort','group_publication'),
+    ('club_process_items','label','group_content'),('club_process_items','title','group_content'),
+    ('club_process_items','body','group_content'),('club_process_items','slug','group_advanced'),
+    ('club_legal_documents','status','group_publication'),
+    ('club_legal_documents','document_type','group_publication'),
+    ('club_legal_documents','legal_reviewed','group_publication'),
+    ('club_legal_documents','sort','group_publication'),
+    ('club_legal_documents','title','group_content'),
+    ('club_legal_documents','summary','group_content'),
+    ('club_legal_documents','body','group_content'),
+    ('club_legal_documents','slug','group_version'),
+    ('club_legal_documents','version','group_version'),
+    ('club_legal_documents','effective_date','group_version'),
+    ('club_legal_documents','file','group_version')
+) metadata(collection,field,group_key)
+WHERE field.collection=metadata.collection AND field.field=metadata.field;
+
+UPDATE directus_fields field
+SET translations=json_build_array(
+  json_build_object('language','ru-RU','translation',metadata.translation)
+)
+FROM (
+  VALUES
+    ('club_plans','group_identity','Публикация и название'),
+    ('club_plans','group_public','Описание тарифа'),
+    ('club_plans','group_comparison','Сравнение Base и Care'),
+    ('club_offers','group_publication','Публикация'),
+    ('club_offers','group_device','Устройство и тариф'),
+    ('club_offers','group_pricing','Цена и условия'),
+    ('club_offers','group_card','Карточка предложения'),
+    ('club_rule_items','group_publication','Публикация и категория'),
+    ('club_rule_items','group_content','Текст правила'),
+    ('club_process_items','group_publication','Раздел и публикация'),
+    ('club_process_items','group_content','Содержание шага'),
+    ('club_process_items','group_advanced','Расширенные настройки'),
+    ('club_legal_documents','group_publication','Публикация и проверка'),
+    ('club_legal_documents','group_content','Содержание документа'),
+    ('club_legal_documents','group_version','Версия и файл'),
+    ('club_page_settings','group_publication','Публикация'),
+    ('club_page_settings','group_hero','Первый экран'),
+    ('club_page_settings','group_offers','Предложения устройств'),
+    ('club_page_settings','group_story','Сценарии и правила'),
+    ('club_page_settings','group_legal','Юридический блок'),
+    ('club_page_settings','group_form','Форма заявки'),
+    ('club_page_settings','group_advanced','Расширенные настройки')
+) metadata(collection,field,translation)
+WHERE field.collection=metadata.collection AND field.field=metadata.field;
+
 SELECT isvoi_club_upsert_field('club_page_settings','group_publication','group-detail',NULL,'{"start":"open","headerIcon":"shield"}'::json,'full',1,'Launch mode and search visibility.','group');
 SELECT isvoi_club_upsert_field('club_page_settings','group_hero','group-detail',NULL,'{"start":"open","headerIcon":"web_asset"}'::json,'full',2,'First screen copy and CTA.','group');
 SELECT isvoi_club_upsert_field('club_page_settings','group_offers','group-detail',NULL,'{"start":"closed","headerIcon":"devices"}'::json,'full',3,'Device selection and offer labels.','group');
@@ -531,6 +670,22 @@ SELECT isvoi_club_upsert_field('club_page_settings','group_story','group-detail'
 SELECT isvoi_club_upsert_field('club_page_settings','group_legal','group-detail',NULL,'{"start":"closed","headerIcon":"gavel"}'::json,'full',5,'Legal section and consent controls.','group');
 SELECT isvoi_club_upsert_field('club_page_settings','group_form','group-detail',NULL,'{"start":"closed","headerIcon":"contact_page"}'::json,'full',6,'Lead form labels and states.','group');
 SELECT isvoi_club_upsert_field('club_page_settings','group_advanced','group-detail',NULL,'{"start":"closed","headerIcon":"settings"}'::json,'full',7,'Technical singleton fields.','group');
+
+UPDATE directus_fields field
+SET translations=json_build_array(
+  json_build_object('language','ru-RU','translation',metadata.translation)
+)
+FROM (
+  VALUES
+    ('group_publication','Публикация'),
+    ('group_hero','Первый экран'),
+    ('group_offers','Предложения устройств'),
+    ('group_story','Сценарии и правила'),
+    ('group_legal','Юридический блок'),
+    ('group_form','Форма заявки'),
+    ('group_advanced','Расширенные настройки')
+) metadata(field,translation)
+WHERE field.collection='club_page_settings' AND field.field=metadata.field;
 
 SELECT isvoi_club_upsert_field('club_page_settings','publication_mode','select-dropdown','labels','{"choices":[{"text":"Пилот · noindex","value":"pilot_noindex"},{"text":"Публичная индексация","value":"public_index"},{"text":"Пауза","value":"paused"}]}'::json,'half',1,'Only admin can switch indexing. public_index also requires CLUB_INDEXING_ENABLED=1 and a green launch gate.',NULL,'group_publication',true);
 SELECT isvoi_club_upsert_field('club_page_settings','hero_eyebrow','input','raw',NULL,'half',1,'Club eyebrow.',NULL,'group_hero',true);

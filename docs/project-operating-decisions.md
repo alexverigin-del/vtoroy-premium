@@ -220,6 +220,11 @@ Keep the full production snapshot in
   the Directus container after applying them, wait for `/server/health`, then
   run `directus:audit-api-policy`; this checks the real least-privilege token
   against current Club fields and catches a stale Directus permission cache.
+- Studio exposes Club through one translated `I СВОИ Club` collection folder.
+  Its six collections have Russian names and ordered operator-facing forms;
+  tariffs, offers, processes, rules and legal documents use translated detail
+  groups instead of flat technical field lists. `directus:audit-club` verifies
+  the folder, translations and field grouping.
 - Editor workflow: `docs/club-editor-guide.md`.
 
 The Node 24 migration completed on 2026-07-18 in release `d358c32`:

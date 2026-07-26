@@ -138,17 +138,22 @@ Detailed guide: `docs/blog-editor-guide.md`.
 
 ## Club
 
-Use the Club collections as one operator workflow:
+Open the `I СВОИ Club` folder in the Content module. Its collections are
+ordered as one operator workflow:
 
-- `Настройки Club` (`club_page_settings`) for publication mode, hero, section
-  headings, form labels and consent links.
-- `Тарифы Club` (`club_plans`) for measurable Base/Care differences.
-- `Предложения Club` (`club_offers`) for approved catalog offers.
-- `Процесс Club` (`club_process_items`) for cycle, Passport and participation
+- `Настройки страницы` (`club_page_settings`) for publication mode, hero,
+  section headings, form labels and consent links.
+- `Предложения устройств` (`club_offers`) for approved catalog offers.
+- `Тарифы` (`club_plans`) for measurable Base/Care differences.
+- `Процесс и сценарии` (`club_process_items`) for cycle, Passport and participation
   steps.
-- `Правила Club` (`club_rule_items`) for customer-facing rules.
-- `Документы Club` (`club_legal_documents`) for versioned legal materials.
+- `Правила` (`club_rule_items`) for customer-facing rules.
+- `Юридические документы` (`club_legal_documents`) for versioned legal
+  materials.
 - `Заявки` (`leads`) with the saved `Club: ...` views for processing requests.
+
+Item forms use Russian expandable groups. Start with the open content groups;
+use `Расширенные настройки` only when a stable key must be changed.
 
 Keep `publication_mode = pilot_noindex` until the legal package and at least
 one commercial offer pass `npm run directus:audit-club`. Only an administrator

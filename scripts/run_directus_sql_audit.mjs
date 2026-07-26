@@ -241,6 +241,25 @@ const auditDefinitions = {
       "blog.automation.schedule_revalidation_chain_invalid",
     ],
   },
+  club: {
+    script: "scripts/audit_directus_club_sql.mjs",
+    zero: [
+      "club.schema.tables_missing",
+      "club.schema.fields_missing",
+      "club.schema.relations_missing",
+      "club.studio.collections_missing",
+      "club.studio.nav_locations_missing",
+      "club.permissions.public_missing",
+      "club.permissions.editor_missing",
+      "club.permissions.wildcard_fields",
+      "club.permissions.lead_intake_fields_missing",
+      "club.content.published_plans_missing",
+      "club.content.published_rules_missing",
+      "club.content.invalid_offer_product",
+      "club.content.approved_offers_without_terms",
+      "club.leads.views_missing",
+    ],
+  },
   "conversion-v2": {
     script: "scripts/audit_directus_conversion_v2_sql.mjs",
     zero: [
@@ -299,6 +318,7 @@ const prodAuditOrder = [
   "files",
   "import",
   "blog",
+  "club",
   "conversion-v2",
   "catalog-v3",
 ];

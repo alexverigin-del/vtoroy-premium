@@ -4,6 +4,7 @@ export const PAGE_SECTIONS_CACHE_TAG = "directus:page-sections";
 export const NAVIGATION_ITEMS_CACHE_TAG = "directus:navigation-items";
 export const FAQ_ITEMS_CACHE_TAG = "directus:faq-items";
 export const DEVICE_PAGE_SETTINGS_CACHE_TAG = "directus:device-page-settings";
+export const CLUB_CACHE_TAG = "directus:club";
 export const BLOG_POSTS_CACHE_TAG = "directus:blog-posts";
 export const BLOG_TAXONOMY_CACHE_TAG = "directus:blog-taxonomy";
 
@@ -14,6 +15,7 @@ export const SITE_CONTENT_CACHE_TAGS = [
   NAVIGATION_ITEMS_CACHE_TAG,
   FAQ_ITEMS_CACHE_TAG,
   DEVICE_PAGE_SETTINGS_CACHE_TAG,
+  CLUB_CACHE_TAG,
   BLOG_POSTS_CACHE_TAG,
   BLOG_TAXONOMY_CACHE_TAG,
 ] as const;

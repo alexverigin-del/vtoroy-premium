@@ -70,7 +70,7 @@ const env = Object.fromEntries(
 
 const expectedEnv = {
   PUBLIC_URL: "https://api.isvoi.ru",
-  CORS_ORIGIN: "https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru",
+  CORS_ORIGIN: "https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru,https://club.isvoi.ru",
   CACHE_ENABLED: "true",
   CACHE_TTL: "5m",
   CACHE_AUTO_PURGE: "true",

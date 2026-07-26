@@ -32,7 +32,6 @@ export function generateStaticParams() {
     { slug: "store" },
     { slug: "trade" },
     { slug: "passport" },
-    { slug: "club" },
     { slug: "about" },
     { slug: "contacts" },
     { slug: "warranty" },

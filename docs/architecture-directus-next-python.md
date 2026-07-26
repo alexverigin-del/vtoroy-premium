@@ -28,7 +28,8 @@ Jobs
 ## Runtime Roles
 
 - **Next.js public site**: renders `/`, `/catalog`, marketing pages,
-  `/device/[slug]` and `/lead-intake`.
+  product/device pages, blog routes, `/lead-intake` and the host-aware
+  `club.isvoi.ru` pilot landing.
 - **Directus**: owns editable content, catalog rows, files, lead workflow,
   roles, permissions and Studio.
 - **PostgreSQL**: Directus-owned persistence.
@@ -36,15 +37,15 @@ Jobs
 
 ## Repository Layout
 
-| Path | Role |
-| --- | --- |
-| `apps/web/` | Production Next.js public site |
-| `apps/web/public/` | Static assets served by Next |
-| `directus/` | Data model and workflow docs |
-| `infra/directus-beget/` | Docker Compose and nginx examples |
-| `packages/shared/` | Shared TypeScript contracts |
-| `scripts/` | Setup, import, media, audit and ops helpers |
-| `data/` | Legacy/reference seed data for fallback and migration |
+| Path                      | Role                                                                    |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `apps/web/`               | Production Next.js public site                                          |
+| `apps/web/public/`        | Static assets served by Next                                            |
+| `directus/`               | Data model and workflow docs                                            |
+| `infra/directus-beget/`   | Docker Compose and nginx examples                                       |
+| `packages/shared/`        | Shared TypeScript contracts                                             |
+| `scripts/`                | Setup, import, media, audit and ops helpers                             |
+| `data/`                   | Legacy/reference seed data for fallback and migration                   |
 | `apps/web/public/assets/` | Public fallback/reference media while Directus Files migration finishes |
 
 ## Public Routing
@@ -56,7 +57,8 @@ Canonical routes:
 - `/store`
 - `/passport`
 - `/trade`
-- `/club`
+- `/club` (internal route; `https://isvoi.ru/club` redirects to
+  `https://club.isvoi.ru/`)
 - `/device/[slug]`
 
 Compatibility redirects are defined in `apps/web/next.config.mjs`:
@@ -64,6 +66,13 @@ Compatibility redirects are defined in `apps/web/next.config.mjs`:
 - `/index.html` -> `/`
 - `/{catalog,store,passport,trade,club}/index.html` -> canonical route
 - `/device/:slug/index.html` -> `/device/:slug`
+
+Club routing:
+
+- `https://club.isvoi.ru/` is the public canonical Club landing.
+- `https://isvoi.ru/club` returns a permanent redirect to the Club subdomain.
+- Non-Club paths on `club.isvoi.ru` redirect back to `https://isvoi.ru/...` to
+  avoid SEO duplicates.
 
 Run `npm run web:verify` before deployment. It includes `legacy:audit`, which
 confirms the old static HTML entrypoints, deleted legacy CSS/JS runtime files

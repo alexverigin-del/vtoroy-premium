@@ -64,7 +64,8 @@ export interface SiteSettings {
   maintenanceMode?: boolean;
 }
 
-export type NavLocation = "header" | "footer" | "mobile" | "utility";
+export type NavLocation =
+  "header" | "footer" | "mobile" | "utility" | "club_header" | "club_footer";
 export type NavLinkType = "page" | "section" | "external" | "custom";
 export type NavItemRole = "link" | "cta" | "group";
 

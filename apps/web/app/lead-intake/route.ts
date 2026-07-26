@@ -15,6 +15,10 @@ type LeadRequest = {
   product_type?: unknown;
   device?: unknown;
   device_id?: unknown;
+  club_offer?: unknown;
+  club_plan?: unknown;
+  club_term_months?: unknown;
+  club_budget_text?: unknown;
   message?: unknown;
   source?: unknown;
   source_path?: unknown;
@@ -44,6 +48,10 @@ type StoredLead = {
   product_type: string;
   device: string;
   device_id: string;
+  club_offer: string;
+  club_plan: string;
+  club_term_months: string;
+  club_budget_text: string;
   scenario: string;
   message: string;
   source: string;
@@ -232,6 +240,10 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       product_type: optionalText(lead.product_type),
       device: optionalText(lead.device),
       device_id: optionalText(lead.device_id),
+      club_offer: optionalText(lead.club_offer),
+      club_plan: optionalText(lead.club_plan),
+      club_term_months: optionalText(lead.club_term_months),
+      club_budget_text: optionalText(lead.club_budget_text),
       scenario: optionalText(lead.scenario),
       message: optionalText(lead.message),
       source: lead.source,
@@ -253,6 +265,10 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       lead.scenario ? `Сценарий: ${lead.scenario}` : "",
       lead.message ? `Комментарий: ${lead.message}` : "",
       lead.device_id ? `Device ID: ${lead.device_id}` : "",
+      lead.club_offer ? `Club offer: ${lead.club_offer}` : "",
+      lead.club_plan ? `Club plan: ${lead.club_plan}` : "",
+      lead.club_term_months ? `Club term: ${lead.club_term_months}` : "",
+      lead.club_budget_text ? `Club budget: ${lead.club_budget_text}` : "",
       lead.source_url ? `URL: ${lead.source_url}` : "",
       lead.page_title ? `Page title: ${lead.page_title}` : "",
       lead.referrer ? `Referrer: ${lead.referrer}` : "",
@@ -335,6 +351,10 @@ export async function POST(request: NextRequest) {
       : "",
     device: text(body.device, 255),
     device_id: text(body.device_id, 255),
+    club_offer: text(body.club_offer, 255),
+    club_plan: text(body.club_plan, 255),
+    club_term_months: text(body.club_term_months, 32),
+    club_budget_text: text(body.club_budget_text, 160),
     scenario,
     message: text(body.message, 2000),
     source: sourcePath,

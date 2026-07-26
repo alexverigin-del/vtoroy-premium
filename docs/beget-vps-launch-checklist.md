@@ -14,6 +14,7 @@ same origin, so the "api" and "admin" surfaces share **one** subdomain
 (`api.your-domain.ru`). The public Next.js site lives on the root domain.
 
 > Conventions in this doc:
+>
 > - Replace `your-domain.ru` with your real domain and `youruser` with your
 >   Linux login everywhere.
 > - `$` lines run as a normal sudo-capable user; `#`-prefixed notes are comments.
@@ -26,29 +27,33 @@ same origin, so the "api" and "admin" surfaces share **one** subdomain
 This repo is currently deployed on the Beget VPS below. Keep this section in
 sync when changing the live infrastructure.
 
-| Item | Current value |
-| ---- | ------------- |
-| VPS IP | `217.114.14.32` |
-| SSH deploy user | `deploy@217.114.14.32` |
-| SSH key | `C:\Users\1\.ssh\isvoi_beget_ed25519` |
-| Server checkout | `/opt/isvoi` |
-| Public site | `https://isvoi.ru/` and `https://www.isvoi.ru/` |
-| Directus API | `https://api.isvoi.ru/` |
-| Directus Studio | `https://api.isvoi.ru/admin/` |
+| Item                      | Current value                                                                                 |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| VPS IP                    | `217.114.14.32`                                                                               |
+| SSH deploy user           | `deploy@217.114.14.32`                                                                        |
+| SSH key                   | `C:\Users\1\.ssh\isvoi_beget_ed25519`                                                         |
+| Server checkout           | `/opt/isvoi`                                                                                  |
+| Public site               | `https://isvoi.ru/` and `https://www.isvoi.ru/`                                               |
+| Club pilot site           | `https://club.isvoi.ru/`                                                                      |
+| Directus API              | `https://api.isvoi.ru/`                                                                       |
+| Directus Studio           | `https://api.isvoi.ru/admin/`                                                                 |
 | Directus project branding | `ISVOI`, color `#1d1d1f`, logo `isvoi:site:favicon`, public favicon `isvoi:site:favicon-gold` |
-| Next.js process | PM2 app `isvoi-web` |
-| Host Node.js runtime | `24.18.0` LTS with npm `11.16.0` |
-| PM2 runtime | `pm2@7.0.1`, managed by active `pm2-deploy.service` |
-| Directus stack | `/opt/isvoi/infra/directus-beget` |
-| Directus container | `directus-beget-directus-1` |
-| Directus image | `directus/directus:11.17.4` |
-| PostgreSQL container | `directus-beget-database-1` |
-| Nginx site config | `/etc/nginx/sites-available/isvoi` |
-| Certbot certificate | `/etc/letsencrypt/live/isvoi.ru/fullchain.pem` |
+| Next.js process           | PM2 app `isvoi-web`                                                                           |
+| Host Node.js runtime      | `24.18.0` LTS with npm `11.16.0`                                                              |
+| PM2 runtime               | `pm2@7.0.1`, managed by active `pm2-deploy.service`                                           |
+| Directus stack            | `/opt/isvoi/infra/directus-beget`                                                             |
+| Directus container        | `directus-beget-directus-1`                                                                   |
+| Directus image            | `directus/directus:11.17.4`                                                                   |
+| PostgreSQL container      | `directus-beget-database-1`                                                                   |
+| Nginx site config         | `/etc/nginx/sites-available/isvoi`                                                            |
+| Certbot certificate       | `/etc/letsencrypt/live/isvoi.ru/fullchain.pem`                                                |
 
 Live routing notes:
 
 - `isvoi.ru` / `www.isvoi.ru` proxy to Next.js on `127.0.0.1:3000`.
+- `club.isvoi.ru` proxies to the same Next.js process on `127.0.0.1:3000`;
+  the app renders the Club landing at `/`, redirects `https://isvoi.ru/club`
+  to the subdomain, and sends non-Club subdomain paths back to `isvoi.ru`.
 - `api.isvoi.ru` proxies to Directus on `127.0.0.1:8055`.
 - `http://api.isvoi.ru/admin` redirects to `https://api.isvoi.ru/admin/`.
 - The trailing slash on `/admin/` matters because Directus Studio serves
@@ -64,7 +69,7 @@ Current production env expectations:
 ```bash
 # /opt/isvoi/infra/directus-beget/.env
 PUBLIC_URL=https://api.isvoi.ru
-CORS_ORIGIN=https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru
+CORS_ORIGIN=https://isvoi.ru,https://www.isvoi.ru,https://api.isvoi.ru,https://club.isvoi.ru
 CACHE_ENABLED=true
 CACHE_TTL=5m
 CACHE_AUTO_PURGE=true
@@ -115,11 +120,12 @@ headroom for image processing jobs.
 
 Point these records at the VPS public IP (`A` records; add `AAAA` if you have IPv6).
 
-| Record | Host                | Type | Value (example)   | Purpose                          |
-| ------ | ------------------- | ---- | ----------------- | -------------------------------- |
-| root   | `your-domain.ru`    | A    | `203.0.113.10`    | Public Next.js site              |
-| www    | `www.your-domain.ru`| A    | `203.0.113.10`    | Redirects to root (optional)     |
-| api    | `api.your-domain.ru`| A    | `203.0.113.10`    | Directus API **and** Studio admin|
+| Record | Host                  | Type | Value (example) | Purpose                           |
+| ------ | --------------------- | ---- | --------------- | --------------------------------- |
+| root   | `your-domain.ru`      | A    | `203.0.113.10`  | Public Next.js site               |
+| www    | `www.your-domain.ru`  | A    | `203.0.113.10`  | Redirects to root (optional)      |
+| api    | `api.your-domain.ru`  | A    | `203.0.113.10`  | Directus API **and** Studio admin |
+| club   | `club.your-domain.ru` | A    | `203.0.113.10`  | Club pilot site                   |
 
 There is no separate `admin` record: the Directus Studio admin UI is served at
 `https://api.your-domain.ru/admin` on the same origin as the API.
@@ -129,6 +135,7 @@ Verify propagation before issuing certificates:
 ```bash
 dig +short your-domain.ru
 dig +short api.your-domain.ru
+dig +short club.your-domain.ru
 ```
 
 ---
@@ -442,7 +449,8 @@ and wires them into your vhosts:
 ```bash
 sudo certbot --nginx \
   -d your-domain.ru -d www.your-domain.ru \
-  -d api.your-domain.ru
+  -d api.your-domain.ru \
+  -d club.your-domain.ru
 
 sudo nginx -t && sudo systemctl reload nginx
 ```
@@ -455,6 +463,10 @@ sudo certbot renew --dry-run
 
 After certs exist, make sure `PUBLIC_URL` / `CORS_ORIGIN` in
 `infra/directus-beget/.env` use the real `https://` URLs, then:
+
+For ISVOI production, include `https://club.isvoi.ru` in `CORS_ORIGIN` before
+publishing Club. The public site uses HSTS with `includeSubDomains`, so the Club
+subdomain must not be exposed without HTTPS.
 
 ```bash
 cd /var/www/vtoroy-premium-landing/infra/directus-beget

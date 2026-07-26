@@ -75,29 +75,34 @@ copy, not submission logic.
 
 Header / footer links. Self-referencing for optional dropdowns.
 
-| Field            | Type                     | Notes                                                |
-| ---------------- | ------------------------ | ---------------------------------------------------- |
-| `id`             | uuid (PK)                |                                                      |
-| `label`          | string                   | `Каталог`, `Store`, …                                |
-| `label_short`    | string                   | Optional compact/mobile label.                       |
-| `aria_label`     | string                   | Optional accessibility label.                        |
-| `link_type`      | enum                     | `page` / `section` / `external` / `custom`.          |
-| `page`           | M2O → `site_pages`       | Preferred for managed pages.                         |
-| `section_anchor` | string                   | Anchor without `#`, e.g. `final`.                    |
-| `custom_url`     | string                   | Manual URL, e.g. `/catalog` or `/store#diagnostics`. |
-| `url`            | string                   | Legacy fallback URL.                                 |
-| `location`       | string (enum)            | `header` / `footer` / `mobile` / `utility`.          |
-| `item_role`      | enum                     | `link` / `cta` / `group`.                            |
-| `icon`           | string                   | Optional future UI icon key.                         |
-| `parent`         | M2O → `navigation_items` | For nested menus (optional).                         |
-| `sort`           | integer                  | Order within `location`.                             |
-| `is_active`      | boolean                  | Hide without deleting.                               |
-| `open_in_new`    | boolean                  | `target="_blank"`.                                   |
+| Field            | Type                     | Notes                                                                       |
+| ---------------- | ------------------------ | --------------------------------------------------------------------------- |
+| `id`             | uuid (PK)                |                                                                             |
+| `label`          | string                   | `Каталог`, `Store`, …                                                       |
+| `label_short`    | string                   | Optional compact/mobile label.                                              |
+| `aria_label`     | string                   | Optional accessibility label.                                               |
+| `link_type`      | enum                     | `page` / `section` / `external` / `custom`.                                 |
+| `page`           | M2O → `site_pages`       | Preferred for managed pages.                                                |
+| `section_anchor` | string                   | Anchor without `#`, e.g. `final`.                                           |
+| `custom_url`     | string                   | Manual URL, e.g. `/catalog` or `/store#diagnostics`.                        |
+| `url`            | string                   | Legacy fallback URL.                                                        |
+| `location`       | string (enum)            | `header` / `footer` / `mobile` / `utility` / `club_header` / `club_footer`. |
+| `item_role`      | enum                     | `link` / `cta` / `group`.                                                   |
+| `icon`           | string                   | Optional future UI icon key.                                                |
+| `parent`         | M2O → `navigation_items` | For nested menus (optional).                                                |
+| `sort`           | integer                  | Order within `location`.                                                    |
+| `is_active`      | boolean                  | Hide without deleting.                                                      |
+| `open_in_new`    | boolean                  | `target="_blank"`.                                                          |
 
 Recommended header: `Каталог` → `/catalog`, `Store` → `/store`,
 `Passport` → `/passport`, `Trade` → `/trade`, `Club` → `/club`, with the CTA
 controlled by `site_settings.header_cta_*`. Footer URLs should be absolute
 (`/store#diagnostics`, `/#final`) rather than route-local anchors (`#final`).
+
+For `club.isvoi.ru`, use `club_header` / `club_footer`. These items are mapped
+to the regular header/footer chrome only on the Club subdomain. Keep Club out of
+the main header until the pilot economics, rules and legal documents are
+approved.
 
 ## `site_pages`
 
@@ -183,6 +188,23 @@ Reusable Q&A, attachable to any page (e.g. Passport, Trade).
 | `sort`      | integer            |                                             |
 | `is_active` | boolean            |                                             |
 
+## Club pilot collections
+
+The Club landing keeps `site_pages.slug = club` and the `club_hero` / `faq`
+page sections for editorial page copy, but commercial Club data lives in
+structured collections generated by `npm run directus:setup:club`.
+
+| Collection           | Purpose                                                                 |
+| -------------------- | ----------------------------------------------------------------------- |
+| `club_page_settings` | Singleton labels, disclaimers, form copy, empty states and CTA text.    |
+| `club_plans`         | Base/Care/Flex plan descriptions. `is_future=true` means waitlist-only. |
+| `club_offers`        | Product-linked Club offer rows, plan, term and optional monthly price.  |
+| `club_rule_items`    | Normal wear, damage, return, buyout and data/Apple ID rules.            |
+
+Lead intake extends `leads` with `club_offer`, `club_plan`,
+`club_term_months` and `club_budget_text`; `kind = club` remains the main
+manager-facing signal.
+
 ## `cta_links` (optional, reusable buttons)
 
 Use only if the same CTA repeats across many sections and should be edited once.
@@ -209,7 +231,7 @@ Templates are fixed in code; this is the canonical mapping editors work within.
 | `catalog`  | `catalog`  | `catalog_page_live` (`catalog.grid`; SEO, hero copy, filter/sort labels, empty state and CTA are page-managed; device cards are data-driven from `devices`) |
 | `store`    | `store`    | `store_hero`, `store_offer`, `store_location`, `final_cta`                                                                                                  |
 | `trade`    | `trade`    | `trade_hero`, `trade_calculator_intro`, `trade_steps`, `faq`, `final_cta`                                                                                   |
-| `club`     | `club`     | `club_hero`, `club_levels`, `club_rating`, `faq`, `final_cta`                                                                                               |
+| `club`     | `club`     | `club_hero`, structured sections from `club_offers` / `club_plans` / `club_rule_items`, `faq`, `club-request` lead form                                     |
 | `passport` | `passport` | `passport_hero`, `passport_explainer`, `passport_disclaimer`, `faq`                                                                                         |
 | `product`  | `product`  | shared copy from `device_page_settings`; per-device data from `devices`                                                                                     |
 

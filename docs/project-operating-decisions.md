@@ -155,6 +155,7 @@ npm run web:verify
 ## Production Baseline
 
 - Public site: `https://isvoi.ru/`
+- Club pilot site: `https://club.isvoi.ru/`
 - Directus API: `https://api.isvoi.ru/`
 - Directus Studio: `https://api.isvoi.ru/admin/`
 - Beget host: `deploy@217.114.14.32`
@@ -177,6 +178,27 @@ npm run web:verify
 
 Keep the full production snapshot in
 `docs/beget-vps-launch-checklist.md` current when infrastructure changes.
+
+## Club Subdomain Pilot
+
+- Club is a separate pilot landing on `https://club.isvoi.ru/`, not a main-site
+  header item and not a personal account or online-payment product in v1.
+- `apps/web/middleware.ts` is host-aware: `https://isvoi.ru/club` redirects to
+  the subdomain, `club.isvoi.ru/` renders the internal `/club` route, and
+  non-Club paths on the subdomain redirect back to the main domain.
+- Because production HSTS uses `includeSubDomains`, do not publish
+  `club.isvoi.ru` without HTTPS. DNS must have `A club.isvoi.ru ->
+217.114.14.32`, nginx must proxy the host to `127.0.0.1:3000`, certbot must
+  cover the host, and Directus `CORS_ORIGIN` must include
+  `https://club.isvoi.ru`.
+- Directus remains the source of Club content: `site_pages.slug = club` owns SEO
+  and hero/FAQ copy; `club_page_settings`, `club_plans`, `club_offers` and
+  `club_rule_items` own the commercial Club model. Setup/audit commands:
+  `npm run directus:setup:club`, `npm run directus:audit-club` and aggregate
+  `npm run directus:audit:prod`.
+- Club leads post through `/lead-intake` with `kind=club` plus `club_offer`,
+  `club_plan`, `club_term_months` and `club_budget_text`. Telegram, legal
+  offer, scoring, recurring payments and account UX remain v2.
 
 The Node 24 migration completed on 2026-07-18 in release `d358c32`:
 
@@ -1143,7 +1165,8 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
 
 - Directus API/Studio and the public site must stay behind HTTPS.
 - Directus CORS is restricted to `https://isvoi.ru`,
-  `https://www.isvoi.ru` and `https://api.isvoi.ru`.
+  `https://www.isvoi.ru`, `https://api.isvoi.ru` and, once the Club host is
+  published, `https://club.isvoi.ru`.
 - Directus production guardrails should stay enabled:
   - `MARKETPLACE_TRUST=sandbox`
   - `FILES_MAX_UPLOAD_SIZE=100mb`

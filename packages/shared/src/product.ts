@@ -141,3 +141,76 @@ export interface ProductCatalogFacets {
   categories: ProductCategory[];
   models: DeviceModel[];
 }
+
+export type ClubPlanStatus = "draft" | "published" | "archived";
+export type ClubOfferStatus = "draft" | "approved" | "waitlist" | "paused" | "archived";
+export type ClubRuleCategory =
+  "wear" | "damage" | "return" | "buyout" | "data" | "service" | string;
+
+export interface ClubPlan {
+  id: string;
+  slug: string;
+  status: ClubPlanStatus | string;
+  name: string;
+  badge?: string;
+  summary: string;
+  minTermMonths?: number;
+  monthlyNote?: string;
+  features: string[];
+  isFeatured: boolean;
+  isFuture: boolean;
+  sort: number;
+}
+
+export interface ClubOffer {
+  id: string;
+  status: ClubOfferStatus | string;
+  offerStatus: ClubOfferStatus | string;
+  product: ProductCardData;
+  plan: ClubPlan;
+  termMonths?: number;
+  monthlyFrom?: number;
+  monthlyText: string;
+  termsText?: string;
+  badge?: string;
+  ctaLabel: string;
+  sort: number;
+}
+
+export interface ClubRuleItem {
+  id: string;
+  status: ClubPlanStatus | string;
+  category: ClubRuleCategory;
+  title: string;
+  body: string;
+  sort: number;
+}
+
+export interface ClubPageSettings {
+  heroDisclaimer: string;
+  offersEyebrow: string;
+  offersTitle: string;
+  offersEmptyTitle: string;
+  offersEmptyBody: string;
+  monthlyFallback: string;
+  offerCtaLabel: string;
+  plansEyebrow: string;
+  plansTitle: string;
+  rulesEyebrow: string;
+  rulesTitle: string;
+  formTitle: string;
+  formScenario: string;
+  formContactLabel: string;
+  formContactPlaceholder: string;
+  formBudgetLabel: string;
+  formBudgetPlaceholder: string;
+  formTermLabel: string;
+  formMessageLabel: string;
+  formMessagePlaceholder: string;
+  formSubmitLabel: string;
+  formSubmittingLabel: string;
+  formIdleNote: string;
+  formSuccessNote: string;
+  formErrorNote: string;
+  formConsentNote: string;
+}

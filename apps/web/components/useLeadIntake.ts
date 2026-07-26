@@ -33,6 +33,10 @@ type LeadPayload = {
   product_type?: "device" | "accessory";
   device?: string;
   device_id?: string;
+  club_offer?: string;
+  club_plan?: string;
+  club_term_months?: number | string;
+  club_budget_text?: string;
   message?: string;
   source?: string;
   website?: string;

@@ -616,6 +616,101 @@ export function siteChrome(
   };
 }
 
+const clubNavigationFallback: NavigationItem[] = [
+  {
+    id: "club-header-how",
+    label: "Как работает",
+    url: "/#how-it-works",
+    location: "header",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "club-header-devices",
+    label: "Устройства",
+    url: "/#devices",
+    location: "header",
+    sort: 2,
+    isActive: true,
+  },
+  {
+    id: "club-header-plans",
+    label: "Тарифы",
+    url: "/#plans",
+    location: "header",
+    sort: 3,
+    isActive: true,
+  },
+  {
+    id: "club-header-rules",
+    label: "Правила",
+    url: "/#rules",
+    location: "header",
+    sort: 4,
+    isActive: true,
+  },
+  {
+    id: "club-footer-main",
+    label: "I СВОИ",
+    url: "https://isvoi.ru/",
+    location: "footer",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "club-footer-catalog",
+    label: "Каталог",
+    url: "https://isvoi.ru/catalog",
+    location: "footer",
+    parent: "club-footer-main",
+    sort: 1,
+    isActive: true,
+  },
+  {
+    id: "club-footer-trade",
+    label: "Trade",
+    url: "https://isvoi.ru/trade",
+    location: "footer",
+    parent: "club-footer-main",
+    sort: 2,
+    isActive: true,
+  },
+];
+
+function clubNavigation(items: NavigationItem[]): NavigationItem[] {
+  const scoped = items
+    .filter((item) => item.location === "club_header" || item.location === "club_footer")
+    .map((item) => ({
+      ...item,
+      url: normalizeSiteUrl(item.url),
+      location: item.location === "club_header" ? ("header" as const) : ("footer" as const),
+      parent: item.parent || undefined,
+    }));
+
+  return scoped.length > 0 ? scoped : clubNavigationFallback;
+}
+
+export function clubChrome(
+  settings: SiteSettings | null,
+  navigation: NavigationItem[],
+): SiteChrome {
+  const chrome = siteChrome(settings, navigation);
+
+  return {
+    settings: {
+      ...chrome.settings,
+      brandName: "I СВОИ Club",
+      logoHref: "/",
+      headerCtaLabel: "Получить расчёт Club",
+      headerCtaUrl: "#club-request",
+      footerBrandText:
+        "Club — пилотная модель владения техникой по фиксированному ежемесячному сценарию: продлить, сменить, выкупить или вернуть.",
+      footerNote: "Club — аренда/подписка. Устройство остаётся собственностью I СВОИ до выкупа.",
+    },
+    navigation: clubNavigation(navigation),
+  };
+}
+
 export function isMarketingSlug(slug: string): slug is MarketingSlug {
   return marketingSlugs.has(slug as MarketingSlug);
 }

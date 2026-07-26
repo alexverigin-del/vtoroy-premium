@@ -13,7 +13,6 @@ const staticRoutes = [
   "/store",
   "/passport",
   "/trade",
-  "/club",
   "/blog",
 ] as const;
 const managedInfoRoutes = [

@@ -352,7 +352,10 @@ type DirectusGetOptions = {
   tags?: string[];
 };
 
-async function directusGet<T>(path: string, options: DirectusGetOptions = {}): Promise<T | null> {
+export async function directusGet<T>(
+  path: string,
+  options: DirectusGetOptions = {},
+): Promise<T | null> {
   if (!directusConfig.url) return null;
   const headers: Record<string, string> = {};
   if (directusConfig.token) {

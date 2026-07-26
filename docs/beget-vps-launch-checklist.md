@@ -502,6 +502,23 @@ npm run directus:audit-club
 npm run directus:audit:prod
 ```
 
+After applying any setup generator directly to PostgreSQL, restart Directus
+before rebuilding Next.js so its schema and permission caches match the
+database:
+
+```bash
+cd /opt/isvoi/infra/directus-beget
+docker compose restart directus
+curl -fsS http://127.0.0.1:8055/server/health
+
+cd /opt/isvoi
+npm run directus:audit-api-policy
+```
+
+The API policy audit uses `.env.local` only on the server and never prints the
+token. Its Club checks must return `200`; anonymous content checks must remain
+`403`.
+
 Then in a browser:
 
 - `https://your-domain.ru/` — home renders, catalog shows seeded devices.

@@ -216,6 +216,10 @@ Keep the full production snapshot in
   `directus:audit-club` must pass with a valid offer and published, versioned,
   legally reviewed policy, pilot terms and agreement. Legal review remains a
   manual responsibility outside Directus automation.
+- Directus setup scripts update metadata and permissions through SQL. Restart
+  the Directus container after applying them, wait for `/server/health`, then
+  run `directus:audit-api-policy`; this checks the real least-privilege token
+  against current Club fields and catches a stale Directus permission cache.
 - Editor workflow: `docs/club-editor-guide.md`.
 
 The Node 24 migration completed on 2026-07-18 in release `d358c32`:

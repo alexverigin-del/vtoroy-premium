@@ -92,8 +92,8 @@ function CatalogFilters({
       className="mt-6 rounded-card border border-hairline bg-frost p-4"
       data-component="CatalogFilters"
     >
-      <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(180px,0.7fr)_minmax(180px,0.7fr)_auto]">
-        <label>
+      <div className="grid gap-3 lg:grid-cols-12">
+        <label className="lg:col-span-4">
           <span className="text-xs font-medium text-muted">Поиск</span>
           <input
             type="search"
@@ -104,7 +104,7 @@ function CatalogFilters({
           />
         </label>
 
-        <label>
+        <label className="lg:col-span-3">
           <span className="text-xs font-medium text-muted">Категория</span>
           <select
             name="category"
@@ -120,7 +120,7 @@ function CatalogFilters({
           </select>
         </label>
 
-        <label>
+        <label className="lg:col-span-3">
           <span className="text-xs font-medium text-muted">Сортировка</span>
           <select
             name="sort"
@@ -134,7 +134,7 @@ function CatalogFilters({
           </select>
         </label>
 
-        <div className="flex flex-col justify-end">
+        <div className="flex flex-col justify-end lg:col-span-2">
           <button type="submit" className={primaryPillCtaClass}>
             Показать
           </button>

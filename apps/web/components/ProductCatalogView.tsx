@@ -220,14 +220,17 @@ function CatalogCategoryRail({
   if (tiles.length === 0) return null;
 
   return (
-    <nav className="mt-6 flex gap-3 overflow-x-auto pb-2" aria-label="category">
+    <nav
+      className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6"
+      aria-label="category"
+    >
       <Link
         href={`${basePath}${queryString(filters, { category: undefined, page: undefined })}`}
         aria-current={!filters.category ? "page" : undefined}
         className={
           !filters.category
-            ? "flex min-h-24 w-40 shrink-0 flex-col justify-between rounded-card border border-action-blue bg-action-blue p-4 text-sm font-semibold text-white"
-            : "flex min-h-24 w-40 shrink-0 flex-col justify-between rounded-card border border-hairline bg-frost p-4 text-sm font-semibold text-carbon transition hover:border-action-blue hover:bg-white"
+            ? "inline-flex min-h-11 items-center justify-between gap-2 rounded-pill border border-action-blue bg-action-blue px-4 py-3 text-sm font-semibold text-white"
+            : "inline-flex min-h-11 items-center justify-between gap-2 rounded-pill border border-hairline bg-frost px-4 py-3 text-sm font-semibold text-carbon transition hover:border-action-blue hover:bg-white"
         }
       >
         <span>Все категории</span>
@@ -245,8 +248,8 @@ function CatalogCategoryRail({
             aria-current={isActive ? "page" : undefined}
             className={
               isActive
-                ? "flex min-h-24 w-40 shrink-0 flex-col justify-between rounded-card border border-action-blue bg-action-blue p-4 text-sm font-semibold text-white"
-                : "flex min-h-24 w-40 shrink-0 flex-col justify-between rounded-card border border-hairline bg-frost p-4 text-sm font-semibold text-carbon transition hover:border-action-blue hover:bg-white"
+                ? "inline-flex min-h-11 items-center justify-between gap-2 rounded-pill border border-action-blue bg-action-blue px-4 py-3 text-sm font-semibold text-white"
+                : "inline-flex min-h-11 items-center justify-between gap-2 rounded-pill border border-hairline bg-frost px-4 py-3 text-sm font-semibold text-carbon transition hover:border-action-blue hover:bg-white"
             }
           >
             <span>{category.name}</span>

@@ -34,6 +34,14 @@ function joinUrl(baseUrl, path) {
   return `${baseUrl}${cleanPath}`;
 }
 
+function parseSmokeRoutes(value) {
+  return String(value || "")
+    .split(",")
+    .map((route) => route.trim())
+    .filter(Boolean)
+    .map((route) => (route.startsWith("/") ? route : `/${route}`));
+}
+
 function shouldRequireDirectusAssets(baseUrl) {
   if (process.env.SMOKE_REQUIRE_DIRECTUS_ASSETS === "false") return false;
   return !/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?$/i.test(baseUrl);
@@ -190,7 +198,11 @@ async function assertSeoAndStructuredData(page, label, expectedTypes) {
 
   assert(report.title.trim().length > 0, `${label}: expected document title`);
   assert(report.description.trim().length > 0, `${label}: expected meta description`);
-  assert(report.canonical.startsWith("https://isvoi.ru"), `${label}: expected canonical URL`);
+  const expectedCanonicalOrigin = new URL(page.url()).origin;
+  assert(
+    report.canonical.startsWith(expectedCanonicalOrigin),
+    `${label}: expected canonical URL to start with ${expectedCanonicalOrigin}, got ${report.canonical}`,
+  );
   assert(report.ogTitle.trim().length > 0, `${label}: expected og:title`);
   assert(report.ogDescription.trim().length > 0, `${label}: expected og:description`);
   assert(report.ogImage.trim().length > 0, `${label}: expected og:image`);
@@ -474,6 +486,7 @@ async function smokeBlogArticle(page, baseUrl, articlePath, requireDirectusAsset
 
 async function main() {
   const baseUrl = normalizeBaseUrl(process.env.SMOKE_BASE_URL);
+  const routes = parseSmokeRoutes(process.env.SMOKE_ROUTES);
   const devicePath = process.env.SMOKE_DEVICE_PATH || DEFAULT_DEVICE_PATH;
   const blogArticlePath = process.env.SMOKE_BLOG_ARTICLE_PATH || DEFAULT_BLOG_ARTICLE_PATH;
   const requireDirectusAssets = shouldRequireDirectusAssets(baseUrl);
@@ -482,15 +495,33 @@ async function main() {
 
   try {
     const results = [];
-    results.push(await smokeHome(page, baseUrl));
-    results.push(await smokeCatalog(page, baseUrl, requireDirectusAssets));
-    results.push(await smokeStore(page, baseUrl, requireDirectusAssets));
-    for (const route of MARKETING_ROUTES.filter((route) => route !== "/store")) {
-      results.push(await smokeMarketing(page, baseUrl, route));
+    if (routes.length > 0) {
+      for (const route of routes) {
+        if (route === "/") {
+          results.push(await smokeHome(page, baseUrl));
+        } else if (route === "/catalog") {
+          results.push(await smokeCatalog(page, baseUrl, requireDirectusAssets));
+        } else if (route === "/store") {
+          results.push(await smokeStore(page, baseUrl, requireDirectusAssets));
+        } else if (route.startsWith("/product/")) {
+          results.push(await smokeDevice(page, baseUrl, route, requireDirectusAssets));
+        } else if (route.startsWith("/blog/") && !route.startsWith("/blog/category/")) {
+          results.push(await smokeBlogArticle(page, baseUrl, route, requireDirectusAssets));
+        } else {
+          results.push(await smokeMarketing(page, baseUrl, route));
+        }
+      }
+    } else {
+      results.push(await smokeHome(page, baseUrl));
+      results.push(await smokeCatalog(page, baseUrl, requireDirectusAssets));
+      results.push(await smokeStore(page, baseUrl, requireDirectusAssets));
+      for (const route of MARKETING_ROUTES.filter((route) => route !== "/store")) {
+        results.push(await smokeMarketing(page, baseUrl, route));
+      }
+      results.push(await smokeBlogArticle(page, baseUrl, blogArticlePath, requireDirectusAssets));
+      results.push(await smokeDevice(page, baseUrl, devicePath, requireDirectusAssets));
+      results.push(await smokeLegacyDeviceRedirect(baseUrl, devicePath));
     }
-    results.push(await smokeBlogArticle(page, baseUrl, blogArticlePath, requireDirectusAssets));
-    results.push(await smokeDevice(page, baseUrl, devicePath, requireDirectusAssets));
-    results.push(await smokeLegacyDeviceRedirect(baseUrl, devicePath));
 
     for (const result of results) {
       console.log(`ok ${result.route} ${JSON.stringify(result)}`);

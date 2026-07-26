@@ -185,14 +185,13 @@ Keep the full production snapshot in
   header item and not a personal account or online-payment product in v1.
 - `apps/web/middleware.ts` is host-aware: `club.isvoi.ru/` renders the internal
   `/club` route, and non-Club paths on the subdomain redirect back to the main
-  domain. `https://isvoi.ru/club` redirects to the subdomain only when the
-  production env flag `CLUB_SUBDOMAIN_ENABLED=1` is set after DNS/nginx/certbot
-  are ready.
-- Because production HSTS uses `includeSubDomains`, do not publish
-  `club.isvoi.ru` without HTTPS. DNS must have `A club.isvoi.ru ->
-217.114.14.32`, nginx must proxy the host to `127.0.0.1:3000`, certbot must
-  cover the host, and Directus `CORS_ORIGIN` must include
-  `https://club.isvoi.ru`.
+  domain. Since 2026-07-26, production has `CLUB_SUBDOMAIN_ENABLED=1`, so
+  `https://isvoi.ru/club` redirects to `https://club.isvoi.ru/`.
+- Because production HSTS uses `includeSubDomains`, `club.isvoi.ru` must always
+  stay covered by HTTPS. Current production state: DNS `A club.isvoi.ru ->
+217.114.14.32`, nginx proxies the host to `127.0.0.1:3000`, the
+  `/etc/letsencrypt/live/isvoi.ru/` certificate covers `club.isvoi.ru`, and
+  Directus `CORS_ORIGIN` includes `https://club.isvoi.ru`.
 - Directus remains the source of Club content: `site_pages.slug = club` owns SEO
   and hero/FAQ copy; `club_page_settings`, `club_plans`, `club_offers` and
   `club_rule_items` own the commercial Club model. Setup/audit commands:

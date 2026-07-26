@@ -53,9 +53,8 @@ Live routing notes:
 - `isvoi.ru` / `www.isvoi.ru` proxy to Next.js on `127.0.0.1:3000`.
 - `club.isvoi.ru` proxies to the same Next.js process on `127.0.0.1:3000`;
   the app renders the Club landing at `/` and sends non-Club subdomain paths
-  back to `isvoi.ru`. Set `CLUB_SUBDOMAIN_ENABLED=1` in the Next.js env only
-  after DNS, nginx and HTTPS are ready; until then `https://isvoi.ru/club`
-  remains the safe fallback.
+  back to `isvoi.ru`. Production has `CLUB_SUBDOMAIN_ENABLED=1`, so
+  `https://isvoi.ru/club` redirects to `https://club.isvoi.ru/`.
 - `api.isvoi.ru` proxies to Directus on `127.0.0.1:8055`.
 - `http://api.isvoi.ru/admin` redirects to `https://api.isvoi.ru/admin/`.
 - The trailing slash on `/admin/` matters because Directus Studio serves
@@ -81,7 +80,7 @@ CACHE_NAMESPACE=isvoi-directus-
 DIRECTUS_URL=http://127.0.0.1:8055
 NEXT_PUBLIC_DIRECTUS_URL=https://api.isvoi.ru
 DIRECTUS_TOKEN=<public-read static token, server-only>
-CLUB_SUBDOMAIN_ENABLED=0
+CLUB_SUBDOMAIN_ENABLED=1
 ```
 
 Useful production checks:

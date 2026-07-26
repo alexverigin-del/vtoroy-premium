@@ -57,8 +57,8 @@ Canonical routes:
 - `/store`
 - `/passport`
 - `/trade`
-- `/club` (internal route; `https://isvoi.ru/club` redirects to
-  `https://club.isvoi.ru/`)
+- `/club` (main-domain fallback until `CLUB_SUBDOMAIN_ENABLED=1`; then
+  `https://isvoi.ru/club` redirects to `https://club.isvoi.ru/`)
 - `/device/[slug]`
 
 Compatibility redirects are defined in `apps/web/next.config.mjs`:
@@ -70,7 +70,8 @@ Compatibility redirects are defined in `apps/web/next.config.mjs`:
 Club routing:
 
 - `https://club.isvoi.ru/` is the public canonical Club landing.
-- `https://isvoi.ru/club` returns a permanent redirect to the Club subdomain.
+- `https://isvoi.ru/club` returns a permanent redirect to the Club subdomain
+  only after `CLUB_SUBDOMAIN_ENABLED=1` is set in production.
 - Non-Club paths on `club.isvoi.ru` redirect back to `https://isvoi.ru/...` to
   avoid SEO duplicates.
 

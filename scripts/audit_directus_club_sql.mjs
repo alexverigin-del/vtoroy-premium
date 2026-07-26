@@ -8,7 +8,7 @@ process.stdout.write(String.raw`
 CREATE TEMP TABLE IF NOT EXISTS isvoi_audit_results (
   check_name text PRIMARY KEY,
   value text NOT NULL
-) ON COMMIT DROP;
+);
 
 WITH expected_tables(table_name) AS (
   VALUES

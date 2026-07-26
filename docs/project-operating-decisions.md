@@ -183,9 +183,11 @@ Keep the full production snapshot in
 
 - Club is a separate pilot landing on `https://club.isvoi.ru/`, not a main-site
   header item and not a personal account or online-payment product in v1.
-- `apps/web/middleware.ts` is host-aware: `https://isvoi.ru/club` redirects to
-  the subdomain, `club.isvoi.ru/` renders the internal `/club` route, and
-  non-Club paths on the subdomain redirect back to the main domain.
+- `apps/web/middleware.ts` is host-aware: `club.isvoi.ru/` renders the internal
+  `/club` route, and non-Club paths on the subdomain redirect back to the main
+  domain. `https://isvoi.ru/club` redirects to the subdomain only when the
+  production env flag `CLUB_SUBDOMAIN_ENABLED=1` is set after DNS/nginx/certbot
+  are ready.
 - Because production HSTS uses `includeSubDomains`, do not publish
   `club.isvoi.ru` without HTTPS. DNS must have `A club.isvoi.ru ->
 217.114.14.32`, nginx must proxy the host to `127.0.0.1:3000`, certbot must

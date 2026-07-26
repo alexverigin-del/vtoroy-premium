@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const CLUB_HOST = "club.isvoi.ru";
 const MAIN_HOST = "isvoi.ru";
 const WWW_HOST = "www.isvoi.ru";
+const CLUB_SUBDOMAIN_ENABLED = process.env.CLUB_SUBDOMAIN_ENABLED === "1";
 
 const PASS_THROUGH_PREFIXES = ["/_next", "/assets", "/lead-intake"];
 const PASS_THROUGH_FILES = new Set([
@@ -58,6 +59,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (
+    CLUB_SUBDOMAIN_ENABLED &&
     (host === MAIN_HOST || host === WWW_HOST) &&
     (pathname === "/club" || pathname === "/club/")
   ) {

@@ -78,125 +78,158 @@ function CatalogFilters({
   const categories = facets.categories.filter(
     (category) => !type || category.catalogSection === type,
   );
+  const advancedFilterCount = [
+    filters.brand,
+    filters.condition,
+    filters.compatible,
+    filters.stock,
+  ].filter(Boolean).length;
+  const hasAdvancedFilters = advancedFilterCount > 0;
 
   return (
     <form
       action={sectionHref(type)}
-      className="mt-6 grid gap-3 rounded-card border border-hairline bg-frost p-4 md:grid-cols-2 xl:grid-cols-4"
+      className="mt-6 rounded-card border border-hairline bg-frost p-4"
       data-component="CatalogFilters"
     >
-      <label className="xl:col-span-2">
-        <span className="text-xs font-medium text-muted">Поиск</span>
-        <input
-          type="search"
-          name="q"
-          defaultValue={filters.q}
-          placeholder="Модель, бренд или аксессуар"
-          className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-        />
-      </label>
-
-      <label>
-        <span className="text-xs font-medium text-muted">Категория</span>
-        <select
-          name="category"
-          defaultValue={filters.category || ""}
-          className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-        >
-          <option value="">Все категории</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.slug}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label>
-        <span className="text-xs font-medium text-muted">Бренд</span>
-        <select
-          name="brand"
-          defaultValue={filters.brand || ""}
-          className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-        >
-          <option value="">Все бренды</option>
-          {facets.brands.map((brand) => (
-            <option key={brand.id} value={brand.slug}>
-              {brand.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {type !== "accessory" ? (
+      <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(180px,0.7fr)_minmax(180px,0.7fr)_auto]">
         <label>
-          <span className="text-xs font-medium text-muted">Состояние</span>
-          <select
-            name="condition"
-            defaultValue={filters.condition || ""}
+          <span className="text-xs font-medium text-muted">Поиск</span>
+          <input
+            type="search"
+            name="q"
+            defaultValue={filters.q}
+            placeholder="Модель, бренд или аксессуар"
             className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-          >
-            <option value="">Новое и б/у</option>
-            <option value="new">Новое</option>
-            <option value="used">Б/у</option>
-          </select>
+          />
         </label>
-      ) : null}
 
-      {type === "accessory" ? (
         <label>
-          <span className="text-xs font-medium text-muted">Совместимость</span>
+          <span className="text-xs font-medium text-muted">Категория</span>
           <select
-            name="compatible"
-            defaultValue={filters.compatible || ""}
+            name="category"
+            defaultValue={filters.category || ""}
             className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
           >
-            <option value="">Любая модель</option>
-            {facets.models.map((model) => (
-              <option key={model.id} value={model.slug}>
-                {model.brand.name} {model.name}
+            <option value="">Все категории</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.slug}>
+                {category.name}
               </option>
             ))}
           </select>
         </label>
-      ) : null}
 
-      <label>
-        <span className="text-xs font-medium text-muted">Наличие</span>
-        <select
-          name="stock"
-          defaultValue={filters.stock || ""}
-          className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-        >
-          <option value="">Все статусы</option>
-          <option value="available">В наличии</option>
-          <option value="reserved">Бронь</option>
-          <option value="sold">Нет в наличии</option>
-        </select>
-      </label>
+        <label>
+          <span className="text-xs font-medium text-muted">Сортировка</span>
+          <select
+            name="sort"
+            defaultValue={filters.sort || "default"}
+            className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
+          >
+            <option value="default">По рекомендации</option>
+            <option value="updated-desc">Сначала обновлённые</option>
+            <option value="price-asc">Цена: ниже</option>
+            <option value="price-desc">Цена: выше</option>
+          </select>
+        </label>
 
-      <label>
-        <span className="text-xs font-medium text-muted">Сортировка</span>
-        <select
-          name="sort"
-          defaultValue={filters.sort || "default"}
-          className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-        >
-          <option value="default">По рекомендации</option>
-          <option value="updated-desc">Сначала обновлённые</option>
-          <option value="price-asc">Цена: ниже</option>
-          <option value="price-desc">Цена: выше</option>
-        </select>
-      </label>
-
-      <div className="flex items-end gap-2 xl:col-span-2 xl:justify-end">
-        <Link href={sectionHref(type)} className={secondaryPillCtaClass}>
-          Сбросить
-        </Link>
-        <button type="submit" className={primaryPillCtaClass}>
-          Показать
-        </button>
+        <div className="flex flex-col justify-end">
+          <button type="submit" className={primaryPillCtaClass}>
+            Показать
+          </button>
+        </div>
       </div>
+
+      <details className="group mt-3" open={hasAdvancedFilters}>
+        <summary className="focus-ring flex min-h-11 cursor-pointer list-none items-center justify-between rounded-card border border-hairline bg-white px-4 text-sm font-medium text-carbon marker:hidden">
+          <span>
+            Расширенные фильтры
+            {advancedFilterCount > 0 ? (
+              <span className="ml-2 rounded-pill bg-frost px-2 py-0.5 text-xs text-muted">
+                {advancedFilterCount}
+              </span>
+            ) : null}
+          </span>
+          <span className="text-muted transition group-open:rotate-45" aria-hidden="true">
+            +
+          </span>
+        </summary>
+
+        <div className="mt-3 grid gap-3 border-t border-hairline pt-3 md:grid-cols-2 xl:grid-cols-4">
+          <label>
+            <span className="text-xs font-medium text-muted">Бренд</span>
+            <select
+              name="brand"
+              defaultValue={filters.brand || ""}
+              className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
+            >
+              <option value="">Все бренды</option>
+              {facets.brands.map((brand) => (
+                <option key={brand.id} value={brand.slug}>
+                  {brand.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {type !== "accessory" ? (
+            <label>
+              <span className="text-xs font-medium text-muted">Состояние</span>
+              <select
+                name="condition"
+                defaultValue={filters.condition || ""}
+                className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
+              >
+                <option value="">Новое и б/у</option>
+                <option value="new">Новое</option>
+                <option value="used">Б/у</option>
+              </select>
+            </label>
+          ) : null}
+
+          {type === "accessory" ? (
+            <label>
+              <span className="text-xs font-medium text-muted">Совместимость</span>
+              <select
+                name="compatible"
+                defaultValue={filters.compatible || ""}
+                className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
+              >
+                <option value="">Любая модель</option>
+                {facets.models.map((model) => (
+                  <option key={model.id} value={model.slug}>
+                    {model.brand.name} {model.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          <label>
+            <span className="text-xs font-medium text-muted">Наличие</span>
+            <select
+              name="stock"
+              defaultValue={filters.stock || ""}
+              className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
+            >
+              <option value="">Все статусы</option>
+              <option value="available">В наличии</option>
+              <option value="reserved">Бронь</option>
+              <option value="sold">Нет в наличии</option>
+            </select>
+          </label>
+
+          <div className="flex items-end gap-2 md:col-span-2 xl:col-span-1 xl:justify-end">
+            <Link href={sectionHref(type)} className={secondaryPillCtaClass}>
+              Сбросить
+            </Link>
+            <button type="submit" className={primaryPillCtaClass}>
+              Применить
+            </button>
+          </div>
+        </div>
+      </details>
     </form>
   );
 }

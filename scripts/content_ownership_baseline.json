@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-26T15:00:53.597Z",
+  "updatedAt": "2026-07-26T16:45:20.463Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -424,6 +424,27 @@
       "id": "ac43c2eaa3c91bf2"
     },
     {
+      "file": "apps/web/app/club/legal/[slug]/page.tsx",
+      "kind": "string",
+      "line": 26,
+      "text": "${document.title} — I СВОИ Club",
+      "id": "251f1d97c59ada76"
+    },
+    {
+      "file": "apps/web/app/club/legal/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 47,
+      "text": "I СВОИ Club",
+      "id": "2fed6b1c59c83d82"
+    },
+    {
+      "file": "apps/web/app/club/legal/[slug]/page.tsx",
+      "kind": "jsx-text",
+      "line": 69,
+      "text": "Открыть файл",
+      "id": "7ac90f5054744c64"
+    },
+    {
       "file": "apps/web/app/layout.tsx",
       "kind": "string",
       "line": 21,
@@ -433,77 +454,77 @@
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 90,
+      "line": 100,
       "text": "оцен",
       "id": "3aee8ce809c75918"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 90,
+      "line": 100,
       "text": "передать",
       "id": "816337509d1a120e"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 93,
+      "line": 103,
       "text": "обнов",
       "id": "d866c2dd2ac447b7"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 95,
+      "line": 105,
       "text": "забронировать",
       "id": "6ca0d0d83d4c6c99"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 96,
+      "line": 106,
       "text": "купить",
       "id": "8c50a1d706495336"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 97,
+      "line": 107,
       "text": "брон",
       "id": "fdd7f0490ce8bfe2"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 98,
+      "line": 108,
       "text": "лист ожидания",
       "id": "ae2137aef391f4f1"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 101,
+      "line": 111,
       "text": "альтернатив",
       "id": "fd52bd9c562e2aad"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 101,
+      "line": 111,
       "text": "похож",
       "id": "f3507795ec20dfa5"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 265,
+      "line": 278,
       "text": "Сценарий: ${lead.scenario}",
       "id": "3df88cc5a51627d8"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 266,
+      "line": 279,
       "text": "Комментарий: ${lead.message}",
       "id": "7127f850040dee31"
     },
@@ -1056,338 +1077,289 @@
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 15,
-      "text": "Продлить",
-      "id": "f3b3a2831386cae7"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 16,
-      "text": "Оставить устройство ещё на срок, если оно по-прежнему закрывает задачу.",
-      "id": "9fe7d0536e6d04f5"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
       "line": 19,
-      "text": "Сменить",
-      "id": "1f0c77d933e12b69"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 20,
-      "text": "Перейти на другую модель после проверки и согласования новых условий.",
-      "id": "e98a8bf5b557ba0a"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 23,
-      "text": "Выкупить",
-      "id": "8f62ac23e9fc2de7"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 24,
-      "text": "Зафиксировать остаточную стоимость и оставить устройство себе.",
-      "id": "4e56f3fc855501e6"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 27,
-      "text": "Вернуть",
-      "id": "d21af9a2103c447c"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 28,
-      "text": "Закрыть цикл по правилам нормального износа и проверки состояния.",
-      "id": "1bd6a4ea19b710a3"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 37,
       "text": "Срок по заявке",
       "id": "78239fab3369a20c"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 38,
+      "line": 20,
       "text": "от ${offer.termMonths} мес.",
       "id": "590ace57f1c54dc2"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 52,
-      "text": "I СВОИ Club",
-      "id": "3d49580df40e8de2"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 54,
-      "text": "Своя, пока нужна.",
-      "id": "2a180b3af217021f"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 58,
-      "text": "Устройство по фиксированной ежемесячной модели. В конце срока можно продолжить, сменить, выкупить или вернуть.",
-      "id": "0cb3c5d4889e072e"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 65,
-      "text": "Как работает",
-      "id": "971b1e86fef40e03"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 74,
-      "text": "Passport цикла",
-      "id": "14a40940ccf62768"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 76,
-      "text": "Возврат / смена / выкуп",
-      "id": "39989f3de9010803"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 76,
-      "text": "Передача устройства",
-      "id": "62942d46a58e7408"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 76,
-      "text": "Период пользования",
-      "id": "f12f454084350b96"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 87,
-      "text": "Club стартует как пилот с ручным расчётом: без публичной оплаты, скоринга и личного кабинета в первом релизе.",
-      "id": "7cc0432f7c0916d7"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 135,
+      "line": 116,
       "text": "Фото готовится",
       "id": "c4e8a062a1af8132"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "string",
-      "line": 188,
-      "text": "I СВОИ Club · как работает",
-      "id": "4a88c40bef635227"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 189,
-      "text": "В конце срока есть четыре понятных сценария.",
-      "id": "a19038f9c1f99dc8"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 192,
-      "text": "Club не заставляет покупать устройство сразу. Сначала вы пользуетесь им в рамках согласованной модели, затем выбираете следующий шаг.",
-      "id": "126abce6b913bb2c"
+      "line": 156,
+      "text": "Начать подбор",
+      "id": "d87517935754f889"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 222,
-      "text": "I СВОИ Passport · цикл владения",
-      "id": "1613d1060e46379f"
+      "line": 256,
+      "text": "Минимальный срок",
+      "id": "e961518bee76249b"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 257,
+      "text": "от ${plan.minTermMonths} мес.",
+      "id": "685b4ff9164d3554"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 259,
+      "text": "Сопровождение",
+      "id": "9caf3e74dc40043f"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 260,
+      "text": "Ответ по сервису",
+      "id": "3106c6494c8f3dd6"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 261,
+      "text": "Диагностика",
+      "id": "cdb4af55f7b139ee"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 262,
+      "text": "Подменное устройство",
+      "id": "f22379711ae02bc7"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 263,
+      "text": "Досрочный выход",
+      "id": "30fc8813c041a902"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 264,
+      "text": "Повреждения",
+      "id": "ef16cf189d34b6db"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 223,
-      "text": "Передача и возврат фиксируются двумя проверками.",
-      "id": "d93bb2104dbdf1ee"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 226,
-      "text": "Passport помогает отделить нормальный износ от спорных повреждений: состояние фиксируется в начале Club-цикла и повторно проверяется при возврате или выкупе.",
-      "id": "a55a054cffc164bc"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 233,
-      "text": "Старт",
-      "id": "2f14d8282244766e"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 234,
-      "text": "Паспорт передачи",
-      "id": "2810a59403041261"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 235,
-      "text": "Модель, комплект, состояние корпуса, экран, батарея, важные серийные признаки.",
-      "id": "a67df1f88ab5632b"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 240,
-      "text": "Финиш",
-      "id": "04ef19357410aebe"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 241,
-      "text": "Паспорт возврата",
-      "id": "0bf13810a6fbc0e0"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 242,
-      "text": "Повторная проверка перед продлением, сменой, выкупом или закрытием цикла.",
-      "id": "124f0b63dd42be14"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 292,
+      "line": 298,
       "text": "Будущий формат, доступен как лист ожидания.",
       "id": "5eacb5403b4b8a43"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "jsx-text",
+      "line": 314,
+      "text": "Сравнение",
+      "id": "62391c0a8d05e49c"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 351,
-      "text": "I СВОИ Club · заявка",
-      "id": "44b543822992ddf6"
+      "line": 328,
+      "text": "Не заявлено",
+      "id": "f9603e26c536e0f3"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
+      "kind": "string",
+      "line": 350,
+      "text": "Нормальный износ",
+      "id": "123794a55f8231dd"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
       "line": 352,
-      "text": "Получите ручной расчёт Club под устройство и срок.",
-      "id": "78e5715af5b4913c"
+      "text": "Возврат",
+      "id": "47f063c293235fe5"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 353,
+      "text": "Выкуп",
+      "id": "aee1d89fb05449b2"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 355,
+      "text": "Платежи",
+      "id": "13cafa1dc6c4add3"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 356,
+      "text": "Потеря или кража",
+      "id": "e687cecea743f0d4"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 357,
+      "text": "Данные и Apple ID",
+      "id": "a95d719589b04f44"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 358,
+      "text": "Сервис",
+      "id": "4bbf122292d39bc0"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 355,
-      "text": "В пилоте мы считаем условия вручную: проверяем устройство, срок, тариф, комфортный ежемесячный платёж и сценарий в конце срока.",
-      "id": "bbfcde772169423d"
+      "line": 374,
+      "text": "Что считается нормальным износом",
+      "id": "fa5104e1db863e7b"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 392,
+      "text": "Условия пилота",
+      "id": "488bc3426e88dd7f"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "string",
+      "line": 465,
+      "text": "на проверке",
+      "id": "d8fca7c7ecc712b3"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "jsx-text",
+      "line": 472,
+      "text": "Открыть документ",
+      "id": "2a2750c4bec9cd06"
+    },
+    {
+      "file": "apps/web/components/ClubLandingSections.tsx",
+      "kind": "jsx-text",
+      "line": 479,
+      "text": "Условия пилота и проект договора проходят проверку. До публикации документов Club остаётся закрытым от поисковой индексации.",
+      "id": "a2a273bf7f7227fd"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "string",
-      "line": 57,
+      "line": 70,
       "text": "Club-устройство: ${selectedOffer.product.title}",
       "id": "36579832d0aef23a"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "string",
-      "line": 58,
-      "text": "Club-устройство: расчёт по заявке",
-      "id": "de9944f22e7d573a"
+      "line": 71,
+      "text": "Запрос устройства: ${deviceRequest.trim()}",
+      "id": "e44c1340b219af32"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "string",
-      "line": 59,
+      "line": 72,
       "text": "Тариф: ${selectedPlan.name}",
       "id": "3bf8fc6f5611b520"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "string",
-      "line": 60,
+      "line": 73,
       "text": "Срок: ${termMonths} мес.",
       "id": "147d1b9a569d0cd8"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "string",
-      "line": 61,
+      "line": 74,
       "text": "Комфортный платёж: ${budget.trim()}",
       "id": "5f994914bf55beda"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "jsx-text",
-      "line": 102,
+      "line": 121,
       "text": "Устройство",
       "id": "aeb218b3d8293997"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "jsx-text",
-      "line": 120,
+      "line": 128,
+      "text": "Подобрать другое устройство",
+      "id": "cd27a022e436afd4"
+    },
+    {
+      "file": "apps/web/components/ClubLeadForm.tsx",
+      "kind": "jsx-text",
+      "line": 166,
       "text": "Тариф",
       "id": "2589d53fd411ff84"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "string",
-      "line": 130,
+      "line": 176,
       "text": "— лист ожидания",
       "id": "d8e8df84910e1a17"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "jsx-text",
-      "line": 143,
+      "line": 189,
       "text": "6 месяцев",
       "id": "5abab453b11070be"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "jsx-text",
-      "line": 144,
+      "line": 190,
       "text": "12 месяцев",
       "id": "9428340d4ccc5d3c"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "jsx-text",
-      "line": 145,
+      "line": 191,
       "text": "18 месяцев",
       "id": "6736dc49b0c39fc8"
     },
     {
       "file": "apps/web/components/ClubLeadForm.tsx",
       "kind": "jsx-text",
-      "line": 146,
+      "line": 192,
       "text": "24 месяца",
       "id": "a50005abe837cd21"
+    },
+    {
+      "file": "apps/web/components/ClubLeadForm.tsx",
+      "kind": "jsx-text",
+      "line": 266,
+      "text": "Политика обработки данных",
+      "id": "371189e61f448ac7"
     },
     {
       "file": "apps/web/components/ClubPreviewSection.tsx",
@@ -4290,371 +4262,763 @@
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 169,
+      "line": 230,
       "text": "Техника",
       "id": "a66acecefd7f5bb7"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 180,
+      "line": 241,
       "text": "Бронь",
       "id": "75c88b8d8d2af272"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 181,
+      "line": 242,
       "text": "Нет в наличии",
       "id": "c8fd192aa2b84ff2"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 182,
+      "line": 243,
       "text": "В наличии",
       "id": "e3dd36c51316edf4"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 224,
+      "line": 285,
       "text": "Смотреть устройство",
       "id": "cc28a3ac7ea51e61"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 237,
+      "line": 298,
       "text": "Проверенное устройство, фиксированный платёж и четыре варианта в конце срока.",
       "id": "d3a7ab24eb189068"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 239,
+      "line": 300,
       "text": "Расчёт по конкретному устройству",
       "id": "5ca96c3f2cb44732"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 241,
+      "line": 302,
       "text": "Passport при передаче",
       "id": "f09b9c0ade1b5df3"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 242,
-      "text": "Гарантия на весь срок",
-      "id": "1bed03158bb2e52d"
+      "line": 303,
+      "text": "Стандартный сервисный маршрут",
+      "id": "d2cebf14416b2d48"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 243,
-      "text": "Возврат, продление, обновление или выкуп",
-      "id": "420e877a968b9fb1"
+      "line": 304,
+      "text": "Продление, смена, выкуп или возврат",
+      "id": "61e432cbaf052214"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 254,
+      "line": 306,
+      "text": "Стандартное сопровождение",
+      "id": "2dfcc162b74c88a2"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 307,
+      "text": "Ответ в рабочее время",
+      "id": "8db94a74d120b4e4"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 308,
+      "text": "Диагностика при передаче и возврате",
+      "id": "e695fdaed8660209"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 309,
+      "text": "Не включено",
+      "id": "1ed657b50c051906"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 310,
+      "text": "По индивидуальному расчёту",
+      "id": "b92e0051c67a5234"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 311,
+      "text": "После диагностики по правилам пилота",
+      "id": "aed7627403e0c945"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 321,
       "text": "Рекомендуемый",
       "id": "daf86984c6e712bf"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 255,
+      "line": 322,
       "text": "Владение без тревоги: приоритетная диагностика и понятный сервисный маршрут.",
       "id": "b4d41feb7dee5694"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 259,
+      "line": 325,
       "text": "Всё из Base",
       "id": "5296046746e6791e"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 260,
+      "line": 325,
       "text": "Приоритетная диагностика",
       "id": "8596464f2a4f8fc2"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 261,
-      "text": "Подменное устройство по правилам тарифа",
-      "id": "8a4a82dce90051c4"
+      "line": 325,
+      "text": "Приоритетный сервисный маршрут",
+      "id": "18de1f6a430f791e"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 272,
+      "line": 326,
+      "text": "Приоритетное сопровождение",
+      "id": "5f5586a2206664c2"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 327,
+      "text": "Приоритетный ответ в рабочее время",
+      "id": "a2d9ea97cd9f87e3"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 328,
+      "text": "Расширенная фиксация состояния",
+      "id": "2fb6b49dc7b0fd66"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 329,
+      "text": "По наличию и условиям расчёта",
+      "id": "0a38c19fa13935af"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 331,
+      "text": "Приоритетный разбор после диагностики",
+      "id": "3f02e4cb56794fb9"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 341,
       "text": "Будущий формат",
       "id": "20d8f86e14ff3296"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 273,
+      "line": 342,
       "text": "Больше свободы: ранняя смена модели и досрочный выход по известным правилам.",
       "id": "63050bf42db39772"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 275,
+      "line": 344,
       "text": "Лист ожидания",
       "id": "5c068d3191b3b88c"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 276,
+      "line": 345,
       "text": "Всё из Care",
       "id": "92eb8d94376835a0"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 276,
+      "line": 345,
       "text": "Досрочный выход по правилам пилота",
       "id": "1c7639f342bab320"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 276,
+      "line": 345,
       "text": "Ранняя смена модели",
       "id": "3db48079a861043a"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 288,
+      "line": 358,
       "text": "Passport цикла",
       "id": "d1c5463b22b8670e"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 289,
+      "line": 359,
       "text": "Состояние фиксируется при передаче и повторно при возврате или обновлении.",
       "id": "a8cc7942e177ea92"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 296,
+      "line": 366,
       "text": "Нормальный износ",
       "id": "f7aae16770975068"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 297,
+      "line": 367,
       "text": "Нормальный износ отделяется от повреждений по опубликованным правилам пилота.",
       "id": "e8ed95fc3f524842"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 304,
+      "line": 374,
       "text": "Данные и Apple ID",
       "id": "9fb9eff3e0cee3cd"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 305,
+      "line": 375,
       "text": "Перед возвратом проверяются резервная копия, удаление данных и отключение Find My.",
       "id": "470285a3c674a288"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 312,
-      "text": "Club — это аренда устройства с ежемесячной оплатой. Устройство остаётся собственностью I СВОИ до выкупа.",
-      "id": "43a2226b3250a021"
+      "line": 382,
+      "text": "I СВОИ Club · пилот в Северодвинске",
+      "id": "89f3dfbb2310a208"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 313,
-      "text": "Устройства",
-      "id": "edcbf3939facb85d"
+      "line": 383,
+      "text": "Своя, пока нужна.",
+      "id": "f736fc1deef314d5"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 314,
-      "text": "Доступно по Club",
-      "id": "d331f8c4dd071f03"
+      "line": 385,
+      "text": "Пользуйтесь проверенным устройством Apple за фиксированную плату в месяц. В конце срока продолжите, смените модель, выкупите или вернёте.",
+      "id": "af7dabcb7d4901b5"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 315,
-      "text": "Club-витрина готовится",
-      "id": "4ab7499248be2ce9"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 316,
-      "text": "Оставьте заявку — подберём устройство, срок и понятный ежемесячный платёж.",
-      "id": "07d2fc4d107c10bb"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 317,
-      "text": "Расчёт по заявке",
-      "id": "7409c63a85b16307"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 318,
-      "text": "Получить расчёт",
-      "id": "5aea7de7fa9c9460"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 319,
-      "text": "Тарифы пилота",
-      "id": "628fdf27e5890efd"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 320,
-      "text": "Base и Care запускаются первыми",
-      "id": "db916ab2436f3470"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 321,
-      "text": "Правила",
-      "id": "3400f00baeffb676"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 322,
-      "text": "Сначала условия, потом решение",
-      "id": "83b5c2b13503ce50"
-    },
-    {
-      "file": "apps/web/lib/club.ts",
-      "kind": "string",
-      "line": 323,
+      "line": 386,
       "text": "Получить расчёт Club",
       "id": "14705575a5d87c8a"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 324,
+      "line": 388,
+      "text": "Посмотреть устройства",
+      "id": "1bff697c5fbe0617"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 391,
+      "text": "Club — это аренда устройства с ежемесячной оплатой. Устройство остаётся собственностью I СВОИ до выкупа.",
+      "id": "43a2226b3250a021"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 393,
+      "text": "Состояние фиксируется дважды",
+      "id": "e12548072b18c22d"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 395,
+      "text": "Club стартует как пилот с ручным расчётом: без публичной оплаты, скоринга и личного кабинета.",
+      "id": "13f21b28f814b472"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 396,
+      "text": "I СВОИ Club · подбор",
+      "id": "abcb133abd31d530"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 397,
+      "text": "Подберём устройство под задачу и срок",
+      "id": "11b69013519d7258"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 398,
+      "text": "Начните с модели или категории",
+      "id": "e93886c9d8db90f3"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 400,
+      "text": "Укажите, что вам нужно, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.",
+      "id": "d23900c301af1ebd"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 401,
+      "text": "Расчёт по заявке",
+      "id": "7409c63a85b16307"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 402,
+      "text": "Рассчитать это устройство",
+      "id": "51580a43d3537b25"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 403,
+      "text": "I СВОИ Club · как работает",
+      "id": "1b83d159ba33aa3a"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 404,
+      "text": "В конце срока есть четыре понятных сценария.",
+      "id": "5a6e4f8a0f05caec"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 406,
+      "text": "Сначала вы пользуетесь устройством в рамках согласованной модели, затем выбираете следующий шаг.",
+      "id": "4204d5ac6129f024"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 407,
+      "text": "I СВОИ Passport · цикл владения",
+      "id": "fe15a991dd0c387c"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 408,
+      "text": "Передача и возврат фиксируются двумя проверками.",
+      "id": "a620efc9738caf8f"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 410,
+      "text": "Passport отделяет нормальный износ от спорных повреждений: состояние фиксируется в начале Club-цикла и при его завершении.",
+      "id": "3984e1e378e59a86"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 411,
+      "text": "Тарифы пилота",
+      "id": "628fdf27e5890efd"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 412,
+      "text": "Base и Care отличаются уровнем сопровождения",
+      "id": "0116429e68e39da6"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 413,
+      "text": "Правила",
+      "id": "3400f00baeffb676"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 414,
+      "text": "Сначала условия, потом решение",
+      "id": "83b5c2b13503ce50"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 415,
+      "text": "I СВОИ Club · участие",
+      "id": "ccfc07e7bbcedec4"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 416,
+      "text": "От заявки до передачи устройства",
+      "id": "c0c310968c4c69c0"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 417,
+      "text": "До оформления вы увидите устройство, расчёт, правила и проект документов.",
+      "id": "8de736c190ae672a"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 418,
+      "text": "I СВОИ Club · документы",
+      "id": "e99eeac447488fda"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 419,
+      "text": "Юридический пакет пилота",
+      "id": "649e336ef2cf7e63"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 421,
+      "text": "Документы публикуются после проверки. До этого Club доступен как закрытый от поиска пилот.",
+      "id": "36abab20096ac673"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 422,
+      "text": "I СВОИ Club · заявка",
+      "id": "ddff9ad320445da7"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 423,
+      "text": "Получите ручной расчёт под устройство и срок.",
+      "id": "f4c7ab5066d25d7e"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 425,
+      "text": "Мы проверим модель, срок, тариф, комфортный ежемесячный платёж и сценарий в конце срока.",
+      "id": "f6cebbe0ba7458f2"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 427,
       "text": "Расчёт Club",
       "id": "183f42ad86a62fbc"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 325,
+      "line": 428,
+      "text": "Категория или модель",
+      "id": "44b2e0a9df42e712"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 429,
+      "text": "Например, iPhone 15 Pro 256 GB",
+      "id": "42f9ad9b087eb8fc"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 430,
+      "text": "Укажите модель или выберите готовое предложение.",
+      "id": "28ae41f66910a33b"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 431,
       "text": "Контакт для ответа",
       "id": "cafe7645cfaf0f0b"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 326,
+      "line": 432,
       "text": "Телефон или Telegram",
       "id": "f0c742364e9d6fa4"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 327,
+      "line": 433,
       "text": "Комфортный платёж",
       "id": "82a1909f0f213255"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 328,
+      "line": 434,
       "text": "Например, до 6 000 ₽/мес",
       "id": "2cb2bf58d1b69af2"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 329,
+      "line": 435,
       "text": "Желаемый срок",
       "id": "2e9016a2a99ec12e"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 330,
+      "line": 436,
       "text": "Комментарий",
       "id": "4e6e51b9d18e349c"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 331,
+      "line": 437,
       "text": "Модель, память, цвет или сценарий обновления",
       "id": "2e22381c382d2975"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 333,
+      "line": 439,
       "text": "Отправляем...",
       "id": "2ec4d336516e5ae9"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 334,
+      "line": 440,
       "text": "Покажем устройство, срок, платёж и правила до оформления.",
       "id": "87bb16741e4762d9"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 335,
+      "line": 441,
       "text": "Заявка принята. Подготовим расчёт Club и свяжемся с вами.",
       "id": "226d0904c0ce9a98"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 336,
+      "line": 442,
       "text": "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
       "id": "64046c41dc53cc17"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 338,
-      "text": "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке Club.",
-      "id": "412223056a5ee9db"
+      "line": 444,
+      "text": "Согласие относится только к обработке заявки Club и не означает заключение договора.",
+      "id": "b4a156e7c7a68d4d"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
-      "line": 369,
+      "line": 445,
+      "text": "Я согласен на обработку персональных данных для ответа по заявке.",
+      "id": "93fd94debc92f202"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 457,
+      "text": "Продлить",
+      "id": "9bb1d445a210051c"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 458,
+      "text": "Оставить устройство ещё на срок после согласования условий.",
+      "id": "d8c6b40f8b3ab4dd"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 467,
+      "text": "Сменить",
+      "id": "4c25c145e22e6792"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 468,
+      "text": "Перейти на другую модель после проверки и нового расчёта.",
+      "id": "ef39918a4796b955"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 477,
+      "text": "Выкупить",
+      "id": "3ec88ba9a11855e0"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 478,
+      "text": "Оставить устройство себе по согласованной после проверки стоимости.",
+      "id": "52aa587fd64de055"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 487,
+      "text": "Вернуть",
+      "id": "9b39ed11cf53f646"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 488,
+      "text": "Закрыть цикл после удаления данных и повторной диагностики.",
+      "id": "db5ee12b2b4c516b"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 496,
+      "text": "Старт",
+      "id": "17dda2c58c348238"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 497,
+      "text": "Паспорт передачи",
+      "id": "429d2ab4873a108d"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 498,
+      "text": "Модель, комплект, корпус, экран, батарея и важные серийные признаки.",
+      "id": "b28d75fe00aeecac"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 506,
+      "text": "Финиш",
+      "id": "f37c42e3b329d3fb"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 507,
+      "text": "Паспорт возврата",
+      "id": "90fd39a89cadd8ee"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 508,
+      "text": "Повторная проверка перед продлением, сменой, выкупом или возвратом.",
+      "id": "4b3479c5ca24cc82"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 517,
+      "text": "Заявка",
+      "id": "e3c926409f3373c1"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 518,
+      "text": "Укажите модель, срок и комфортный платёж.",
+      "id": "73633312ebcea5af"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 527,
+      "text": "Расчёт",
+      "id": "00484c3d4da10d02"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 528,
+      "text": "Покажем устройство, тариф, платёж и сценарии завершения.",
+      "id": "ffa3d81b405b5e7a"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 537,
+      "text": "Проверка и передача",
+      "id": "2fd7b0359aaa379a"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 538,
+      "text": "Фиксируем состояние в Passport и подписываем проверенные документы.",
+      "id": "65c6ddee3b2ba01c"
+    },
+    {
+      "file": "apps/web/lib/club.ts",
+      "kind": "string",
+      "line": 577,
       "text": "от ${formatRub(monthlyFrom)}/мес",
       "id": "192fb1412252ff5a"
     },

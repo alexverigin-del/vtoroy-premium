@@ -37,6 +37,9 @@ type LeadPayload = {
   club_plan?: string;
   club_term_months?: number | string;
   club_budget_text?: string;
+  club_device_request?: string;
+  club_consent_accepted?: boolean;
+  club_consent_version?: string;
   message?: string;
   source?: string;
   website?: string;

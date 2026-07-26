@@ -81,7 +81,12 @@ DIRECTUS_URL=http://127.0.0.1:8055
 NEXT_PUBLIC_DIRECTUS_URL=https://api.isvoi.ru
 DIRECTUS_TOKEN=<public-read static token, server-only>
 CLUB_SUBDOMAIN_ENABLED=1
+CLUB_INDEXING_ENABLED=0
 ```
+
+`CLUB_INDEXING_ENABLED=0` is the production-safe default. Club becomes
+indexable only when this environment gate is changed to `1` and the Directus
+singleton simultaneously has `publication_mode = public_index`.
 
 Useful production checks:
 
@@ -486,6 +491,15 @@ curl -fsS "https://api.your-domain.ru/items/devices?filter[status][_eq]=publishe
 
 # Public site
 curl -fsSI https://your-domain.ru/                        # HTTP/2 200
+
+# Club pilot: noindex is expected until the launch gate is explicitly opened
+curl -fsSI https://club.your-domain.ru/ | grep -i x-robots-tag
+curl -fsS https://club.your-domain.ru/robots.txt
+curl -fsS https://club.your-domain.ru/sitemap.xml
+
+cd /opt/isvoi
+npm run directus:audit-club
+npm run directus:audit:prod
 ```
 
 Then in a browser:
@@ -495,6 +509,18 @@ Then in a browser:
 - `https://api.your-domain.ru/admin` — Studio login works.
 - Submit a lead form and confirm a row appears in Directus `leads` (and a
   Telegram alert if configured).
+- Submit a Club selection request without an offer and confirm
+  `club_device_request`, plan, term, budget, consent version/time and source
+  attribution are stored in the lead.
+
+Before opening Club indexing:
+
+1. Publish at least one commercially approved offer.
+2. Publish versioned policy, pilot terms and agreement, all marked as legally
+   reviewed.
+3. Run `npm run directus:audit-club` and `npm run directus:audit:prod`.
+4. Set `publication_mode = public_index` in Directus as an administrator.
+5. Set `CLUB_INDEXING_ENABLED=1`, rebuild/restart Next.js and re-run Club smoke.
 
 ---
 

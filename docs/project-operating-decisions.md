@@ -193,13 +193,30 @@ Keep the full production snapshot in
   `/etc/letsencrypt/live/isvoi.ru/` certificate covers `club.isvoi.ru`, and
   Directus `CORS_ORIGIN` includes `https://club.isvoi.ru`.
 - Directus remains the source of Club content: `site_pages.slug = club` owns SEO
-  and hero/FAQ copy; `club_page_settings`, `club_plans`, `club_offers` and
-  `club_rule_items` own the commercial Club model. Setup/audit commands:
+  and FAQ copy; `club_page_settings` owns the hero, section and form copy;
+  `club_plans`, `club_offers`, `club_process_items`, `club_rule_items` and
+  `club_legal_documents` own the commercial, process and legal model.
+  Setup/audit commands:
   `npm run directus:setup:club`, `npm run directus:audit-club` and aggregate
   `npm run directus:audit:prod`.
-- Club leads post through `/lead-intake` with `kind=club` plus `club_offer`,
-  `club_plan`, `club_term_months` and `club_budget_text`. Telegram, legal
-  offer, scoring, recurring payments and account UX remain v2.
+- Club starts in `publication_mode = pilot_noindex`. Indexing requires both
+  `publication_mode = public_index` in Directus and
+  `CLUB_INDEXING_ENABLED=1` in the web environment. Until then the page emits
+  `noindex, nofollow`, `X-Robots-Tag`, a closed Club `robots.txt` and an empty
+  Club sitemap. The production default is `CLUB_INDEXING_ENABLED=0`.
+- The default v1 journey is selection by request. A model/category is required
+  when no published `club_offer` is selected. Real offers, when added later,
+  appear before the selection form and can either contain an approved monthly
+  amount or explicitly use manual calculation.
+- Club leads post through `/lead-intake` with `kind=club`, structured
+  `club_device_request`, optional `club_offer`/`club_plan`, term, budget,
+  consent version and server timestamp. A separate explicit consent is
+  mandatory. Telegram, scoring, recurring payments and account UX remain v2.
+- `public_index` is a release decision, not an editorial shortcut:
+  `directus:audit-club` must pass with a valid offer and published, versioned,
+  legally reviewed policy, pilot terms and agreement. Legal review remains a
+  manual responsibility outside Directus automation.
+- Editor workflow: `docs/club-editor-guide.md`.
 
 The Node 24 migration completed on 2026-07-18 in release `d358c32`:
 

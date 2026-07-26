@@ -4,6 +4,7 @@ const CLUB_HOST = "club.isvoi.ru";
 const MAIN_HOST = "isvoi.ru";
 const WWW_HOST = "www.isvoi.ru";
 const CLUB_SUBDOMAIN_ENABLED = process.env.CLUB_SUBDOMAIN_ENABLED === "1";
+const CLUB_INDEXING_ENABLED = process.env.CLUB_INDEXING_ENABLED === "1";
 
 const PASS_THROUGH_PREFIXES = ["/_next", "/assets", "/lead-intake"];
 const PASS_THROUGH_FILES = new Set([
@@ -30,21 +31,32 @@ function shouldPassThrough(pathname: string): boolean {
   );
 }
 
+function clubResponse(response: NextResponse): NextResponse {
+  if (!CLUB_INDEXING_ENABLED) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
+
 export function middleware(request: NextRequest) {
   const host = hostWithoutPort(request);
   const { pathname, search } = request.nextUrl;
 
   if (host === CLUB_HOST) {
     if (pathname === "/robots.txt") {
-      return NextResponse.rewrite(new URL("/club-robots.txt", request.url));
+      return clubResponse(NextResponse.rewrite(new URL("/club-robots.txt", request.url)));
     }
 
     if (pathname === "/sitemap.xml") {
-      return NextResponse.rewrite(new URL("/club-sitemap.xml", request.url));
+      return clubResponse(NextResponse.rewrite(new URL("/club-sitemap.xml", request.url)));
     }
 
     if (pathname === "/") {
-      return NextResponse.rewrite(new URL("/club", request.url));
+      return clubResponse(NextResponse.rewrite(new URL("/club", request.url)));
+    }
+
+    if (pathname.startsWith("/legal/")) {
+      return clubResponse(NextResponse.rewrite(new URL(`/club${pathname}${search}`, request.url)));
     }
 
     if (pathname === "/club" || pathname === "/club/") {
@@ -52,7 +64,7 @@ export function middleware(request: NextRequest) {
     }
 
     if (shouldPassThrough(pathname)) {
-      return NextResponse.next();
+      return clubResponse(NextResponse.next());
     }
 
     return NextResponse.redirect(`https://${MAIN_HOST}${pathname}${search}`, 301);

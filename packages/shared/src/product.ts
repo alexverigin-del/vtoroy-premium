@@ -144,8 +144,20 @@ export interface ProductCatalogFacets {
 
 export type ClubPlanStatus = "draft" | "published" | "archived";
 export type ClubOfferStatus = "draft" | "approved" | "waitlist" | "paused" | "archived";
+export type ClubPublicationMode = "pilot_noindex" | "public_index" | "paused";
+export type ClubProcessGroup = "scenario" | "passport" | "participation";
 export type ClubRuleCategory =
-  "wear" | "damage" | "return" | "buyout" | "data" | "service" | string;
+  | "wear"
+  | "damage"
+  | "return"
+  | "buyout"
+  | "early_exit"
+  | "payment"
+  | "loss"
+  | "data"
+  | "service"
+  | string;
+export type ClubLegalDocumentType = "privacy" | "pilot_terms" | "contract_draft" | string;
 
 export interface ClubPlan {
   id: string;
@@ -157,6 +169,12 @@ export interface ClubPlan {
   minTermMonths?: number;
   monthlyNote?: string;
   features: string[];
+  supportLevel?: string;
+  serviceResponseText?: string;
+  diagnosticsText?: string;
+  replacementText?: string;
+  earlyExitText?: string;
+  damageText?: string;
   isFeatured: boolean;
   isFuture: boolean;
   sort: number;
@@ -170,6 +188,7 @@ export interface ClubOffer {
   plan: ClubPlan;
   termMonths?: number;
   monthlyFrom?: number;
+  pricingMode: "manual" | "monthly_from" | string;
   monthlyText: string;
   termsText?: string;
   badge?: string;
@@ -186,20 +205,76 @@ export interface ClubRuleItem {
   sort: number;
 }
 
+export interface ClubProcessItem {
+  id: string;
+  status: ClubPlanStatus | string;
+  group: ClubProcessGroup | string;
+  slug: string;
+  label?: string;
+  title: string;
+  body: string;
+  sort: number;
+}
+
+export interface ClubLegalDocument {
+  id: string;
+  status: ClubPlanStatus | string;
+  documentType: ClubLegalDocumentType;
+  slug: string;
+  title: string;
+  summary: string;
+  body: string;
+  version: string;
+  effectiveDate?: string;
+  fileUrl?: string;
+  fileName?: string;
+  legalReviewed: boolean;
+  sort: number;
+}
+
 export interface ClubPageSettings {
+  publicationMode: ClubPublicationMode;
+  heroEyebrow: string;
+  heroTitle: string;
+  heroBody: string;
+  heroPrimaryLabel: string;
+  heroPrimaryUrl: string;
+  heroSecondaryLabel: string;
+  heroSecondaryUrl: string;
   heroDisclaimer: string;
+  heroPanelEyebrow: string;
+  heroPanelTitle: string;
+  heroPanelBody: string;
   offersEyebrow: string;
   offersTitle: string;
   offersEmptyTitle: string;
   offersEmptyBody: string;
   monthlyFallback: string;
   offerCtaLabel: string;
+  cycleEyebrow: string;
+  cycleTitle: string;
+  cycleBody: string;
+  passportEyebrow: string;
+  passportTitle: string;
+  passportBody: string;
   plansEyebrow: string;
   plansTitle: string;
   rulesEyebrow: string;
   rulesTitle: string;
+  participationEyebrow: string;
+  participationTitle: string;
+  participationBody: string;
+  legalEyebrow: string;
+  legalTitle: string;
+  legalBody: string;
+  finalEyebrow: string;
+  finalTitle: string;
+  finalBody: string;
   formTitle: string;
   formScenario: string;
+  formDeviceLabel: string;
+  formDevicePlaceholder: string;
+  formDeviceError: string;
   formContactLabel: string;
   formContactPlaceholder: string;
   formBudgetLabel: string;
@@ -213,4 +288,7 @@ export interface ClubPageSettings {
   formSuccessNote: string;
   formErrorNote: string;
   formConsentNote: string;
+  formConsentLabel: string;
+  consentVersion: string;
+  privacyUrl: string;
 }

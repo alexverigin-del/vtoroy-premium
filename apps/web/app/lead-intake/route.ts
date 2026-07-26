@@ -19,6 +19,9 @@ type LeadRequest = {
   club_plan?: unknown;
   club_term_months?: unknown;
   club_budget_text?: unknown;
+  club_device_request?: unknown;
+  club_consent_accepted?: unknown;
+  club_consent_version?: unknown;
   message?: unknown;
   source?: unknown;
   source_path?: unknown;
@@ -52,6 +55,9 @@ type StoredLead = {
   club_plan: string;
   club_term_months: string;
   club_budget_text: string;
+  club_device_request: string;
+  club_consent_version: string;
+  club_consent_at: string;
   scenario: string;
   message: string;
   source: string;
@@ -78,6 +84,10 @@ function text(value: unknown, maxLength: number): string {
 
 function optionalText(value: string): string | null {
   return value || null;
+}
+
+function accepted(value: unknown): boolean {
+  return value === true || value === "true" || value === "1" || value === "on";
 }
 
 function inferKind(kind: string, scenario: string): string {
@@ -244,6 +254,9 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       club_plan: optionalText(lead.club_plan),
       club_term_months: optionalText(lead.club_term_months),
       club_budget_text: optionalText(lead.club_budget_text),
+      club_device_request: optionalText(lead.club_device_request),
+      club_consent_version: optionalText(lead.club_consent_version),
+      club_consent_at: optionalText(lead.club_consent_at),
       scenario: optionalText(lead.scenario),
       message: optionalText(lead.message),
       source: lead.source,
@@ -269,6 +282,8 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       lead.club_plan ? `Club plan: ${lead.club_plan}` : "",
       lead.club_term_months ? `Club term: ${lead.club_term_months}` : "",
       lead.club_budget_text ? `Club budget: ${lead.club_budget_text}` : "",
+      lead.club_device_request ? `Club device request: ${lead.club_device_request}` : "",
+      lead.club_consent_version ? `Club consent: ${lead.club_consent_version}` : "",
       lead.source_url ? `URL: ${lead.source_url}` : "",
       lead.page_title ? `Page title: ${lead.page_title}` : "",
       lead.referrer ? `Referrer: ${lead.referrer}` : "",
@@ -331,14 +346,25 @@ export async function POST(request: NextRequest) {
   const contact = text(body.contact, 180);
   const sourcePath = text(body.source_path, 255) || text(body.source, 255) || "site";
   const sourceUrl = text(body.source_url, 800) || text(request.headers.get("referer"), 800);
+  const kind = inferKind(text(body.kind, 64), scenario);
 
   if (!contact) {
     return NextResponse.json({ ok: false, error: "contact_required" }, { status: 400 });
   }
 
+  if (kind === "club" && !accepted(body.club_consent_accepted)) {
+    return NextResponse.json({ ok: false, error: "club_consent_required" }, { status: 400 });
+  }
+
+  const clubOffer = text(body.club_offer, 255);
+  const clubDeviceRequest = text(body.club_device_request, 255);
+  if (kind === "club" && !clubOffer && !clubDeviceRequest) {
+    return NextResponse.json({ ok: false, error: "club_device_required" }, { status: 400 });
+  }
+
   const lead: StoredLead = {
     created_at: new Date().toISOString(),
-    kind: inferKind(text(body.kind, 64), scenario),
+    kind,
     status: "new",
     priority: "normal",
     contact_channel: inferContactChannel(contact),
@@ -351,10 +377,13 @@ export async function POST(request: NextRequest) {
       : "",
     device: text(body.device, 255),
     device_id: text(body.device_id, 255),
-    club_offer: text(body.club_offer, 255),
+    club_offer: clubOffer,
     club_plan: text(body.club_plan, 255),
     club_term_months: text(body.club_term_months, 32),
     club_budget_text: text(body.club_budget_text, 160),
+    club_device_request: clubDeviceRequest,
+    club_consent_version: text(body.club_consent_version, 120),
+    club_consent_at: kind === "club" ? new Date().toISOString() : "",
     scenario,
     message: text(body.message, 2000),
     source: sourcePath,

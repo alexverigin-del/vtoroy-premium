@@ -15,18 +15,25 @@ type ClubLeadFormProps = {
   settings: ClubPageSettings;
   offers: ClubOffer[];
   plans: ClubPlan[];
+  selectedOfferId?: string;
 };
 
-export function ClubLeadForm({ settings, offers, plans }: ClubLeadFormProps) {
+export function ClubLeadForm({ settings, offers, plans, selectedOfferId }: ClubLeadFormProps) {
   const [contact, setContact] = useState("");
+  const [deviceRequest, setDeviceRequest] = useState("");
   const [budget, setBudget] = useState("");
   const [message, setMessage] = useState("");
-  const [offerId, setOfferId] = useState(offers[0]?.id ?? "");
+  const [offerId, setOfferId] = useState(
+    offers.some((offer) => offer.id === selectedOfferId) ? selectedOfferId || "" : "",
+  );
   const [planId, setPlanId] = useState(
     plans.find((plan) => !plan.isFuture)?.id ?? plans[0]?.id ?? "",
   );
   const [termMonths, setTermMonths] = useState("12");
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [deviceError, setDeviceError] = useState("");
   const contactId = useId();
+  const deviceRequestId = useId();
   const offerIdInput = useId();
   const planIdInput = useId();
   const termId = useId();
@@ -47,7 +54,13 @@ export function ClubLeadForm({ settings, offers, plans }: ClubLeadFormProps) {
     const formData = new FormData(event.currentTarget);
     const website = String(formData.get("website") || "");
 
-    if (!contact.trim()) {
+    if (!selectedOffer && !deviceRequest.trim()) {
+      setDeviceError(settings.formDeviceError);
+      markError();
+      return;
+    }
+
+    if (!contact.trim() || !consentAccepted) {
       markError();
       return;
     }
@@ -55,7 +68,7 @@ export function ClubLeadForm({ settings, offers, plans }: ClubLeadFormProps) {
     const leadMessage = [
       selectedOffer
         ? `Club-устройство: ${selectedOffer.product.title}`
-        : "Club-устройство: расчёт по заявке",
+        : `Запрос устройства: ${deviceRequest.trim()}`,
       selectedPlan ? `Тариф: ${selectedPlan.name}` : "",
       termMonths ? `Срок: ${termMonths} мес.` : "",
       budget.trim() ? `Комфортный платёж: ${budget.trim()}` : "",
@@ -74,6 +87,9 @@ export function ClubLeadForm({ settings, offers, plans }: ClubLeadFormProps) {
       club_plan: selectedPlan?.id,
       club_term_months: termMonths,
       club_budget_text: budget,
+      club_device_request: deviceRequest,
+      club_consent_accepted: consentAccepted,
+      club_consent_version: settings.consentVersion,
       contact,
       message: leadMessage,
       website,
@@ -82,8 +98,11 @@ export function ClubLeadForm({ settings, offers, plans }: ClubLeadFormProps) {
     if (!submitted) return;
 
     setContact("");
+    setDeviceRequest("");
     setBudget("");
     setMessage("");
+    setConsentAccepted(false);
+    setDeviceError("");
   }
 
   return (
@@ -106,12 +125,39 @@ export function ClubLeadForm({ settings, offers, plans }: ClubLeadFormProps) {
             onChange={(event) => setOfferId(event.target.value)}
             className={leadFieldClass}
           >
+            <option value="">Подобрать другое устройство</option>
             {offers.map((offer) => (
               <option key={offer.id} value={offer.id}>
                 {offer.product.title} — {offer.monthlyText}
               </option>
             ))}
           </select>
+        </label>
+      ) : null}
+
+      {!selectedOffer ? (
+        <label className="mt-4 block text-sm" htmlFor={deviceRequestId}>
+          <span className="font-medium text-carbon">{settings.formDeviceLabel}</span>
+          <input
+            id={deviceRequestId}
+            value={deviceRequest}
+            onChange={(event) => {
+              setDeviceRequest(event.target.value);
+              if (event.target.value.trim()) setDeviceError("");
+            }}
+            type="text"
+            name="club_device_request"
+            required
+            aria-invalid={Boolean(deviceError)}
+            aria-describedby={deviceError ? `${deviceRequestId}-error` : undefined}
+            placeholder={settings.formDevicePlaceholder}
+            className={leadFieldClass}
+          />
+          {deviceError ? (
+            <span id={`${deviceRequestId}-error`} className="mt-2 block text-xs text-red-600">
+              {deviceError}
+            </span>
+          ) : null}
         </label>
       ) : null}
 
@@ -202,12 +248,33 @@ export function ClubLeadForm({ settings, offers, plans }: ClubLeadFormProps) {
         aria-hidden="true"
         className={leadHoneypotClass}
       />
+      <label className="mt-4 flex items-start gap-3 text-xs leading-relaxed text-graphite">
+        <input
+          type="checkbox"
+          checked={consentAccepted}
+          onChange={(event) => setConsentAccepted(event.target.checked)}
+          required
+          className="mt-1 h-4 w-4 shrink-0 accent-action-blue"
+        />
+        <span>
+          {settings.formConsentLabel}{" "}
+          <a
+            href={settings.privacyUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-link-blue underline"
+          >
+            Политика обработки данных
+          </a>
+          .
+        </span>
+      </label>
       {settings.formConsentNote ? (
-        <p className="mt-4 text-xs leading-relaxed text-muted">{settings.formConsentNote}</p>
+        <p className="mt-2 text-xs leading-relaxed text-muted">{settings.formConsentNote}</p>
       ) : null}
       <button
         type="submit"
-        disabled={state === "submitting" || !turnstileReady}
+        disabled={state === "submitting" || !turnstileReady || !consentAccepted}
         className={submitButtonClass}
       >
         {state === "submitting" ? settings.formSubmittingLabel : settings.formSubmitLabel}

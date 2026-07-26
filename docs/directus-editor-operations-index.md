@@ -136,6 +136,26 @@ Use `Блог · Материалы` (`blog_posts`) as the main editorial entry 
 
 Detailed guide: `docs/blog-editor-guide.md`.
 
+## Club
+
+Use the Club collections as one operator workflow:
+
+- `Настройки Club` (`club_page_settings`) for publication mode, hero, section
+  headings, form labels and consent links.
+- `Тарифы Club` (`club_plans`) for measurable Base/Care differences.
+- `Предложения Club` (`club_offers`) for approved catalog offers.
+- `Процесс Club` (`club_process_items`) for cycle, Passport and participation
+  steps.
+- `Правила Club` (`club_rule_items`) for customer-facing rules.
+- `Документы Club` (`club_legal_documents`) for versioned legal materials.
+- `Заявки` (`leads`) with the saved `Club: ...` views for processing requests.
+
+Keep `publication_mode = pilot_noindex` until the legal package and at least
+one commercial offer pass `npm run directus:audit-club`. Only an administrator
+may move the page toward indexing.
+
+Detailed guide: `docs/club-editor-guide.md`.
+
 ## Catalog Imports
 
 Use `Импорт каталога` (`catalog_import_batches`) for bulk catalog updates.
@@ -175,5 +195,6 @@ npm run directus:audit-legacy-fallback
 npm run directus:audit-blog
 ```
 
-The audits print SQL. On production, pipe the generated SQL into the Directus
-PostgreSQL container from `/opt/isvoi/infra/directus-beget`.
+These commands execute their SQL checks against production and return a
+non-zero exit code for blocker metrics. Use `npm run directus:audit:prod` as
+the aggregate release gate.

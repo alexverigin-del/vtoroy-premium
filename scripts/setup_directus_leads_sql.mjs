@@ -45,6 +45,13 @@ CREATE TABLE IF NOT EXISTS leads (
   utm_campaign varchar(128),
   utm_content varchar(128),
   utm_term varchar(128),
+  club_offer uuid,
+  club_plan uuid,
+  club_term_months integer,
+  club_budget_text varchar(160),
+  club_device_request varchar(255),
+  club_consent_version varchar(64),
+  club_consent_at timestamptz,
   user_agent text
 );
 
@@ -66,6 +73,13 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_medium varchar(128);
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_campaign varchar(128);
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_content varchar(128);
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_term varchar(128);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS club_offer uuid;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS club_plan uuid;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS club_term_months integer;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS club_budget_text varchar(160);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS club_device_request varchar(255);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS club_consent_version varchar(64);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS club_consent_at timestamptz;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS user_agent text;
 
 CREATE TABLE IF NOT EXISTS lead_comments (
@@ -417,7 +431,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Lead Intake',
   'leads',
   'create',
-  'kind,status,priority,contact_channel,name,contact,device,device_id,scenario,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent',
+  'kind,status,priority,contact_channel,name,contact,device,device_id,scenario,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at,user_agent',
   NULL,
   '{"contact":{"_nnull":true},"status":{"_eq":"new"},"priority":{"_in":["normal","high"]},"kind":{"_in":["selection","purchase","trade","upgrade","club","support"]},"contact_channel":{"_in":["unknown","phone","telegram","whatsapp","email"]}}'::json,
   '{"status":"new","priority":"normal"}'::json
@@ -427,14 +441,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'leads',
   'read',
-  'id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent',
+  'id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at,user_agent',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'leads',
   'update',
-  'status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term',
+  'status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at',
   NULL,
   '{"status":{"_in":["new","in_progress","waiting_client","contacted","won","lost","archived"]},"priority":{"_in":["normal","high"]}}'::json
 );
@@ -834,7 +848,7 @@ WHERE collection = 'leads'
   AND policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Lead Intake');
 
 UPDATE directus_permissions
-SET fields = 'status,priority,assigned_to,contact_channel,next_action_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term',
+SET fields = 'status,priority,assigned_to,contact_channel,next_action_at,manager_note,kind,scenario,name,contact,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at',
   validation = '{"status":{"_in":["new","in_progress","waiting","won","closed"]},"priority":{"_in":["normal","high"]}}'::json
 WHERE collection = 'leads'
   AND action = 'update'

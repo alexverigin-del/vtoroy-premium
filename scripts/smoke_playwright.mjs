@@ -191,6 +191,7 @@ async function assertSeoAndStructuredData(page, label, expectedTypes) {
       ogTitle: prop("og:title"),
       ogDescription: prop("og:description"),
       ogImage: prop("og:image"),
+      robots: meta("robots"),
       headings,
       jsonLdScripts: scripts,
     };
@@ -243,6 +244,48 @@ async function smokeHome(page, baseUrl) {
     assert(
       logoHref === "https://isvoi.ru/",
       `club home: expected header logo to link to https://isvoi.ru/, got ${logoHref}`,
+    );
+    const expectedIndexable = process.env.SMOKE_CLUB_EXPECT_INDEXABLE === "true";
+    const robots = await page.locator('meta[name="robots"]').getAttribute("content");
+    assert(
+      expectedIndexable
+        ? robots?.includes("index") && !robots?.includes("noindex")
+        : robots?.includes("noindex"),
+      `club home: unexpected robots meta ${robots}`,
+    );
+    const html = await page.content();
+    assert(html.includes("Своя, пока нужна."), "club home: expected approved Club hero");
+    assert(!html.includes("/#final"), "club home: legacy /#final CTA is still present");
+    assert(
+      (await page.locator('a[href="#club-request"]').count()) > 0,
+      "club home: expected #club-request CTA",
+    );
+    assert(
+      (await page.locator('a[href="#devices"]').count()) > 0,
+      "club home: expected #devices CTA",
+    );
+    const deviceRequest = page.locator("input[name='club_device_request']");
+    assert(
+      (await deviceRequest.count()) > 0 &&
+        (await deviceRequest.first().getAttribute("required")) !== null,
+      "club home: expected required device selection input",
+    );
+    const consent = page.locator("input[type='checkbox'][required]");
+    assert((await consent.count()) > 0, "club home: expected explicit required consent");
+
+    const robotsResponse = await page.request.get(`${origin}/robots.txt`);
+    const robotsText = await robotsResponse.text();
+    assert(
+      expectedIndexable ? robotsText.includes("Allow: /") : robotsText.includes("Disallow: /"),
+      `club home: unexpected robots.txt ${robotsText}`,
+    );
+    const sitemapResponse = await page.request.get(`${origin}/sitemap.xml`);
+    const sitemapText = await sitemapResponse.text();
+    assert(
+      expectedIndexable
+        ? sitemapText.includes("<loc>https://club.isvoi.ru/</loc>")
+        : !sitemapText.includes("<loc>"),
+      "club home: sitemap visibility does not match Club launch mode",
     );
   }
 

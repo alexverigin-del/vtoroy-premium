@@ -40,6 +40,12 @@ const flowOptions = JSON.stringify({
     "blog_posts_tags",
     "blog_posts_devices",
     "blog_post_blocks",
+    "club_page_settings",
+    "club_plans",
+    "club_offers",
+    "club_rule_items",
+    "club_process_items",
+    "club_legal_documents",
   ],
 });
 

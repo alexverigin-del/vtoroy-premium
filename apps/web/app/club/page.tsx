@@ -5,13 +5,15 @@ import {
   ClubCycleSection,
   ClubFinalSection,
   ClubHeroSection,
+  ClubLegalSection,
   ClubOfferSection,
+  ClubParticipationSection,
   ClubPassportCycleSection,
   ClubPlansSection,
   ClubRulesSection,
 } from "@/components/ClubLandingSections";
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
-import { getClubPageData } from "@/lib/club";
+import { getClubPageData, isClubIndexingEnabled } from "@/lib/club";
 import { clubChrome, getFallbackMarketingPage, marketingSectionsForPage } from "@/lib/site-content";
 import { jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
@@ -42,15 +44,24 @@ function clubBreadcrumbJsonLd(title: string) {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const directusPage = await getSitePage("club");
+  const [directusPage, clubData] = await Promise.all([getSitePage("club"), getClubPageData()]);
   const page = directusPage ?? getFallbackMarketingPage("club");
   const canonicalUrl = clubCanonicalUrl();
+  const indexable = isClubIndexingEnabled(clubData.settings);
 
   return {
     title: page.title,
     description: page.metaDescription,
     alternates: {
       canonical: canonicalUrl,
+    },
+    robots: {
+      index: indexable,
+      follow: indexable,
+      googleBot: {
+        index: indexable,
+        follow: indexable,
+      },
     },
     openGraph: {
       title: page.title,
@@ -67,7 +78,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ClubPage() {
+export default async function ClubPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ club_offer?: string | string[] }>;
+}) {
   const [page, settings, navigation, clubData] = await Promise.all([
     getSitePage("club"),
     getSiteSettings(),
@@ -76,15 +91,14 @@ export default async function ClubPage() {
   ]);
   const currentPage = page ?? getFallbackMarketingPage("club");
   const sections = marketingSectionsForPage("club", currentPage.sections);
-  const heroSection =
-    sections.find((section) => section.sectionKey === "club_hero") ??
-    sections.find(
-      (section) => section.variant === "page.hero" || section.variant === "hero.static",
-    );
   const faqSection = sections.find(
     (section) => section.sectionKey === "faq" || section.variant === "faq",
   );
   const chrome = clubChrome(settings, navigation);
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const requestedOffer = resolvedSearchParams.club_offer;
+  const selectedOfferId = Array.isArray(requestedOffer) ? requestedOffer[0] : requestedOffer;
+  const passportItems = clubData.processes.filter((item) => item.group === "passport");
 
   return (
     <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
@@ -95,17 +109,20 @@ export default async function ClubPage() {
             __html: jsonLdScript(clubBreadcrumbJsonLd(currentPage.title)),
           }}
         />
-        <ClubHeroSection section={heroSection} settings={clubData.settings} />
+        <ClubHeroSection settings={clubData.settings} passportItems={passportItems} />
         <ClubOfferSection offers={clubData.offers} settings={clubData.settings} />
-        <ClubCycleSection />
-        <ClubPassportCycleSection />
+        <ClubCycleSection settings={clubData.settings} items={clubData.processes} />
+        <ClubPassportCycleSection settings={clubData.settings} items={clubData.processes} />
         <ClubPlansSection plans={clubData.plans} settings={clubData.settings} />
         <ClubRulesSection rules={clubData.rules} settings={clubData.settings} />
+        <ClubParticipationSection settings={clubData.settings} items={clubData.processes} />
         {faqSection ? <MarketingSectionRenderer section={faqSection} slug="club" /> : null}
+        <ClubLegalSection settings={clubData.settings} documents={clubData.legalDocuments} />
         <ClubFinalSection
           settings={clubData.settings}
           offers={clubData.offers}
           plans={clubData.plans}
+          selectedOfferId={selectedOfferId}
         />
       </main>
     </SiteShell>

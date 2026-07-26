@@ -271,6 +271,11 @@ SELECT isvoi_club_upsert_collection('club_offers','devices','Club offer rows lin
 SELECT isvoi_club_upsert_collection('club_rule_items','rule','Club rules for wear, damage, return, buyout and data cleanup.','{{category}} · {{title}}',false,46);
 SELECT isvoi_club_upsert_collection('club_page_settings','tune','Singleton copy and labels for club.isvoi.ru.','Club page settings',true,43);
 
+UPDATE directus_fields
+SET options='{"choices":[{"text":"Шапка","value":"header","color":"#2563eb"},{"text":"Footer","value":"footer","color":"#0f766e"},{"text":"Mobile","value":"mobile","color":"#0891b2"},{"text":"Utility","value":"utility","color":"#6b7280"},{"text":"Club header","value":"club_header","color":"#0f766e"},{"text":"Club footer","value":"club_footer","color":"#047857"}]}'::json,
+  note='Navigation area. Use club_header and club_footer only for club.isvoi.ru.'
+WHERE collection='navigation_items' AND field='location';
+
 SELECT isvoi_club_upsert_field('club_plans','status','select-dropdown','labels', '{"choices":[{"text":"Draft","value":"draft"},{"text":"Published","value":"published"},{"text":"Archived","value":"archived"}]}'::json,'half',1,'Publication status. Only published rows can appear on the public Club page.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_plans','slug','input','raw',NULL,'half',2,'Stable operator-friendly key, for example base, care, flex.',NULL,NULL,true);
 SELECT isvoi_club_upsert_field('club_plans','name','input','raw',NULL,'half',3,'Public plan name.',NULL,NULL,true);
@@ -342,6 +347,32 @@ WHERE role.name='ISVOI Editor'
   AND NOT EXISTS (
     SELECT 1 FROM directus_presets p
     WHERE p.role=role.id AND p.collection='leads' AND p.bookmark='Club: новые' AND p."user" IS NULL
+  );
+
+INSERT INTO directus_presets (bookmark,role,"user",collection,layout,layout_query,filter,icon,color)
+SELECT bookmark, role.id, NULL, 'navigation_items', 'tabular', layout_query, filter, icon, color
+FROM directus_roles role
+CROSS JOIN (
+  VALUES
+    (
+      'Club header',
+      '{"tabular":{"sort":["sort","label"],"fields":["sort","is_active","label","link_type","custom_url","item_role"],"page":1}}'::json,
+      '{"location":{"_eq":"club_header"}}'::json,
+      'loyalty',
+      '#0f766e'
+    ),
+    (
+      'Club footer',
+      '{"tabular":{"sort":["sort","label"],"fields":["sort","is_active","label","link_type","custom_url","item_role"],"page":1}}'::json,
+      '{"location":{"_eq":"club_footer"}}'::json,
+      'vertical_align_bottom',
+      '#047857'
+    )
+) preset(bookmark,layout_query,filter,icon,color)
+WHERE role.name='ISVOI Editor'
+  AND NOT EXISTS (
+    SELECT 1 FROM directus_presets p
+    WHERE p.role=role.id AND p.collection='navigation_items' AND p.bookmark=preset.bookmark AND p."user" IS NULL
   );
 
 DROP FUNCTION isvoi_club_upsert_collection(varchar,varchar,text,varchar,boolean,integer);

@@ -1054,13 +1054,14 @@ function MarketingStoreServiceMapSection({ section }: { section: PageSection }) 
 function MarketingTradeScenarioMapSection({ section }: { section: PageSection }) {
   const cards = marketingCards(section.content.items ?? section.content.cards);
   if (cards.length === 0) return null;
+  const gridClass = cards.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
 
   return (
     <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
         <div className="mx-auto mt-8 max-w-content overflow-hidden rounded-card border border-hairline bg-white md:mt-10">
-          <dl className="grid md:grid-cols-3">
+          <dl className={cn("grid", gridClass)}>
             {cards.map((card, index) => (
               <div
                 key={`${card.badge}-${card.title}`}

@@ -225,7 +225,7 @@ function CatalogFilters({
               Сбросить
             </Link>
             <button type="submit" className={primaryPillCtaClass}>
-              Применить
+              Показать
             </button>
           </div>
         </div>

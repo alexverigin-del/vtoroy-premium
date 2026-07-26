@@ -7,7 +7,11 @@ import { DeviceGallery } from "@/components/DeviceGallery";
 import { PassportSummary } from "@/components/PassportSummary";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
-import { detailBackLinkClass } from "@/components/ui-classes";
+import {
+  brandZoneEyebrowClass,
+  detailBackLinkClass,
+  homeSectionLabelClass,
+} from "@/components/ui-classes";
 import { SiteShell } from "@/components/SiteShell";
 import { getDevicePageSettings, getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { getProductBySlug, getRelatedProducts } from "@/lib/product-catalog";
@@ -184,12 +188,10 @@ export default async function ProductPage({ params }: PageProps) {
           </Link>
 
           <div className="mt-6 max-w-4xl">
-            <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
+            <p className={brandZoneEyebrowClass}>
               {product.brand.name} · {product.category.name}
             </p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
-              {product.title}
-            </h1>
+            <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">{product.title}</h1>
           </div>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-product lg:items-start lg:gap-8">
@@ -268,7 +270,7 @@ export default async function ProductPage({ params }: PageProps) {
 
         {relatedProducts.length > 0 ? (
           <section className="mx-auto max-w-content px-6 pb-16">
-            <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
+            <p className={homeSectionLabelClass}>
               {product.productType === "device" ? "Подойдут к этой модели" : "Есть в наличии"}
             </p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight">

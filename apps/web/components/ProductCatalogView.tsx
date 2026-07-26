@@ -7,7 +7,7 @@ import type {
 } from "@vtoroy/shared";
 
 import { ProductCard } from "./ProductCard";
-import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
+import { brandZoneEyebrowClass, primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
 type CatalogCopy = {
   eyebrow: string;
@@ -254,9 +254,7 @@ export function ProductCatalogView({
     <section className="bg-white py-14 md:py-20" data-component="ProductCatalogView">
       <div className="mx-auto max-w-shell px-5">
         <div className="max-w-copy-wide">
-          <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
-            {copy.eyebrow}
-          </p>
+          <p className={brandZoneEyebrowClass}>{copy.eyebrow}</p>
           <h1 className="mt-3 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-carbon md:text-6xl">
             {copy.headline}
           </h1>

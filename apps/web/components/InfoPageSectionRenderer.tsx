@@ -3,7 +3,13 @@ import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { RichText } from "./RichText";
 import { normalizeSiteUrl } from "./site-chrome-utils";
-import { primaryPillCtaClass, publicPageHeroTitleClass, secondaryPillCtaClass } from "./ui-classes";
+import {
+  brandZoneEyebrowClass,
+  homeSectionLabelClass,
+  primaryPillCtaClass,
+  publicPageHeroTitleClass,
+  secondaryPillCtaClass,
+} from "./ui-classes";
 
 function items(value: unknown): { title: string; text: string }[] {
   if (!Array.isArray(value)) return [];
@@ -54,7 +60,7 @@ export function InfoPageSectionRenderer({ section }: { section: PageSection }) {
     <section className={cn("bg-white", isHero ? "py-16 text-center md:py-24" : "py-12 md:py-16")}>
       <div className={cn("mx-auto px-4 md:px-6", isHero ? "max-w-page" : "max-w-copy")}>
         {section.eyebrow ? (
-          <p className="text-sm font-semibold uppercase tracking-eyebrow text-link-blue">
+          <p className={isHero ? brandZoneEyebrowClass : homeSectionLabelClass}>
             {section.eyebrow}
           </p>
         ) : null}

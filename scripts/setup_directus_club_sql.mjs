@@ -350,7 +350,16 @@ WHERE role.name='ISVOI Editor'
   );
 
 INSERT INTO directus_presets (bookmark,role,"user",collection,layout,layout_query,filter,icon,color)
-SELECT bookmark, role.id, NULL, 'navigation_items', 'tabular', layout_query, filter, icon, color
+SELECT
+  preset.bookmark,
+  role.id,
+  NULL,
+  'navigation_items',
+  'tabular',
+  preset.layout_query,
+  preset.filter,
+  preset.icon,
+  preset.color
 FROM directus_roles role
 CROSS JOIN (
   VALUES

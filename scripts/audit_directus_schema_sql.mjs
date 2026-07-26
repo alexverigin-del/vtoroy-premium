@@ -39,7 +39,13 @@ WITH expected_tables(table_name) AS (
     ('blog_tags'),
     ('blog_posts_tags'),
     ('blog_posts_devices'),
-    ('blog_post_blocks')
+    ('blog_post_blocks'),
+    ('club_plans'),
+    ('club_offers'),
+    ('club_rule_items'),
+    ('club_process_items'),
+    ('club_legal_documents'),
+    ('club_page_settings')
 ),
 expected_fields(table_name, field_name) AS (
   VALUES

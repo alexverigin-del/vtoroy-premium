@@ -134,7 +134,11 @@ FROM page_sections ps
 JOIN site_pages sp ON sp.id = ps.page
 WHERE sp.slug = 'club' AND sp.status = 'published' AND ps.is_active = true
   AND concat_ws(' ', ps.primary_cta_label, ps.secondary_cta_label) ~* '\mClub\M'
-  AND concat_ws(' ', ps.primary_cta_label, ps.secondary_cta_label) !~* 'пилот'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM club_page_settings settings
+    WHERE settings.publication_mode IN ('pilot_noindex', 'public_index')
+  )
 UNION ALL
 SELECT 'conversion_v2.catalog_club_filter', count(*)::text
 FROM page_sections ps

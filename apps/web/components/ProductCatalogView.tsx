@@ -80,8 +80,8 @@ function CatalogFilters({
   );
   const advancedFilterCount = [
     filters.brand,
-    filters.condition,
-    filters.compatible,
+    type !== "accessory" ? filters.condition : undefined,
+    type === "accessory" ? filters.compatible : undefined,
     filters.stock,
   ].filter(Boolean).length;
   const hasAdvancedFilters = advancedFilterCount > 0;

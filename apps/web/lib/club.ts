@@ -393,11 +393,11 @@ export const fallbackClubPageSettings: ClubPageSettings = {
   heroPanelTitle: "Состояние фиксируется дважды",
   heroPanelBody:
     "Club стартует как пилот с ручным расчётом: без публичной оплаты, скоринга и личного кабинета.",
-  offersEyebrow: "I СВОИ Club · подбор",
-  offersTitle: "Подберём устройство под задачу и срок",
-  offersEmptyTitle: "Начните с модели или категории",
+  offersEyebrow: "I СВОИ Club · устройства",
+  offersTitle: "Доступные устройства Club",
+  offersEmptyTitle: "Нужна другая модель?",
   offersEmptyBody:
-    "Укажите, что вам нужно, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.",
+    "Оставьте параметры подбора: модель или категорию, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.",
   monthlyFallback: "Расчёт по заявке",
   offerCtaLabel: "Рассчитать это устройство",
   cycleEyebrow: "I СВОИ Club · как работает",
@@ -774,7 +774,7 @@ export const getClubPageData = cache(async function getClubPageData(): Promise<{
     legalRows?.map(mapLegalDocument).filter((item): item is ClubLegalDocument => Boolean(item)) ??
     [];
   const offerRows = await directusGet<Row[]>(
-    `/items/club_offers?filter[status][_eq]=published&filter[offer_status][_in]=approved,waitlist&fields=${OFFER_FIELDS}&sort=sort&limit=24`,
+    `/items/club_offers?filter[status][_eq]=published&filter[offer_status][_in]=approved,waitlist&filter[product][status][_eq]=published&filter[product][stock_status][_eq]=available&filter[product][stock_quantity][_gt]=0&fields=${OFFER_FIELDS}&sort=sort&limit=24`,
     { tags: [CLUB_CACHE_TAG] },
   );
   const offers =

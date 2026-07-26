@@ -359,7 +359,12 @@ BEGIN
       LEFT JOIN products product ON product.id=offer.product
       WHERE offer.status='published'
         AND offer.offer_status IN ('approved','waitlist')
-        AND product.id IS NULL
+        AND (
+          product.id IS NULL
+          OR product.status<>'published'
+          OR product.stock_status<>'available'
+          OR coalesce(product.stock_quantity,0)<=0
+        )
     $query$ INTO v_invalid_offers;
     EXECUTE $query$
       SELECT count(*)
@@ -389,7 +394,10 @@ BEGIN
     $query$ INTO v_stale_hero_copy;
     EXECUTE $query$
       SELECT count(*) FROM club_page_settings
-      WHERE coalesce(trim(form_device_label),'')=''
+      WHERE coalesce(trim(offers_title),'')=''
+         OR coalesce(trim(offers_empty_title),'')=''
+         OR coalesce(trim(offers_empty_body),'')=''
+         OR coalesce(trim(form_device_label),'')=''
          OR coalesce(trim(form_device_placeholder),'')=''
          OR coalesce(trim(form_device_error),'')=''
     $query$ INTO v_selection_copy_missing;

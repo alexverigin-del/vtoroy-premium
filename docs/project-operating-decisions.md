@@ -204,10 +204,17 @@ Keep the full production snapshot in
   `CLUB_INDEXING_ENABLED=1` in the web environment. Until then the page emits
   `noindex, nofollow`, `X-Robots-Tag`, a closed Club `robots.txt` and an empty
   Club sitemap. The production default is `CLUB_INDEXING_ENABLED=0`.
-- The default v1 journey is selection by request. A model/category is required
-  when no published `club_offer` is selected. Real offers, when added later,
-  appear before the selection form and can either contain an approved monthly
-  amount or explicitly use manual calculation.
+- The default v1 journey is hybrid: editor-selected, in-stock `club_offers`
+  appear first, followed by a managed prompt for individual selection. A
+  model/category is required when no published offer is selected. Offers can
+  either contain an approved monthly amount or explicitly use manual
+  calculation; the website additionally hides offers whose product is no
+  longer published, available or in stock.
+- The initial pilot offer set is seeded idempotently for `iphone-13-pro`,
+  `iphone-14`, `ipad-air` and `macbook-air-m1` only when the corresponding
+  product is published, available, in stock and does not already have a
+  `club_offers` row. These start in manual-calculation mode; after seeding,
+  editors own publication, ordering, tariff, term and card copy in Studio.
 - Club leads post through `/lead-intake` with `kind=club`, structured
   `club_device_request`, optional `club_offer`/`club_plan`, term, budget,
   consent version and server timestamp. A separate explicit consent is

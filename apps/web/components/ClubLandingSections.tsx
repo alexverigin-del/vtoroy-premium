@@ -84,7 +84,7 @@ export function ClubOfferSection({
   settings: ClubPageSettings;
 }) {
   return (
-    <section id="devices" className="bg-white py-16 md:py-24">
+    <section id="devices" className="bg-white py-16 md:py-24" data-component="ClubOfferSection">
       <div className="mx-auto max-w-page px-4">
         <div className="max-w-3xl">
           {sectionEyebrow(settings.offersEyebrow)}
@@ -93,10 +93,11 @@ export function ClubOfferSection({
           </h2>
         </div>
         {offers.length > 0 ? (
-          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {offers.map((offer) => (
               <article
                 key={offer.id}
+                data-club-offer-id={offer.id}
                 className="flex min-h-full flex-col overflow-hidden rounded-card border border-hairline bg-surface"
               >
                 <a
@@ -147,17 +148,18 @@ export function ClubOfferSection({
               </article>
             ))}
           </div>
-        ) : (
-          <div className="mt-10 rounded-card border border-hairline bg-surface p-6 md:p-8">
+        ) : null}
+        <div className="mt-6 flex flex-col items-start justify-between gap-5 rounded-card border border-hairline bg-surface p-6 md:flex-row md:items-center md:p-8">
+          <div>
             <h3 className="text-2xl font-semibold text-carbon">{settings.offersEmptyTitle}</h3>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-graphite">
               {settings.offersEmptyBody}
             </p>
-            <a href="#club-request" className={cn(primaryCtaClass, "mt-6")}>
-              Начать подбор
-            </a>
           </div>
-        )}
+          <a href="#club-request" className={cn(primaryCtaClass, "shrink-0")}>
+            {settings.heroPrimaryLabel}
+          </a>
+        </div>
       </div>
     </section>
   );

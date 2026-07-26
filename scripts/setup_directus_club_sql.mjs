@@ -119,9 +119,9 @@ CREATE TABLE IF NOT EXISTS club_page_settings (
   hero_panel_title varchar(255) NOT NULL DEFAULT 'Состояние фиксируется дважды',
   hero_panel_body text NOT NULL DEFAULT 'Club стартует как пилот с ручным расчётом: без публичной оплаты, скоринга и личного кабинета.',
   offers_eyebrow varchar(160) NOT NULL DEFAULT 'I СВОИ Club · устройства',
-  offers_title varchar(255) NOT NULL DEFAULT 'Доступные устройства Club.',
-  offers_empty_title varchar(255) NOT NULL DEFAULT 'Публичная витрина Club готовится.',
-  offers_empty_body text NOT NULL DEFAULT 'Оставьте заявку: менеджер подберёт устройство, срок и тариф вручную.',
+  offers_title varchar(255) NOT NULL DEFAULT 'Доступные устройства Club',
+  offers_empty_title varchar(255) NOT NULL DEFAULT 'Нужна другая модель?',
+  offers_empty_body text NOT NULL DEFAULT 'Оставьте параметры подбора: модель или категорию, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.',
   monthly_fallback varchar(160) NOT NULL DEFAULT 'Расчёт по заявке',
   offer_cta_label varchar(160) NOT NULL DEFAULT 'Получить расчёт Club',
   cycle_eyebrow varchar(160) NOT NULL DEFAULT 'I СВОИ Club · как работает',
@@ -277,6 +277,38 @@ ON CONFLICT (slug) DO UPDATE SET
   sort=EXCLUDED.sort,
   updated_at=now();
 
+INSERT INTO club_offers (
+  status,offer_status,product,plan,term_months,monthly_from,pricing_mode,
+  terms_text,badge,cta_label,sort
+)
+SELECT
+  'published',
+  'approved',
+  product.id,
+  plan.id,
+  12,
+  NULL,
+  'manual',
+  'Срок, тариф и ежемесячный платёж подтвердим после согласования состояния устройства и сценария завершения.',
+  'Доступно',
+  'Рассчитать это устройство',
+  CASE product.id
+    WHEN 'iphone-13-pro' THEN 10
+    WHEN 'iphone-14' THEN 20
+    WHEN 'ipad-air' THEN 30
+    WHEN 'macbook-air-m1' THEN 40
+    ELSE 100
+  END
+FROM products product
+JOIN club_plans plan ON plan.slug='base'
+WHERE product.id IN ('iphone-13-pro','iphone-14','ipad-air','macbook-air-m1')
+  AND product.status='published'
+  AND product.stock_status='available'
+  AND coalesce(product.stock_quantity,0)>0
+  AND NOT EXISTS (
+    SELECT 1 FROM club_offers existing WHERE existing.product=product.id
+  );
+
 INSERT INTO club_rule_items (status,category,title,body,sort)
 SELECT status,category,title,body,sort
 FROM (VALUES
@@ -326,10 +358,10 @@ VALUES ('club')
 ON CONFLICT (singleton_key) DO NOTHING;
 
 UPDATE club_page_settings
-SET offers_eyebrow=CASE WHEN offers_eyebrow IN ('Устройства','I СВОИ Club · устройства') THEN 'I СВОИ Club · подбор' ELSE offers_eyebrow END,
-    offers_title=CASE WHEN offers_title IN ('Доступно по Club','Доступные устройства Club.') THEN 'Подберём устройство под задачу и срок' ELSE offers_title END,
-    offers_empty_title=CASE WHEN offers_empty_title IN ('Club-витрина готовится','Публичная витрина Club готовится.') THEN 'Начните с модели или категории' ELSE offers_empty_title END,
-    offers_empty_body=CASE WHEN offers_empty_body LIKE '%витрин%' OR offers_empty_body LIKE '%Оставьте заявку%' THEN 'Укажите, что вам нужно, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.' ELSE offers_empty_body END,
+SET offers_eyebrow=CASE WHEN offers_eyebrow IN ('Устройства','I СВОИ Club · устройства','I СВОИ Club · подбор') THEN 'I СВОИ Club · устройства' ELSE offers_eyebrow END,
+    offers_title=CASE WHEN offers_title IN ('Доступно по Club','Доступные устройства Club.','Подберём устройство под задачу и срок') THEN 'Доступные устройства Club' ELSE offers_title END,
+    offers_empty_title=CASE WHEN offers_empty_title IN ('Club-витрина готовится','Публичная витрина Club готовится.','Начните с модели или категории') THEN 'Нужна другая модель?' ELSE offers_empty_title END,
+    offers_empty_body=CASE WHEN offers_empty_body LIKE '%витрин%' OR offers_empty_body LIKE '%Оставьте заявку%' OR offers_empty_body='Укажите, что вам нужно, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.' THEN 'Оставьте параметры подбора: модель или категорию, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.' ELSE offers_empty_body END,
     offer_cta_label=CASE WHEN offer_cta_label IN ('Получить расчёт','Получить расчёт Club') THEN 'Рассчитать это устройство' ELSE offer_cta_label END,
     plans_title=CASE WHEN plans_title IN ('Base и Care запускаются первыми','Тарифы отличаются уровнем сопровождения.') THEN 'Base и Care отличаются уровнем сопровождения' ELSE plans_title END,
     form_consent_note=CASE WHEN form_consent_note LIKE 'Нажимая кнопку%' THEN 'Согласие относится только к обработке заявки Club и не означает заключение договора.' ELSE form_consent_note END,
@@ -702,8 +734,8 @@ SELECT isvoi_club_upsert_field('club_page_settings','hero_panel_body','input-mul
 
 SELECT isvoi_club_upsert_field('club_page_settings','offers_eyebrow','input','raw',NULL,'half',1,'Offers section eyebrow.',NULL,'group_offers',true);
 SELECT isvoi_club_upsert_field('club_page_settings','offers_title','input','raw',NULL,'full',2,'Offers section title.',NULL,'group_offers',true);
-SELECT isvoi_club_upsert_field('club_page_settings','offers_empty_title','input','raw',NULL,'full',3,'Selection-first title when no offers are published.',NULL,'group_offers',true);
-SELECT isvoi_club_upsert_field('club_page_settings','offers_empty_body','input-multiline','raw',NULL,'full',4,'Selection explanation when no offers are published.',NULL,'group_offers',true);
+SELECT isvoi_club_upsert_field('club_page_settings','offers_empty_title','input','raw',NULL,'full',3,'Individual selection title shown below offers and used as the empty-state title.',NULL,'group_offers',true);
+SELECT isvoi_club_upsert_field('club_page_settings','offers_empty_body','input-multiline','raw',NULL,'full',4,'Individual selection explanation shown below offers and in the empty state.',NULL,'group_offers',true);
 SELECT isvoi_club_upsert_field('club_page_settings','monthly_fallback','input','raw',NULL,'half',5,'Text shown when price is calculated manually.',NULL,'group_offers',true);
 SELECT isvoi_club_upsert_field('club_page_settings','offer_cta_label','input','raw',NULL,'half',6,'Default offer CTA.',NULL,'group_offers',true);
 

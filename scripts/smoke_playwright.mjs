@@ -264,6 +264,17 @@ async function smokeHome(page, baseUrl) {
       (await page.locator('a[href="#devices"]').count()) > 0,
       "club home: expected #devices CTA",
     );
+    const clubOffers = page.locator("[data-club-offer-id]");
+    assert((await clubOffers.count()) > 0, "club home: expected at least one available Club offer");
+    assert(
+      (await clubOffers.first().locator('a[href^="https://isvoi.ru/product/"]').count()) > 0,
+      "club home: expected Club offer link to the main catalog",
+    );
+    assert(
+      (await clubOffers.first().locator('a[href*="club_offer="][href$="#club-request"]').count()) >
+        0,
+      "club home: expected offer selection CTA",
+    );
     const deviceRequest = page.locator("input[name='club_device_request']");
     assert(
       (await deviceRequest.count()) > 0 &&

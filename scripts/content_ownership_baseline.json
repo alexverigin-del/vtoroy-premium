@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-26T16:45:20.463Z",
+  "updatedAt": "2026-07-26T17:43:20.050Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -1091,175 +1091,168 @@
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 116,
+      "line": 117,
       "text": "Фото готовится",
       "id": "c4e8a062a1af8132"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
-      "kind": "jsx-text",
-      "line": 156,
-      "text": "Начать подбор",
-      "id": "d87517935754f889"
-    },
-    {
-      "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 256,
+      "line": 258,
       "text": "Минимальный срок",
       "id": "e961518bee76249b"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 257,
+      "line": 259,
       "text": "от ${plan.minTermMonths} мес.",
       "id": "685b4ff9164d3554"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 259,
+      "line": 261,
       "text": "Сопровождение",
       "id": "9caf3e74dc40043f"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 260,
+      "line": 262,
       "text": "Ответ по сервису",
       "id": "3106c6494c8f3dd6"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 261,
+      "line": 263,
       "text": "Диагностика",
       "id": "cdb4af55f7b139ee"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 262,
+      "line": 264,
       "text": "Подменное устройство",
       "id": "f22379711ae02bc7"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 263,
+      "line": 265,
       "text": "Досрочный выход",
       "id": "30fc8813c041a902"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 264,
+      "line": 266,
       "text": "Повреждения",
       "id": "ef16cf189d34b6db"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 298,
+      "line": 300,
       "text": "Будущий формат, доступен как лист ожидания.",
       "id": "5eacb5403b4b8a43"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 314,
+      "line": 316,
       "text": "Сравнение",
       "id": "62391c0a8d05e49c"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 328,
+      "line": 330,
       "text": "Не заявлено",
       "id": "f9603e26c536e0f3"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 350,
+      "line": 352,
       "text": "Нормальный износ",
       "id": "123794a55f8231dd"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 352,
+      "line": 354,
       "text": "Возврат",
       "id": "47f063c293235fe5"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 353,
+      "line": 355,
       "text": "Выкуп",
       "id": "aee1d89fb05449b2"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 355,
+      "line": 357,
       "text": "Платежи",
       "id": "13cafa1dc6c4add3"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 356,
+      "line": 358,
       "text": "Потеря или кража",
       "id": "e687cecea743f0d4"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 357,
+      "line": 359,
       "text": "Данные и Apple ID",
       "id": "a95d719589b04f44"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 358,
+      "line": 360,
       "text": "Сервис",
       "id": "4bbf122292d39bc0"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 374,
+      "line": 376,
       "text": "Что считается нормальным износом",
       "id": "fa5104e1db863e7b"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 392,
+      "line": 394,
       "text": "Условия пилота",
       "id": "488bc3426e88dd7f"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "string",
-      "line": 465,
+      "line": 467,
       "text": "на проверке",
       "id": "d8fca7c7ecc712b3"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 472,
+      "line": 474,
       "text": "Открыть документ",
       "id": "2a2750c4bec9cd06"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
       "kind": "jsx-text",
-      "line": 479,
+      "line": 481,
       "text": "Условия пилота и проект договора проходят проверку. До публикации документов Club остаётся закрытым от поисковой индексации.",
       "id": "a2a273bf7f7227fd"
     },
@@ -4585,29 +4578,29 @@
       "file": "apps/web/lib/club.ts",
       "kind": "string",
       "line": 396,
-      "text": "I СВОИ Club · подбор",
-      "id": "abcb133abd31d530"
+      "text": "I СВОИ Club · устройства",
+      "id": "efa736baf2277290"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
       "line": 397,
-      "text": "Подберём устройство под задачу и срок",
-      "id": "11b69013519d7258"
+      "text": "Доступные устройства Club",
+      "id": "61a5784a3c59a968"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
       "line": 398,
-      "text": "Начните с модели или категории",
-      "id": "e93886c9d8db90f3"
+      "text": "Нужна другая модель?",
+      "id": "6ae0501a259309b0"
     },
     {
       "file": "apps/web/lib/club.ts",
       "kind": "string",
       "line": 400,
-      "text": "Укажите, что вам нужно, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.",
-      "id": "d23900c301af1ebd"
+      "text": "Оставьте параметры подбора: модель или категорию, желаемый срок и комфортный платёж. Менеджер предложит конкретное проверенное устройство.",
+      "id": "65e25690efac1277"
     },
     {
       "file": "apps/web/lib/club.ts",

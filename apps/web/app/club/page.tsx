@@ -16,11 +16,17 @@ import { clubChrome, getFallbackMarketingPage, marketingSectionsForPage } from "
 import { jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 
-const CLUB_URL = "https://club.isvoi.ru/";
+const CLUB_SUBDOMAIN_URL = "https://club.isvoi.ru/";
+const CLUB_MAIN_FALLBACK_URL = "https://isvoi.ru/club";
+
+function clubCanonicalUrl() {
+  return process.env.CLUB_SUBDOMAIN_ENABLED === "1" ? CLUB_SUBDOMAIN_URL : CLUB_MAIN_FALLBACK_URL;
+}
 
 export const revalidate = 300;
 
 function clubBreadcrumbJsonLd(title: string) {
+  const url = clubCanonicalUrl();
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -29,7 +35,7 @@ function clubBreadcrumbJsonLd(title: string) {
         "@type": "ListItem",
         position: 1,
         name: title,
-        item: CLUB_URL,
+        item: url,
       },
     ],
   };
@@ -38,17 +44,18 @@ function clubBreadcrumbJsonLd(title: string) {
 export async function generateMetadata(): Promise<Metadata> {
   const directusPage = await getSitePage("club");
   const page = directusPage ?? getFallbackMarketingPage("club");
+  const canonicalUrl = clubCanonicalUrl();
 
   return {
     title: page.title,
     description: page.metaDescription,
     alternates: {
-      canonical: CLUB_URL,
+      canonical: canonicalUrl,
     },
     openGraph: {
       title: page.title,
       description: page.metaDescription,
-      url: CLUB_URL,
+      url: canonicalUrl,
       images: [page.ogImage || DEFAULT_SOCIAL_IMAGE],
     },
     twitter: {

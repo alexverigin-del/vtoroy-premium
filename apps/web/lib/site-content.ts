@@ -700,7 +700,7 @@ export function clubChrome(
     settings: {
       ...chrome.settings,
       brandName: "I СВОИ Club",
-      logoHref: "/",
+      logoHref: "https://isvoi.ru/",
       headerCtaLabel: "Получить расчёт Club",
       headerCtaUrl: "#club-request",
       footerBrandText:

@@ -234,6 +234,17 @@ async function smokeHome(page, baseUrl) {
   const url = joinUrl(baseUrl, "/");
   await gotoOk(page, url);
   const seo = await assertSeoAndStructuredData(page, "home", ["Organization", "WebSite"]);
+  const origin = new URL(page.url()).origin;
+  if (origin === "https://club.isvoi.ru") {
+    const logoHref = await page
+      .locator('[data-component="SiteHeader"] a')
+      .first()
+      .getAttribute("href");
+    assert(
+      logoHref === "https://isvoi.ru/",
+      `club home: expected header logo to link to https://isvoi.ru/, got ${logoHref}`,
+    );
+  }
 
   const leadForm = page.locator("form:has(input[name='contact'])");
   const leadForms = await leadForm.count();

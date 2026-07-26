@@ -146,6 +146,12 @@ function ArrowIcon() {
 export function TradePreviewSection({ section }: { section: PageSection }) {
   const choices = choiceList(section.content.choices);
   const renderedChoices = choices.length > 0 ? choices : DEFAULT_CHOICES;
+  const choicesGridClass =
+    renderedChoices.length === 1
+      ? "md:grid-cols-1"
+      : renderedChoices.length === 2
+        ? "md:grid-cols-2"
+        : "md:grid-cols-3";
   const valuation = valuationContent(section.content.valuation);
 
   return (
@@ -168,7 +174,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
         </div>
 
         <div className="mt-10 overflow-hidden rounded-card border border-hairline bg-frost">
-          <div className="grid md:grid-cols-3">
+          <div className={cn("grid", choicesGridClass)}>
             {renderedChoices.map((choice, index) => (
               <div
                 key={`${choice.title}-${choice.text}`}

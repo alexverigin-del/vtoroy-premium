@@ -40,6 +40,21 @@ WHERE NOT EXISTS (
   WHERE relation.many_collection=expected.collection AND relation.many_field=expected.field
 )
 UNION ALL
+SELECT 'inventory.studio.aliases_missing', count(*)::text
+FROM (VALUES
+  ('inventory_import_batches','items'),
+  ('inventory_import_batches','receipt_lines'),
+  ('inventory_import_batches','issues'),
+  ('inventory_items','receipt_lines'),
+  ('products','inventory_item'),
+  ('products','channel_listings')
+) expected(collection,field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection=expected.collection AND field.field=expected.field
+    AND field.special LIKE '%o2m%'
+)
+UNION ALL
 SELECT 'inventory.security.manager_policy_missing', count(*)::text
 FROM (VALUES (1)) marker(value)
 WHERE NOT EXISTS (

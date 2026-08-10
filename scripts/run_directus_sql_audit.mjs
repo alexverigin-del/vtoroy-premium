@@ -324,6 +324,7 @@ const auditDefinitions = {
       "inventory.schema.unit_view_missing",
       "inventory.studio.collections_missing",
       "inventory.schema.relations_missing",
+      "inventory.studio.aliases_missing",
       "inventory.security.manager_policy_missing",
       "inventory.security.manager_permissions_missing",
       "inventory.security.public_or_editor_access",

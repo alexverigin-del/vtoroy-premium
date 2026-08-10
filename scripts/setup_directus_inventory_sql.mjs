@@ -280,6 +280,13 @@ SELECT isvoi_inventory_field('inventory_import_issues','resolution_note','input-
 
 SELECT isvoi_inventory_field('channel_cost_profiles','category','select-dropdown-m2o','related-values','{"template":"{{name}}"}','half',1,'Необязательная категория для более точной ставки.','m2o');
 
+SELECT isvoi_inventory_field('inventory_import_batches','items','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',30,'Строки текущего snapshot.','o2m',false,true);
+SELECT isvoi_inventory_field('inventory_import_batches','receipt_lines','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',31,'Исторические строки поступления.','o2m',false,true);
+SELECT isvoi_inventory_field('inventory_import_batches','issues','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',32,'Блокеры и предупреждения проверки.','o2m',false,true);
+SELECT isvoi_inventory_field('inventory_items','receipt_lines','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',30,'Связанные строки поступлений.','o2m',false,true);
+SELECT isvoi_inventory_field('products','inventory_item','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',95,'Приватная складская связь доступна только Inventory Manager.','o2m',false,true,true);
+SELECT isvoi_inventory_field('products','channel_listings','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',96,'Приватные канальные объявления.','o2m',false,true,true);
+
 SELECT isvoi_inventory_field('product_channel_listings','product','select-dropdown-m2o','related-values','{"template":"{{title}} · {{stock_status}}"}','full',1,'Товар Catalog V3.','m2o',true);
 SELECT isvoi_inventory_field('product_channel_listings','channel','select-dropdown','labels','{"choices":[{"text":"Avito","value":"avito"}]}','half',2,'Канал.',NULL,true);
 SELECT isvoi_inventory_field('product_channel_listings','status','select-dropdown','labels','{"choices":[{"text":"Черновик","value":"draft"},{"text":"Готово","value":"ready"},{"text":"Активно","value":"active"},{"text":"Пауза","value":"paused"},{"text":"Блок","value":"blocked"},{"text":"Ошибка","value":"error"},{"text":"Архив","value":"archived"}]}','half',3,'В feed попадает только active.',NULL,true);
@@ -393,7 +400,7 @@ BEGIN
   FOREACH p IN ARRAY ARRAY['ISVOI Inventory Manager','ISVOI Catalog Import'] LOOP
     FOREACH c IN ARRAY ARRAY['products','device_details','accessory_details','product_brands','product_categories','device_models'] LOOP
       f := CASE c
-        WHEN 'products' THEN 'id,sku,status,content_status,product_type,condition,sale_mode,brand,category,device_model,title,model,color,price,price_text,stock_quantity,stock_status,warranty,warranty_text,completeness,short_description,headline,listing_file,listing_alt,sort,source_system,source_id,import_batch,imported_at,admin_note,created_at,updated_at,images,device_details,accessory_details,compatible_models,passport,trade_options_v3'
+        WHEN 'products' THEN 'id,sku,status,content_status,product_type,condition,sale_mode,brand,category,device_model,title,model,color,price,price_text,stock_quantity,stock_status,warranty,warranty_text,completeness,short_description,headline,listing_file,listing_alt,sort,source_system,source_id,import_batch,imported_at,admin_note,created_at,updated_at,images,device_details,accessory_details,compatible_models,passport,trade_options_v3,inventory_item,channel_listings'
         WHEN 'device_details' THEN 'id,product,storage,serial,year,model_identifier,region,sim,battery,battery_text,battery_cycles,diagnostic_date,activation_lock,mdm,diagnostic_by,grade,created_at,updated_at'
         WHEN 'accessory_details' THEN 'id,product,compatibility_mode,material,connection_type,package_contents,specifications,created_at,updated_at'
         WHEN 'product_brands' THEN 'id,slug,name,logo_file,is_active,sort,created_at,updated_at,models,products'

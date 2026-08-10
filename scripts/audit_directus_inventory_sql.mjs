@@ -140,7 +140,25 @@ WHERE listing.status='active' AND (
   )
 )
 UNION ALL
+SELECT 'inventory.security.identifiers_in_batch_logs', count(*)::text
+FROM inventory_items item
+JOIN inventory_import_batches batch ON batch.id=item.last_seen_batch
+WHERE (
+  NULLIF(item.serial_full,'') IS NOT NULL
+  AND position(item.serial_full IN coalesce(batch.last_run_log,'')) > 0
+) OR (
+  NULLIF(item.imei_full,'') IS NOT NULL
+  AND position(item.imei_full IN coalesce(batch.last_run_log,'')) > 0
+)
+UNION ALL
 SELECT 'inventory.info.items', count(*)::text FROM inventory_items
+UNION ALL
+SELECT 'inventory.info.receipt_lines', count(*)::text FROM inventory_receipt_lines
+UNION ALL
+SELECT 'inventory.info.issues', count(*)::text FROM inventory_import_issues
+UNION ALL
+SELECT 'inventory.info.synced_products', count(*)::text
+FROM products WHERE source_system='store_inventory'
 UNION ALL
 SELECT 'inventory.info.open_blockers', count(*)::text
 FROM inventory_import_issues WHERE severity='blocker' AND resolved=false

@@ -334,6 +334,7 @@ const auditDefinitions = {
       "inventory.data.invalid_item_values",
       "inventory.data.eligible_without_review",
       "inventory.channels.active_invalid",
+      "inventory.security.identifiers_in_batch_logs",
     ],
   },
 };

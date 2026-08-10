@@ -1787,3 +1787,47 @@ Next content-editing priorities:
 - Studio доступен только после пользовательской аутентификации. Сервисный токен
   намеренно не расширен до административного доступа к schema snapshot; это
   ограничение least privilege, а не ошибка каталога.
+
+### Inventory And Avito Staging Rollout (2026-08-10)
+
+- Перед миграцией создан и проверен локальный VPS backup
+  `/opt/isvoi/backups/directus/20260810T185243Z`: `postgres.sql.gz` и
+  `uploads.tar.gz` прошли SHA-256. Offsite upload по-прежнему отложен, поскольку
+  `OFFSITE_BACKUP_DEST` не настроен.
+- В production развёрнут приватный товарный контур: batches, складские строки,
+  строки поступлений, issues, профили канальных затрат, объявления и read-only
+  unit-экономика. Себестоимость и полные serial/IMEI недоступны Public,
+  `ISVOI Editor` и `ISVOI Importer`; новая Studio-роль
+  `ISVOI Inventory Manager` требует TFA. Headless `ISVOI Catalog Import`
+  получил только явные поля и узкие replay-права на дочерние строки batch.
+- Созданы Manual Flows для dry-run/apply и приватная файловая папка
+  `ISVOI Inventory Imports`. Существующий защищённый catalog import secret/token
+  переиспользуется как production fallback; отдельные inventory env keys
+  остаются рекомендуемой ротацией, а значения секретов не коммитятся.
+- Production batch `store-snapshot-2026-08-10`
+  (`fed0d100-9aab-455e-be36-400ffd059f81`) загрузил 61 строку / 334 единицы
+  текущего остатка и 41 строку / 65 единиц поступления. Dry-run подтвердил
+  17 identity-конфликтов, 9 отсутствующих серийных устройств, два отсутствующих
+  MacBook, 14 authenticity/replica blocker-сигналов и 9 неоднозначных вариантов.
+- Apply создал только приватный staging: 61 `inventory_items`, 41
+  `inventory_receipt_lines` и 51 issue. Повторный apply дал те же счётчики,
+  доказав идемпотентность. `products_synced=0`, ни одна карточка не опубликована,
+  полные identifiers в batch logs не обнаружены. Временные серверные копии XLSX
+  удалены после загрузки в Directus storage; исходные книги в git не добавлялись.
+- Avito foundation развёрнут с `AVITO_FEED_ENABLED=0`. Endpoint fail-closed,
+  исключает неготовые/проданные позиции и не выводит финансовые/идентификационные
+  поля. Включение запрещено до получения официального шаблона категории,
+  подтверждения ставок расходов и QA трёх б/у смартфонов.
+- `web:verify`, aggregate Directus audit, API/ops/security audits, HTTP, copy,
+  image, visual и performance smokes прошли. Статья блога показала LCP 4036 ms
+  desktop / 3456 ms mobile: в release budget, но остаётся performance-watch.
+- Sanitized schema snapshot не регенерирован: сохранённые admin credentials
+  вернули 401, а одноразовая Administrator identity без отдельного явного
+  разрешения не создавалась. SQL schema contract и production audits зелёные;
+  snapshot нужно обновить при следующем разрешённом admin maintenance.
+
+Следующий товарный шаг: Inventory Manager исправляет и подтверждает три б/у
+смартфона первой волны, добавляет Passport, диагностику и реальные фотографии;
+после Studio QA pipeline создаёт только draft-карточки. Параллельно требуется
+экспортировать официальный Avito-шаблон одной категории и подтвердить профиль
+переменных расходов.

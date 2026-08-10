@@ -7,9 +7,18 @@ export const runtime = "nodejs";
 
 type DirectusResponse<T> = { data?: T };
 
+const PRIVATE_HEADERS = {
+  "Cache-Control": "private, no-store",
+  "X-Robots-Tag": "noindex, nofollow",
+};
+
+function privateError(error: string, status: number) {
+  return NextResponse.json({ ok: false, error }, { status, headers: PRIVATE_HEADERS });
+}
+
 export async function GET() {
   if (process.env.AVITO_FEED_ENABLED !== "1") {
-    return NextResponse.json({ ok: false, error: "avito_feed_disabled" }, { status: 503 });
+    return privateError("avito_feed_disabled", 503);
   }
   const directusUrl = (process.env.DIRECTUS_URL || "").replace(/\/+$/, "");
   const publicUrl = (
@@ -20,7 +29,7 @@ export async function GET() {
   const token =
     process.env.INVENTORY_IMPORT_DIRECTUS_TOKEN || process.env.CATALOG_IMPORT_DIRECTUS_TOKEN || "";
   if (!directusUrl || !publicUrl || !token) {
-    return NextResponse.json({ ok: false, error: "avito_feed_not_configured" }, { status: 503 });
+    return privateError("avito_feed_not_configured", 503);
   }
 
   const fields = [
@@ -56,7 +65,7 @@ export async function GET() {
     cache: "no-store",
   });
   if (!response.ok) {
-    return NextResponse.json({ ok: false, error: "avito_feed_source_failed" }, { status: 502 });
+    return privateError("avito_feed_source_failed", 502);
   }
   const payload = (await response.json()) as DirectusResponse<AvitoListingRow[]>;
   const feed = buildAvitoFeed(payload.data ?? [], publicUrl);
@@ -64,8 +73,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "private, no-store",
-      "X-Robots-Tag": "noindex, nofollow",
+      ...PRIVATE_HEADERS,
     },
   });
 }

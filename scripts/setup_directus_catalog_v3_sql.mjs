@@ -813,7 +813,7 @@ WHERE ps.page=sp.id AND sp.slug='home' AND ps.section_key='catalog_preview';
 
 UPDATE page_sections ps
 SET headline='Техника и аксессуары в наличии.',
-    body='Используйте поиск, бренды, категории, состояние и совместимость. Цена и наличие управляются в Directus.',
+    body='Используйте поиск, бренды, категории, состояние и совместимость. Актуальные цена и наличие указаны в карточках товаров.',
     primary_cta_label='Открыть каталог',
     primary_cta_url='/catalog'
 FROM site_pages sp

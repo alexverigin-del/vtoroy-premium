@@ -10,10 +10,10 @@ const defaultRoutes = [
   "/passport",
   "/trade",
   "/club",
-  "/device/iphone-13-pro",
-  "/device/iphone-14",
-  "/device/macbook-air-m1",
-  "/device/ipad-air",
+  "/product/iphone-13-pro",
+  "/product/iphone-14",
+  "/product/macbook-air-m1",
+  "/product/ipad-air",
   "/blog",
   "/blog/chto-pokazyvaet-diagnostika-iphone",
   "/blog/kak-proverit-batareyu-iphone",
@@ -43,13 +43,16 @@ function routeIssues(route, data) {
 
   if (data.status !== 200) issues.push(`HTTP ${data.status}`);
   if (data.h1.length !== 1) issues.push(`expected one H1, found ${data.h1.length}`);
-  if (data.headerText.includes("Club")) issues.push("Club is present in the primary header");
+  if (route !== "/club" && data.headerText.includes("Club")) {
+    issues.push("Club is present in the primary header");
+  }
   if (
+    route !== "/club" &&
     !data.headerActions.some(
-      (action) => action.text === "Смотреть устройства" && pathFromHref(action.href) === "/catalog",
+      (action) => action.text === "Смотреть каталог" && pathFromHref(action.href) === "/catalog",
     )
   ) {
-    issues.push('header CTA must be "Смотреть устройства" → /catalog');
+    issues.push('header CTA must be "Смотреть каталог" → /catalog');
   }
 
   for (const { label, pattern } of globalBannedPatterns) {
@@ -57,14 +60,21 @@ function routeIssues(route, data) {
   }
 
   if (route === "/catalog") {
-    if (data.h1[0] !== "Проверенная б/у Apple‑техника в наличии.") {
-      issues.push("catalog H1 does not state the checked used-Apple offer");
+    if (data.h1[0] !== "Техника и аксессуары в наличии.") {
+      issues.push("catalog H1 does not state the universal Catalog V3 offer");
     }
     if (data.mainText.includes("Для Club")) issues.push("catalog exposes a Club filter");
-    const deviceLinks = data.mainActions.filter((action) => /\/device\//.test(action.href));
-    if (deviceLinks.length === 0) issues.push("catalog has no device links");
-    if (deviceLinks.some((action) => !action.text.includes("Смотреть устройство"))) {
-      issues.push('catalog card CTA must be "Смотреть устройство"');
+    const productLinks = data.mainActions.filter((action) => /\/product\//.test(action.href));
+    if (productLinks.length === 0) issues.push("catalog has no product links");
+    if (
+      productLinks.some(
+        (action) =>
+          !["Записаться на просмотр", "Забронировать", "Узнать о поступлении"].some((label) =>
+            action.text.includes(label),
+          ),
+      )
+    ) {
+      issues.push("catalog card CTA does not match the product state");
     }
   }
 
@@ -99,10 +109,7 @@ function routeIssues(route, data) {
     }
   }
 
-  if (route.startsWith("/device/")) {
-    if (!/б\/у.+грейд/iu.test(data.h1[0] || "")) {
-      issues.push("device H1 is missing used condition or grade");
-    }
+  if (route.startsWith("/product/")) {
     const expectedCta = `Записаться на просмотр ${data.h1[0]?.split(" · ")[0] || ""}`.trim();
     if (!data.mainActions.some((action) => action.text === expectedCta)) {
       issues.push(`device CTA must be "${expectedCta}"`);

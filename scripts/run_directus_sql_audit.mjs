@@ -47,7 +47,7 @@ const auditDefinitions = {
       "permissions.lead_intake_extra_permissions",
       "permissions.non_admin_wildcards",
     ],
-    equals: { "permissions.studio_tfa_policies": "4", "schema.snapshot_audit_rows": "ok" },
+    equals: { "permissions.studio_tfa_policies": "5", "schema.snapshot_audit_rows": "ok" },
   },
   studio: {
     script: "scripts/audit_directus_studio_sql.mjs",
@@ -317,6 +317,23 @@ const auditDefinitions = {
       "catalog_v3.publication.guard_missing",
     ],
   },
+  inventory: {
+    script: "scripts/audit_directus_inventory_sql.mjs",
+    zero: [
+      "inventory.schema.tables_missing",
+      "inventory.schema.unit_view_missing",
+      "inventory.studio.collections_missing",
+      "inventory.schema.relations_missing",
+      "inventory.security.manager_policy_missing",
+      "inventory.security.manager_permissions_missing",
+      "inventory.security.public_or_editor_access",
+      "inventory.security.wildcard_fields",
+      "inventory.flows.missing",
+      "inventory.data.invalid_item_values",
+      "inventory.data.eligible_without_review",
+      "inventory.channels.active_invalid",
+    ],
+  },
 };
 
 const prodAuditOrder = [
@@ -334,6 +351,7 @@ const prodAuditOrder = [
   "club",
   "conversion-v2",
   "catalog-v3",
+  "inventory",
 ];
 
 function selectedAudits() {

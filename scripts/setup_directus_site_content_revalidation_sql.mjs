@@ -46,6 +46,14 @@ const flowOptions = JSON.stringify({
     "club_rule_items",
     "club_process_items",
     "club_legal_documents",
+    "products",
+    "product_images",
+    "device_details",
+    "accessory_details",
+    "product_compatible_models",
+    "product_brands",
+    "product_categories",
+    "device_models",
   ],
 });
 

@@ -118,6 +118,12 @@
     "directus:audit-conversion-v2:sql": "node scripts/audit_directus_conversion_v2_sql.mjs",
     "directus:audit-catalog-v3:sql": "node scripts/audit_directus_catalog_v3_sql.mjs",
     "directus:audit-catalog-v3": "node scripts/run_directus_sql_audit.mjs catalog-v3",
+    "directus:audit-inventory": "node scripts/run_directus_sql_audit.mjs inventory",
+    "directus:inventory:check": "python scripts/inventory_pipeline.py",
+    "directus:inventory:test": "python scripts/test_inventory_pipeline.py",
+    "directus:avito:test": "node --experimental-strip-types scripts/test_avito_feed.mjs",
+    "directus:setup:inventory": "node scripts/setup_directus_inventory_sql.mjs",
+    "directus:setup:inventory-flow": "node scripts/setup_directus_inventory_flow_sql.mjs",
     "directus:test:catalog-v3-editability": "node scripts/test_directus_catalog_v3_editability.mjs"
   },
   "engines": {

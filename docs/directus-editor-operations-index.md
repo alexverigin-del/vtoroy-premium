@@ -173,6 +173,23 @@ Use `Импорт каталога` (`catalog_import_batches`) for bulk catalog 
 
 Detailed guide: `docs/catalog-operator-guide.md`.
 
+## Inventory And Avito
+
+Use `Товарные snapshot` (`inventory_import_batches`) for the private stock and
+receipt workflow. This area is available only to administrators and
+`ISVOI Inventory Manager`.
+
+- Upload the complete stock XLSX and optional receipt XLSX, then run the check
+  Flow before apply.
+- Resolve identity and authenticity blockers in `Проблемы импорта`; never copy
+  full serial/IMEI or purchase prices into public copy.
+- A product reaches Catalog V3 only after an explicit documented eligibility
+  override and still starts as `draft / needs_photo`.
+- Keep Avito listings in `draft` until the official category template and the
+  three-item pilot have passed QA.
+
+Detailed guide: `docs/inventory-avito-workflow.md`.
+
 ## Files
 
 Use Directus Files folders as the source of truth.
@@ -182,6 +199,7 @@ Use Directus Files folders as the source of truth.
 - `ISVOI Editorial`: approved public blog/editorial assets.
 - `ISVOI Blog`: private work-in-progress covers, illustrations and portraits.
 - `ISVOI Catalog Imports`: import workbooks and ZIP archives.
+- `ISVOI Inventory Imports`: private full stock and receipt workbooks.
 - `ISVOI File Review`: files that need sorting or deletion after review.
 
 Detailed guide: `docs/directus-files-cleanup.md`.
@@ -198,6 +216,7 @@ npm run directus:audit-images
 npm run directus:audit-studio
 npm run directus:audit-legacy-fallback
 npm run directus:audit-blog
+npm run directus:audit-inventory
 ```
 
 These commands execute their SQL checks against production and return a

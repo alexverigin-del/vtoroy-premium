@@ -104,7 +104,7 @@ UPDATE directus_policies
 SET app_access = true,
   admin_access = false,
   enforce_tfa = true
-WHERE name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer');
+WHERE name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Inventory Manager');
 
 UPDATE directus_policies
 SET app_access = false,
@@ -202,7 +202,7 @@ WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'IS
 UNION ALL
 SELECT 'admin_guardrails.studio_tfa_policies', count(*)::text
 FROM directus_policies
-WHERE name IN ('Administrator', 'ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer')
+WHERE name IN ('Administrator', 'ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Inventory Manager')
   AND COALESCE(enforce_tfa, false) = true
 UNION ALL
 SELECT 'admin_guardrails.system_permissions', count(*)::text

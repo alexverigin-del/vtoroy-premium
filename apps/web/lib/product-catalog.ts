@@ -16,6 +16,7 @@ import type {
 } from "@vtoroy/shared";
 
 import { getDeviceBySlug, getPublishedDeviceCards, directusAssetUrl } from "./directus";
+import { PRODUCTS_CACHE_TAG } from "./cache-tags";
 
 const DIRECTUS_URL = (
   process.env.DIRECTUS_URL ??
@@ -159,7 +160,7 @@ async function directusRequest<T>(
       headers,
       ...(options.noStore
         ? { cache: "no-store" as const }
-        : { next: { revalidate: REVALIDATE, tags: ["directus:products"] } }),
+        : { next: { revalidate: REVALIDATE, tags: [PRODUCTS_CACHE_TAG] } }),
     });
     if (!response.ok) return null;
     return (await response.json()) as DirectusResponse<T>;

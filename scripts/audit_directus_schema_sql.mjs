@@ -372,7 +372,7 @@ WHERE name IN ('$t:public_label', 'ISVOI Public Read', 'ISVOI Blog Preview', 'IS
 UNION ALL
 SELECT 'permissions.studio_tfa_policies', count(*)::text
 FROM directus_policies
-WHERE name IN ('Administrator', 'ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer')
+WHERE name IN ('Administrator', 'ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Inventory Manager')
   AND coalesce(enforce_tfa, false) = true
 UNION ALL
 SELECT 'permissions.self_security_policy_missing', count(*)::text
@@ -400,7 +400,7 @@ WHERE NOT EXISTS (
 )
 UNION ALL
 SELECT 'permissions.self_security_bindings_missing', count(*)::text
-FROM (VALUES ('ISVOI Editor'),('ISVOI Advanced Editor'),('ISVOI Importer')) required(role_name)
+FROM (VALUES ('ISVOI Editor'),('ISVOI Advanced Editor'),('ISVOI Importer'),('ISVOI Inventory Manager')) required(role_name)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_access access
   JOIN directus_roles role ON role.id=access.role
@@ -417,7 +417,7 @@ LEFT JOIN directus_roles role ON role.id=access.role
 WHERE policy.name='ISVOI Studio Self Security'
   AND (
     access."user" IS NOT NULL
-    OR role.name NOT IN ('ISVOI Editor','ISVOI Advanced Editor','ISVOI Importer')
+    OR role.name NOT IN ('ISVOI Editor','ISVOI Advanced Editor','ISVOI Importer','ISVOI Inventory Manager')
   )
 UNION ALL
 SELECT 'permissions.non_admin_system_permissions', count(*)::text
@@ -456,7 +456,7 @@ SELECT 'permissions.non_admin_wildcards', count(*)::text
 FROM directus_permissions pe
 JOIN directus_policies p ON p.id = pe.policy
 WHERE pe.fields = '*'
-  AND p.name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Catalog Import')
+  AND p.name IN ('ISVOI Editor', 'ISVOI Advanced Editor', 'ISVOI Importer', 'ISVOI Inventory Manager', 'ISVOI Catalog Import')
   AND NOT (p.name='ISVOI Blog Version Workflow' AND pe.collection='directus_versions')
 UNION ALL
 SELECT 'permissions.public_read_rows', count(*)::text

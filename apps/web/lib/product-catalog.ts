@@ -451,7 +451,7 @@ export async function getAllPublishedProductCards(): Promise<ProductCardData[]> 
 
 export const getProductCatalogFacets = cache(
   async function getProductCatalogFacets(): Promise<ProductCatalogFacets> {
-    const [brands, categories, models] = await Promise.all([
+    const [brands, categories, models, visibleProducts] = await Promise.all([
       directusRequest<Row[]>(
         "/items/product_brands?filter[is_active][_eq]=true&fields=id,slug,name&sort=sort,name&limit=500",
       ),
@@ -461,13 +461,33 @@ export const getProductCatalogFacets = cache(
       directusRequest<Row[]>(
         "/items/device_models?filter[is_active][_eq]=true&fields=id,slug,name,family,year,brand.id,brand.slug,brand.name&sort=brand.name,name&limit=1000",
       ),
+      directusRequest<Row[]>(
+        "/items/products?filter[status][_eq]=published&filter[content_status][_eq]=ready&filter[stock_status][_neq]=hidden&fields=category.slug&limit=500",
+      ),
     ]);
+
+    const categoryCounts = visibleProducts
+      ? visibleProducts.data.reduce((counts, row) => {
+          const slug = text(relation(row.category).slug);
+          if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1);
+          return counts;
+        }, new Map<string, number>())
+      : null;
 
     return {
       brands: brands?.data.map((row) => mapBrand(row)).filter((item) => item.name) ?? [
         { id: "apple", slug: "apple", name: "Apple" },
       ],
-      categories: categories?.data.map((row) => mapCategory(row)).filter((item) => item.name) ?? [],
+      categories:
+        categories?.data
+          .map((row) => mapCategory(row))
+          .filter((item) => item.name)
+          .map((category) => ({
+            ...category,
+            visibleProductCount: categoryCounts
+              ? (categoryCounts.get(category.slug) ?? 0)
+              : undefined,
+          })) ?? [],
       models:
         models?.data.flatMap((row) => {
           const model = mapModel(row);

@@ -9,7 +9,14 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-from inventory_pipeline import find_missing_items, parse_inventory, parse_receipts, reconcile, summarize
+from inventory_pipeline import (
+    find_missing_items,
+    parse_inventory,
+    parse_receipts,
+    product_mapping,
+    reconcile,
+    summarize,
+)
 
 
 INVENTORY_HEADERS = [
@@ -142,6 +149,67 @@ class InventoryPipelineTest(unittest.TestCase):
         missing = {"id": "item-2", "source_id": "source-2", "source_sku": "sku-2"}
         client = FakeDirectus([{"id": "item-1", "source_id": "source-1"}, missing])
         self.assertEqual(find_missing_items(client, "store_inventory", inventory), [missing])
+
+    def test_product_mapping_uses_group_path_for_wearables(self) -> None:
+        watch = {
+            "source_title": "Smart Band Model 10",
+            "source_group": "Смарт-часы или браслеты",
+            "source_group_path": "Товары на продажу \\ Часы \\ Смарт-часы или браслеты",
+        }
+        glasses = {
+            "source_title": "AI Glasses",
+            "source_group": "Смарт очки",
+            "source_group_path": "Товары на продажу \\ Смарт-электроника \\ Смарт очки",
+        }
+        self.assertEqual(product_mapping(watch)[:2], ("device", "watches"))
+        self.assertEqual(product_mapping(glasses)[:2], ("device", "smart-electronics"))
+
+    def test_product_mapping_falls_back_when_group_path_is_missing(self) -> None:
+        glasses = {
+            "source_title": "AI Glasses",
+            "source_group": "Смарт очки",
+            "source_group_path": "",
+        }
+        self.assertEqual(product_mapping(glasses)[:2], ("device", "smart-electronics"))
+
+    def test_product_mapping_covers_inventory_group_structure(self) -> None:
+        cases = {
+            "Зарядные устройства \\ Apple": ("accessory", "chargers"),
+            "Зарядные устройства \\ Samsung": ("accessory", "chargers"),
+            "Ноутбуки": ("device", "laptops"),
+            "Телефоны": ("device", "smartphones"),
+            "Товары на продажу \\ Защитные стекла и пленки \\ Защитные стекла": (
+                "accessory",
+                "protective-glass",
+            ),
+            "Товары на продажу \\ Наушники \\ Беспроводные наушники": (
+                "device",
+                "headphones",
+            ),
+            "Товары на продажу \\ Планшеты": ("device", "tablets"),
+            "Товары на продажу \\ Роутеры": ("device", "routers"),
+            "Товары на продажу \\ Смарт-электроника": ("device", "smart-electronics"),
+            "Товары на продажу \\ Смарт-электроника \\ Смарт очки": (
+                "device",
+                "smart-electronics",
+            ),
+            "Товары на продажу \\ Смартфоны": ("device", "smartphones"),
+            "Товары на продажу \\ Часы \\ Смарт-часы или браслеты": ("device", "watches"),
+            "Товары на продажу \\ Чехлы и бамперы для смартфонов \\ Чехлы для смартфонов": (
+                "accessory",
+                "cases",
+            ),
+            "от 10.000 мА*ч до 20.000 мА*ч": ("accessory", "power-banks"),
+        }
+
+        for group_path, expected in cases.items():
+            with self.subTest(group_path=group_path):
+                item = {
+                    "source_title": "Тестовый товар",
+                    "source_group": "Не используется",
+                    "source_group_path": group_path,
+                }
+                self.assertEqual(product_mapping(item)[:2], expected)
 
 
 if __name__ == "__main__":

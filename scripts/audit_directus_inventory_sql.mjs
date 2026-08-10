@@ -4,7 +4,8 @@ process.stdout.write(String.raw`
 WITH expected(table_name) AS (
   VALUES
     ('inventory_import_batches'),('inventory_items'),('inventory_receipt_lines'),
-    ('inventory_import_issues'),('channel_cost_profiles'),('product_channel_listings')
+    ('inventory_import_issues'),('channel_cost_profiles'),('channel_category_mappings'),
+    ('product_channel_listings')
 )
 SELECT 'inventory.schema.tables_missing' AS check_name, count(*)::text AS value
 FROM expected WHERE to_regclass('public.' || table_name) IS NULL
@@ -19,7 +20,8 @@ UNION ALL
 SELECT 'inventory.studio.collections_missing', count(*)::text
 FROM (VALUES
   ('inventory_import_batches'),('inventory_items'),('inventory_receipt_lines'),
-  ('inventory_import_issues'),('channel_cost_profiles'),('product_channel_listings'),
+  ('inventory_import_issues'),('channel_cost_profiles'),('channel_category_mappings'),
+  ('product_channel_listings'),
   ('product_unit_economics')
 ) expected(collection)
 WHERE NOT EXISTS (
@@ -33,7 +35,8 @@ FROM (VALUES
   ('inventory_items','product'),('inventory_items','last_seen_batch'),
   ('inventory_receipt_lines','batch'),('inventory_receipt_lines','inventory_item'),
   ('inventory_import_issues','batch'),('channel_cost_profiles','category'),
-  ('product_channel_listings','product')
+  ('channel_category_mappings','product_category'),
+  ('product_channel_listings','product'),('product_channel_listings','category_mapping')
 ) expected(collection,field)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_relations relation
@@ -65,7 +68,8 @@ UNION ALL
 SELECT 'inventory.security.manager_permissions_missing', count(*)::text
 FROM (VALUES
   ('inventory_import_batches'),('inventory_items'),('inventory_receipt_lines'),
-  ('inventory_import_issues'),('channel_cost_profiles'),('product_channel_listings'),
+  ('inventory_import_issues'),('channel_cost_profiles'),('channel_category_mappings'),
+  ('product_channel_listings'),
   ('product_unit_economics')
 ) expected(collection)
 WHERE NOT EXISTS (
@@ -80,7 +84,8 @@ FROM directus_permissions permission
 JOIN directus_policies policy ON policy.id=permission.policy
 WHERE permission.collection IN (
   'inventory_import_batches','inventory_items','inventory_receipt_lines',
-  'inventory_import_issues','channel_cost_profiles','product_channel_listings',
+  'inventory_import_issues','channel_cost_profiles','channel_category_mappings',
+  'product_channel_listings',
   'product_unit_economics'
 ) AND policy.name IN ('ISVOI Public Read','ISVOI Editor','ISVOI Importer')
 UNION ALL
@@ -90,7 +95,8 @@ JOIN directus_policies policy ON policy.id=permission.policy
 WHERE policy.name IN ('ISVOI Inventory Manager','ISVOI Catalog Import')
   AND permission.collection IN (
     'inventory_import_batches','inventory_items','inventory_receipt_lines',
-    'inventory_import_issues','channel_cost_profiles','product_channel_listings',
+    'inventory_import_issues','channel_cost_profiles','channel_category_mappings',
+    'product_channel_listings',
     'product_unit_economics'
   ) AND permission.fields='*'
 UNION ALL
@@ -130,14 +136,49 @@ SELECT 'inventory.channels.active_invalid', count(*)::text
 FROM product_channel_listings listing
 JOIN products product ON product.id=listing.product
 LEFT JOIN inventory_items item ON item.product=product.id
+LEFT JOIN channel_category_mappings mapping ON mapping.id=listing.category_mapping
 WHERE listing.status='active' AND (
   product.status <> 'published' OR product.content_status <> 'ready'
   OR product.stock_status <> 'available' OR product.stock_quantity <= 0
   OR item.id IS NULL OR item.eligibility_status <> 'eligible'
+  OR mapping.id IS NULL OR mapping.channel IS DISTINCT FROM listing.channel
+  OR mapping.product_category IS DISTINCT FROM product.category
+  OR mapping.is_active IS DISTINCT FROM true OR mapping.is_confirmed IS DISTINCT FROM true
+  OR NULLIF(mapping.external_category,'') IS NULL
   OR NOT EXISTS (
     SELECT 1 FROM product_images image
     WHERE image.product=product.id AND image.status='published' AND image.image IS NOT NULL
   )
+)
+UNION ALL
+SELECT 'inventory.channels.category_mappings_missing', count(*)::text
+FROM product_categories category
+WHERE category.is_active=true AND NOT EXISTS (
+  SELECT 1 FROM channel_category_mappings mapping
+  WHERE mapping.channel='avito' AND mapping.product_category=category.id
+)
+UNION ALL
+SELECT 'inventory.channels.listing_mapping_mismatch', count(*)::text
+FROM product_channel_listings listing
+JOIN products product ON product.id=listing.product
+JOIN channel_category_mappings mapping ON mapping.id=listing.category_mapping
+WHERE mapping.channel IS DISTINCT FROM listing.channel
+  OR mapping.product_category IS DISTINCT FROM product.category
+UNION ALL
+SELECT 'inventory.channels.confirmed_mapping_invalid', count(*)::text
+FROM channel_category_mappings mapping
+WHERE mapping.is_confirmed=true AND (
+  mapping.is_active=false OR NULLIF(mapping.external_category,'') IS NULL
+  OR NULLIF(mapping.template_version,'') IS NULL
+)
+UNION ALL
+SELECT 'inventory.channels.mapping_guards_missing', count(*)::text
+FROM (VALUES
+  ('product_channel_listings_mapping_guard'),('products_channel_mapping_guard')
+) expected(trigger_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM pg_trigger trigger
+  WHERE trigger.tgname=expected.trigger_name AND trigger.tgisinternal=false
 )
 UNION ALL
 SELECT 'inventory.security.identifiers_in_batch_logs', count(*)::text
@@ -164,5 +205,8 @@ SELECT 'inventory.info.open_blockers', count(*)::text
 FROM inventory_import_issues WHERE severity='blocker' AND resolved=false
 UNION ALL
 SELECT 'inventory.info.unconfirmed_cost_profiles', count(*)::text
-FROM channel_cost_profiles WHERE is_active=true AND is_confirmed=false;
+FROM channel_cost_profiles WHERE is_active=true AND is_confirmed=false
+UNION ALL
+SELECT 'inventory.info.unconfirmed_category_mappings', count(*)::text
+FROM channel_category_mappings WHERE channel='avito' AND is_active=true AND is_confirmed=false;
 `);

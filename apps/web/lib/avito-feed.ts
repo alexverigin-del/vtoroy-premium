@@ -5,6 +5,7 @@ export type AvitoListingRow = {
   title_override?: unknown;
   description_override?: unknown;
   price_override?: unknown;
+  category_mapping?: unknown;
   category_code?: unknown;
   attributes?: unknown;
   product?: unknown;
@@ -66,10 +67,16 @@ function attributeElements(value: unknown): string[] {
 export function buildAvitoFeed(rows: AvitoListingRow[], directusPublicUrl: string): string {
   const ads = rows.flatMap((listing) => {
     const product = record(listing.product);
+    const mapping = record(listing.category_mapping);
     const id = text(listing.external_id);
     const title = text(listing.title_override) || text(product.title);
-    const category = text(listing.category_code);
-    const attributes = record(listing.attributes);
+    const category = text(mapping.external_category);
+    const goodsType = text(mapping.external_goods_type);
+    const attributes: Row = {
+      ...record(mapping.default_attributes),
+      ...record(listing.attributes),
+      ...(goodsType ? { GoodsType: goodsType } : {}),
+    };
     const condition = text(attributes.Condition);
     const price = number(listing.price_override) || number(product.price);
     const quantity = number(product.stock_quantity);
@@ -79,6 +86,9 @@ export function buildAvitoFeed(rows: AvitoListingRow[], directusPublicUrl: strin
       category &&
       condition &&
       price > 0 &&
+      mapping.channel === "avito" &&
+      mapping.is_active === true &&
+      mapping.is_confirmed === true &&
       product.status === "published" &&
       product.content_status === "ready" &&
       product.stock_status === "available" &&
@@ -107,7 +117,7 @@ export function buildAvitoFeed(rows: AvitoListingRow[], directusPublicUrl: strin
       `<Price>${Math.round(price)}</Price>`,
       `<Condition>${xml(condition)}</Condition>`,
       `<Images>${images.map((url) => `<Image url="${xml(url)}" />`).join("")}</Images>`,
-      ...attributeElements(listing.attributes),
+      ...attributeElements(attributes),
     ];
     return [`<Ad>${elements.join("")}</Ad>`];
   });

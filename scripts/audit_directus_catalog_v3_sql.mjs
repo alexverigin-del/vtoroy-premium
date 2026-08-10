@@ -90,6 +90,11 @@ WHERE NOT EXISTS (
   WHERE policy.name='ISVOI Editor' AND dp.collection=expected.collection AND dp.action='update'
 )
 UNION ALL
+SELECT 'catalog_v3.integrity.category_type_mismatch', count(*)::text
+FROM products p
+JOIN product_categories c ON c.id=p.category
+WHERE c.catalog_section IS DISTINCT FROM p.product_type
+UNION ALL
 SELECT 'catalog_v3.publication.invalid_required', count(*)::text
 FROM products p
 WHERE p.status='published' AND (

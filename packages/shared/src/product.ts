@@ -17,6 +17,7 @@ export interface ProductCategory {
   name: string;
   catalogSection: ProductType;
   parentSlug?: string;
+  visibleProductCount?: number;
 }
 
 export interface DeviceModel {

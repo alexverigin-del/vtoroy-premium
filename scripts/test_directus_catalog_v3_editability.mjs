@@ -8,7 +8,7 @@ if (!baseUrl || !token) {
   throw new Error("DIRECTUS_URL and DIRECTUS_TOKEN are required.");
 }
 
-async function request(path, options = {}) {
+async function rawRequest(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
@@ -20,6 +20,11 @@ async function request(path, options = {}) {
   });
 
   const body = await response.text();
+  return { response, body };
+}
+
+async function request(path, options = {}) {
+  const { response, body } = await rawRequest(path, options);
   if (!response.ok) {
     throw new Error(`${options.method || "GET"} ${path}: ${response.status} ${body}`);
   }
@@ -29,7 +34,7 @@ async function request(path, options = {}) {
 
 const query = new URLSearchParams({
   "filter[id][_eq]": productId,
-  fields: "id,status,content_status,short_description",
+  fields: "id,status,content_status,product_type,category.id,category.catalog_section,short_description",
   limit: "1",
 });
 const result = await request(`/items/products?${query}`);
@@ -41,6 +46,48 @@ if (!product) {
 
 if (product.status === "published") {
   throw new Error(`Refusing to edit published product: ${productId}`);
+}
+
+const originalCategoryId = product.category?.id;
+if (!originalCategoryId || !product.product_type) {
+  throw new Error(`QA product has no category or product_type: ${productId}`);
+}
+
+const categories = await request(
+  "/items/product_categories?fields=id,catalog_section&filter[is_active][_eq]=true&limit=500",
+);
+const incompatibleCategory = categories?.data?.find(
+  (category) => category.catalog_section !== product.product_type,
+);
+if (!incompatibleCategory) {
+  throw new Error(`No incompatible category is available for product_type=${product.product_type}`);
+}
+
+const mismatchAttempt = await rawRequest(`/items/products/${product.id}`, {
+  method: "PATCH",
+  body: JSON.stringify({ category: incompatibleCategory.id }),
+});
+if (mismatchAttempt.response.ok) {
+  await request(`/items/products/${product.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ category: originalCategoryId }),
+  });
+  throw new Error("Draft accepted a category from another catalog section.");
+}
+if ([401, 403, 404].includes(mismatchAttempt.response.status)) {
+  throw new Error(
+    `Draft category mismatch was rejected by access/routing instead of validation: ${mismatchAttempt.response.status}`,
+  );
+}
+if (!mismatchAttempt.body.includes("Категория не соответствует типу товара")) {
+  throw new Error(`Unexpected draft validation response: ${mismatchAttempt.body}`);
+}
+
+const productAfterMismatch = await request(
+  `/items/products/${product.id}?fields=id,category.id,category.catalog_section`,
+);
+if (productAfterMismatch?.data?.category?.id !== originalCategoryId) {
+  throw new Error("Rejected category mismatch changed the QA draft.");
 }
 
 const originalDescription = product.short_description ?? null;
@@ -85,6 +132,7 @@ console.log(
     product_id: productId,
     status: restoredProduct.data.status,
     content_status: restoredProduct.data.content_status,
+    draft_category_type_guard: true,
     restored: true,
   }),
 );

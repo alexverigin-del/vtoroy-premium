@@ -390,17 +390,51 @@ def slug_id(title: str, source_id: str) -> str:
 def product_mapping(item: dict[str, Any]) -> tuple[str, str, str]:
     title = normalize(item["source_title"])
     group = normalize(item["source_group"])
+    group_path = [
+        normalize(segment)
+        for segment in re.split(r"\\+|/|>", text(item.get("source_group_path")))
+        if normalize(segment)
+    ]
+    group_leaf = group_path[-1] if group_path else ""
     brand = "apple" if any(term in title for term in ("apple", "iphone", "macbook", "airpods")) else (
         "samsung" if "samsung" in title else "xiaomi" if any(term in title for term in ("xiaomi", " mi ", "smartband")) else "other"
     )
+
+    if "смарт очки" in group_path:
+        return "device", "smart-electronics", brand
+    if "смарт часы или браслеты" in group_path:
+        return "device", "watches", brand
+    if group_leaf in {"телефоны", "смартфоны"}:
+        return "device", "smartphones", brand
+    if group_leaf == "ноутбуки":
+        return "device", "laptops", brand
+    if group_leaf == "планшеты":
+        return "device", "tablets", brand
+    if group_leaf == "беспроводные наушники":
+        return "device", "headphones", brand
+    if group_leaf == "роутеры":
+        return "device", "routers", brand
+    if group_leaf == "смарт электроника":
+        return "device", "smart-electronics", brand
+    if group_leaf == "чехлы для смартфонов":
+        return "accessory", "cases", brand
+    if group_leaf == "защитные стекла":
+        return "accessory", "protective-glass", brand
+    if "зарядные устройства" in group_path:
+        return "accessory", "chargers", brand
+    if "ма ч" in group_leaf or "mah" in group_leaf:
+        return "accessory", "power-banks", brand
+
     if group in {"телефоны", "смартфоны"}:
         return "device", "smartphones", brand
     if group == "ноутбуки":
         return "device", "laptops", brand
     if group == "планшеты":
         return "device", "tablets", brand
-    if "час" in group or "смарт очки" in group:
+    if "час" in group:
         return "device", "watches", brand
+    if "смарт очки" in group:
+        return "device", "smart-electronics", brand
     if "науш" in group:
         return "device", "headphones", brand
     if "роут" in group:

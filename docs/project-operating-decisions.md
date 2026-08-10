@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-07-25.
+Last updated: 2026-08-10.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -1831,3 +1831,32 @@ Next content-editing priorities:
 после Studio QA pipeline создаёт только draft-карточки. Параллельно требуется
 экспортировать официальный Avito-шаблон одной категории и подтвердить профиль
 переменных расходов.
+
+### Category And Avito Mapping Hardening (2026-08-10)
+
+- Перед live-изменениями создан локальный VPS backup
+  `/opt/isvoi/backups/directus/20260810T195937Z`; `postgres.sql.gz` и
+  `uploads.tar.gz` прошли SHA-256. Offsite upload не выполнялся: он остаётся
+  явно отложенным и не считается завершённой disaster-recovery защитой.
+- Полная товарная выгрузка использует `Структура групп` как первичный источник
+  категории. Проверены 61 строка и 14 уникальных путей, несопоставленных строк
+  нет. Часы и браслеты остаются в `watches`, смарт-очки относятся к
+  `smart-electronics`, а складская группа «Зарядные устройства» не делится на
+  кабели и адаптеры без более точного источника.
+- Активные, но пустые категории сохраняются в Directus для будущего
+  ассортимента, однако публичные catalog controls и sitemap показывают только
+  категории, в которых есть доступный публичный товар.
+- Соответствие `products.product_type` и
+  `product_categories.catalog_section` проверяется уже при сохранении draft.
+  Остальные требования комплектности по-прежнему применяются только при
+  публикации. SQL-аудит контролирует все товары, а API regression test
+  подтверждает отказ без изменения черновика.
+- Для Avito используется отдельная приватная коллекция
+  `channel_category_mappings`. Одна категория сайта может иметь несколько
+  mapping через стабильный `mapping_key`; это обязательно для широкого раздела
+  `smart-electronics`. Конкретное объявление выбирает mapping явно.
+- Внутренние slug и legacy `category_code` не экспортируются. Feed принимает
+  только активный подтверждённый mapping той же категории и канала, объединяет
+  его общие атрибуты с атрибутами объявления и остаётся выключенным через
+  `AVITO_FEED_ENABLED=0` до официального шаблона, XML validation, подтверждения
+  расходов и QA пилотных смартфонов.

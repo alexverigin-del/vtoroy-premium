@@ -71,12 +71,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.65,
     })),
-    ...facets.categories.map((category) => ({
-      url: `${SITE_URL}/catalog/category/${category.slug}`,
-      lastModified: now,
-      changeFrequency: "daily" as const,
-      priority: 0.65,
-    })),
+    ...facets.categories
+      .filter(
+        (category) =>
+          category.visibleProductCount === undefined || category.visibleProductCount > 0,
+      )
+      .map((category) => ({
+        url: `${SITE_URL}/catalog/category/${category.slug}`,
+        lastModified: now,
+        changeFrequency: "daily" as const,
+        priority: 0.65,
+      })),
     ...products.map((product) => ({
       url: `${SITE_URL}/product/${product.id}`,
       lastModified: validDate(product.updatedAt) ?? now,

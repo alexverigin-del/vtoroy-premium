@@ -832,21 +832,25 @@ SET headline='Passport — доказательства для проверен�
 FROM site_pages sp
 WHERE ps.page=sp.id AND sp.slug='passport' AND ps.section_key='passport_hero';
 
--- Publication gate is installed after the legacy copy. It protects future
--- editor/API changes and reports precise errors in Studio.
+-- Product integrity and publication gates are installed after the legacy copy.
+-- Category/type conflicts are rejected as soon as a draft is saved; the
+-- remaining completeness checks apply only when the product is published.
 CREATE OR REPLACE FUNCTION isvoi_validate_product_publication()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE v_mode varchar; v_category_section varchar;
 BEGIN
+  IF NEW.category IS NOT NULL AND NEW.product_type IS NOT NULL THEN
+    SELECT catalog_section INTO v_category_section FROM product_categories WHERE id=NEW.category;
+    IF v_category_section IS DISTINCT FROM NEW.product_type THEN
+      RAISE EXCEPTION 'Категория не соответствует типу товара';
+    END IF;
+  END IF;
+
   IF NEW.status <> 'published' THEN RETURN NEW; END IF;
   IF NEW.content_status <> 'ready' OR NULLIF(NEW.sku,'') IS NULL OR NEW.brand IS NULL OR
      NEW.category IS NULL OR NEW.price <= 0 OR NULLIF(NEW.warranty,'') IS NULL OR
      NEW.listing_file IS NULL OR NULLIF(NEW.stock_status,'') IS NULL THEN
     RAISE EXCEPTION 'Товар не готов к публикации: нужны ready, SKU, бренд, категория, цена, гарантия, главное фото и наличие';
-  END IF;
-  SELECT catalog_section INTO v_category_section FROM product_categories WHERE id=NEW.category;
-  IF v_category_section <> NEW.product_type THEN
-    RAISE EXCEPTION 'Категория не соответствует типу товара';
   END IF;
   IF NEW.product_type='device' AND (
     NEW.device_model IS NULL OR NOT EXISTS (SELECT 1 FROM device_details WHERE product=NEW.id)

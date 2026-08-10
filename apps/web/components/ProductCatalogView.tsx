@@ -66,7 +66,11 @@ function catalogCategories(
 ): CatalogCategory[] {
   const bySlug = new Map<string, CatalogCategory>();
   for (const category of facets.categories) {
-    if (!type || category.catalogSection === type) bySlug.set(category.slug, category);
+    const hasVisibleProducts =
+      category.visibleProductCount === undefined || category.visibleProductCount > 0;
+    if (hasVisibleProducts && (!type || category.catalogSection === type)) {
+      bySlug.set(category.slug, category);
+    }
   }
   for (const product of products) {
     if (!type || product.category.catalogSection === type) {

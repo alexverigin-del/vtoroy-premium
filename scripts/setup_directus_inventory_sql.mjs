@@ -123,6 +123,41 @@ CREATE TABLE IF NOT EXISTS channel_cost_profiles (
   UNIQUE (channel, name)
 );
 
+CREATE TABLE IF NOT EXISTS channel_category_mappings (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  channel varchar(32) NOT NULL DEFAULT 'avito',
+  mapping_key varchar(160) NOT NULL,
+  product_category uuid NOT NULL REFERENCES product_categories(id) ON DELETE CASCADE,
+  external_category varchar(160),
+  external_category_id varchar(160),
+  external_goods_type varchar(160),
+  default_attributes jsonb NOT NULL DEFAULT '{}'::jsonb,
+  template_version varchar(160),
+  is_active boolean NOT NULL DEFAULT true,
+  is_confirmed boolean NOT NULL DEFAULT false,
+  note text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (channel, mapping_key)
+);
+
+ALTER TABLE channel_category_mappings ADD COLUMN IF NOT EXISTS mapping_key varchar(160);
+UPDATE channel_category_mappings mapping
+SET mapping_key=category.slug || '-default'
+FROM product_categories category
+WHERE mapping.product_category=category.id AND NULLIF(mapping.mapping_key,'') IS NULL;
+ALTER TABLE channel_category_mappings ALTER COLUMN mapping_key SET NOT NULL;
+ALTER TABLE channel_category_mappings
+  DROP CONSTRAINT IF EXISTS channel_category_mappings_channel_product_category_key;
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname='channel_category_mappings_channel_mapping_key_key'
+  ) THEN
+    ALTER TABLE channel_category_mappings
+      ADD CONSTRAINT channel_category_mappings_channel_mapping_key_key UNIQUE (channel,mapping_key);
+  END IF;
+END $$;
+
 CREATE TABLE IF NOT EXISTS product_channel_listings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product varchar(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
@@ -132,6 +167,7 @@ CREATE TABLE IF NOT EXISTS product_channel_listings (
   title_override varchar(255),
   description_override text,
   price_override numeric(14,2),
+  category_mapping uuid REFERENCES channel_category_mappings(id) ON DELETE RESTRICT,
   category_code varchar(160),
   attributes jsonb,
   last_export_hash varchar(128),
@@ -144,10 +180,25 @@ CREATE TABLE IF NOT EXISTS product_channel_listings (
   UNIQUE (product, channel)
 );
 
+ALTER TABLE product_channel_listings
+  ADD COLUMN IF NOT EXISTS category_mapping uuid;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname='product_channel_listings_category_mapping_fkey'
+  ) THEN
+    ALTER TABLE product_channel_listings
+      ADD CONSTRAINT product_channel_listings_category_mapping_fkey
+      FOREIGN KEY (category_mapping) REFERENCES channel_category_mappings(id) ON DELETE RESTRICT;
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS inventory_items_product_idx ON inventory_items(product);
 CREATE INDEX IF NOT EXISTS inventory_items_status_idx ON inventory_items(eligibility_status, identity_status, authenticity_status);
 CREATE INDEX IF NOT EXISTS inventory_issues_batch_idx ON inventory_import_issues(batch, severity, resolved);
 CREATE INDEX IF NOT EXISTS channel_listings_status_idx ON product_channel_listings(channel, status);
+CREATE INDEX IF NOT EXISTS channel_category_mappings_status_idx
+  ON channel_category_mappings(channel, is_active, is_confirmed);
 
 CREATE OR REPLACE FUNCTION isvoi_inventory_touch_updated_at()
 RETURNS trigger LANGUAGE plpgsql AS $$
@@ -156,11 +207,69 @@ $$;
 
 DO $$ DECLARE table_name text;
 BEGIN
-  FOREACH table_name IN ARRAY ARRAY['inventory_import_batches','inventory_items','channel_cost_profiles','product_channel_listings'] LOOP
+  FOREACH table_name IN ARRAY ARRAY['inventory_import_batches','inventory_items','channel_cost_profiles','channel_category_mappings','product_channel_listings'] LOOP
     EXECUTE format('DROP TRIGGER IF EXISTS %I ON %I', table_name || '_touch_updated_at', table_name);
     EXECUTE format('CREATE TRIGGER %I BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION isvoi_inventory_touch_updated_at()', table_name || '_touch_updated_at', table_name);
   END LOOP;
 END $$;
+
+CREATE OR REPLACE FUNCTION isvoi_validate_channel_listing_mapping()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+  v_product_category uuid;
+  v_mapping_channel varchar;
+  v_mapping_category uuid;
+  v_external_category varchar;
+  v_mapping_active boolean;
+  v_mapping_confirmed boolean;
+BEGIN
+  SELECT category INTO v_product_category FROM products WHERE id=NEW.product;
+
+  IF NEW.category_mapping IS NOT NULL THEN
+    SELECT channel, product_category, external_category, is_active, is_confirmed
+      INTO v_mapping_channel, v_mapping_category, v_external_category, v_mapping_active, v_mapping_confirmed
+    FROM channel_category_mappings WHERE id=NEW.category_mapping;
+
+    IF v_mapping_channel IS DISTINCT FROM NEW.channel OR v_mapping_category IS DISTINCT FROM v_product_category THEN
+      RAISE EXCEPTION 'Категория Avito не соответствует каналу или категории товара';
+    END IF;
+  END IF;
+
+  IF NEW.status IN ('ready','active') AND (
+    NEW.category_mapping IS NULL OR v_mapping_active IS DISTINCT FROM true
+    OR v_mapping_confirmed IS DISTINCT FROM true OR NULLIF(v_external_category,'') IS NULL
+  ) THEN
+    RAISE EXCEPTION 'Для готового объявления нужен активный подтвержденный mapping категории Avito';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS product_channel_listings_mapping_guard ON product_channel_listings;
+CREATE TRIGGER product_channel_listings_mapping_guard
+BEFORE INSERT OR UPDATE OF product,channel,status,category_mapping
+ON product_channel_listings FOR EACH ROW EXECUTE FUNCTION isvoi_validate_channel_listing_mapping();
+
+CREATE OR REPLACE FUNCTION isvoi_validate_product_channel_mappings()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.category IS DISTINCT FROM OLD.category AND EXISTS (
+    SELECT 1
+    FROM product_channel_listings listing
+    JOIN channel_category_mappings mapping ON mapping.id=listing.category_mapping
+    WHERE listing.product=NEW.id AND mapping.product_category IS DISTINCT FROM NEW.category
+  ) THEN
+    RAISE EXCEPTION 'Сначала обновите mapping канального объявления для новой категории товара';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS products_channel_mapping_guard ON products;
+CREATE TRIGGER products_channel_mapping_guard
+BEFORE UPDATE OF category ON products
+FOR EACH ROW EXECUTE FUNCTION isvoi_validate_product_channel_mappings();
 
 CREATE OR REPLACE VIEW product_unit_economics AS
 SELECT
@@ -217,8 +326,9 @@ VALUES
   ('inventory_receipt_lines','receipt_long','Исторические строки поступлений и плановой маржи.','{{source_title}} · {{unit_cost}}',NULL,NULL,NULL,'all',62,'#7c3aed'),
   ('inventory_import_issues','report_problem','Блокеры и предупреждения сверки inventory snapshot.','{{severity}} · {{code}} · {{message}}','resolved','true','false','all',63,'#dc2626'),
   ('channel_cost_profiles','calculate','Подтверждённые переменные расходы каналов продаж.','{{channel}} · {{name}} · {{is_confirmed}}','is_active','false','true','all',64,'#475569'),
-  ('product_channel_listings','campaign','Канальные объявления. Сейчас поддерживается безопасный Avito feed.','{{channel}} · {{external_id}} · {{status}}','status','archived','draft','all',65,'#2563eb'),
-  ('product_unit_economics','monitoring','Read-only unit-экономика по товару и каналу.',NULL,NULL,NULL,NULL,'all',66,'#111827')
+  ('channel_category_mappings','account_tree','Соответствие категории сайта официальному шаблону канала.','{{channel}} · {{mapping_key}} · {{external_category}}','is_active','false','true','all',65,'#0f766e'),
+  ('product_channel_listings','campaign','Канальные объявления. Сейчас поддерживается безопасный Avito feed.','{{channel}} · {{external_id}} · {{status}}','status','archived','draft','all',66,'#2563eb'),
+  ('product_unit_economics','monitoring','Read-only unit-экономика по товару и каналу.',NULL,NULL,NULL,NULL,'all',67,'#111827')
 ON CONFLICT (collection) DO UPDATE SET
   icon=EXCLUDED.icon, note=EXCLUDED.note, display_template=EXCLUDED.display_template,
   archive_field=EXCLUDED.archive_field, archive_value=EXCLUDED.archive_value,
@@ -280,6 +390,18 @@ SELECT isvoi_inventory_field('inventory_import_issues','resolution_note','input-
 
 SELECT isvoi_inventory_field('channel_cost_profiles','category','select-dropdown-m2o','related-values','{"template":"{{name}}"}','half',1,'Необязательная категория для более точной ставки.','m2o');
 
+SELECT isvoi_inventory_field('channel_category_mappings','channel','select-dropdown','labels','{"choices":[{"text":"Avito","value":"avito"}]}','half',1,'Канал публикации.',NULL,true);
+SELECT isvoi_inventory_field('channel_category_mappings','mapping_key','input',NULL,NULL,'half',2,'Стабильный ключ mapping, например smartphones-default или smart-electronics-glasses.',NULL,true);
+SELECT isvoi_inventory_field('channel_category_mappings','product_category','select-dropdown-m2o','related-values','{"template":"{{name}} · {{catalog_section}}"}','full',3,'Категория сайта. Для широкой категории допускается несколько Avito mapping.','m2o',true);
+SELECT isvoi_inventory_field('channel_category_mappings','external_category','input',NULL,NULL,'half',4,'Точное значение Category из официального шаблона Avito. Не используйте внутренний slug.');
+SELECT isvoi_inventory_field('channel_category_mappings','external_category_id','input',NULL,NULL,'half',5,'Код/ID категории, только если он присутствует в выбранном официальном шаблоне.');
+SELECT isvoi_inventory_field('channel_category_mappings','external_goods_type','input',NULL,NULL,'half',6,'Точное значение GoodsType из официального шаблона, если требуется.');
+SELECT isvoi_inventory_field('channel_category_mappings','template_version','input',NULL,NULL,'half',7,'Дата или версия выгруженного шаблона Avito.');
+SELECT isvoi_inventory_field('channel_category_mappings','default_attributes','input-code',NULL,'{"language":"json"}','full',8,'Общие атрибуты категории из официального шаблона. Значения объявления могут их переопределить.','cast-json');
+SELECT isvoi_inventory_field('channel_category_mappings','is_confirmed','boolean','boolean',NULL,'half',9,'Включайте только после проверки официального шаблона и XML validator.');
+SELECT isvoi_inventory_field('channel_category_mappings','is_active','boolean','boolean',NULL,'half',10,'Неактивный mapping нельзя использовать в готовом объявлении.');
+SELECT isvoi_inventory_field('channel_category_mappings','note','input-multiline',NULL,NULL,'full',11,'Источник и комментарий оператора.');
+
 SELECT isvoi_inventory_field('inventory_import_batches','items','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',30,'Строки текущего snapshot.','o2m',false,true);
 SELECT isvoi_inventory_field('inventory_import_batches','receipt_lines','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',31,'Исторические строки поступления.','o2m',false,true);
 SELECT isvoi_inventory_field('inventory_import_batches','issues','list-o2m',NULL,'{"enableCreate":false,"enableSelect":false}','full',32,'Блокеры и предупреждения проверки.','o2m',false,true);
@@ -291,8 +413,10 @@ SELECT isvoi_inventory_field('product_channel_listings','product','select-dropdo
 SELECT isvoi_inventory_field('product_channel_listings','channel','select-dropdown','labels','{"choices":[{"text":"Avito","value":"avito"}]}','half',2,'Канал.',NULL,true);
 SELECT isvoi_inventory_field('product_channel_listings','status','select-dropdown','labels','{"choices":[{"text":"Черновик","value":"draft"},{"text":"Готово","value":"ready"},{"text":"Активно","value":"active"},{"text":"Пауза","value":"paused"},{"text":"Блок","value":"blocked"},{"text":"Ошибка","value":"error"},{"text":"Архив","value":"archived"}]}','half',3,'В feed попадает только active.',NULL,true);
 SELECT isvoi_inventory_field('product_channel_listings','external_id','input',NULL,NULL,'half',4,'Стабильный isvoi-<Uuid>.',NULL,true);
-SELECT isvoi_inventory_field('product_channel_listings','price_override','input',NULL,'{"min":0,"step":1}','half',5,'Пусто означает цену сайта.');
+SELECT isvoi_inventory_field('product_channel_listings','category_mapping','select-dropdown-m2o','related-values','{"template":"{{product_category.name}} → {{external_category}}"}','full',5,'Подтверждённое соответствие категории сайта официальной категории Avito.','m2o');
+SELECT isvoi_inventory_field('product_channel_listings','price_override','input',NULL,'{"min":0,"step":1}','half',6,'Пусто означает цену сайта.');
 SELECT isvoi_inventory_field('product_channel_listings','attributes','input-code',NULL,'{"language":"json"}','full',8,'Атрибуты официального Avito-шаблона.','cast-json');
+SELECT isvoi_inventory_field('product_channel_listings','category_code','input',NULL,NULL,'half',99,'Устаревшее поле: feed использует category_mapping.',NULL,false,true,true);
 
 DROP FUNCTION isvoi_inventory_field(varchar,varchar,varchar,varchar,json,varchar,integer,text,varchar,boolean,boolean,boolean);
 
@@ -318,7 +442,9 @@ SELECT isvoi_inventory_relation('inventory_receipt_lines','inventory_item','inve
 SELECT isvoi_inventory_relation('inventory_receipt_lines','product','products',NULL,'nullify');
 SELECT isvoi_inventory_relation('inventory_import_issues','batch','inventory_import_batches','issues','delete');
 SELECT isvoi_inventory_relation('channel_cost_profiles','category','product_categories',NULL,'nullify');
+SELECT isvoi_inventory_relation('channel_category_mappings','product_category','product_categories',NULL,'delete');
 SELECT isvoi_inventory_relation('product_channel_listings','product','products','channel_listings','delete');
+SELECT isvoi_inventory_relation('product_channel_listings','category_mapping','channel_category_mappings',NULL,'nullify');
 SELECT isvoi_inventory_relation('product_unit_economics','product','products',NULL,'nullify');
 
 DROP FUNCTION isvoi_inventory_relation(varchar,varchar,varchar,varchar,varchar);
@@ -370,7 +496,7 @@ BEGIN
   FOREACH p IN ARRAY ARRAY['ISVOI Inventory Manager','ISVOI Catalog Import'] LOOP
     FOREACH c IN ARRAY ARRAY[
       'inventory_import_batches','inventory_items','inventory_receipt_lines',
-      'inventory_import_issues','channel_cost_profiles','product_channel_listings',
+      'inventory_import_issues','channel_cost_profiles','channel_category_mappings','product_channel_listings',
       'product_unit_economics'
     ] LOOP
       f := CASE c
@@ -379,7 +505,8 @@ BEGIN
         WHEN 'inventory_receipt_lines' THEN 'id,batch,row_number,source_title,source_category,source_subcategory,imei_full,serial_full,quantity,unit_cost,target_markup,target_margin,target_price,total_cost,total_price,inventory_item,product,match_status,match_note,source_note,created_at'
         WHEN 'inventory_import_issues' THEN 'id,batch,severity,code,source_kind,row_number,source_id,message,resolved,resolution_note,created_at'
         WHEN 'channel_cost_profiles' THEN 'id,channel,name,category,is_active,is_confirmed,commission_rate,acquiring_rate,tax_rate,return_reserve_rate,promotion_per_unit,delivery_per_unit,other_variable_per_unit,note,created_at,updated_at'
-        WHEN 'product_channel_listings' THEN 'id,product,channel,status,external_id,title_override,description_override,price_override,category_code,attributes,last_export_hash,last_exported_at,sync_status,sync_error,created_at,updated_at'
+        WHEN 'channel_category_mappings' THEN 'id,channel,mapping_key,product_category,external_category,external_category_id,external_goods_type,default_attributes,template_version,is_active,is_confirmed,note,created_at,updated_at'
+        WHEN 'product_channel_listings' THEN 'id,product,channel,status,external_id,title_override,description_override,price_override,category_mapping,category_code,attributes,last_export_hash,last_exported_at,sync_status,sync_error,created_at,updated_at'
         ELSE 'id,product,channel,effective_price,purchase_price,gross_profit,gross_margin,variable_cost,contribution,contribution_margin,cost_profile_complete' END;
       PERFORM isvoi_inventory_permission(p,c,'read',f,NULL);
       IF c <> 'product_unit_economics' THEN
@@ -421,7 +548,7 @@ END $$;
 DROP FUNCTION isvoi_inventory_permission(text,varchar,varchar,text,json);
 
 DELETE FROM directus_permissions
-WHERE collection IN ('inventory_import_batches','inventory_items','inventory_receipt_lines','inventory_import_issues','channel_cost_profiles','product_channel_listings','product_unit_economics')
+WHERE collection IN ('inventory_import_batches','inventory_items','inventory_receipt_lines','inventory_import_issues','channel_cost_profiles','channel_category_mappings','product_channel_listings','product_unit_economics')
   AND policy IN (
     SELECT id FROM directus_policies
     WHERE name IN ('ISVOI Public Read','ISVOI Editor','ISVOI Importer')
@@ -470,8 +597,10 @@ SELECT isvoi_inventory_preset('inventory_import_batches','Применено','c
 SELECT isvoi_inventory_preset('inventory_items','Конфликты','error','#dc2626','{"identity_status":{"_eq":"conflict"}}','["source_title","source_sku","quantity","identity_status","authenticity_status","block_reason"]','["source_title"]');
 SELECT isvoi_inventory_preset('inventory_items','На проверке','fact_check','#d97706','{"eligibility_status":{"_eq":"pending"}}','["source_title","source_sku","quantity","retail_price","identity_status","authenticity_status"]','["source_title"]');
 SELECT isvoi_inventory_preset('inventory_items','Можно в каталог','publish','#059669','{"eligibility_status":{"_eq":"eligible"}}','["source_title","source_sku","quantity","retail_price","product","review_note"]','["source_title"]');
-SELECT isvoi_inventory_preset('product_channel_listings','Avito: черновики','edit_note','#64748b','{"_and":[{"channel":{"_eq":"avito"}},{"status":{"_eq":"draft"}}]}','["external_id","product","status","price_override","category_code","sync_status"]','["external_id"]');
-SELECT isvoi_inventory_preset('product_channel_listings','Avito: активные','campaign','#2563eb','{"_and":[{"channel":{"_eq":"avito"}},{"status":{"_eq":"active"}}]}','["external_id","product","status","price_override","last_exported_at","sync_status"]','["external_id"]');
+SELECT isvoi_inventory_preset('channel_category_mappings','Avito: требует шаблона','rule','#d97706','{"_and":[{"channel":{"_eq":"avito"}},{"is_confirmed":{"_eq":false}}]}','["mapping_key","product_category","external_category","external_goods_type","template_version","is_active","is_confirmed"]','["product_category","mapping_key"]');
+SELECT isvoi_inventory_preset('channel_category_mappings','Avito: подтверждено','verified','#059669','{"_and":[{"channel":{"_eq":"avito"}},{"is_confirmed":{"_eq":true}}]}','["mapping_key","product_category","external_category","external_goods_type","template_version","is_active"]','["product_category","mapping_key"]');
+SELECT isvoi_inventory_preset('product_channel_listings','Avito: черновики','edit_note','#64748b','{"_and":[{"channel":{"_eq":"avito"}},{"status":{"_eq":"draft"}}]}','["external_id","product","status","category_mapping","price_override","sync_status"]','["external_id"]');
+SELECT isvoi_inventory_preset('product_channel_listings','Avito: активные','campaign','#2563eb','{"_and":[{"channel":{"_eq":"avito"}},{"status":{"_eq":"active"}}]}','["external_id","product","status","category_mapping","price_override","last_exported_at","sync_status"]','["external_id"]');
 
 DROP FUNCTION isvoi_inventory_preset(varchar,varchar,varchar,varchar,json,json,json);
 
@@ -482,6 +611,14 @@ VALUES
   ('power-banks','Внешние аккумуляторы','accessory',150)
 ON CONFLICT (slug) DO UPDATE SET
   name=EXCLUDED.name, catalog_section=EXCLUDED.catalog_section, is_active=true;
+
+INSERT INTO channel_category_mappings(channel,mapping_key,product_category,is_active,is_confirmed,note)
+SELECT
+  'avito', category.slug || '-default', category.id, true, false,
+  'Заполнить строго по официальному шаблону Avito; внутренний slug категории не экспортируется.'
+FROM product_categories category
+WHERE category.is_active=true
+ON CONFLICT (channel,mapping_key) DO NOTHING;
 
 INSERT INTO channel_cost_profiles(channel,name,is_active,is_confirmed,note)
 VALUES
@@ -495,7 +632,7 @@ SELECT 'inventory.schema.tables' AS check_name, count(*)::text AS value
 FROM information_schema.tables
 WHERE table_schema='public' AND table_name IN (
   'inventory_import_batches','inventory_items','inventory_receipt_lines',
-  'inventory_import_issues','channel_cost_profiles','product_channel_listings'
+  'inventory_import_issues','channel_cost_profiles','channel_category_mappings','product_channel_listings'
 )
 UNION ALL
 SELECT 'inventory.schema.unit_economics_view', count(*)::text

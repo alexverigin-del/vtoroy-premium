@@ -38,6 +38,7 @@ WITH expected_tables(table_name) AS (
     ('inventory_receipt_lines'),
     ('inventory_import_issues'),
     ('channel_cost_profiles'),
+    ('channel_category_mappings'),
     ('product_channel_listings'),
     ('blog_posts'),
     ('blog_authors'),
@@ -186,7 +187,12 @@ expected_fields(table_name, field_name) AS (
     ('inventory_receipt_lines', 'inventory_item'),
     ('inventory_import_issues', 'batch'),
     ('channel_cost_profiles', 'category'),
+    ('channel_category_mappings', 'mapping_key'),
+    ('channel_category_mappings', 'product_category'),
+    ('channel_category_mappings', 'external_category'),
+    ('channel_category_mappings', 'template_version'),
     ('product_channel_listings', 'product'),
+    ('product_channel_listings', 'category_mapping'),
     ('product_channel_listings', 'external_id')
 ),
 expected_relations(many_collection, many_field, one_collection) AS (
@@ -242,7 +248,9 @@ expected_relations(many_collection, many_field, one_collection) AS (
     ('inventory_receipt_lines', 'inventory_item', 'inventory_items'),
     ('inventory_import_issues', 'batch', 'inventory_import_batches'),
     ('channel_cost_profiles', 'category', 'product_categories'),
-    ('product_channel_listings', 'product', 'products')
+    ('channel_category_mappings', 'product_category', 'product_categories'),
+    ('product_channel_listings', 'product', 'products'),
+    ('product_channel_listings', 'category_mapping', 'channel_category_mappings')
 ),
 system_collections(collection) AS (
   VALUES

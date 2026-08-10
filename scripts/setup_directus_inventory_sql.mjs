@@ -390,6 +390,9 @@ BEGIN
   END LOOP;
 END $$;
 
+SELECT isvoi_inventory_permission('ISVOI Catalog Import','inventory_receipt_lines','delete','id,batch',NULL);
+SELECT isvoi_inventory_permission('ISVOI Catalog Import','inventory_import_issues','delete','id,batch',NULL);
+
 SELECT isvoi_inventory_permission('ISVOI Inventory Manager','directus_files','read','id,storage,filename_disk,filename_download,title,description,type,filesize,width,height,focal_point_x,focal_point_y,folder,uploaded_on,modified_on',NULL);
 SELECT isvoi_inventory_permission('ISVOI Inventory Manager','directus_files','create','title,description,folder,file,tags,filename_download,filename_disk,storage,type,filesize,width,height,focal_point_x,focal_point_y,charset,duration,embed,location,tus_id,tus_data,metadata,uploaded_by,uploaded_on,created_on,modified_by,modified_on',NULL);
 SELECT isvoi_inventory_permission('ISVOI Inventory Manager','directus_files','update','title,description,folder,tags,focal_point_x,focal_point_y',NULL);

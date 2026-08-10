@@ -94,6 +94,17 @@ WHERE policy.name IN ('ISVOI Inventory Manager','ISVOI Catalog Import')
     'product_unit_economics'
   ) AND permission.fields='*'
 UNION ALL
+SELECT 'inventory.security.service_batch_delete_permissions_missing', count(*)::text
+FROM (VALUES ('inventory_receipt_lines'),('inventory_import_issues')) expected(collection)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name='ISVOI Catalog Import'
+    AND permission.collection=expected.collection
+    AND permission.action='delete'
+    AND permission.fields='id,batch'
+)
+UNION ALL
 SELECT 'inventory.flows.missing', count(*)::text
 FROM (VALUES
   ('ISVOI: проверить товарный snapshot'),('ISVOI: применить товарный snapshot')

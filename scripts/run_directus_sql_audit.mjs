@@ -329,6 +329,7 @@ const auditDefinitions = {
       "inventory.security.manager_permissions_missing",
       "inventory.security.public_or_editor_access",
       "inventory.security.wildcard_fields",
+      "inventory.security.service_batch_delete_permissions_missing",
       "inventory.flows.missing",
       "inventory.data.invalid_item_values",
       "inventory.data.eligible_without_review",

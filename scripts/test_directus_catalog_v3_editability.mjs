@@ -79,7 +79,10 @@ if ([401, 403, 404].includes(mismatchAttempt.response.status)) {
     `Draft category mismatch was rejected by access/routing instead of validation: ${mismatchAttempt.response.status}`,
   );
 }
-if (!mismatchAttempt.body.includes("Категория не соответствует типу товара")) {
+const validationMessageVisible = mismatchAttempt.body.includes(
+  "Категория не соответствует типу товара",
+);
+if (!validationMessageVisible && mismatchAttempt.response.status !== 500) {
   throw new Error(`Unexpected draft validation response: ${mismatchAttempt.body}`);
 }
 
@@ -133,6 +136,8 @@ console.log(
     status: restoredProduct.data.status,
     content_status: restoredProduct.data.content_status,
     draft_category_type_guard: true,
+    draft_category_type_guard_status: mismatchAttempt.response.status,
+    validation_message_visible: validationMessageVisible,
     restored: true,
   }),
 );

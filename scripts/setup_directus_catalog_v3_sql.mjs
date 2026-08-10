@@ -706,11 +706,11 @@ SELECT isvoi_catalog_permission('ISVOI Editor','device_passports','update','prod
 SELECT isvoi_catalog_permission('ISVOI Editor','trade_options','read','id,product,device,value,label,sort,is_active,created_at,updated_at',NULL);
 SELECT isvoi_catalog_permission('ISVOI Editor','trade_options','create','product,device,value,label,sort,is_active',NULL);
 SELECT isvoi_catalog_permission('ISVOI Editor','trade_options','update','product,device,value,label,sort,is_active',NULL);
-SELECT isvoi_catalog_permission('ISVOI Editor','leads','read','id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,product,product_type,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent',NULL);
-SELECT isvoi_catalog_permission('ISVOI Editor','leads','update','status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,product,product_type,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term',NULL);
+SELECT isvoi_catalog_permission('ISVOI Editor','leads','read','id,created_at,updated_at,status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,product,product_type,device,device_id,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at,user_agent',NULL);
+SELECT isvoi_catalog_permission('ISVOI Editor','leads','update','status,priority,assigned_to,contact_channel,next_action_at,last_contacted_at,manager_note,kind,scenario,name,contact,product,product_type,device,device_id,message,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at',NULL);
 
 SELECT isvoi_catalog_permission('ISVOI Lead Intake','leads','create',
-  'kind,status,priority,contact_channel,name,contact,product,product_type,device,device_id,scenario,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,user_agent',
+  'kind,status,priority,contact_channel,name,contact,product,product_type,device,device_id,scenario,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at,user_agent',
   NULL,
   '{"_and":[{"contact":{"_nnull":true}},{"source_path":{"_nnull":true}}]}'::json,
   '{"status":"new","priority":"normal"}'::json);

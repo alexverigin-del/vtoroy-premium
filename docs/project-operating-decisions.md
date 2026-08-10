@@ -1860,3 +1860,27 @@ Next content-editing priorities:
   его общие атрибуты с атрибутами объявления и остаётся выключенным через
   `AVITO_FEED_ENABLED=0` до официального шаблона, XML validation, подтверждения
   расходов и QA пилотных смартфонов.
+- Production migration создала 13 стартовых Avito mapping, все с
+  `is_confirmed=false`. Inventory audit сохранил исходные 61 item, 41 receipt и
+  51 issue; активных некорректных объявлений, отсутствующих mapping и утечек
+  identifiers нет. Aggregate Directus, schema, Catalog V3, Inventory и Club
+  audits прошли.
+- Production API rehearsal на `qa-galaxy-s24-case` подтвердил draft guard:
+  конфликтующая категория отклонена, исходная категория не изменилась, обычное
+  поле успешно обновилось и восстановилось. Directus 11.17.4 скрывает текст
+  PostgreSQL exception и отвечает generic `500`; rehearsal принимает этот
+  контракт только вместе с проверкой неизменности записи и отдельным SQL-аудитом
+  наличия trigger.
+- Повторный Catalog V3 setup должен сохранять более новые Club-поля в Lead
+  Intake/Editor permissions и только публичный текст без упоминания Directus.
+  Эти order-dependent regressions были найдены aggregate/copy smoke и исправлены
+  в каноническом setup-скрипте.
+- Прямой SQL обходит `CACHE_AUTO_PURGE`. После SQL-изменений cacheable content
+  нужно очистить неперсистентный Redis cache перезапуском `cache` и `directus`,
+  дождаться `/server/health`, затем вызвать защищённый site-content revalidation;
+  если production build был создан до SQL, пересобрать Next и перезапустить PM2.
+- Финальные HTTP/SEO, image, copy, redirect-aware link, Catalog V3 consistency,
+  desktop/mobile visual и performance smokes прошли. LCP: homepage 2980/2480
+  ms, catalog 2600/2356 ms, store 2528/2424 ms, blog 2260/2060 ms, pilot article
+  4020/3436 ms desktop/mobile; статья остаётся performance-watch, но находится
+  внутри действующего release budget.

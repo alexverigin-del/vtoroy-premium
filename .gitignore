@@ -36,3 +36,7 @@ infra/directus-beget/extensions/
 
 # OS / editor
 .DS_Store
+
+# Local Codex work products
+.codex-work/
+outputs/

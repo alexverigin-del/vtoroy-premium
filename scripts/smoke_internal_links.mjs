@@ -12,19 +12,21 @@ const routes = String(
 const hrefPattern = /\shref=(?:"([^"]+)"|'([^']+)')/giu;
 const idPattern = /\sid=(?:"([^"]+)"|'([^']+)')/giu;
 
-function internalTarget(href, sourcePath) {
+function internalTarget(href, sourceUrl) {
   if (!href || /^(?:https?:|mailto:|tel:|javascript:)/i.test(href)) return null;
-  const url = new URL(href, `${baseUrl}${sourcePath}`);
-  return url.origin === new URL(baseUrl).origin ? url : null;
+  const url = new URL(href, sourceUrl);
+  return url.origin === new URL(sourceUrl).origin ? url : null;
 }
 
-async function htmlFor(path, cache) {
-  if (cache.has(path)) return cache.get(path);
-  const response = await fetch(`${baseUrl}${path}`);
-  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
-  const html = await response.text();
-  cache.set(path, html);
-  return html;
+async function htmlFor(url, cache) {
+  const requestedUrl = new URL(url, baseUrl).href;
+  if (cache.has(requestedUrl)) return cache.get(requestedUrl);
+  const response = await fetch(requestedUrl);
+  if (!response.ok) throw new Error(`${requestedUrl}: HTTP ${response.status}`);
+  const result = { html: await response.text(), url: response.url };
+  cache.set(requestedUrl, result);
+  cache.set(response.url, result);
+  return result;
 }
 
 async function main() {
@@ -32,17 +34,18 @@ async function main() {
   const failures = new Set();
 
   for (const route of routes) {
-    const html = await htmlFor(route, cache);
+    const source = await htmlFor(route, cache);
+    const html = source.html;
     const hrefs = [...html.matchAll(hrefPattern)].map((match) => match[1] || match[2]);
     for (const href of hrefs) {
-      const target = internalTarget(href, route);
+      const target = internalTarget(href, source.url);
       if (!target) continue;
       try {
-        const targetHtml = await htmlFor(target.pathname || "/", cache);
+        const targetDocument = await htmlFor(target, cache);
         if (target.hash) {
           const expectedId = decodeURIComponent(target.hash.slice(1));
           const ids = new Set(
-            [...targetHtml.matchAll(idPattern)].map((match) => match[1] || match[2]),
+            [...targetDocument.html.matchAll(idPattern)].map((match) => match[1] || match[2]),
           );
           if (!ids.has(expectedId)) {
             failures.add(`${route}: ${href} points to missing #${expectedId}`);

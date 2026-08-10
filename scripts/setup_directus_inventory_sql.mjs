@@ -255,22 +255,30 @@ SELECT isvoi_inventory_field('inventory_import_batches','note','input-multiline'
 
 SELECT isvoi_inventory_field('inventory_items','source_title','input-multiline',NULL,NULL,'full',1,'Исходное название из товарного учёта.',NULL,true,true);
 SELECT isvoi_inventory_field('inventory_items','source_sku','input',NULL,NULL,'half',2,'Код из товарного учёта.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_items','quantity','input',NULL,'{"min":0,"step":1}','half',3,'Текущий остаток.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_items','purchase_price','input',NULL,'{"min":0,"step":0.01}','half',4,'Приватная закупочная цена.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_items','retail_price','input',NULL,'{"min":0,"step":0.01}','half',5,'Текущая розничная цена.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_items','identity_status','select-dropdown','labels','{"choices":[{"text":"Не требуется","value":"not_applicable"},{"text":"Совпадает","value":"matched"},{"text":"Не найдено","value":"unmatched"},{"text":"Конфликт","value":"conflict"}]}','half',6,'Результат сверки идентичности.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_items','authenticity_status','select-dropdown','labels','{"choices":[{"text":"На проверке","value":"pending"},{"text":"Подтверждено","value":"verified"},{"text":"Не требуется","value":"not_required"},{"text":"Заблокировано","value":"blocked"}]}','half',7,'Проверка происхождения и бренда.');
-SELECT isvoi_inventory_field('inventory_items','eligibility_status','select-dropdown','labels','{"choices":[{"text":"На проверке","value":"pending"},{"text":"Можно в каталог","value":"eligible"},{"text":"Заблокировано","value":"blocked"}]}','half',8,'Только eligible синхронизируется в products.');
-SELECT isvoi_inventory_field('inventory_items','review_override','boolean','boolean',NULL,'half',9,'Осознанное подтверждение Inventory Manager.');
-SELECT isvoi_inventory_field('inventory_items','review_note','input-multiline',NULL,NULL,'full',10,'Основание ручного подтверждения.');
-SELECT isvoi_inventory_field('inventory_items','block_reason','input-multiline',NULL,NULL,'full',11,'Причина блокировки.',NULL,false,true);
-SELECT isvoi_inventory_field('inventory_items','product','select-dropdown-m2o','related-values','{"template":"{{title}} · {{sku}}"}','full',12,'Связанный Catalog V3 product.','m2o',false,true);
+SELECT isvoi_inventory_field('inventory_items','source_id','input',NULL,NULL,'half',3,'Стабильный Uuid источника.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_items','serial_full','input',NULL,NULL,'half',4,'Полный serial. Приватное поле Inventory Manager.',NULL,false,true);
+SELECT isvoi_inventory_field('inventory_items','quantity','input',NULL,'{"min":0,"step":1}','half',5,'Текущий остаток.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_items','purchase_price','input',NULL,'{"min":0,"step":0.01}','half',6,'Приватная закупочная цена.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_items','retail_price','input',NULL,'{"min":0,"step":0.01}','half',7,'Текущая розничная цена.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_items','identity_status','select-dropdown','labels','{"choices":[{"text":"Не требуется","value":"not_applicable"},{"text":"Совпадает","value":"matched"},{"text":"Не найдено","value":"unmatched"},{"text":"Конфликт","value":"conflict"}]}','half',8,'Результат сверки идентичности.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_items','authenticity_status','select-dropdown','labels','{"choices":[{"text":"На проверке","value":"pending"},{"text":"Подтверждено","value":"verified"},{"text":"Не требуется","value":"not_required"},{"text":"Заблокировано","value":"blocked"}]}','half',9,'Проверка происхождения и бренда.');
+SELECT isvoi_inventory_field('inventory_items','eligibility_status','select-dropdown','labels','{"choices":[{"text":"На проверке","value":"pending"},{"text":"Можно в каталог","value":"eligible"},{"text":"Заблокировано","value":"blocked"}]}','half',10,'Только eligible синхронизируется в products.');
+SELECT isvoi_inventory_field('inventory_items','review_override','boolean','boolean',NULL,'half',11,'Осознанное подтверждение Inventory Manager.');
+SELECT isvoi_inventory_field('inventory_items','review_note','input-multiline',NULL,NULL,'full',12,'Основание ручного подтверждения.');
+SELECT isvoi_inventory_field('inventory_items','block_reason','input-multiline',NULL,NULL,'full',13,'Причина блокировки.',NULL,false,true);
+SELECT isvoi_inventory_field('inventory_items','product','select-dropdown-m2o','related-values','{"template":"{{title}} · {{sku}}"}','full',14,'Связанный Catalog V3 product.','m2o',false,true);
+
+SELECT isvoi_inventory_field('inventory_receipt_lines','batch','select-dropdown-m2o','related-values','{"template":"{{batch_name}}"}','half',1,'Партия поступления.','m2o',true,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','inventory_item','select-dropdown-m2o','related-values','{"template":"{{source_title}}"}','half',2,'Сопоставленная складская позиция.','m2o',false,true);
 
 SELECT isvoi_inventory_field('inventory_import_issues','severity','select-dropdown','labels','{"choices":[{"text":"Блокер","value":"blocker"},{"text":"Предупреждение","value":"warning"}]}','half',1,'Уровень проблемы.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_import_issues','code','input',NULL,NULL,'half',2,'Машинный код проверки.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_import_issues','message','input-multiline',NULL,NULL,'full',3,'Описание проблемы.',NULL,true,true);
-SELECT isvoi_inventory_field('inventory_import_issues','resolved','boolean','boolean',NULL,'half',4,'Проблема разобрана.');
-SELECT isvoi_inventory_field('inventory_import_issues','resolution_note','input-multiline',NULL,NULL,'full',5,'Что было исправлено.');
+SELECT isvoi_inventory_field('inventory_import_issues','batch','select-dropdown-m2o','related-values','{"template":"{{batch_name}}"}','half',2,'Партия проверки.','m2o',true,true);
+SELECT isvoi_inventory_field('inventory_import_issues','code','input',NULL,NULL,'half',3,'Машинный код проверки.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_import_issues','message','input-multiline',NULL,NULL,'full',4,'Описание проблемы.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_import_issues','resolved','boolean','boolean',NULL,'half',5,'Проблема разобрана.');
+SELECT isvoi_inventory_field('inventory_import_issues','resolution_note','input-multiline',NULL,NULL,'full',6,'Что было исправлено.');
+
+SELECT isvoi_inventory_field('channel_cost_profiles','category','select-dropdown-m2o','related-values','{"template":"{{name}}"}','half',1,'Необязательная категория для более точной ставки.','m2o');
 
 SELECT isvoi_inventory_field('product_channel_listings','product','select-dropdown-m2o','related-values','{"template":"{{title}} · {{stock_status}}"}','full',1,'Товар Catalog V3.','m2o',true);
 SELECT isvoi_inventory_field('product_channel_listings','channel','select-dropdown','labels','{"choices":[{"text":"Avito","value":"avito"}]}','half',2,'Канал.',NULL,true);

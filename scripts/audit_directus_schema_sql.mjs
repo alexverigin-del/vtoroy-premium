@@ -33,6 +33,12 @@ WITH expected_tables(table_name) AS (
     ('leads'),
     ('lead_comments'),
     ('catalog_import_batches'),
+    ('inventory_import_batches'),
+    ('inventory_items'),
+    ('inventory_receipt_lines'),
+    ('inventory_import_issues'),
+    ('channel_cost_profiles'),
+    ('product_channel_listings'),
     ('blog_posts'),
     ('blog_authors'),
     ('blog_categories'),
@@ -167,7 +173,21 @@ expected_fields(table_name, field_name) AS (
     ('blog_post_blocks', 'image'),
     ('blog_post_blocks', 'image_alt'),
     ('blog_post_blocks', 'image_caption'),
-    ('blog_post_blocks', 'image_width')
+    ('blog_post_blocks', 'image_width'),
+    ('inventory_import_batches', 'inventory_workbook'),
+    ('inventory_import_batches', 'receipts_workbook'),
+    ('inventory_import_batches', 'confirm_missing_deactivation'),
+    ('inventory_items', 'source_id'),
+    ('inventory_items', 'serial_full'),
+    ('inventory_items', 'purchase_price'),
+    ('inventory_items', 'eligibility_status'),
+    ('inventory_items', 'product'),
+    ('inventory_receipt_lines', 'batch'),
+    ('inventory_receipt_lines', 'inventory_item'),
+    ('inventory_import_issues', 'batch'),
+    ('channel_cost_profiles', 'category'),
+    ('product_channel_listings', 'product'),
+    ('product_channel_listings', 'external_id')
 ),
 expected_relations(many_collection, many_field, one_collection) AS (
   VALUES
@@ -213,7 +233,16 @@ expected_relations(many_collection, many_field, one_collection) AS (
     ('blog_posts_devices', 'blog_posts_id', 'blog_posts'),
     ('blog_posts_devices', 'devices_id', 'devices'),
     ('blog_post_blocks', 'post', 'blog_posts'),
-    ('blog_post_blocks', 'image', 'directus_files')
+    ('blog_post_blocks', 'image', 'directus_files'),
+    ('inventory_import_batches', 'inventory_workbook', 'directus_files'),
+    ('inventory_import_batches', 'receipts_workbook', 'directus_files'),
+    ('inventory_items', 'product', 'products'),
+    ('inventory_items', 'last_seen_batch', 'inventory_import_batches'),
+    ('inventory_receipt_lines', 'batch', 'inventory_import_batches'),
+    ('inventory_receipt_lines', 'inventory_item', 'inventory_items'),
+    ('inventory_import_issues', 'batch', 'inventory_import_batches'),
+    ('channel_cost_profiles', 'category', 'product_categories'),
+    ('product_channel_listings', 'product', 'products')
 ),
 system_collections(collection) AS (
   VALUES
@@ -310,7 +339,8 @@ FROM (
     ('ISVOI Editorial'),
     ('ISVOI File Review'),
     ('ISVOI Catalog Imports'),
-    ('ISVOI Blog')
+    ('ISVOI Blog'),
+    ('ISVOI Inventory Imports')
 ) AS expected_folders(name)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_folders f WHERE f.name = expected_folders.name
@@ -320,7 +350,9 @@ SELECT 'schema.import_flows.missing', count(*)::text
 FROM (
   VALUES
     ('ISVOI: проверить партию каталога'),
-    ('ISVOI: импортировать партию каталога')
+    ('ISVOI: импортировать партию каталога'),
+    ('ISVOI: проверить товарный snapshot'),
+    ('ISVOI: применить товарный snapshot')
 ) AS expected_flows(name)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_flows f WHERE f.name = expected_flows.name

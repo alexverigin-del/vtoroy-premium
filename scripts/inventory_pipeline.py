@@ -9,7 +9,7 @@ import os
 import re
 import unicodedata
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
@@ -38,7 +38,6 @@ RECEIPT_REQUIRED = {
     "№",
     "Наименование",
     "Категория",
-    "IMEI",
     "Серийный номер",
     "Подкатегория",
     "Количество",
@@ -91,6 +90,11 @@ def relaxed_name(value: Any) -> str:
     return normalize(cleaned)
 
 
+def serialized_identity(value: Any) -> str:
+    generic_tokens = {"мобильный", "телефон", "смартфон", "5g"}
+    return " ".join(token for token in normalize(value).split() if token not in generic_tokens)
+
+
 def extract_serial(value: Any) -> str:
     match = re.search(r"Серийный номер:\s*([^\s,;]+)", text(value), flags=re.I)
     return match.group(1).upper() if match else ""
@@ -108,6 +112,22 @@ def parse_source_datetime(value: Any) -> str | None:
     for fmt in ("%d-%m-%Y, %H:%M:%S", "%d.%m.%Y %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
         try:
             return datetime.strptime(raw, fmt).replace(tzinfo=timezone.utc).isoformat()
+        except ValueError:
+            continue
+    return None
+
+
+def parse_source_date(value: Any) -> str | None:
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    raw = text(value)
+    if not raw:
+        return None
+    for fmt in ("%d-%m-%Y", "%d.%m.%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(raw, fmt).date().isoformat()
         except ValueError:
             continue
     return None
@@ -213,6 +233,7 @@ def parse_receipts(path: Path | None) -> list[dict[str, Any]]:
                 "source_title": text(row.get("Наименование")),
                 "source_category": text(row.get("Категория")),
                 "source_subcategory": text(row.get("Подкатегория")),
+                "received_on": parse_source_date(row.get("Дата поступления")),
                 "imei_full": text(row.get("IMEI")),
                 "serial_full": text(row.get("Серийный номер")).upper(),
                 "quantity": quantity,
@@ -240,6 +261,46 @@ def risk_codes(title: str, purchase_price: Decimal) -> list[str]:
     return risks
 
 
+def classify_receipt_movement(receipt: dict[str, Any], match: dict[str, Any] | None) -> tuple[str, int, str]:
+    note = normalize(receipt.get("source_note"))
+    is_central_office = "цо" in note.split() or "центральн" in note
+    quantity = int(receipt["quantity"])
+    stock = int(match["quantity"]) if match else 0
+
+    if is_central_office and match is None:
+        return (
+            "central_office",
+            quantity,
+            "Позиция отсутствует в snapshot магазина и учтена в ЦО по комментарию поступления.",
+        )
+    if is_central_office and quantity > stock:
+        central_office_quantity = quantity - stock
+        return (
+            "partial_central_office",
+            central_office_quantity,
+            f"В текущем остатке {stock}; разница {central_office_quantity} ед. учтена в ЦО.",
+        )
+    if is_central_office:
+        return (
+            "central_office_inventory_conflict",
+            0,
+            "Комментарий указывает ЦО, но позиция одновременно присутствует в текущем остатке магазина.",
+        )
+    if match and stock > 0:
+        return "in_store", 0, "Позиция сопоставлена с актуальным остатком магазина."
+    if receipt.get("source_note"):
+        return (
+            "exited_preload",
+            0,
+            f"Нет в текущем остатке; исходный комментарий: {receipt['source_note']}.",
+        )
+    return (
+        "exited_preload",
+        0,
+        "Нет в текущем остатке; учтено как продажа или иное выбытие до загрузки в магазин.",
+    )
+
+
 def reconcile(inventory: list[dict[str, Any]], receipts: list[dict[str, Any]]) -> tuple[list[Issue], dict[int, dict[str, Any]]]:
     issues: list[Issue] = []
     by_serial = {row["serial_full"]: row for row in inventory if row["serial_full"]}
@@ -251,23 +312,41 @@ def reconcile(inventory: list[dict[str, Any]], receipts: list[dict[str, Any]]) -
     for receipt in receipts:
         serial = receipt["serial_full"]
         match = by_serial.get(serial) if serial else by_name.get(relaxed_name(receipt["source_title"]))
-        if serial and match is None:
-            issues.append(
-                Issue("blocker", "receipt_serial_missing_inventory", "receipt", receipt["row_number"], None,
-                      f"Серийное устройство {masked(serial)} отсутствует в полном snapshot.")
-            )
-            receipt["match_status"] = "missing"
-            continue
+        movement_status, central_office_quantity, match_note = classify_receipt_movement(receipt, match)
+        receipt["movement_status"] = movement_status
+        receipt["central_office_quantity"] = central_office_quantity
+        receipt["match_note"] = match_note
+
         if match is None:
-            issues.append(
-                Issue("blocker", "receipt_item_missing_inventory", "receipt", receipt["row_number"], None,
-                      "Позиция поступления отсутствует в полном snapshot.")
-            )
-            receipt["match_status"] = "missing"
+            receipt["match_status"] = "not_in_snapshot"
+            note = normalize(receipt.get("source_note"))
+            has_known_exit_note = any(marker in note for marker in ("обмен", "продан", "продано", "продаж", "выбыл"))
+            if movement_status == "exited_preload" and not has_known_exit_note:
+                issues.append(
+                    Issue(
+                        "warning",
+                        "receipt_exit_inferred",
+                        "receipt",
+                        receipt["row_number"],
+                        None,
+                        "Позиция отсутствует в текущем snapshot; выбытие до загрузки определено автоматически.",
+                    )
+                )
             continue
         receipt_matches[receipt["row_number"]] = match
         receipt_title_by_source[match["source_id"]] = receipt["source_title"]
-        if serial and normalize(receipt["source_title"]) != normalize(match["source_title"]):
+        if movement_status == "central_office_inventory_conflict":
+            issues.append(
+                Issue(
+                    "warning",
+                    "receipt_central_office_inventory_conflict",
+                    "receipt",
+                    receipt["row_number"],
+                    match["source_id"],
+                    "Строка помечена как ЦО, но товар присутствует в snapshot магазина.",
+                )
+            )
+        if serial and serialized_identity(receipt["source_title"]) != serialized_identity(match["source_title"]):
             issues.append(
                 Issue("blocker", "serialized_identity_conflict", "inventory", match["row_number"], match["source_id"],
                       f"Серийный номер {masked(serial)} связан с другим наименованием в поступлении.")
@@ -304,6 +383,10 @@ def summarize(inventory: list[dict[str, Any]], receipts: list[dict[str, Any]], i
     receipt_cost = sum((row["total_cost"] for row in receipts), Decimal("0"))
     receipt_retail = sum((row["total_price"] for row in receipts), Decimal("0"))
     margin = receipt_retail - receipt_cost
+    movement_counts = {
+        status: sum(row.get("movement_status") == status for row in receipts)
+        for status in sorted({text(row.get("movement_status")) for row in receipts if row.get("movement_status")})
+    }
     return {
         "valid": True,
         "inventory": {
@@ -319,6 +402,8 @@ def summarize(inventory: list[dict[str, Any]], receipts: list[dict[str, Any]], i
             "retail_value": decimal_json(receipt_retail),
             "gross_profit": decimal_json(margin),
             "gross_margin": float(margin / receipt_retail) if receipt_retail else 0,
+            "movement_counts": movement_counts,
+            "central_office_units": sum(int(row.get("central_office_quantity") or 0) for row in receipts),
         },
         "issues": {
             "blockers": sum(issue.severity == "blocker" for issue in issues),
@@ -603,7 +688,7 @@ def apply_snapshot(
         payload = {
             key: (decimal_json(value) if isinstance(value, Decimal) else value)
             for key, value in receipt.items()
-            if key != "match_status"
+            if key not in {"match_status", "match_note"}
         }
         payload.update(
             {
@@ -611,7 +696,7 @@ def apply_snapshot(
                 "inventory_item": stored.get("id") if stored else None,
                 "product": stored.get("product") if stored else None,
                 "match_status": receipt.get("match_status", "unmatched"),
-                "match_note": None if stored else "Требуется ручное сопоставление.",
+                "match_note": receipt.get("match_note"),
             }
         )
         client.request("POST", "/items/inventory_receipt_lines", payload)
@@ -670,7 +755,7 @@ def main() -> None:
                 row_number=None,
                 source_id=text(missing.get("source_id")) or None,
                 message=(
-                    f"Позиция {text(missing.get('source_sku'), 'без кода')} отсутствует в новом snapshot; "
+                    f"Позиция {text(missing.get('source_sku')) or 'без кода'} отсутствует в новом snapshot; "
                     "остаток не будет обнулён без отдельного подтверждения."
                 ),
             )

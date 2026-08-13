@@ -17,6 +17,15 @@ WHERE NOT EXISTS (
   WHERE table_schema='public' AND table_name=expected.view_name
 )
 UNION ALL
+SELECT 'inventory.schema.receipt_movement_fields_missing', count(*)::text
+FROM (VALUES ('received_on'),('movement_status'),('central_office_quantity')) expected(field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM information_schema.columns column_info
+  WHERE column_info.table_schema='public'
+    AND column_info.table_name='inventory_receipt_lines'
+    AND column_info.column_name=expected.field
+)
+UNION ALL
 SELECT 'inventory.studio.collections_missing', count(*)::text
 FROM (VALUES
   ('inventory_import_batches'),('inventory_items'),('inventory_receipt_lines'),
@@ -26,6 +35,13 @@ FROM (VALUES
 ) expected(collection)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_collections collection WHERE collection.collection=expected.collection
+)
+UNION ALL
+SELECT 'inventory.studio.receipt_movement_fields_missing', count(*)::text
+FROM (VALUES ('received_on'),('movement_status'),('central_office_quantity'),('match_note')) expected(field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='inventory_receipt_lines' AND field.field=expected.field
 )
 UNION ALL
 SELECT 'inventory.schema.relations_missing', count(*)::text
@@ -77,6 +93,17 @@ WHERE NOT EXISTS (
   JOIN directus_policies policy ON policy.id=permission.policy
   WHERE policy.name='ISVOI Inventory Manager'
     AND permission.collection=expected.collection AND permission.action='read'
+)
+UNION ALL
+SELECT 'inventory.security.receipt_movement_fields_missing', count(*)::text
+FROM (VALUES ('ISVOI Inventory Manager'),('ISVOI Catalog Import')) expected_policy(name)
+CROSS JOIN (VALUES ('received_on'),('movement_status'),('central_office_quantity')) expected_field(field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name=expected_policy.name
+    AND permission.collection='inventory_receipt_lines' AND permission.action='read'
+    AND expected_field.field = ANY(string_to_array(permission.fields, ','))
 )
 UNION ALL
 SELECT 'inventory.security.public_or_editor_access', count(*)::text
@@ -131,6 +158,17 @@ FROM inventory_items
 WHERE eligibility_status='eligible'
   AND (review_override=false OR NULLIF(review_note,'') IS NULL
     OR authenticity_status NOT IN ('verified','not_required'))
+UNION ALL
+SELECT 'inventory.data.invalid_receipt_movement', count(*)::text
+FROM inventory_receipt_lines
+WHERE movement_status NOT IN (
+    'in_store','partial_central_office','central_office',
+    'central_office_inventory_conflict','exited_preload'
+  )
+  OR central_office_quantity < 0 OR central_office_quantity > quantity
+  OR (movement_status='central_office' AND central_office_quantity <> quantity)
+  OR (movement_status='partial_central_office' AND central_office_quantity = 0)
+  OR (movement_status IN ('in_store','exited_preload') AND central_office_quantity <> 0)
 UNION ALL
 SELECT 'inventory.channels.active_invalid', count(*)::text
 FROM product_channel_listings listing
@@ -195,6 +233,13 @@ UNION ALL
 SELECT 'inventory.info.items', count(*)::text FROM inventory_items
 UNION ALL
 SELECT 'inventory.info.receipt_lines', count(*)::text FROM inventory_receipt_lines
+UNION ALL
+SELECT 'inventory.info.receipt_central_office', count(*)::text
+FROM inventory_receipt_lines
+WHERE movement_status IN ('central_office','partial_central_office','central_office_inventory_conflict')
+UNION ALL
+SELECT 'inventory.info.receipt_exited_preload', count(*)::text
+FROM inventory_receipt_lines WHERE movement_status='exited_preload'
 UNION ALL
 SELECT 'inventory.info.issues', count(*)::text FROM inventory_import_issues
 UNION ALL

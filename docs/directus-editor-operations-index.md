@@ -183,6 +183,9 @@ receipt workflow. This area is available only to administrators and
   Flow before apply.
 - Resolve identity and authenticity blockers in `Проблемы импорта`; never copy
   full serial/IMEI or purchase prices into public copy.
+- Review receipt movement through `Сейчас в магазине`, `Центральный офис`,
+  `Выбыло до загрузки` and `Требует сверки места`. Historical exits are
+  warnings, not current-stock blockers.
 - A product reaches Catalog V3 only after an explicit documented eligibility
   override and still starts as `draft / needs_photo`.
 - Keep Avito listings in `draft` until the official category template and the

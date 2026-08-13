@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-08-10.
+Last updated: 2026-08-13.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -1884,3 +1884,32 @@ Next content-editing priorities:
   ms, catalog 2600/2356 ms, store 2528/2424 ms, blog 2260/2060 ms, pilot article
   4020/3436 ms desktop/mobile; статья остаётся performance-watch, но находится
   внутри действующего release budget.
+
+### Inventory Receipt Movement Hardening (2026-08-13)
+
+- Новые источники проверены локально без записи в Directus: snapshot содержит
+  70 SKU / 340 единиц, поступления — 84 строки / 373 единицы. Текущая
+  себестоимость магазина равна 1 622 076 ₽, плановая выручка — 2 084 274 ₽.
+- Историческая строка поступления, отсутствующая в текущем snapshot, больше не
+  считается blocker сама по себе. Pipeline различает `in_store`,
+  `partial_central_office`, `central_office`,
+  `central_office_inventory_conflict` и `exited_preload`; неявное выбытие
+  остаётся warning для оператора.
+- Каноническая миграция добавляет в `inventory_receipt_lines` поля
+  `received_on`, `movement_status` и `central_office_quantity`, Studio presets
+  для магазина/ЦО/выбывших/конфликтов, явные permissions и SQL-аудиты. IMEI в
+  новой книге поступлений необязателен; дата и исходный комментарий сохраняются.
+- Dry-run новых книг классифицировал 70 строк как связанные с магазином, одну
+  как частично находящуюся в ЦО, две как только ЦО, десять как выбывшие до
+  загрузки и одну как конфликт ЦО/остатка. Оценка количества в ЦО — 3 единицы.
+- Серийная identity-проверка игнорирует только служебные токены вроде
+  «мобильный телефон» и `5G`, сохраняя строгую проверку модели, памяти и цвета.
+  Поэтому два ложных Samsung-конфликта сняты, один реальный цветовой конфликт
+  iPhone 14 Pro Max остаётся blocker.
+- После очистки ложных расхождений dry-run показывает 13 blockers: один
+  identity-конфликт и 12 сигналов replica/authenticity. Replica не допускается
+  автоматически; ручной допуск требует документированной проверки и
+  однозначного публичного обозначения в карточке и канальном объявлении.
+- Локально прошли 11 unit-тестов, syntax checks SQL-генераторов и генерация
+  migration SQL. Production Directus не изменялся; перед миграцией и apply
+  нового snapshot обязателен свежий локальный VPS backup.

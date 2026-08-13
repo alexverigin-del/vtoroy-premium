@@ -25,9 +25,9 @@ INVENTORY_HEADERS = [
     "Тип собственности", "Создан", "Обновлен",
 ]
 RECEIPT_HEADERS = [
-    "№", "Наименование", "Категория", "IMEI", "Серийный номер", "Подкатегория",
+    "№", "Наименование", "Категория", "Дата поступления", "Серийный номер", "Подкатегория",
     "Количество", "Закупка", "СуммаЗ", "Наценка", "Маржинальность", "Маржа",
-    "Продажа", "СуммаП",
+    "Продажа", "СуммаП", "Комментарий",
 ]
 
 
@@ -69,17 +69,25 @@ class InventoryPipelineTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.temp.cleanup()
 
-    def inventory_row(self, source_id: str, title: str, code: str, serial: str = "") -> list[object]:
+    def inventory_row(
+        self, source_id: str, title: str, code: str, serial: str = "", quantity: int = 1
+    ) -> list[object]:
         return [
-            source_id, title, code, code, True, 100, 150, 1, "Телефоны" if serial else "Роутеры",
+            source_id, title, code, code, True, 100, 150, quantity, "Телефоны" if serial else "Роутеры",
             f"Серийный номер: {serial}" if serial else None, f"barcode-{code}", "Товары", "OWN",
             "01-08-2026, 10:00:00", "02-08-2026, 10:00:00",
         ]
 
-    def receipt_row(self, number: int, title: str, serial: str = "") -> list[object]:
-        return [number, title, "Товары бу" if serial else "Товары", None, serial, "Смартфон", 1, 100, 100, 0.5, 1 / 3, 50, 150, 150]
+    def receipt_row(
+        self, number: int, title: str, serial: str = "", quantity: int = 1, comment: str = ""
+    ) -> list[object]:
+        return [
+            number, title, "Товары бу" if serial else "Товары", "07.08.2026", serial,
+            "Смартфон", quantity, 100, 100 * quantity, 0.5, 1 / 3, 50, 150,
+            150 * quantity, comment,
+        ]
 
-    def test_reconciliation_blocks_identity_and_missing_rows(self) -> None:
+    def test_reconciliation_blocks_identity_but_keeps_historical_exits_non_blocking(self) -> None:
         inventory_path = self.root / "inventory.xlsx"
         receipt_path = self.root / "receipts.xlsx"
         save_inventory(
@@ -102,8 +110,61 @@ class InventoryPipelineTest(unittest.TestCase):
         issues, _ = reconcile(inventory, receipts)
         codes = [issue.code for issue in issues]
         self.assertEqual(codes.count("serialized_identity_conflict"), 1)
-        self.assertEqual(codes.count("receipt_serial_missing_inventory"), 1)
-        self.assertEqual(codes.count("receipt_item_missing_inventory"), 1)
+        self.assertEqual(codes.count("receipt_exit_inferred"), 2)
+        self.assertNotIn("receipt_serial_missing_inventory", codes)
+        self.assertNotIn("receipt_item_missing_inventory", codes)
+        self.assertEqual(receipts[1]["movement_status"], "exited_preload")
+        self.assertEqual(receipts[2]["match_status"], "not_in_snapshot")
+        self.assertEqual(receipts[0]["received_on"], "2026-08-07")
+
+    def test_central_office_and_partial_stock_are_structured(self) -> None:
+        inventory_path = self.root / "inventory.xlsx"
+        receipt_path = self.root / "receipts.xlsx"
+        camera = self.inventory_row("source-1", "Smart Camera 3K", "sku-1", quantity=2)
+        replica = self.inventory_row("source-2", "Phone Replica", "sku-2")
+        save_inventory(inventory_path, [camera, replica])
+        save_receipts(
+            receipt_path,
+            [
+                self.receipt_row(1, "Smart Camera 3K", quantity=3, comment="в ЦО"),
+                self.receipt_row(2, "MacBook Office", comment="в ЦО"),
+                self.receipt_row(3, "Phone Replica", comment="в ЦО"),
+            ],
+        )
+
+        inventory = parse_inventory(inventory_path)
+        receipts = parse_receipts(receipt_path)
+        issues, _ = reconcile(inventory, receipts)
+
+        self.assertEqual(receipts[0]["movement_status"], "partial_central_office")
+        self.assertEqual(receipts[0]["central_office_quantity"], 1)
+        self.assertEqual(receipts[1]["movement_status"], "central_office")
+        self.assertEqual(receipts[1]["central_office_quantity"], 1)
+        self.assertEqual(receipts[2]["movement_status"], "central_office_inventory_conflict")
+        self.assertIn("receipt_central_office_inventory_conflict", [issue.code for issue in issues])
+
+        summary = summarize(inventory, receipts, issues)
+        self.assertEqual(summary["receipts"]["central_office_units"], 2)
+        self.assertEqual(summary["receipts"]["movement_counts"]["central_office"], 1)
+
+    def test_serialized_identity_ignores_generic_phone_and_5g_tokens(self) -> None:
+        inventory_path = self.root / "inventory.xlsx"
+        receipt_path = self.root / "receipts.xlsx"
+        save_inventory(
+            inventory_path,
+            [self.inventory_row("source-1", "Samsung, Galaxy S24 Ultra, 256 GB, Yellow", "sku-1", "SERIAL-1")],
+        )
+        save_receipts(
+            receipt_path,
+            [self.receipt_row(1, "Мобильный телефон Samsung Galaxy S24 Ultra 5G, 256 GB, Yellow", "SERIAL-1")],
+        )
+
+        inventory = parse_inventory(inventory_path)
+        receipts = parse_receipts(receipt_path)
+        issues, _ = reconcile(inventory, receipts)
+
+        self.assertNotIn("serialized_identity_conflict", [issue.code for issue in issues])
+        self.assertEqual(receipts[0]["match_status"], "matched")
 
     def test_duplicate_source_id_is_rejected(self) -> None:
         path = self.root / "duplicate.xlsx"

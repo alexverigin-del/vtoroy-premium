@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS inventory_receipt_lines (
   source_title text NOT NULL,
   source_category varchar(255),
   source_subcategory varchar(255),
+  received_on date,
   imei_full varchar(255),
   serial_full varchar(255),
   quantity integer NOT NULL DEFAULT 0,
@@ -83,11 +84,17 @@ CREATE TABLE IF NOT EXISTS inventory_receipt_lines (
   inventory_item uuid REFERENCES inventory_items(id) ON DELETE SET NULL,
   product varchar(255) REFERENCES products(id) ON DELETE SET NULL,
   match_status varchar(32) NOT NULL DEFAULT 'unmatched',
+  movement_status varchar(48) NOT NULL DEFAULT 'unclassified',
+  central_office_quantity integer NOT NULL DEFAULT 0,
   match_note text,
   source_note text,
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (batch, row_number)
 );
+
+ALTER TABLE inventory_receipt_lines ADD COLUMN IF NOT EXISTS received_on date;
+ALTER TABLE inventory_receipt_lines ADD COLUMN IF NOT EXISTS movement_status varchar(48) NOT NULL DEFAULT 'unclassified';
+ALTER TABLE inventory_receipt_lines ADD COLUMN IF NOT EXISTS central_office_quantity integer NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS inventory_import_issues (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -195,6 +202,7 @@ END $$;
 
 CREATE INDEX IF NOT EXISTS inventory_items_product_idx ON inventory_items(product);
 CREATE INDEX IF NOT EXISTS inventory_items_status_idx ON inventory_items(eligibility_status, identity_status, authenticity_status);
+CREATE INDEX IF NOT EXISTS inventory_receipt_movement_idx ON inventory_receipt_lines(batch, movement_status);
 CREATE INDEX IF NOT EXISTS inventory_issues_batch_idx ON inventory_import_issues(batch, severity, resolved);
 CREATE INDEX IF NOT EXISTS channel_listings_status_idx ON product_channel_listings(channel, status);
 CREATE INDEX IF NOT EXISTS channel_category_mappings_status_idx
@@ -323,7 +331,7 @@ INSERT INTO directus_collections (
 VALUES
   ('inventory_import_batches','upload_file','Приватные полные снимки товарного учёта и поступлений.','{{batch_name}} · {{status}} · {{blocker_count}} блокеров','status','archived','draft','all',60,'#1d4ed8'),
   ('inventory_items','warehouse','Приватный складской слой. Себестоимость и полные идентификаторы не публикуются.','{{source_title}} · {{source_sku}} · {{quantity}} шт.',NULL,NULL,NULL,'all',61,'#0f766e'),
-  ('inventory_receipt_lines','receipt_long','Исторические строки поступлений и плановой маржи.','{{source_title}} · {{unit_cost}}',NULL,NULL,NULL,'all',62,'#7c3aed'),
+  ('inventory_receipt_lines','receipt_long','Исторические строки поступлений, места хранения и плановой маржи.','{{source_title}} · {{movement_status}} · {{quantity}} шт.',NULL,NULL,NULL,'all',62,'#7c3aed'),
   ('inventory_import_issues','report_problem','Блокеры и предупреждения сверки inventory snapshot.','{{severity}} · {{code}} · {{message}}','resolved','true','false','all',63,'#dc2626'),
   ('channel_cost_profiles','calculate','Подтверждённые переменные расходы каналов продаж.','{{channel}} · {{name}} · {{is_confirmed}}','is_active','false','true','all',64,'#475569'),
   ('channel_category_mappings','account_tree','Соответствие категории сайта официальному шаблону канала.','{{channel}} · {{mapping_key}} · {{external_category}}','is_active','false','true','all',65,'#0f766e'),
@@ -379,7 +387,14 @@ SELECT isvoi_inventory_field('inventory_items','block_reason','input-multiline',
 SELECT isvoi_inventory_field('inventory_items','product','select-dropdown-m2o','related-values','{"template":"{{title}} · {{sku}}"}','full',14,'Связанный Catalog V3 product.','m2o',false,true);
 
 SELECT isvoi_inventory_field('inventory_receipt_lines','batch','select-dropdown-m2o','related-values','{"template":"{{batch_name}}"}','half',1,'Партия поступления.','m2o',true,true);
-SELECT isvoi_inventory_field('inventory_receipt_lines','inventory_item','select-dropdown-m2o','related-values','{"template":"{{source_title}}"}','half',2,'Сопоставленная складская позиция.','m2o',false,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','received_on','datetime','datetime','{"includeSeconds":false}','half',2,'Дата поступления из исходной книги.',NULL,false,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','source_title','input-multiline',NULL,NULL,'full',3,'Наименование из поступления.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','source_note','input-multiline',NULL,NULL,'half',4,'Исходный комментарий: ЦО, обмен или другая операция.',NULL,false,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','movement_status','select-dropdown','labels','{"choices":[{"text":"В магазине","value":"in_store"},{"text":"Частично в ЦО","value":"partial_central_office"},{"text":"В ЦО","value":"central_office"},{"text":"ЦО / конфликт остатка","value":"central_office_inventory_conflict"},{"text":"Выбыло до загрузки","value":"exited_preload"},{"text":"Не классифицировано","value":"unclassified"}]}','half',5,'Фактический статус относительно текущего snapshot магазина.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','central_office_quantity','input',NULL,'{"min":0,"step":1}','half',6,'Количество в ЦО, рассчитанное только по явной отметке источника.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','match_status','select-dropdown','labels','{"choices":[{"text":"Сопоставлено","value":"matched"},{"text":"Конфликт идентичности","value":"conflict"},{"text":"Не в текущем snapshot","value":"not_in_snapshot"},{"text":"Не сопоставлено","value":"unmatched"}]}','half',7,'Технический результат связи с inventory item.',NULL,true,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','match_note','input-multiline',NULL,NULL,'full',8,'Пояснение классификации движения.',NULL,false,true);
+SELECT isvoi_inventory_field('inventory_receipt_lines','inventory_item','select-dropdown-m2o','related-values','{"template":"{{source_title}} · {{quantity}} шт. · {{barcode}}"}','full',9,'Сопоставленная складская позиция с текущим количеством и штрих-кодом.','m2o',false,true);
 
 SELECT isvoi_inventory_field('inventory_import_issues','severity','select-dropdown','labels','{"choices":[{"text":"Блокер","value":"blocker"},{"text":"Предупреждение","value":"warning"}]}','half',1,'Уровень проблемы.',NULL,true,true);
 SELECT isvoi_inventory_field('inventory_import_issues','batch','select-dropdown-m2o','related-values','{"template":"{{batch_name}}"}','half',2,'Партия проверки.','m2o',true,true);
@@ -502,7 +517,7 @@ BEGIN
       f := CASE c
         WHEN 'inventory_import_batches' THEN 'id,status,batch_name,source_system,snapshot_at,inventory_workbook,receipts_workbook,confirm_missing_deactivation,inventory_rows,inventory_units,receipt_rows,blocker_count,warning_count,last_run_mode,last_run_status,last_run_at,last_run_log,note,created_at,updated_at,items,receipt_lines,issues'
         WHEN 'inventory_items' THEN 'id,source_system,source_id,source_sku,source_article,barcode,source_title,source_description,source_group,source_group_path,condition,item_kind,serial_full,imei_full,quantity,purchase_price,retail_price,for_sale,ownership,identity_status,authenticity_status,eligibility_status,block_reason,review_override,review_note,product,last_seen_batch,source_created_at,source_updated_at,created_at,updated_at,receipt_lines'
-        WHEN 'inventory_receipt_lines' THEN 'id,batch,row_number,source_title,source_category,source_subcategory,imei_full,serial_full,quantity,unit_cost,target_markup,target_margin,target_price,total_cost,total_price,inventory_item,product,match_status,match_note,source_note,created_at'
+        WHEN 'inventory_receipt_lines' THEN 'id,batch,row_number,source_title,source_category,source_subcategory,received_on,imei_full,serial_full,quantity,unit_cost,target_markup,target_margin,target_price,total_cost,total_price,inventory_item,product,match_status,movement_status,central_office_quantity,match_note,source_note,created_at'
         WHEN 'inventory_import_issues' THEN 'id,batch,severity,code,source_kind,row_number,source_id,message,resolved,resolution_note,created_at'
         WHEN 'channel_cost_profiles' THEN 'id,channel,name,category,is_active,is_confirmed,commission_rate,acquiring_rate,tax_rate,return_reserve_rate,promotion_per_unit,delivery_per_unit,other_variable_per_unit,note,created_at,updated_at'
         WHEN 'channel_category_mappings' THEN 'id,channel,mapping_key,product_category,external_category,external_category_id,external_goods_type,default_attributes,template_version,is_active,is_confirmed,note,created_at,updated_at'
@@ -597,6 +612,10 @@ SELECT isvoi_inventory_preset('inventory_import_batches','Применено','c
 SELECT isvoi_inventory_preset('inventory_items','Конфликты','error','#dc2626','{"identity_status":{"_eq":"conflict"}}','["source_title","source_sku","quantity","identity_status","authenticity_status","block_reason"]','["source_title"]');
 SELECT isvoi_inventory_preset('inventory_items','На проверке','fact_check','#d97706','{"eligibility_status":{"_eq":"pending"}}','["source_title","source_sku","quantity","retail_price","identity_status","authenticity_status"]','["source_title"]');
 SELECT isvoi_inventory_preset('inventory_items','Можно в каталог','publish','#059669','{"eligibility_status":{"_eq":"eligible"}}','["source_title","source_sku","quantity","retail_price","product","review_note"]','["source_title"]');
+SELECT isvoi_inventory_preset('inventory_receipt_lines','Сейчас в магазине','store','#059669','{"movement_status":{"_eq":"in_store"}}','["received_on","source_title","quantity","inventory_item","match_status"]','["-received_on","source_title"]');
+SELECT isvoi_inventory_preset('inventory_receipt_lines','Центральный офис','business','#2563eb','{"movement_status":{"_in":["central_office","partial_central_office","central_office_inventory_conflict"]}}','["received_on","source_title","quantity","central_office_quantity","movement_status","source_note","inventory_item"]','["-received_on","source_title"]');
+SELECT isvoi_inventory_preset('inventory_receipt_lines','Выбыло до загрузки','move_to_inbox','#d97706','{"movement_status":{"_eq":"exited_preload"}}','["received_on","source_title","quantity","total_cost","total_price","source_note","match_status"]','["-received_on","source_title"]');
+SELECT isvoi_inventory_preset('inventory_receipt_lines','Требует сверки места','error','#dc2626','{"movement_status":{"_eq":"central_office_inventory_conflict"}}','["received_on","source_title","quantity","movement_status","source_note","inventory_item","match_note"]','["-received_on","source_title"]');
 SELECT isvoi_inventory_preset('channel_category_mappings','Avito: требует шаблона','rule','#d97706','{"_and":[{"channel":{"_eq":"avito"}},{"is_confirmed":{"_eq":false}}]}','["mapping_key","product_category","external_category","external_goods_type","template_version","is_active","is_confirmed"]','["product_category","mapping_key"]');
 SELECT isvoi_inventory_preset('channel_category_mappings','Avito: подтверждено','verified','#059669','{"_and":[{"channel":{"_eq":"avito"}},{"is_confirmed":{"_eq":true}}]}','["mapping_key","product_category","external_category","external_goods_type","template_version","is_active"]','["product_category","mapping_key"]');
 SELECT isvoi_inventory_preset('product_channel_listings','Avito: черновики','edit_note','#64748b','{"_and":[{"channel":{"_eq":"avito"}},{"status":{"_eq":"draft"}}]}','["external_id","product","status","category_mapping","price_override","sync_status"]','["external_id"]');

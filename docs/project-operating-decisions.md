@@ -1910,6 +1910,31 @@ Next content-editing priorities:
   identity-конфликт и 12 сигналов replica/authenticity. Replica не допускается
   автоматически; ручной допуск требует документированной проверки и
   однозначного публичного обозначения в карточке и канальном объявлении.
-- Локально прошли 11 unit-тестов, syntax checks SQL-генераторов и генерация
-  migration SQL. Production Directus не изменялся; перед миграцией и apply
-  нового snapshot обязателен свежий локальный VPS backup.
+- Перед production-изменениями создан локальный VPS backup
+  `/opt/isvoi/backups/directus/20260813T133422Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite upload не выполнялся, поскольку `OFFSITE_BACKUP_DEST` не
+  настроен и этот этап остаётся отложенным.
+- Production batch `store-snapshot-2026-08-13`
+  (`8512e0b1-45c7-4331-8020-54fa29f4e17a`) получил обе исходные книги в
+  приватной папке Directus Files. Dry-run подтвердил локальные показатели и
+  отсутствие исчезнувших SKU; apply записал 70 `inventory_items`, 84
+  `inventory_receipt_lines` и 28 issues. Статус batch —
+  `applied_with_blocks`; `products_synced=0`, каталог и Avito не менялись.
+- После прямой SQL-миграции недостаточно только перезапустить контейнеры:
+  persisted Redis может вернуть старый permission cache. Для новых полей
+  потребовались `redis-cli FLUSHALL`, restart Directus и ожидание health. Это
+  очистка только кэша; PostgreSQL и uploads не затрагиваются.
+- 41 историческая receipt-строка batch от 10 августа была создана до появления
+  movement tracking. Каноническая идемпотентная миграция backfill-классифицирует
+  старые строки без даты: связанные с inventory item как `in_store`, остальные
+  как `exited_preload`. Исторические строки и их исходные суммы сохранены.
+- После apply прошли 11 unit-тестов, Avito feed tests, полный `web:verify`,
+  inventory audit и aggregate production Directus audit. Проверки подтвердили
+  нулевое число некорректных movement status, отсутствие Public/Editor доступа
+  к приватному товарному контуру и отсутствие identifiers в batch logs.
+
+Следующий товарный шаг: Inventory Manager разбирает 13 blockers и 15 warnings
+нового batch, начиная с цветового конфликта iPhone 14 Pro Max и одной строки
+`central_office_inventory_conflict`. Допуск товара в Catalog V3 выполняется
+только вручную с `review_override` и заметкой; результатом остаётся draft до
+фотографий, Passport/диагностики и Studio QA.

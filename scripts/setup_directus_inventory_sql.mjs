@@ -96,6 +96,17 @@ ALTER TABLE inventory_receipt_lines ADD COLUMN IF NOT EXISTS received_on date;
 ALTER TABLE inventory_receipt_lines ADD COLUMN IF NOT EXISTS movement_status varchar(48) NOT NULL DEFAULT 'unclassified';
 ALTER TABLE inventory_receipt_lines ADD COLUMN IF NOT EXISTS central_office_quantity integer NOT NULL DEFAULT 0;
 
+-- Rows created before receipt movement tracking can be classified from the
+-- relation that the earlier importer already persisted.
+UPDATE inventory_receipt_lines
+SET movement_status = CASE
+      WHEN inventory_item IS NOT NULL THEN 'in_store'
+      ELSE 'exited_preload'
+    END,
+    central_office_quantity = 0
+WHERE movement_status = 'unclassified'
+  AND received_on IS NULL;
+
 CREATE TABLE IF NOT EXISTS inventory_import_issues (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   batch uuid NOT NULL REFERENCES inventory_import_batches(id) ON DELETE CASCADE,

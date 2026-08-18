@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from decimal import Decimal
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -15,6 +16,7 @@ from inventory_pipeline import (
     parse_receipts,
     product_mapping,
     reconcile,
+    risk_codes,
     summarize,
 )
 
@@ -232,6 +234,20 @@ class InventoryPipelineTest(unittest.TestCase):
             "source_group_path": "",
         }
         self.assertEqual(product_mapping(glasses)[:2], ("device", "smart-electronics"))
+
+    def test_personal_care_devices_in_root_group_map_to_smart_electronics(self) -> None:
+        for title in ("Электробритва Enchan A1", "Триммер Enchan Beardo"):
+            with self.subTest(title=title):
+                item = {
+                    "source_title": title,
+                    "source_group": "Товары на продажу",
+                    "source_group_path": "Товары на продажу",
+                }
+                self.assertEqual(product_mapping(item)[:2], ("device", "smart-electronics"))
+
+    def test_low_cost_jbl_flip_requires_authenticity_review(self) -> None:
+        self.assertIn("authenticity_review", risk_codes("JBL Flip7", Decimal("1200")))
+        self.assertNotIn("authenticity_review", risk_codes("JBL Flip 7", Decimal("10000")))
 
     def test_product_mapping_covers_inventory_group_structure(self) -> None:
         cases = {

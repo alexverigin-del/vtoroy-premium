@@ -256,6 +256,8 @@ def risk_codes(title: str, purchase_price: Decimal) -> list[str]:
         risks.append("replica_or_mimic")
     if "airpods" in value and purchase_price < Decimal("10000"):
         risks.append("authenticity_review")
+    if "jbl" in value and "flip" in value and purchase_price < Decimal("5000"):
+        risks.append("authenticity_review")
     if "ассорт" in value:
         risks.append("variant_ambiguous")
     return risks
@@ -534,6 +536,8 @@ def product_mapping(item: dict[str, Any]) -> tuple[str, str, str]:
         return "accessory", "cables", brand
     if "power bank" in title:
         return "accessory", "power-banks", brand
+    if any(term in title for term in ("электробрит", "триммер")):
+        return "device", "smart-electronics", brand
     if "заряд" in title or group in {"apple", "samsung"}:
         return "accessory", "chargers", brand
     return "accessory", "other-accessories", brand

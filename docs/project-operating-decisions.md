@@ -1959,6 +1959,17 @@ Next content-editing priorities:
   `smart-electronics`. Две JBL Flip с низкой закупочной ценой получают
   `authenticity_review` и не могут быть автоматически допущены в каталог или
   Avito.
-- Локальный dry-run нового snapshot валиден: 15 blockers, 20 warnings,
-  `missing_from_snapshot=0`. До production apply публичный каталог и Avito не
-  меняются; новые строки должны оставаться в приватном inventory staging.
+- Локальный и production dry-run нового snapshot валидны: 15 blockers,
+  20 warnings, `missing_from_snapshot=0`. Перед apply создан и проверен VPS
+  backup `/opt/isvoi/backups/directus/20260818T101515Z`; offsite upload не
+  выполнялся, поскольку этот этап остаётся отложенным.
+- Production batch `store-snapshot-2026-08-18`
+  (`f5e60ed4-7a24-4720-abc2-6fc0d867fbd8`) хранит обе исходные книги в
+  приватной папке Directus Files. Идемпотентный apply через защищённый route
+  записал 82 `inventory_items`, 95 `inventory_receipt_lines` и 35 issues;
+  статус — `applied_with_blocks`, `products_synced=0`, отсутствующие позиции
+  не обнулялись.
+- После apply прошли 13 unit-тестов inventory pipeline, Avito feed tests,
+  полный frontend gate, inventory и aggregate Directus audits и production
+  HTTP smoke. Public, Catalog V3 и Avito не получили новых товаров: ручной
+  review остаётся обязательным.

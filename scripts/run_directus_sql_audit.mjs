@@ -125,6 +125,13 @@ const auditDefinitions = {
       "navigation.header_cta_missing",
       "navigation.blog.header_missing",
       "navigation.blog.footer_missing",
+      "navigation.main.canonical_mismatch",
+      "navigation.main.unmanaged_active",
+      "navigation.main.legacy_rows",
+      "navigation.footer.duplicate_destinations",
+      "navigation.footer.invalid_structure",
+      "navigation.site_city_mismatch",
+      "navigation.studio.bookmarks_missing",
     ],
   },
   "legacy-fallback": {

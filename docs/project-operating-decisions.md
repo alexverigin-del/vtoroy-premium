@@ -1024,8 +1024,9 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   file already includes the descriptor, and use `logo_caption` when the uploaded
   file is only the main `I СВОИ` mark/name. Turn off `show_brand_name` when the
   image itself contains the brand name.
-- Header/footer/mobile links are edited in `navigation_items`; header should
-  stay compact, currently five primary links plus CTA.
+- Header/footer links are edited in `navigation_items`, shown in Studio as
+  `Меню сайта`; header stays compact at five primary links plus the CTA from
+  `site_settings`.
 - Marketing pages are edited through `site_pages` and owned `page_sections`.
   Editors should use existing safe sections and documented variants rather than
   creating arbitrary component data structures.
@@ -1036,8 +1037,8 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
 - FAQ is managed through `faq_items`, either linked by `page` or referenced by
   keys in a FAQ section.
 - Editor-facing collections should keep bookmarks/presets for normal workflows:
-  header menu, footer links, page sections, FAQ, catalog review, leads and
-  import batches.
+  `Шапка сайта`, `Подменю каталога`, `Группы подвала`, `Ссылки подвала`, page
+  sections, FAQ, catalog review, leads and import batches.
 - `npm run directus:audit-studio` is the editor-workflow audit. It checks
   collection UX metadata, field notes, required bookmarks, page-section JSON
   guardrails, import batch readiness, destructive editor permissions, Files
@@ -1060,6 +1061,29 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   future header/menu changes compatible with `site_settings` and
   `navigation_items` rather than baking labels, CTA text or logo presentation
   into code.
+
+### Navigation UX And Ownership (2026-08-19)
+
+- `navigation_items` is the literal source of visible menu labels. The former
+  frontend `conversionNavigation()` mapping was removed: Studio no longer says
+  `Store` while the site silently renders `Магазин в Северодвинске`.
+- Canonical header: `Каталог` with `Все устройства`, `Техника`, `Аксессуары`;
+  then `Магазин в Северодвинске`, `Как мы проверяем`, `Продать или обменять`,
+  `Блог`. Club remains outside the main header.
+- Canonical footer groups: `Покупка`, `Сервисы`, `I СВОИ`. Each destination
+  appears once; contact data remains owned by `site_settings` and is not
+  duplicated as fake navigation links.
+- Studio collection is named `Меню сайта`. Administrator, Editor and Advanced
+  Editor receive five scenario bookmarks: `Шапка сайта`, `Подменю каталога`,
+  `Группы подвала`, `Ссылки подвала`, `Скрытые / архив`.
+- `Короткий текст` is optional and overrides the header label when present.
+  Canonical rows keep it empty. Page/custom/section fields use native field
+  conditions; legacy `url` is readonly and hidden.
+- Production location is `Северодвинск`. `site_settings.city` and homepage SEO
+  must not drift to another city while Store and Club still target
+  Северодвинск.
+- Reproducible setup: `npm run directus:setup:navigation-ux`; production gate:
+  `npm run directus:audit-navigation` and aggregate `directus:audit:prod`.
 - Footer note/legal/copyright text is also Directus-managed via
   `site_settings`. Runtime fallbacks were cleaned in code, but production
   Studio values may still need a content update if they contain prototype or

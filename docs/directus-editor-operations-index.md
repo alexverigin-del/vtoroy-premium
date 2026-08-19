@@ -86,10 +86,15 @@ Detailed guides: `docs/site-content-editor-guide.md` and
 
 Use global content collections.
 
-- Header/footer/mobile links: `Навигация` (`navigation_items`).
+- Header/footer links: `Меню сайта` (`navigation_items`). Start with `Шапка
+сайта`, `Подменю каталога`, `Группы подвала` or `Ссылки подвала` rather than
+  the unfiltered table.
 - Brand name, logo, logo caption, header CTA and footer text:
   `Настройки сайта` (`site_settings`).
-- For temporary menu changes, turn off `Показывать` instead of deleting rows.
+- The visible link label is `Текст на сайте`; normally leave `Короткий текст`
+  empty because it overrides the header label.
+- For temporary menu changes, turn off `Показывать на сайте` instead of
+  deleting rows.
 
 Detailed guide: `docs/global-content-editor-guide.md`.
 

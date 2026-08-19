@@ -54,12 +54,21 @@ const defaultNavigationItems: NavigationItem[] = [
     isActive: true,
   },
   {
+    id: "header-catalog-all",
+    label: "Все устройства",
+    url: "/catalog",
+    location: "header",
+    parent: "header-catalog",
+    sort: 1,
+    isActive: true,
+  },
+  {
     id: "header-catalog-tech",
     label: "Техника",
     url: "/catalog/tech",
     location: "header",
     parent: "header-catalog",
-    sort: 1,
+    sort: 2,
     isActive: true,
   },
   {
@@ -68,12 +77,12 @@ const defaultNavigationItems: NavigationItem[] = [
     url: "/catalog/accessories",
     location: "header",
     parent: "header-catalog",
-    sort: 2,
+    sort: 3,
     isActive: true,
   },
   {
     id: "header-store",
-    label: "Store",
+    label: "Магазин в Северодвинске",
     url: "/store",
     location: "header",
     sort: 2,
@@ -81,7 +90,7 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "header-passport",
-    label: "Passport",
+    label: "Как мы проверяем",
     url: "/passport",
     location: "header",
     sort: 3,
@@ -89,116 +98,114 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "header-trade",
-    label: "Trade",
+    label: "Продать или обменять",
     url: "/trade",
     location: "header",
     sort: 4,
     isActive: true,
   },
-  { id: "header-club", label: "Club", url: "/club", location: "header", sort: 5, isActive: false },
   {
-    id: "footer-club",
-    label: "Навигация",
-    url: "#top",
+    id: "header-blog",
+    label: "Блог",
+    url: "/blog",
+    location: "header",
+    sort: 5,
+    isActive: true,
+  },
+  {
+    id: "footer-purchase",
+    label: "Покупка",
+    url: "/",
     location: "footer",
     sort: 1,
     isActive: true,
   },
   {
-    id: "footer-club-catalog",
+    id: "footer-purchase-catalog",
     label: "Каталог",
     url: "/catalog",
     location: "footer",
-    parent: "footer-club",
+    parent: "footer-purchase",
     sort: 1,
     isActive: true,
   },
   {
-    id: "footer-club-store",
-    label: "Магазин в Северодвинске",
-    url: "/store",
+    id: "footer-purchase-tech",
+    label: "Техника",
+    url: "/catalog/tech",
     location: "footer",
-    parent: "footer-club",
+    parent: "footer-purchase",
     sort: 2,
     isActive: true,
   },
   {
-    id: "footer-club-passport",
-    label: "Как мы проверяем",
-    url: "/passport",
+    id: "footer-purchase-accessories",
+    label: "Аксессуары",
+    url: "/catalog/accessories",
     location: "footer",
-    parent: "footer-club",
+    parent: "footer-purchase",
     sort: 3,
     isActive: true,
   },
   {
     id: "footer-services",
     label: "Сервисы",
-    url: "#top",
+    url: "/",
     location: "footer",
     sort: 2,
+    isActive: true,
+  },
+  {
+    id: "footer-services-passport",
+    label: "Как мы проверяем",
+    url: "/passport",
+    location: "footer",
+    parent: "footer-services",
+    sort: 1,
     isActive: true,
   },
   {
     id: "footer-services-trade",
-    label: "Trade — продать или обменять",
+    label: "Продать или обменять",
     url: "/trade",
     location: "footer",
     parent: "footer-services",
-    sort: 1,
+    sort: 2,
     isActive: true,
   },
   {
     id: "footer-services-club",
-    label: "Club",
+    label: "Club — пилот",
     url: "/club",
     location: "footer",
     parent: "footer-services",
-    sort: 2,
-    isActive: true,
-  },
-  {
-    id: "footer-services-check",
-    label: "Открытая проверка",
-    url: "/passport",
-    location: "footer",
-    parent: "footer-services",
     sort: 3,
     isActive: true,
   },
   {
-    id: "footer-contacts",
-    label: "Контакты",
-    url: "#top",
+    id: "footer-isvoi",
+    label: "I СВОИ",
+    url: "/",
     location: "footer",
     sort: 3,
     isActive: true,
   },
   {
-    id: "footer-contacts-city",
+    id: "footer-isvoi-store",
     label: "Магазин в Северодвинске",
     url: "/store",
     location: "footer",
-    parent: "footer-contacts",
+    parent: "footer-isvoi",
     sort: 1,
     isActive: true,
   },
   {
-    id: "footer-contacts-check",
-    label: "Как мы проверяем",
-    url: "/passport",
+    id: "footer-isvoi-blog",
+    label: "Блог",
+    url: "/blog",
     location: "footer",
-    parent: "footer-contacts",
+    parent: "footer-isvoi",
     sort: 2,
-    isActive: true,
-  },
-  {
-    id: "footer-contacts-sell",
-    label: "Получить предварительную оценку",
-    url: "/trade#final",
-    location: "footer",
-    parent: "footer-contacts",
-    sort: 3,
     isActive: true,
   },
 ];
@@ -451,35 +458,6 @@ function normalizeSiteUrl(url: string, fallback = "#top"): string {
     .replace(/^\/device\/([^/]+)(?:\/index\.html)?$/, "/product/$1");
 }
 
-function conversionNavigation(items: NavigationItem[]): NavigationItem[] {
-  const headerLabels: Record<string, string> = {
-    "/catalog": "Каталог",
-    "/passport": "Как мы проверяем",
-    "/trade": "Продать или обменять",
-    "/store": "Магазин в Северодвинске",
-    "/blog": "Блог",
-  };
-
-  return items
-    .filter(
-      (item) =>
-        !(
-          item.location === "header" &&
-          (normalizeSiteUrl(item.url) === "/club" || item.label.trim().toLowerCase() === "club")
-        ),
-    )
-    .map((item) => {
-      const url = normalizeSiteUrl(item.url);
-      if (item.location === "header" && headerLabels[url] && item.itemRole !== "cta") {
-        return { ...item, label: headerLabels[url], labelShort: headerLabels[url] };
-      }
-      if (item.location === "footer" && url === "/club") {
-        return { ...item, label: "Club — пилот" };
-      }
-      return item;
-    });
-}
-
 function strField(record: Record<string, unknown>, key: string, fallback = ""): string {
   const value = record[key];
   return typeof value === "string" ? value : fallback;
@@ -612,7 +590,7 @@ export function siteChrome(
         defaultSiteSettings.footerCopyright ?? "",
       ),
     },
-    navigation: conversionNavigation(navigation.length > 0 ? navigation : defaultNavigationItems),
+    navigation: navigation.length > 0 ? navigation : defaultNavigationItems,
   };
 }
 

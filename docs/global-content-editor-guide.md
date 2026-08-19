@@ -34,20 +34,33 @@ if the webhook is temporarily unavailable.
 
 ## Navigation
 
-Open `Навигация`.
+Open `Меню сайта`.
 
 Use bookmarks:
 
-- `Шапка`
-- `Footer`
+- `Шапка сайта`: только пять основных пунктов;
+- `Подменю каталога`: `Все устройства`, `Техника`, `Аксессуары`;
+- `Группы подвала`: заголовки трёх колонок;
+- `Ссылки подвала`: ссылки внутри колонок;
+- `Скрытые / архив`: временно выключенные строки.
+
+The visible value is `Текст на сайте`. `Короткий текст` overrides it in the
+header when filled, so normally leave the short value empty. Prefer `Страница
+сайта` for managed pages; use `Адрес ссылки` only for category routes and
+external URLs.
+
+The logo and the header CTA are not navigation rows. Edit them in `Настройки
+сайта` -> `Шапка сайта`.
 
 For temporary changes, turn off `Показывать` instead of deleting the row. Use
 `Новая вкладка` only for external links.
 
 Allowed locations:
 
-- `header`
-- `footer`
+- `Шапка сайта` (`header`)
+- `Подвал сайта` (`footer`)
+- `Club: шапка` (`club_header`)
+- `Club: подвал` (`club_footer`)
 
 ## FAQ
 
@@ -103,6 +116,7 @@ Apply Studio metadata with:
 
 ```bash
 npm run directus:setup:global-content
+npm run directus:setup:navigation-ux
 npm run directus:setup:faq-editor
 npm run directus:setup:site-content-revalidation
 ```

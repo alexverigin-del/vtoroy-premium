@@ -499,6 +499,7 @@ curl -fsS https://club.your-domain.ru/sitemap.xml
 
 cd /opt/isvoi
 npm run --silent directus:setup:studio-ux-v2 > /tmp/isvoi_studio_ux_v2.sql
+npm run --silent directus:setup:navigation-ux > /tmp/isvoi_navigation_ux.sql
 npm run --silent directus:setup:insights > /tmp/isvoi_insights.sql
 npm run directus:audit-club
 npm run directus:audit-insights
@@ -508,6 +509,11 @@ npm run directus:audit:prod
 `directus:setup:studio-ux-v2` is the final native Studio migration and should
 run after older schema setup scripts. Use the generator's `--rollback` option
 for a production rehearsal before applying its SQL.
+
+`directus:setup:navigation-ux` runs after the Studio migration. It owns the
+canonical main-site menu rows, Russian scenario bookmarks and navigation field
+conditions. It also removes only the fixed legacy navigation IDs documented in
+the generator; editor-created unknown rows are not deleted automatically.
 
 `directus:setup:insights` manages the admin-only dashboard
 `Руководитель · Операционный обзор`. Apply it after the Studio migration. It

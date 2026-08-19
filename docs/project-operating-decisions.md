@@ -2059,3 +2059,7 @@ Next content-editing priorities:
   banner в stdout и загрязняет SQL; production apply использовал прямой
   `node scripts/setup_directus_insights_sql.mjs` после безопасного rollback
   rehearsal.
+- Relation-фильтры native Insights должны соответствовать GraphQL-схеме:
+  null-проверка ответственного задаётся как `assigned_to.id._null`, а не как
+  `assigned_to._null`. Setup и exact-config audit используют один и тот же
+  GraphQL-safe контракт.

@@ -117,7 +117,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   'Активные заявки без ответственного или с просроченным следующим шагом.',
   'metric',
   6, 0, 6, 2,
-  '{"collection":"leads","field":"id","function":"count","filter":{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"_or":[{"assigned_to":{"_null":true}},{"next_action_at":{"_lt":"$NOW"}}]}]},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#dc2626"}]}'::json
+  '{"collection":"leads","field":"id","function":"count","filter":{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"_or":[{"assigned_to":{"id":{"_null":true}}},{"next_action_at":{"_lt":"$NOW"}}]}]},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#dc2626"}]}'::json
 );
 
 SELECT pg_temp.isvoi_upsert_insights_panel(

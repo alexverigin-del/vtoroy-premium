@@ -499,13 +499,20 @@ curl -fsS https://club.your-domain.ru/sitemap.xml
 
 cd /opt/isvoi
 npm run directus:setup:studio-ux-v2 > /tmp/isvoi_studio_ux_v2.sql
+npm run directus:setup:insights > /tmp/isvoi_insights.sql
 npm run directus:audit-club
+npm run directus:audit-insights
 npm run directus:audit:prod
 ```
 
 `directus:setup:studio-ux-v2` is the final native Studio migration and should
 run after older schema setup scripts. Use the generator's `--rollback` option
 for a production rehearsal before applying its SQL.
+
+`directus:setup:insights` manages the admin-only dashboard
+`Руководитель · Операционный обзор`. Apply it after the Studio migration. It
+does not grant system collection permissions to non-admin roles and supports a
+targeted `--rollback` that removes only its fixed dashboard and panel IDs.
 
 After applying any setup generator directly to PostgreSQL, restart Directus
 before rebuilding Next.js so its schema and permission caches match the

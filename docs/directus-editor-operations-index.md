@@ -217,6 +217,31 @@ Use Directus Files folders as the source of truth.
 
 Detailed guide: `docs/directus-files-cleanup.md`.
 
+## Insights For The Project Owner
+
+Open `Insights` -> `Руководитель · Операционный обзор` as an administrator.
+The dashboard is a read-only operational summary and does not replace Content
+bookmarks:
+
+- the top row shows new/attention-required leads, published available products
+  and unresolved inventory blockers;
+- the middle rows show the 30-day lead trend, catalog readiness and clickable
+  lists of active leads and blockers;
+- the final row shows the 90-day lead mix and recent inventory imports.
+
+Only the administrator can see this dashboard. Editor, Advanced Editor,
+Importer and Inventory Manager receive no permissions for
+`directus_dashboards` or `directus_panels`. Keep automatic refresh disabled by
+default; use a five-minute interval only while actively monitoring operations.
+
+Reproduce or remove the managed dashboard with:
+
+```bash
+npm run directus:setup:insights
+npm run directus:setup:insights -- --rollback
+npm run directus:audit-insights
+```
+
 ## Health Check For Developers
 
 Before and after Studio-related releases, generate and run the SQL audits:
@@ -230,6 +255,7 @@ npm run directus:audit-studio
 npm run directus:audit-legacy-fallback
 npm run directus:audit-blog
 npm run directus:audit-inventory
+npm run directus:audit-insights
 ```
 
 These commands execute their SQL checks against production and return a

@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-08-13.
+Last updated: 2026-08-19.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -2024,3 +2024,26 @@ Next content-editing priorities:
   нельзя без их credentials. SQL metadata/permission contracts проверены;
   ручной acceptance остаётся коротким входом под Editor, Advanced Editor,
   Importer и Inventory Manager на desktop 1280/1440 px.
+
+### Admin-Only Directus Insights (2026-08-19)
+
+- Штатный Directus Insights используется как краткий управленческий обзор, а
+  не как второй операторский интерфейс. Обработка товаров, заявок, блокеров и
+  импортов остаётся в Content и role-scoped bookmarks.
+- Единственный управляемый dashboard —
+  `Руководитель · Операционный обзор`. Он содержит 10 native-панелей Directus
+  11.17.4: новые и проблемные заявки, доступный каталог, складские блокеры,
+  30-дневную динамику лидов, готовность каталога, кликабельные списки заявок и
+  блокеров, 90-дневную структуру лидов и последние inventory imports.
+- Dashboard остаётся admin-only. Editor, Advanced Editor, Importer и Inventory
+  Manager не получают read/write permissions на `directus_dashboards` и
+  `directus_panels`; guardrail `non-admin system permissions = 0` сохраняется.
+- Auto Refresh по умолчанию выключен. При активном мониторинге допустим
+  интервал 5 минут; dashboard намеренно ограничен десятью запросами.
+- Финансовые KPI и blog cadence не входят в v1. Их нельзя показывать как
+  управленческие показатели до подтверждения cost profiles/category mappings и
+  накопления устойчивого editorial/conversion объёма.
+- Воспроизводимый setup: `npm run directus:setup:insights`; targeted rollback:
+  `npm run directus:setup:insights -- --rollback`; production gate:
+  `npm run directus:audit-insights`, также включённый в
+  `npm run directus:audit:prod`.

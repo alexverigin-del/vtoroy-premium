@@ -357,6 +357,26 @@ const auditDefinitions = {
       "inventory.security.identifiers_in_batch_logs",
     ],
   },
+  insights: {
+    script: "scripts/audit_directus_insights_sql.mjs",
+    zero: [
+      "insights.dashboard.missing",
+      "insights.dashboard.duplicate_name",
+      "insights.panels.missing",
+      "insights.panels.unexpected",
+      "insights.panels.config_mismatch",
+      "insights.panels.invalid_type",
+      "insights.panels.invalid_bounds",
+      "insights.panels.overlaps",
+      "insights.source_fields.missing",
+      "insights.permissions.non_admin",
+      "insights.panels.sensitive_templates",
+    ],
+    equals: {
+      "insights.info.dashboard_count": "1",
+      "insights.info.panel_count": "10",
+    },
+  },
 };
 
 const prodAuditOrder = [
@@ -375,6 +395,7 @@ const prodAuditOrder = [
   "conversion-v2",
   "catalog-v3",
   "inventory",
+  "insights",
 ];
 
 function selectedAudits() {

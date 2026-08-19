@@ -105,7 +105,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#d97706',
   'Заявки, которые ещё не взяты в работу.',
   'metric',
-  0, 0, 6, 2,
+  0, 0, 18, 6,
   '{"collection":"leads","field":"id","function":"count","filter":{"status":{"_eq":"new"}},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#d97706"}]}'::json
 );
 
@@ -116,7 +116,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#dc2626',
   'Активные заявки без ответственного или с просроченным следующим шагом.',
   'metric',
-  6, 0, 6, 2,
+  18, 0, 18, 6,
   '{"collection":"leads","field":"id","function":"count","filter":{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"_or":[{"assigned_to":{"id":{"_null":true}}},{"next_action_at":{"_lt":"$NOW"}}]}]},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#dc2626"}]}'::json
 );
 
@@ -127,7 +127,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#059669',
   'Опубликованные товары, доступные для продажи на сайте.',
   'metric',
-  12, 0, 6, 2,
+  0, 6, 18, 6,
   '{"collection":"products","field":"id","function":"count","filter":{"_and":[{"status":{"_eq":"published"}},{"stock_status":{"_eq":"available"}}]},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#059669"}]}'::json
 );
 
@@ -138,7 +138,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#dc2626',
   'Нерешённые блокеры проверки складских данных.',
   'metric',
-  18, 0, 6, 2,
+  18, 6, 18, 6,
   '{"collection":"inventory_import_issues","field":"id","function":"count","filter":{"_and":[{"severity":{"_eq":"blocker"}},{"resolved":{"_eq":false}}]},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#dc2626"}]}'::json
 );
 
@@ -149,7 +149,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#2563eb',
   'Динамика входящих заявок по дням.',
   'time-series',
-  0, 2, 12, 6,
+  0, 12, 36, 14,
   '{"collection":"leads","color":"#2563eb","function":"count","precision":"day","dateField":"created_at","range":"1 month","valueField":"id","decimals":0,"curveType":"straight","fillType":"solid","missingData":"0","filter":{},"showXAxis":true,"showYAxis":true}'::json
 );
 
@@ -160,7 +160,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#2563eb',
   'Распределение товаров по редакционному статусу.',
   'metric-list',
-  12, 2, 12, 6,
+  0, 26, 18, 10,
   '{"collection":"products","limit":8,"groupByField":"content_status","aggregateField":"id","aggregateFunction":"count","sortDirection":"desc","filter":{},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"conditionalFormatting":[{"operator":">","value":"0","color":"#2563eb"}]}'::json
 );
 
@@ -171,7 +171,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#d97706',
   'Последние открытые заявки. Нажмите строку, чтобы открыть карточку.',
   'list',
-  0, 8, 12, 6,
+  0, 36, 36, 12,
   '{"collection":"leads","limit":5,"sortField":"created_at","sortDirection":"desc","displayTemplate":"{{status}} · {{contact}} · {{kind}}","linkToItem":true,"filter":{"status":{"_in":["new","in_progress","waiting"]}}}'::json
 );
 
@@ -182,7 +182,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#dc2626',
   'Последние нерешённые блокеры. Нажмите строку, чтобы открыть проблему.',
   'list',
-  12, 8, 12, 6,
+  0, 48, 36, 12,
   '{"collection":"inventory_import_issues","limit":5,"sortField":"created_at","sortDirection":"desc","displayTemplate":"{{code}} · {{message}}","linkToItem":true,"filter":{"_and":[{"severity":{"_eq":"blocker"}},{"resolved":{"_eq":false}}]}}'::json
 );
 
@@ -193,7 +193,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#6366f1',
   'Структура входящих заявок за последние 90 дней.',
   'metric-list',
-  0, 14, 12, 6,
+  18, 26, 18, 10,
   '{"collection":"leads","limit":8,"groupByField":"kind","aggregateField":"id","aggregateFunction":"count","sortDirection":"desc","filter":{"created_at":{"_gte":"$NOW(-90 days)"}},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"conditionalFormatting":[{"operator":">","value":"0","color":"#6366f1"}]}'::json
 );
 
@@ -204,7 +204,7 @@ SELECT pg_temp.isvoi_upsert_insights_panel(
   '#0f766e',
   'Последние складские snapshot. Нажмите строку, чтобы открыть партию.',
   'list',
-  12, 14, 12, 6,
+  0, 60, 36, 12,
   '{"collection":"inventory_import_batches","limit":5,"sortField":"snapshot_at","sortDirection":"desc","displayTemplate":"{{snapshot_at}} · {{batch_name}} · {{status}} · {{blocker_count}} блокеров","linkToItem":true,"filter":{}}'::json
 );
 

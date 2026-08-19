@@ -223,11 +223,12 @@ Open `Insights` -> `Руководитель · Операционный обз�
 The dashboard is a read-only operational summary and does not replace Content
 bookmarks:
 
-- the top row shows new/attention-required leads, published available products
-  and unresolved inventory blockers;
-- the middle rows show the 30-day lead trend, catalog readiness and clickable
-  lists of active leads and blockers;
-- the final row shows the 90-day lead mix and recent inventory imports.
+- the first two rows show new/attention-required leads, published available
+  products and unresolved inventory blockers;
+- the middle rows show the 30-day lead trend and catalog readiness alongside
+  the 90-day lead mix;
+- full-width lists below show active leads, unresolved blockers and recent
+  inventory imports without horizontal scrolling.
 
 Only the administrator can see this dashboard. Editor, Advanced Editor,
 Importer and Inventory Manager receive no permissions for

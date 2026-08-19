@@ -15,7 +15,7 @@ npm run directus:setup:public-permissions
 
 ```bash
 cd /opt/isvoi
-npm run directus:setup:public-permissions > /tmp/isvoi_public_permissions.sql
+npm run --silent directus:setup:public-permissions > /tmp/isvoi_public_permissions.sql
 
 cd infra/directus-beget
 set -a && . ./.env && set +a

@@ -93,7 +93,7 @@ When Directus schema or Studio metadata changes, run the relevant setup script
 and pipe it into the Postgres container:
 
 ```bash
-npm run directus:setup:catalog > /tmp/isvoi_directus_setup.sql
+npm run --silent directus:setup:catalog > /tmp/isvoi_directus_setup.sql
 
 cd infra/directus-beget
 set -a && . ./.env && set +a

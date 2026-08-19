@@ -3,8 +3,8 @@
  * Print idempotent SQL for the admin-only ISVOI Insights dashboard.
  *
  * Usage:
- *   npm run directus:setup:insights > /tmp/isvoi_setup_directus_insights.sql
- *   npm run directus:setup:insights -- --rollback > /tmp/isvoi_rollback_directus_insights.sql
+ *   npm run --silent directus:setup:insights > /tmp/isvoi_setup_directus_insights.sql
+ *   npm run --silent directus:setup:insights -- --rollback > /tmp/isvoi_rollback_directus_insights.sql
  */
 
 const rollback = process.argv.includes("--rollback");

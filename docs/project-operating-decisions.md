@@ -2047,3 +2047,15 @@ Next content-editing priorities:
   `npm run directus:setup:insights -- --rollback`; production gate:
   `npm run directus:audit-insights`, также включённый в
   `npm run directus:audit:prod`.
+- Перед production apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260819T142635Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущен, потому что `OFFSITE_BACKUP_DEST` не настроен.
+- Production rollout выполнен из feature-коммита `88b783d`: dashboard и 10
+  панелей применены, Directus перезапущен и вернулся в `health=ok`. Отдельный и
+  aggregate audits прошли; anonymous `/dashboards` и `/panels` возвращают 403,
+  Studio `/admin/` — 200.
+- При перенаправлении setup SQL в файл используйте
+  `npm run --silent directus:setup:insights`. Обычный `npm run` печатает npm
+  banner в stdout и загрязняет SQL; production apply использовал прямой
+  `node scripts/setup_directus_insights_sql.mjs` после безопасного rollback
+  rehearsal.

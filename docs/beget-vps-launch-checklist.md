@@ -498,8 +498,8 @@ curl -fsS https://club.your-domain.ru/robots.txt
 curl -fsS https://club.your-domain.ru/sitemap.xml
 
 cd /opt/isvoi
-npm run directus:setup:studio-ux-v2 > /tmp/isvoi_studio_ux_v2.sql
-npm run directus:setup:insights > /tmp/isvoi_insights.sql
+npm run --silent directus:setup:studio-ux-v2 > /tmp/isvoi_studio_ux_v2.sql
+npm run --silent directus:setup:insights > /tmp/isvoi_insights.sql
 npm run directus:audit-club
 npm run directus:audit-insights
 npm run directus:audit:prod

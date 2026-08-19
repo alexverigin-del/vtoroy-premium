@@ -487,7 +487,7 @@ docker compose up -d directus      # recreates Directus with the new env
 ```bash
 # Directus API + Studio over TLS
 curl -fsS https://api.your-domain.ru/server/health        # {"status":"ok"}
-curl -fsS "https://api.your-domain.ru/items/devices?filter[status][_eq]=published&limit=1"
+test "$(curl -sS -o /dev/null -w '%{http_code}' https://api.your-domain.ru/items/products)" = "403"
 
 # Public site
 curl -fsSI https://your-domain.ru/                        # HTTP/2 200
@@ -498,9 +498,14 @@ curl -fsS https://club.your-domain.ru/robots.txt
 curl -fsS https://club.your-domain.ru/sitemap.xml
 
 cd /opt/isvoi
+npm run directus:setup:studio-ux-v2 > /tmp/isvoi_studio_ux_v2.sql
 npm run directus:audit-club
 npm run directus:audit:prod
 ```
+
+`directus:setup:studio-ux-v2` is the final native Studio migration and should
+run after older schema setup scripts. Use the generator's `--rollback` option
+for a production rehearsal before applying its SQL.
 
 After applying any setup generator directly to PostgreSQL, restart Directus
 before rebuilding Next.js so its schema and permission caches match the
@@ -514,6 +519,11 @@ curl -fsS http://127.0.0.1:8055/server/health
 cd /opt/isvoi
 npm run directus:audit-api-policy
 ```
+
+Do not use `FLUSHALL` on a shared or production Redis. When direct SQL changes
+permissions, invalidate only Directus permission keys and the configured
+`CACHE_NAMESPACE`, then restart Directus. Preserve collaboration, counters and
+any unrelated application keys.
 
 The API policy audit uses `.env.local` only on the server and never prints the
 token. Its Club checks must return `200`; anonymous content checks must remain

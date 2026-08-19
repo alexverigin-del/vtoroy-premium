@@ -38,7 +38,8 @@ WHERE NOT EXISTS (
 UNION ALL
 SELECT 'catalog_v3.studio.product_groups_missing', count(*)::text
 FROM (VALUES
-  ('group_identity'),('group_sale'),('group_content'),('group_media'),('group_details'),('group_system')
+  ('group_status'),('group_identity'),('group_sale'),('group_content'),('group_media'),
+  ('group_device'),('group_accessory'),('group_passport'),('group_system')
 ) AS expected(field)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_fields df
@@ -48,7 +49,9 @@ WHERE NOT EXISTS (
 UNION ALL
 SELECT 'catalog_v3.studio.presets_missing', count(*)::text
 FROM (VALUES
-  ('Техника'),('Аксессуары'),('Новые'),('Б/у'),('Требует совместимости'),('Не готово к публикации')
+  ('Нужны фото'),('Нужен текст'),('Нужен Passport или диагностика'),
+  ('Нет цены или остатка'),('Готово к проверке'),('Опубликовано'),
+  ('Продано или скрыто'),('Аксессуары без совместимости')
 ) AS expected(bookmark)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_presets dp
@@ -81,14 +84,46 @@ WHERE NOT EXISTS (
 UNION ALL
 SELECT 'catalog_v3.permissions.editor_missing', count(*)::text
 FROM (VALUES
-  ('products'),('product_brands'),('product_categories'),('device_models'),
-  ('product_images'),('device_details'),('accessory_details'),('product_compatible_models')
+  ('products'),('product_images'),('device_details'),('accessory_details'),
+  ('product_compatible_models')
 ) AS expected(collection)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_permissions dp
   JOIN directus_policies policy ON policy.id=dp.policy
   WHERE policy.name='ISVOI Editor' AND dp.collection=expected.collection AND dp.action='update'
 )
+UNION ALL
+SELECT 'catalog_v3.permissions.advanced_reference_missing', count(*)::text
+FROM (VALUES
+  ('product_brands'),('product_categories'),('device_models')
+) AS expected(collection)
+CROSS JOIN (VALUES ('read'),('create'),('update'),('delete')) AS action(action)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name='ISVOI Advanced Editor'
+    AND permission.collection=expected.collection AND permission.action=action.action
+)
+UNION ALL
+SELECT 'catalog_v3.permissions.importer_product_writes', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name='ISVOI Importer' AND permission.collection='products'
+  AND permission.action IN ('create','update','delete')
+UNION ALL
+SELECT 'catalog_v3.permissions.editor_publication_write', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name='ISVOI Editor' AND permission.collection='products'
+  AND (permission.fields='*' OR 'status'=ANY(string_to_array(permission.fields,',')))
+  AND (
+    permission.action='update'
+    OR (
+      permission.action='create'
+      AND NOT coalesce(permission.validation::jsonb,'{}'::jsonb)
+        @> '{"_and":[{"status":{"_eq":"draft"}}]}'::jsonb
+    )
+  )
 UNION ALL
 SELECT 'catalog_v3.integrity.category_type_mismatch', count(*)::text
 FROM products p

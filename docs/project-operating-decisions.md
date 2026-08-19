@@ -1973,3 +1973,54 @@ Next content-editing priorities:
   полный frontend gate, inventory и aggregate Directus audits и production
   HTTP smoke. Public, Catalog V3 и Avito не получили новых товаров: ручной
   review остаётся обязательным.
+
+### Native-First Directus Studio UX V2 (2026-08-19)
+
+- Production и GitHub обновлены с базового `40b61b0` до реализации
+  `4d6d138`. Перед миграцией создан проверенный backup
+  `/opt/isvoi/backups/directus/20260819T135133Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy не выполнялся, потому что `OFFSITE_BACKUP_DEST` не
+  настроен.
+- `products` является единственной редакторской точкой каталога. `devices` и
+  `device_images` физически сохранены для dual-read/rollback, скрыты из Content
+  navigation и недоступны человеческим ролям. Admin и технические service
+  policies сохраняют временный доступ до отдельного завершения legacy-периода.
+- Content navigation сгруппирована по сценариям: `Сайт и контент`, `Каталог`,
+  `Продажи`, `Блог`, существующий `I СВОИ Club`, `Импорт каталога` и
+  `Склад и каналы`. Дочерние технические коллекции открываются из родительских
+  карточек и скрыты из плоского меню.
+- Форма `products` разделена на статус, основное, цену/наличие, описание, фото,
+  данные техники/аксессуара, Passport/Trade и системные данные. Native field
+  conditions показывают device/accessory groups по `product_type`; import/source
+  fields readonly и отсутствуют в human update allowlists.
+- Все доступные человеку коллекции и видимые поля получили `ru-RU` labels без
+  fallback-значений. Club сохраняет открытыми только публикацию и первый экран;
+  product template и технические группы свёрнуты.
+- Editor работает только с draft-карточками; Advanced Editor публикует и ведёт
+  бренды/категории/модели; Importer не создаёт, не обновляет и не удаляет
+  `products`; Inventory Manager меняет только поля проверки/допуска и решения
+  issues. TFA policies = 5, non-admin system permissions = 0, wildcard
+  permissions = 0.
+- Blog M2M переведён с `devices_id` на `products_id`; 3 существующие связи
+  перенесены без расхождений. Старый столбец остаётся nullable для отката, а
+  frontend временно выполняет primary Catalog V3 read с legacy query fallback.
+- Studio получил очереди каталога и Inventory: фото/текст/Passport/цена,
+  публикация, совместимость, открытые blockers/warnings, identity/authenticity,
+  допуск в каталог, сверка места и Avito QA. Дубли FAQ/navigation и legacy
+  device bookmarks удалены.
+- Идемпотентный финальный generator —
+  `npm run directus:setup:studio-ux-v2`; `--rollback` используется для безопасной
+  production rehearsal. Старые setup-скрипты запускаются только перед ним, а
+  `directus:audit-studio` проверяет groups, labels, conditions, bookmarks и
+  permissions.
+- После SQL удалены только 169 `permissions:*` и 12 Directus namespace cache
+  keys; production `FLUSHALL` запрещён. Directus 11.17.4 и PM2 Next перезапущены,
+  health/build прошли.
+- Aggregate audit прошёл для schema, Studio, catalog, images, navigation,
+  legacy fallback, page sections, leads, files, import, blog, Club,
+  conversion-v2 и Inventory. Catalog V3 audit обновлён под native role model:
+  Editor draft-only, Advanced Editor reference CRUD, Importer read-only.
+- Полную визуальную проверку под каждым человеческим логином автоматизировать
+  нельзя без их credentials. SQL metadata/permission contracts проверены;
+  ручной acceptance остаётся коротким входом под Editor, Advanced Editor,
+  Importer и Inventory Manager на desktop 1280/1440 px.

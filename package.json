@@ -124,6 +124,7 @@
     "directus:avito:test": "node --experimental-strip-types scripts/test_avito_feed.mjs",
     "directus:setup:inventory": "node scripts/setup_directus_inventory_sql.mjs",
     "directus:setup:inventory-flow": "node scripts/setup_directus_inventory_flow_sql.mjs",
+    "directus:setup:studio-ux-v2": "node scripts/setup_directus_studio_ux_v2_sql.mjs",
     "directus:test:catalog-v3-editability": "node scripts/test_directus_catalog_v3_editability.mjs"
   },
   "engines": {

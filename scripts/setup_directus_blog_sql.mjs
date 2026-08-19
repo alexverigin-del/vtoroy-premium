@@ -190,10 +190,19 @@ CREATE TABLE IF NOT EXISTS blog_posts_tags (
 CREATE TABLE IF NOT EXISTS blog_posts_devices (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   blog_posts_id uuid NOT NULL,
-  devices_id varchar NOT NULL,
+  products_id varchar,
+  devices_id varchar,
   sort integer NOT NULL DEFAULT 100,
-  CONSTRAINT blog_posts_devices_unique UNIQUE (blog_posts_id, devices_id)
+  CONSTRAINT blog_posts_products_unique UNIQUE (blog_posts_id, products_id)
 );
+
+ALTER TABLE blog_posts_devices ADD COLUMN IF NOT EXISTS products_id varchar;
+ALTER TABLE blog_posts_devices ALTER COLUMN devices_id DROP NOT NULL;
+
+UPDATE blog_posts_devices relation
+SET products_id=relation.devices_id
+WHERE relation.products_id IS NULL
+  AND EXISTS (SELECT 1 FROM products product WHERE product.id=relation.devices_id);
 
 CREATE TABLE IF NOT EXISTS blog_post_blocks (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -274,6 +283,14 @@ BEGIN
     ALTER TABLE blog_posts_devices ADD CONSTRAINT blog_posts_devices_device_fkey
       FOREIGN KEY (devices_id) REFERENCES devices(id) ON UPDATE CASCADE ON DELETE CASCADE;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'blog_posts_devices_product_fkey') THEN
+    ALTER TABLE blog_posts_devices ADD CONSTRAINT blog_posts_devices_product_fkey
+      FOREIGN KEY (products_id) REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'blog_posts_products_unique') THEN
+    ALTER TABLE blog_posts_devices ADD CONSTRAINT blog_posts_products_unique
+      UNIQUE (blog_posts_id, products_id);
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'blog_post_blocks_post_fkey') THEN
     ALTER TABLE blog_post_blocks ADD CONSTRAINT blog_post_blocks_post_fkey
       FOREIGN KEY (post) REFERENCES blog_posts(id) ON DELETE CASCADE;
@@ -294,6 +311,7 @@ CREATE INDEX IF NOT EXISTS blog_posts_tags_post_idx ON blog_posts_tags (blog_pos
 CREATE INDEX IF NOT EXISTS blog_posts_tags_tag_idx ON blog_posts_tags (blog_tags_id);
 CREATE INDEX IF NOT EXISTS blog_posts_devices_post_idx ON blog_posts_devices (blog_posts_id, sort);
 CREATE INDEX IF NOT EXISTS blog_posts_devices_device_idx ON blog_posts_devices (devices_id);
+CREATE INDEX IF NOT EXISTS blog_posts_devices_product_idx ON blog_posts_devices (products_id);
 CREATE INDEX IF NOT EXISTS blog_post_blocks_post_idx ON blog_post_blocks (post, sort);
 CREATE INDEX IF NOT EXISTS blog_post_blocks_image_idx ON blog_post_blocks (image);
 
@@ -528,7 +546,7 @@ SELECT isvoi_blog_upsert_field('blog_posts','cover_caption','input-multiline',NU
 SELECT isvoi_blog_upsert_field('blog_posts','category','select-dropdown-m2o','related-values','{"template":"{{name}} · {{slug}}","filter":{"is_active":{"_eq":true}}}'::json,'half',71,'Одна основная рубрика материала.',false,false,false,'m2o','group_relations','Рубрика');
 SELECT isvoi_blog_upsert_field('blog_posts','author','select-dropdown-m2o','related-values','{"template":"{{name}} · {{role_title}}","filter":{"is_active":{"_eq":true}}}'::json,'half',72,'Публичный автор или эксперт, отвечающий за материал.',false,false,false,'m2o','group_relations','Автор');
 SELECT isvoi_blog_upsert_field('blog_posts','tags','list-m2m','related-values','{"template":"{{blog_tags_id.name}}","enableCreate":true,"enableSelect":true}'::json,'full',73,'Только устойчивые тематические теги, без дублей и синонимов.',false,false,false,'m2m','group_relations','Теги');
-SELECT isvoi_blog_upsert_field('blog_posts','devices','list-m2m','related-values','{"template":"{{devices_id.title}} · {{devices_id.price_text}}","enableCreate":true,"enableSelect":true,"fields":["sort","devices_id"]}'::json,'full',74,'Опциональные карточки релевантных устройств из каталога.',false,false,false,'m2m','group_relations','Связанные устройства');
+SELECT isvoi_blog_upsert_field('blog_posts','devices','list-m2m','related-values','{"template":"{{products_id.title}} · {{products_id.price_text}}","enableCreate":true,"enableSelect":true,"fields":["sort","products_id"]}'::json,'full',74,'Опциональные карточки релевантных товаров из Catalog V3.',false,false,false,'m2m','group_relations','Связанные товары');
 
 SELECT isvoi_blog_upsert_field('blog_posts','seo_title','input',NULL,'{"trim":true}'::json,'full',91,'Необязательно. Если пусто, используется заголовок материала.',false,false,false,NULL,'group_seo','SEO title');
 SELECT isvoi_blog_upsert_field('blog_posts','meta_description','input-multiline',NULL,'{"trim":true}'::json,'full',92,'Описание поискового сниппета, ориентир 140–160 знаков.',false,false,false,NULL,'group_seo','Meta description');
@@ -576,7 +594,8 @@ SELECT isvoi_blog_upsert_field('blog_posts_tags','blog_posts_id','select-dropdow
 SELECT isvoi_blog_upsert_field('blog_posts_tags','blog_tags_id','select-dropdown-m2o','related-values','{"template":"{{name}}"}'::json,'half',3,'Тег.',false,false,true,'m2o',NULL,'Тег');
 SELECT isvoi_blog_upsert_field('blog_posts_devices','id','input',NULL,NULL,'half',1,'Системный ID.',true,true,false,'uuid',NULL,'ID');
 SELECT isvoi_blog_upsert_field('blog_posts_devices','blog_posts_id','select-dropdown-m2o','related-values','{"template":"{{title}}"}'::json,'half',2,'Материал.',false,false,true,'m2o',NULL,'Материал');
-SELECT isvoi_blog_upsert_field('blog_posts_devices','devices_id','select-dropdown-m2o','related-values','{"template":"{{title}} · {{price_text}}"}'::json,'full',3,'Устройство каталога.',false,false,true,'m2o',NULL,'Устройство');
+SELECT isvoi_blog_upsert_field('blog_posts_devices','products_id','select-dropdown-m2o','related-values','{"template":"{{title}} · {{price_text}}"}'::json,'full',3,'Товар из единого каталога Catalog V3.',false,false,true,'m2o',NULL,'Товар');
+SELECT isvoi_blog_upsert_field('blog_posts_devices','devices_id','select-dropdown-m2o','related-values','{"template":"{{title}} · {{price_text}}"}'::json,'full',99,'Legacy-связь оставлена только для контролируемого отката.',true,true,false,'m2o',NULL,'Legacy-устройство');
 SELECT isvoi_blog_upsert_field('blog_posts_devices','sort','input',NULL,'{"min":1,"step":1}'::json,'half',4,'Порядок карточки в материале.',false,false,false,NULL,NULL,'Порядок');
 
 SELECT isvoi_blog_upsert_field('blog_post_blocks','id','input',NULL,NULL,'half',1,'Системный ID.',true,true,false,'uuid',NULL,'ID');
@@ -627,7 +646,8 @@ SELECT isvoi_blog_upsert_relation('blog_posts','user_created','directus_users',N
 SELECT isvoi_blog_upsert_relation('blog_posts','user_updated','directus_users',NULL,'nullify');
 SELECT isvoi_blog_upsert_relation('blog_posts_tags','blog_posts_id','blog_posts','tags','delete','blog_tags_id');
 SELECT isvoi_blog_upsert_relation('blog_posts_tags','blog_tags_id','blog_tags',NULL,'delete','blog_posts_id');
-SELECT isvoi_blog_upsert_relation('blog_posts_devices','blog_posts_id','blog_posts','devices','delete','devices_id');
+SELECT isvoi_blog_upsert_relation('blog_posts_devices','blog_posts_id','blog_posts','devices','delete','products_id');
+SELECT isvoi_blog_upsert_relation('blog_posts_devices','products_id','products',NULL,'delete','blog_posts_id');
 SELECT isvoi_blog_upsert_relation('blog_posts_devices','devices_id','devices',NULL,'delete','blog_posts_id');
 SELECT isvoi_blog_upsert_relation('blog_post_blocks','post','blog_posts','blocks','delete');
 SELECT isvoi_blog_upsert_relation('blog_post_blocks','image','directus_files',NULL,'nullify');
@@ -689,9 +709,9 @@ SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_tags','update','name,sl
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_tags','read','id,blog_posts_id,blog_tags_id',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_tags','create','blog_posts_id,blog_tags_id',NULL,'{"blog_posts_id":{"_nnull":true},"blog_tags_id":{"_nnull":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_tags','update','blog_posts_id,blog_tags_id',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','read','id,blog_posts_id,devices_id,sort',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','create','blog_posts_id,devices_id,sort',NULL,'{"blog_posts_id":{"_nnull":true},"devices_id":{"_nnull":true}}'::json,'{"sort":100}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update','blog_posts_id,devices_id,sort',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','read','id,blog_posts_id,products_id,sort',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','create','blog_posts_id,products_id,sort',NULL,'{"blog_posts_id":{"_nnull":true},"products_id":{"_nnull":true}}'::json,'{"sort":100}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','update','blog_posts_id,products_id,sort',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','create','post,sort,block_type,body,image,image_alt,image_caption,image_width',NULL,'{"post":{"_nnull":true},"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json,'{"sort":100,"block_type":"rich_text","image_width":"content"}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','update','post,sort,block_type,body,image,image_alt,image_caption,image_width',NULL,'{"block_type":{"_in":["rich_text","image"]},"image_width":{"_in":["content","wide"]}}'::json);
@@ -754,7 +774,7 @@ SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_authors','delete');
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_categories','delete');
 SELECT isvoi_blog_delete_permission('ISVOI Editor','blog_tags','delete');
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_tags','delete','id,blog_posts_id,blog_tags_id',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','delete','id,blog_posts_id,devices_id',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_posts_devices','delete','id,blog_posts_id,products_id',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Editor','blog_post_blocks','delete','id,post',NULL);
 
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts','read','id,status,slug,title,excerpt,body,cover_image,cover_alt,cover_caption,category,author,featured,published_at,seo_title,meta_description,canonical_url,no_index,og_image,date_updated,tags,devices,blocks','{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}'::json);
@@ -762,7 +782,7 @@ SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_authors','read','i
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_categories','read','id,name,slug,description,sort','{"is_active":{"_eq":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_tags','read','id,name,slug','{"is_active":{"_eq":true}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts_tags','read','id,blog_posts_id,blog_tags_id','{"blog_posts_id":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
-SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts_devices','read','id,blog_posts_id,devices_id,sort','{"blog_posts_id":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
+SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_posts_devices','read','id,blog_posts_id,products_id,sort','{"blog_posts_id":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
 SELECT isvoi_blog_upsert_permission('ISVOI Public Read','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width','{"post":{"_and":[{"status":{"_eq":"published"}},{"published_at":{"_lte":"$NOW"}}]}}'::json);
 
 SELECT isvoi_blog_upsert_permission(
@@ -803,10 +823,11 @@ SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_authors','read','
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_categories','read','id,name,slug,description,is_active,sort,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_tags','read','id,name,slug,is_active,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_tags','read','id,blog_posts_id,blog_tags_id',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_devices','read','id,blog_posts_id,devices_id,sort',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_posts_devices','read','id,blog_posts_id,products_id,sort',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','products','read','id,title,price_text,stock_status,warranty_text,listing_file,listing_alt,device_details',NULL);
+SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','device_details','read','id,product,grade,battery_text',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','blog_post_blocks','read','id,post,sort,block_type,body,image,image_alt,image_caption,image_width,date_created,date_updated',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_files','read','id,filename_download,type,width,height,focal_point_x,focal_point_y',NULL);
-SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','devices','read','id,title,price_text,stock_status',NULL);
 SELECT isvoi_blog_upsert_permission('ISVOI Blog Preview','directus_versions','read','*','{"collection":{"_eq":"blog_posts"}}'::json);
 
 DROP FUNCTION isvoi_blog_upsert_permission(text,varchar,varchar,text,json,json,json);

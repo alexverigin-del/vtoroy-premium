@@ -67,6 +67,10 @@ type BlogRelatedDeviceRow = {
   warranty_text?: string;
   listing_file?: DirectusFileRow | string | null;
   listing_alt?: string;
+  device_details?:
+    | { grade?: string; battery_text?: string }
+    | Array<{ grade?: string; battery_text?: string }>
+    | null;
 };
 
 type BlogPostRow = {
@@ -93,12 +97,13 @@ type BlogPostRow = {
   tags?: Array<{ blog_tags_id?: BlogTagRow | string | null }>;
   devices?: Array<{
     sort?: number;
+    products_id?: BlogRelatedDeviceRow | string | null;
     devices_id?: BlogRelatedDeviceRow | string | null;
   }>;
   blocks?: BlogPostBlockRow[];
 };
 
-const POST_FIELDS = [
+const BASE_POST_FIELDS = [
   "id",
   "slug",
   "title",
@@ -129,15 +134,6 @@ const POST_FIELDS = [
   "tags.blog_tags_id.name",
   "tags.blog_tags_id.slug",
   "devices.sort",
-  "devices.devices_id.id",
-  "devices.devices_id.title",
-  "devices.devices_id.price_text",
-  "devices.devices_id.stock_status",
-  "devices.devices_id.grade",
-  "devices.devices_id.battery_text",
-  "devices.devices_id.warranty_text",
-  "devices.devices_id.listing_file.id",
-  "devices.devices_id.listing_alt",
   "blocks.id",
   "blocks.sort",
   "blocks.block_type",
@@ -148,20 +144,37 @@ const POST_FIELDS = [
   "blocks.image_alt",
   "blocks.image_caption",
   "blocks.image_width",
-].join(",");
+];
 
-const PREVIEW_POST_FIELDS = POST_FIELDS.split(",")
-  .filter(
-    (field) =>
-      ![
-        "devices.devices_id.grade",
-        "devices.devices_id.battery_text",
-        "devices.devices_id.warranty_text",
-        "devices.devices_id.listing_file.id",
-        "devices.devices_id.listing_alt",
-      ].includes(field),
-  )
-  .join(",");
+const PRODUCT_RELATION_FIELDS = [
+  "devices.products_id.id",
+  "devices.products_id.title",
+  "devices.products_id.price_text",
+  "devices.products_id.stock_status",
+  "devices.products_id.warranty_text",
+  "devices.products_id.listing_file.id",
+  "devices.products_id.listing_alt",
+  "devices.products_id.device_details.grade",
+  "devices.products_id.device_details.battery_text",
+];
+
+const LEGACY_RELATION_FIELDS = [
+  "devices.devices_id.id",
+  "devices.devices_id.title",
+  "devices.devices_id.price_text",
+  "devices.devices_id.stock_status",
+  "devices.devices_id.grade",
+  "devices.devices_id.battery_text",
+  "devices.devices_id.warranty_text",
+  "devices.devices_id.listing_file.id",
+  "devices.devices_id.listing_alt",
+];
+
+const POST_FIELDS = [...BASE_POST_FIELDS, ...PRODUCT_RELATION_FIELDS].join(",");
+const LEGACY_POST_FIELDS = [...BASE_POST_FIELDS, ...LEGACY_RELATION_FIELDS].join(",");
+
+const PREVIEW_POST_FIELDS = POST_FIELDS;
+const LEGACY_PREVIEW_POST_FIELDS = LEGACY_POST_FIELDS;
 
 function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -273,13 +286,18 @@ function mapDevice(
   const title = text(value.title);
   if (!id || !title) return undefined;
   const listingFileId = fileId(value.listing_file);
+  const details = Array.isArray(value.device_details)
+    ? value.device_details[0]
+    : value.device_details;
   return {
     id,
     title,
     ...(text(value.price_text) ? { priceText: text(value.price_text) } : {}),
     ...(text(value.stock_status) ? { stockStatus: text(value.stock_status) } : {}),
-    ...(text(value.grade) ? { grade: text(value.grade) } : {}),
-    ...(text(value.battery_text) ? { batteryText: text(value.battery_text) } : {}),
+    ...(text(value.grade ?? details?.grade) ? { grade: text(value.grade ?? details?.grade) } : {}),
+    ...(text(value.battery_text ?? details?.battery_text)
+      ? { batteryText: text(value.battery_text ?? details?.battery_text) }
+      : {}),
     ...(text(value.warranty_text) ? { warrantyText: text(value.warranty_text) } : {}),
     ...(listingFileId
       ? {
@@ -332,7 +350,7 @@ function mapPost(row: BlogPostRow, allowIncomplete = false): BlogPost | null {
     .filter((tag): tag is BlogTag => Boolean(tag));
   const devices = [...(row.devices ?? [])]
     .sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100))
-    .map((relation) => mapDevice(relation.devices_id))
+    .map((relation) => mapDevice(relation.products_id ?? relation.devices_id))
     .filter((device): device is BlogRelatedDevice => Boolean(device));
   const blocks = [...(row.blocks ?? [])]
     .sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100))
@@ -416,19 +434,30 @@ type BlogPostQuery = {
   limit?: number;
 };
 
+async function getBlogRowsWithRelationFallback(
+  params: URLSearchParams,
+  tags: string[],
+): Promise<BlogPostRow[] | null> {
+  params.set("fields", POST_FIELDS);
+  const productRows = await blogGet<BlogPostRow[]>(`/items/blog_posts?${params}`, tags);
+  if (productRows) return productRows;
+
+  params.set("fields", LEGACY_POST_FIELDS);
+  return blogGet<BlogPostRow[]>(`/items/blog_posts?${params}`, tags);
+}
+
 export const getPublishedBlogPosts = cache(async function getPublishedBlogPosts({
   categorySlug,
   limit = 24,
 }: BlogPostQuery = {}): Promise<BlogPost[]> {
   const normalizedLimit = Math.min(Math.max(limit, 1), 100);
   const params = new URLSearchParams({
-    fields: POST_FIELDS,
     sort: "-featured,-published_at",
     limit: String(categorySlug ? 100 : normalizedLimit),
   });
   params.set("filter[published_at][_lte]", "$NOW");
 
-  const rows = await blogGet<BlogPostRow[]>(`/items/blog_posts?${params}`, [
+  const rows = await getBlogRowsWithRelationFallback(params, [
     BLOG_POSTS_CACHE_TAG,
     BLOG_TAXONOMY_CACHE_TAG,
   ]);
@@ -446,10 +475,10 @@ export const getPublishedBlogPost = cache(async function getPublishedBlogPost(
   const normalizedSlug = slug.trim().toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(normalizedSlug)) return null;
 
-  const params = new URLSearchParams({ fields: POST_FIELDS, limit: "1" });
+  const params = new URLSearchParams({ limit: "1" });
   params.set("filter[slug][_eq]", normalizedSlug);
   params.set("filter[published_at][_lte]", "$NOW");
-  const rows = await blogGet<BlogPostRow[]>(`/items/blog_posts?${params}`, [
+  const rows = await getBlogRowsWithRelationFallback(params, [
     BLOG_POSTS_CACHE_TAG,
     BLOG_TAXONOMY_CACHE_TAG,
   ]);
@@ -461,17 +490,20 @@ export async function getBlogPostPreview(id: string, version?: string): Promise<
   const token = (process.env.DIRECTUS_PREVIEW_TOKEN || "").trim();
   if (!token) return null;
 
-  const params = new URLSearchParams({
-    fields: `${PREVIEW_POST_FIELDS},status,date_created`,
-  });
+  const params = new URLSearchParams();
   if (version) params.set("version", version);
 
   try {
-    const response = await fetch(`${directusConfig.url}/items/blog_posts/${id}?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    });
-    if (!response.ok) return null;
+    let response: Response | null = null;
+    for (const fields of [PREVIEW_POST_FIELDS, LEGACY_PREVIEW_POST_FIELDS]) {
+      params.set("fields", `${fields},status,date_created`);
+      response = await fetch(`${directusConfig.url}/items/blog_posts/${id}?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      if (response.ok) break;
+    }
+    if (!response?.ok) return null;
     const row = ((await response.json()) as { data: BlogPostRow }).data;
     return row ? mapPost(row, true) : null;
   } catch {

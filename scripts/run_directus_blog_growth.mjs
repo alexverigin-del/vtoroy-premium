@@ -283,13 +283,13 @@ async function ensurePost(article, files, category, author) {
     });
   }
 
-  const deviceQuery = new URLSearchParams({ fields: "id", limit: "1" });
-  deviceQuery.set("filter[blog_posts_id][_eq]", post.id);
-  deviceQuery.set("filter[devices_id][_eq]", article.device);
-  if ((await api(`/items/blog_posts_devices?${deviceQuery}`)).length === 0) {
+  const productQuery = new URLSearchParams({ fields: "id", limit: "1" });
+  productQuery.set("filter[blog_posts_id][_eq]", post.id);
+  productQuery.set("filter[products_id][_eq]", article.device);
+  if ((await api(`/items/blog_posts_devices?${productQuery}`)).length === 0) {
     await api("/items/blog_posts_devices", {
       method: "POST",
-      body: { blog_posts_id: post.id, devices_id: article.device, sort: 10 },
+      body: { blog_posts_id: post.id, products_id: article.device, sort: 10 },
     });
   }
 

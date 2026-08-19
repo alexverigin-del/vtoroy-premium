@@ -61,8 +61,14 @@ $$;
 
 WITH expected_collections(collection) AS (
   VALUES
-    ('devices'),
-    ('device_images'),
+    ('products'),
+    ('product_brands'),
+    ('product_categories'),
+    ('device_models'),
+    ('product_images'),
+    ('device_details'),
+    ('accessory_details'),
+    ('product_compatible_models'),
     ('device_passports'),
     ('trade_options'),
     ('site_pages'),
@@ -77,16 +83,31 @@ WITH expected_collections(collection) AS (
     ('blog_posts'),
     ('blog_authors'),
     ('blog_categories'),
-    ('blog_tags')
+    ('blog_tags'),
+    ('club_page_settings'),
+    ('club_plans'),
+    ('club_offers'),
+    ('club_rule_items'),
+    ('club_process_items'),
+    ('club_legal_documents'),
+    ('inventory_import_batches'),
+    ('inventory_items'),
+    ('inventory_receipt_lines'),
+    ('inventory_import_issues'),
+    ('channel_cost_profiles'),
+    ('channel_category_mappings'),
+    ('product_channel_listings')
 ),
 expected_bookmarks(role_name, collection, bookmark) AS (
   VALUES
-    ('ISVOI Editor', 'devices', 'Нужны фото'),
-    ('ISVOI Editor', 'devices', 'Нужен текст'),
-    ('ISVOI Editor', 'devices', 'На проверке'),
-    ('ISVOI Editor', 'devices', 'Готово к публикации'),
-    ('ISVOI Editor', 'device_images', 'Фото на проверке'),
-    ('ISVOI Editor', 'device_images', 'Опубликованные фото'),
+    ('ISVOI Editor', 'products', 'Нужны фото'),
+    ('ISVOI Editor', 'products', 'Нужен текст'),
+    ('ISVOI Editor', 'products', 'Нужен Passport или диагностика'),
+    ('ISVOI Editor', 'products', 'Нет цены или остатка'),
+    ('ISVOI Editor', 'products', 'Готово к проверке'),
+    ('ISVOI Editor', 'products', 'Опубликовано'),
+    ('ISVOI Editor', 'products', 'Продано или скрыто'),
+    ('ISVOI Editor', 'products', 'Аксессуары без совместимости'),
     ('ISVOI Editor', 'site_pages', 'Опубликованные страницы'),
     ('ISVOI Editor', 'site_pages', 'Черновики страниц'),
     ('ISVOI Editor', 'page_sections', 'Главная'),
@@ -122,7 +143,16 @@ expected_bookmarks(role_name, collection, bookmark) AS (
     ('ISVOI Importer', 'catalog_import_batches', 'В работе'),
     ('ISVOI Importer', 'catalog_import_batches', 'Проверены к импорту'),
     ('ISVOI Importer', 'catalog_import_batches', 'Ошибки'),
-    ('ISVOI Importer', 'catalog_import_batches', 'Импортировано')
+    ('ISVOI Importer', 'catalog_import_batches', 'Импортировано'),
+    ('ISVOI Inventory Manager', 'inventory_import_issues', 'Открытые блокеры'),
+    ('ISVOI Inventory Manager', 'inventory_import_issues', 'Открытые предупреждения'),
+    ('ISVOI Inventory Manager', 'inventory_import_issues', 'Проблемы последних партий'),
+    ('ISVOI Inventory Manager', 'inventory_items', 'Требует проверки происхождения'),
+    ('ISVOI Inventory Manager', 'inventory_items', 'Конфликт идентичности'),
+    ('ISVOI Inventory Manager', 'inventory_items', 'Можно передать в каталог'),
+    ('ISVOI Inventory Manager', 'inventory_receipt_lines', 'Требует сверки места'),
+    ('ISVOI Inventory Manager', 'channel_category_mappings', 'Avito: нет подтверждённой категории'),
+    ('ISVOI Inventory Manager', 'product_channel_listings', 'Avito: готово к QA')
 ),
 expected_file_folders(name) AS (
   VALUES
@@ -359,5 +389,117 @@ WHERE status IN ('in_progress', 'waiting')
 UNION ALL
 SELECT 'studio.leads.invalid_status', count(*)::text
 FROM leads
-WHERE status NOT IN ('new', 'in_progress', 'waiting', 'won', 'closed');
+WHERE status NOT IN ('new', 'in_progress', 'waiting', 'won', 'closed')
+UNION ALL
+SELECT 'studio.native_groups.missing', count(*)::text
+FROM (VALUES
+  ('site_pages','isvoi_site_content'),('site_settings','isvoi_site_content'),
+  ('navigation_items','isvoi_site_content'),('faq_items','isvoi_site_content'),
+  ('products','isvoi_catalog'),('device_page_settings','isvoi_catalog'),
+  ('device_passports','isvoi_catalog'),('trade_options','isvoi_catalog'),
+  ('leads','isvoi_sales'),('blog_posts','isvoi_blog'),
+  ('catalog_import_batches','isvoi_imports'),
+  ('inventory_import_batches','isvoi_inventory'),('inventory_items','isvoi_inventory'),
+  ('inventory_import_issues','isvoi_inventory'),('product_channel_listings','isvoi_inventory')
+) expected(collection,group_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_collections collection
+  WHERE collection.collection=expected.collection AND collection."group"=expected.group_name
+)
+UNION ALL
+SELECT 'studio.technical_children.visible_in_navigation', count(*)::text
+FROM directus_collections collection
+WHERE collection.collection IN (
+  'page_sections','product_images','device_details','accessory_details',
+  'product_compatible_models','lead_comments','blog_posts_tags',
+  'blog_posts_devices','blog_post_blocks'
+) AND coalesce(collection.hidden,false)=false
+UNION ALL
+SELECT 'studio.human_collections.missing_ru_labels', count(*)::text
+FROM directus_collections collection
+WHERE collection.collection IN (SELECT collection FROM expected_collections)
+  AND NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(coalesce(collection.translations,'[]'::json)::jsonb) translation
+    WHERE translation->>'language'='ru-RU' AND nullif(translation->>'translation','') IS NOT NULL
+  )
+UNION ALL
+SELECT 'studio.human_fields.missing_ru_labels', count(*)::text
+FROM directus_fields field
+WHERE field.collection IN (SELECT collection FROM expected_collections)
+  AND coalesce(field.hidden,false)=false
+  AND NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(coalesce(field.translations,'[]'::json)::jsonb) translation
+    WHERE translation->>'language'='ru-RU' AND nullif(translation->>'translation','') IS NOT NULL
+  )
+UNION ALL
+SELECT 'studio.human_fields.fallback_ru_labels', count(*)::text
+FROM directus_fields field
+WHERE field.collection IN (SELECT collection FROM expected_collections)
+  AND coalesce(field.hidden,false)=false
+  AND EXISTS (
+    SELECT 1 FROM jsonb_array_elements(coalesce(field.translations,'[]'::json)::jsonb) translation
+    WHERE translation->>'language'='ru-RU'
+      AND translation->>'translation' LIKE 'Служебное поле:%'
+  )
+UNION ALL
+SELECT 'studio.legacy_catalog.human_permissions', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name IN ('ISVOI Editor','ISVOI Advanced Editor','ISVOI Importer','ISVOI Inventory Manager')
+  AND permission.collection IN ('devices','device_images')
+UNION ALL
+SELECT 'studio.importer.product_write_or_delete', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name='ISVOI Importer' AND permission.collection='products'
+  AND permission.action IN ('create','update','delete')
+UNION ALL
+SELECT 'studio.editor.system_product_fields_writable', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+CROSS JOIN LATERAL unnest(ARRAY['source_system','source_id','import_batch','imported_at','created_at','updated_at']) field_name
+WHERE policy.name IN ('ISVOI Editor','ISVOI Advanced Editor')
+  AND permission.collection='products' AND permission.action IN ('create','update')
+  AND (permission.fields='*' OR field_name=ANY(string_to_array(permission.fields,',')))
+UNION ALL
+SELECT 'studio.products.type_conditions_missing', count(*)::text
+FROM (VALUES ('group_device'),('group_accessory')) expected(field_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='products' AND field.field=expected.field_name
+    AND field.conditions IS NOT NULL AND jsonb_array_length(field.conditions::jsonb)>0
+)
+UNION ALL
+SELECT 'studio.inventory.computed_fields_not_readonly',
+  count(*) FILTER (WHERE coalesce(field.readonly,false)=false)::text
+FROM directus_fields field
+WHERE (
+    field.collection='inventory_import_batches'
+    AND field.field IN ('status','inventory_rows','inventory_units','receipt_rows','blocker_count','warning_count','last_run_mode','last_run_status','last_run_at','last_run_log')
+  ) OR (
+    field.collection='inventory_items'
+    AND field.field NOT IN ('authenticity_status','eligibility_status','review_override','review_note')
+  ) OR (
+    field.collection='inventory_import_issues'
+    AND field.field NOT IN ('resolved','resolution_note')
+  ) OR field.collection='inventory_receipt_lines'
+UNION ALL
+SELECT 'studio.inventory.manager_unexpected_update_fields', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name='ISVOI Inventory Manager' AND permission.action='update'
+  AND (
+    (permission.collection='inventory_items' AND permission.fields<>'authenticity_status,eligibility_status,review_override,review_note')
+    OR (permission.collection='inventory_import_issues' AND permission.fields<>'resolved,resolution_note')
+    OR permission.collection='inventory_receipt_lines'
+  )
+UNION ALL
+SELECT 'studio.bookmarks.duplicates', count(*)::text
+FROM (
+  SELECT preset.role,preset.collection,preset.bookmark
+  FROM directus_presets preset
+  WHERE preset."user" IS NULL AND preset.bookmark IS NOT NULL
+  GROUP BY preset.role,preset.collection,preset.bookmark
+  HAVING count(*)>1
+) duplicate;
 `);

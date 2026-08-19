@@ -33,7 +33,7 @@ expected_fields(table_name, field_name) AS (
     ('blog_tags','id'),('blog_tags','name'),('blog_tags','slug'),('blog_tags','is_active'),
     ('blog_posts_tags','id'),('blog_posts_tags','blog_posts_id'),('blog_posts_tags','blog_tags_id'),
     ('blog_posts_devices','id'),('blog_posts_devices','blog_posts_id'),
-    ('blog_posts_devices','devices_id'),('blog_posts_devices','sort'),
+    ('blog_posts_devices','products_id'),('blog_posts_devices','devices_id'),('blog_posts_devices','sort'),
     ('blog_post_blocks','id'),('blog_post_blocks','post'),('blog_post_blocks','sort'),
     ('blog_post_blocks','block_type'),('blog_post_blocks','body'),
     ('blog_post_blocks','image'),('blog_post_blocks','image_alt'),
@@ -51,7 +51,8 @@ expected_relations(many_collection, many_field, one_collection, one_field, junct
     ('blog_posts','user_updated','directus_users',NULL,NULL),
     ('blog_posts_tags','blog_posts_id','blog_posts','tags','blog_tags_id'),
     ('blog_posts_tags','blog_tags_id','blog_tags',NULL,'blog_posts_id'),
-    ('blog_posts_devices','blog_posts_id','blog_posts','devices','devices_id'),
+    ('blog_posts_devices','blog_posts_id','blog_posts','devices','products_id'),
+    ('blog_posts_devices','products_id','products',NULL,'blog_posts_id'),
     ('blog_posts_devices','devices_id','devices',NULL,'blog_posts_id'),
     ('blog_post_blocks','post','blog_posts','blocks',NULL),
     ('blog_post_blocks','image','directus_files',NULL,NULL)
@@ -108,7 +109,7 @@ expected_preview_permissions(collection, action) AS (
     ('blog_posts','read'),('blog_authors','read'),('blog_categories','read'),
     ('blog_tags','read'),('blog_posts_tags','read'),('blog_posts_devices','read'),
     ('blog_post_blocks','read'),
-    ('directus_files','read'),('devices','read'),('directus_versions','read')
+    ('directus_files','read'),('products','read'),('device_details','read'),('directus_versions','read')
 )
 SELECT 'blog.schema.tables_missing' AS check_name, count(*)::text AS value
 FROM expected_tables et
@@ -575,9 +576,13 @@ WHERE p.status='published' AND (a.id IS NULL OR a.is_active=false OR c.id IS NUL
 UNION ALL
 SELECT 'blog.content.orphan_junctions', (
   (SELECT count(*) FROM blog_posts_tags pt LEFT JOIN blog_posts p ON p.id=pt.blog_posts_id LEFT JOIN blog_tags t ON t.id=pt.blog_tags_id WHERE p.id IS NULL OR t.id IS NULL) +
-  (SELECT count(*) FROM blog_posts_devices pd LEFT JOIN blog_posts p ON p.id=pd.blog_posts_id LEFT JOIN devices d ON d.id=pd.devices_id WHERE p.id IS NULL OR d.id IS NULL) +
+  (SELECT count(*) FROM blog_posts_devices pd LEFT JOIN blog_posts p ON p.id=pd.blog_posts_id LEFT JOIN products product ON product.id=pd.products_id WHERE p.id IS NULL OR product.id IS NULL) +
   (SELECT count(*) FROM blog_post_blocks block LEFT JOIN blog_posts p ON p.id=block.post LEFT JOIN directus_files file ON file.id=block.image WHERE p.id IS NULL OR (block.image IS NOT NULL AND file.id IS NULL))
 )::text
+UNION ALL
+SELECT 'blog.content.legacy_links_not_backfilled', count(*)::text
+FROM blog_posts_devices
+WHERE products_id IS NULL
 UNION ALL
 SELECT 'blog.automation.scheduling_flow_missing', count(*)::text
 FROM (VALUES (1)) required(dummy)

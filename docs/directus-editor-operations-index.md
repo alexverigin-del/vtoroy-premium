@@ -10,14 +10,21 @@ https://api.isvoi.ru/admin/
 
 ## Catalog
 
-Use `Устройства` (`devices`) as the main entry point.
+Use `Каталог` -> `Товары` (`products`) as the only editor-facing catalog entry
+point.
 
-- Start with bookmarks: `Нужны фото`, `Нужен текст`, `На проверке`,
-  `Готово к публикации`.
-- Product photos are added through `Фото устройства` (`device_images`), not by
-  pasting URLs into JSON or legacy fields.
+- Start with bookmarks: `Нужны фото`, `Нужен текст`,
+  `Нужен Passport или диагностика`, `Нет цены или остатка`,
+  `Готово к проверке` and `Опубликовано`.
+- Product photos are added in the `Фото` group through the related
+  `product_images` rows. Do not paste URLs into JSON or legacy fields.
+- `Тип товара` controls the form: device fields are shown for equipment;
+  accessory details and compatibility are shown for accessories.
 - Keep `status`, `stock_status` and `content_status` separate: publication,
   availability and editorial readiness are different decisions.
+- `devices` and `device_images` are rollback-only legacy collections. Human
+  roles do not have access to them; administrators and service policies retain
+  temporary access during the dual-read period.
 
 Detailed guide: `docs/catalog-studio-editor-guide.md`.
 
@@ -29,8 +36,8 @@ page wrapper.
 - SEO title, meta description and social image live on the `catalog` page row.
 - Hero label, headline, intro text, filter/sort labels, empty state and CTA
   live in the `catalog_page_live` section.
-- Device cards themselves still come from `devices`, `device_images`,
-  `device_passports` and `trade_options`.
+- Product cards come from `products`, `product_images`, `device_passports` and
+  `trade_options`.
 
 Run the setup/audit path after moving this workflow between environments:
 
@@ -51,8 +58,8 @@ by all `/device/...` pages.
 - Product lead form copy lives here too: use the three groups `Форма заявки: В
 наличии`, `Форма заявки: Бронь` and `Форма заявки: Продано` for title,
   placeholders, submit/success/error/status texts and manager-facing scenario.
-- Product-specific facts, price, photos, Passport rows and Trade values still
-  live in `devices`, `device_images`, `device_passports` and `trade_options`.
+- Product-specific facts, price, photos, Passport rows and Trade values live in
+  `products`, `product_images`, `device_passports` and `trade_options`.
 
 Run the setup/audit path after moving this workflow between environments:
 
@@ -129,8 +136,8 @@ Use `Блог · Материалы` (`blog_posts`) as the main editorial entry 
   публикационный замысел.
 - Upload work-in-progress media to `ISVOI Blog`; move approved public covers and
   article images to `ISVOI Editorial` before publication.
-- Related catalog items are selected through `Связанные устройства`; do not paste
-  product URLs into structured relation fields.
+- Related catalog items are selected through `Связанные товары`; the relation
+  points to `products`. Do not paste product URLs into structured fields.
 - After publication, verify the article, category, RSS and sitemap; blog routes,
   navigation and immediate cache invalidation are already active in production.
 
@@ -181,6 +188,9 @@ receipt workflow. This area is available only to administrators and
 
 - Upload the complete stock XLSX and optional receipt XLSX, then run the check
   Flow before apply.
+- Start with `Открытые блокеры`, `Открытые предупреждения`,
+  `Конфликт идентичности`, `Требует проверки происхождения` and
+  `Требует сверки места` instead of scanning all rows.
 - Resolve identity and authenticity blockers in `Проблемы импорта`; never copy
   full serial/IMEI or purchase prices into public copy.
 - Review receipt movement through `Сейчас в магазине`, `Центральный офис`,
@@ -225,3 +235,27 @@ npm run directus:audit-inventory
 These commands execute their SQL checks against production and return a
 non-zero exit code for blocker metrics. Use `npm run directus:audit:prod` as
 the aggregate release gate.
+
+The native Studio layout is reproduced by the idempotent final migration:
+
+```bash
+npm run directus:setup:studio-ux-v2
+```
+
+Run it after older schema/setup scripts. It owns workflow groups, Russian
+labels, field conditions, role-scoped bookmarks and human permission
+allowlists. `--rollback` can be passed directly to the generator for a safe
+production transaction rehearsal.
+
+## Role Boundaries
+
+- `ISVOI Editor`: creates and edits draft products and content; cannot publish
+  Catalog V3 records.
+- `ISVOI Advanced Editor`: reviews and publishes; can maintain catalog
+  dictionaries.
+- `ISVOI Importer`: runs catalog batches and reads results; cannot manually
+  write or delete `products`.
+- `ISVOI Inventory Manager`: changes only review/admission fields and issue
+  resolutions. Computed import fields remain readonly.
+- Service policies perform imports and synchronization; Admin retains full Data
+  Model access. All human Studio policies keep TFA enabled.

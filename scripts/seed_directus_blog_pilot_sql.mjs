@@ -130,10 +130,10 @@ BEGIN
   VALUES (gen_random_uuid(),v_post,v_tag)
   ON CONFLICT (blog_posts_id,blog_tags_id) DO NOTHING;
 
-  IF EXISTS (SELECT 1 FROM devices WHERE id='iphone-13-pro') THEN
-    INSERT INTO blog_posts_devices (id,blog_posts_id,devices_id,sort)
+  IF EXISTS (SELECT 1 FROM products WHERE id='iphone-13-pro') THEN
+    INSERT INTO blog_posts_devices (id,blog_posts_id,products_id,sort)
     VALUES (gen_random_uuid(),v_post,'iphone-13-pro',10)
-    ON CONFLICT (blog_posts_id,devices_id) DO NOTHING;
+    ON CONFLICT (blog_posts_id,products_id) DO NOTHING;
   END IF;
 END;
 $$;

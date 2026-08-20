@@ -122,7 +122,6 @@ const PRODUCT_CARD_FIELDS = [
 
 const PRODUCT_DETAIL_FIELDS = [
   PRODUCT_CARD_FIELDS,
-  "device_details.serial",
   "device_details.year",
   "device_details.model_identifier",
   "device_details.region",

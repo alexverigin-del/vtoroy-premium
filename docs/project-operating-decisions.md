@@ -2095,3 +2095,31 @@ Next content-editing priorities:
   допустимая grid line — `1`. Значение `0` заставляет CSS Grid автоматически
   размещать панель и ломает порядок. Insights audit блокирует координаты ниже
   `1` и проверяет правую границу как `position_x + width - 1 <= 36`.
+
+## 2026-08-20 — Мультигородской каталог и Белгород
+
+- Основной SEO-контур остаётся на `isvoi.ru`; первый городской хаб опубликован
+  по адресам `/belgorod` и `/belgorod/catalog`. Карточки товаров остаются
+  каноническими на `/product/{slug}`. `/store` и `/stores/belgorod` отвечают 301
+  на `/belgorod`.
+- Созданы `store_locations`, `store_location_images` и `product_offers`.
+  Девять текущих товаров получили белгородские предложения; legacy цена и
+  остаток в `products` оставлены для dual-read и отката.
+- В Studio опубликованы управляемые поля точки и предложения, пять bookmarks
+  для Editor и Advanced Editor, русские labels и точные permissions. Техническая
+  галерея магазина скрыта из основной навигации и редактируется из карточки точки.
+- Выбор города хранится в cookie только после ручного действия. Город в URL имеет
+  приоритет, IP используется лишь для подсказки, автоматического redirect нет.
+- Перед apply выполнена успешная rehearsal с `ROLLBACK`. Backup
+  `/opt/isvoi/backups/directus/20260820T121730Z` содержит PostgreSQL и uploads;
+  оба архива прошли SHA-256. Offsite copy пропущен, потому что
+  `OFFSITE_BACKUP_DEST` не настроен.
+- Production rollout выполнен серией forward-only commits, итоговый web commit
+  `dc75971`. Полный Directus audit, production build, HTTP/copy/link/visual smoke
+  и regression-проверка store-specific offer на товарной странице прошли.
+- `belgorod.isvoi.ru` пока не активирован: на момент выпуска DNS-имя не
+  существует. После добавления A/AAAA-записи нужно расширить сертификат и
+  `server_name`; middleware с allowlist и 301 уже готов.
+- Проверенные адрес, часы, карта и юридические данные Белгорода не подменяются
+  тестовыми значениями. До их заполнения Directus показывает честные fallback-
+  формулировки, а не вымышленные контакты.

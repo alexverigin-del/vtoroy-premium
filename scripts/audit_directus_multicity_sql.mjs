@@ -56,6 +56,12 @@ WHERE role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
   AND preset.collection='product_offers' AND preset."user" IS NULL
   AND preset.bookmark IN ('Белгород','В наличии локально','Доступно с доставкой','Без цены','Остаток устарел')
 UNION ALL
+SELECT 'multicity.revalidation.collections_missing',(3-count(DISTINCT collection_name))::text
+FROM directus_flows flow
+CROSS JOIN LATERAL jsonb_array_elements_text(coalesce(flow.options::jsonb->'collections','[]'::jsonb)) collection_name
+WHERE flow.name='ISVOI: обновить кэш контента сайта' AND flow.status='active'
+  AND collection_name IN ('store_locations','store_location_images','product_offers')
+UNION ALL
 SELECT 'multicity.content.old_city_mentions',
   ((SELECT count(*) FROM site_settings WHERE city ILIKE '%Северодвин%' OR footer_brand_text ILIKE '%Северодвин%') +
    (SELECT count(*) FROM navigation_items WHERE label ILIKE '%Северодвин%' OR label_short ILIKE '%Северодвин%') +

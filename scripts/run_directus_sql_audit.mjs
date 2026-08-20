@@ -354,6 +354,7 @@ const auditDefinitions = {
       "multicity.permissions.public_writes",
       "multicity.permissions.editor_actions_missing",
       "multicity.studio.presets_missing",
+      "multicity.revalidation.collections_missing",
       "multicity.content.old_city_mentions",
       "multicity.guard.missing",
     ],

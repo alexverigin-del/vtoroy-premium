@@ -436,7 +436,8 @@ SET city='Белгород',
 
 UPDATE navigation_items
 SET label=replace(replace(replace(label,'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород'),
-    label_short=replace(replace(replace(COALESCE(label_short,label),'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород'),
+    label_short=CASE WHEN COALESCE(custom_url,url) IN ('/store','/belgorod') THEN NULL
+      ELSE replace(replace(replace(COALESCE(label_short,label),'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород') END,
     url=CASE WHEN COALESCE(custom_url,url)='/store' THEN '/belgorod' ELSE url END,
     custom_url=CASE WHEN COALESCE(custom_url,url) IN ('/store','/belgorod') THEN '/belgorod' ELSE custom_url END,
     link_type=CASE WHEN COALESCE(custom_url,url) IN ('/store','/belgorod') THEN 'custom' ELSE link_type END,

@@ -128,7 +128,7 @@ export function CatalogGrid({
             ) : null}
             {section.secondaryCtaLabel ? (
               <Link
-                href={normalizeSiteUrl(section.secondaryCtaUrl || "/store")}
+                href={normalizeSiteUrl(section.secondaryCtaUrl || "/belgorod")}
                 className={secondaryPillCtaClass}
               >
                 {section.secondaryCtaLabel}

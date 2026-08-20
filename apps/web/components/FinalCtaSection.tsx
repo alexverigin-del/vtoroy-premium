@@ -91,7 +91,7 @@ export function FinalCtaSection({
       ? section.content.footerNote
       : typeof section.content.footer_note === "string"
         ? section.content.footer_note
-        : "Северодвинск. Мы здесь. Нас можно найти. Мы отвечаем за то, что проходит через своих.";
+        : "Белгород. Действующий магазин сети I СВОИ и понятный контакт перед визитом.";
 
   const [scenario, setScenario] = useState(form.scenarioOptions[0] ?? "");
   const [device, setDevice] = useState("");

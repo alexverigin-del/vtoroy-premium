@@ -12,6 +12,8 @@ import type {
   ProductCatalogFilters,
   ProductCatalogResult,
   ProductCategory,
+  ProductOffer,
+  StoreLocation,
   TradeInfo,
 } from "@vtoroy/shared";
 
@@ -83,6 +85,39 @@ const PRODUCT_CARD_FIELDS = [
   "accessory_details.compatibility_mode",
   "accessory_details.material",
   "accessory_details.connection_type",
+  "offers.id",
+  "offers.product",
+  "offers.local_sku",
+  "offers.status",
+  "offers.price",
+  "offers.price_text",
+  "offers.stock_quantity",
+  "offers.stock_status",
+  "offers.sale_mode",
+  "offers.pickup_enabled",
+  "offers.local_delivery_enabled",
+  "offers.intercity_delivery_enabled",
+  "offers.preparation_days",
+  "offers.delivery_estimate",
+  "offers.yandex_pay_enabled",
+  "offers.yandex_split_enabled",
+  "offers.updated_at",
+  "offers.location.id",
+  "offers.location.slug",
+  "offers.location.status",
+  "offers.location.name",
+  "offers.location.city",
+  "offers.location.region",
+  "offers.location.address",
+  "offers.location.phone",
+  "offers.location.telegram",
+  "offers.location.email",
+  "offers.location.business_hours",
+  "offers.location.map_url",
+  "offers.location.pickup_enabled",
+  "offers.location.local_delivery_enabled",
+  "offers.location.intercity_delivery_enabled",
+  "offers.location.sort",
 ].join(",");
 
 const PRODUCT_DETAIL_FIELDS = [
@@ -254,6 +289,78 @@ function stockLabel(value: string, quantity: number): string {
   return "В наличии";
 }
 
+function mapOfferLocation(value: unknown): StoreLocation {
+  const row = relation(value);
+  return {
+    id: text(row.id, text(row.slug)),
+    slug: text(row.slug),
+    status: text(row.status, "published"),
+    name: text(row.name),
+    city: text(row.city),
+    region: text(row.region) || undefined,
+    address: text(row.address) || undefined,
+    phone: text(row.phone) || undefined,
+    telegram: text(row.telegram) || undefined,
+    email: text(row.email) || undefined,
+    businessHours: text(row.business_hours) || undefined,
+    mapUrl: text(row.map_url) || undefined,
+    pickupEnabled: row.pickup_enabled !== false,
+    localDeliveryEnabled: row.local_delivery_enabled === true,
+    intercityDeliveryEnabled: row.intercity_delivery_enabled === true,
+    sort: number(row.sort, 100),
+  };
+}
+
+function mapOffers(value: unknown, productId: string): ProductOffer[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    const row = record(item);
+    const location = mapOfferLocation(row.location);
+    if (!text(row.id) || !location.slug || text(row.status) !== "published") return [];
+    const price = number(row.price);
+    return [
+      {
+        id: text(row.id),
+        productId: text(row.product, productId),
+        location,
+        localSku: text(row.local_sku),
+        status: text(row.status),
+        price,
+        priceText: text(row.price_text, formatRub(price)),
+        stockQuantity: number(row.stock_quantity),
+        stockStatus: text(row.stock_status, "sold"),
+        saleMode:
+          text(row.sale_mode) === "online"
+            ? "online"
+            : text(row.sale_mode) === "inquiry"
+              ? "inquiry"
+              : "reservation",
+        pickupEnabled: row.pickup_enabled !== false,
+        localDeliveryEnabled: row.local_delivery_enabled === true,
+        intercityDeliveryEnabled: row.intercity_delivery_enabled === true,
+        preparationDays: number(row.preparation_days) || undefined,
+        deliveryEstimate: text(row.delivery_estimate) || undefined,
+        yandexPayEnabled: row.yandex_pay_enabled === true,
+        yandexSplitEnabled: row.yandex_split_enabled === true,
+        updatedAt: text(row.updated_at) || undefined,
+      },
+    ];
+  });
+}
+
+function selectOffer(offers: ProductOffer[], city?: string): ProductOffer | undefined {
+  const available = offers.filter(
+    (offer) => offer.stockStatus !== "hidden" && offer.stockQuantity > 0,
+  );
+  if (city) {
+    return (
+      available.find((offer) => offer.location.slug === city) ??
+      available.find((offer) => offer.intercityDeliveryEnabled)
+    );
+  }
+  return available.sort((a, b) => a.price - b.price)[0] ?? offers[0];
+}
+
 function trustFacts(row: Row): string[] {
   const productType = text(row.product_type) === "accessory" ? "accessory" : "device";
   const condition = text(row.condition) === "new" ? "new" : "used";
@@ -286,12 +393,25 @@ function trustFacts(row: Row): string[] {
   return values.flatMap((value) => (value ? [value] : [])).slice(0, 3);
 }
 
-function mapProductCard(row: Row): ProductCardData {
+function mapProductCard(row: Row, city?: string): ProductCardData {
   const productType = text(row.product_type) === "accessory" ? "accessory" : "device";
   const condition = text(row.condition) === "new" ? "new" : "used";
-  const stockQuantity = number(row.stock_quantity);
-  const stockStatus = text(row.stock_status, stockQuantity > 0 ? "available" : "sold");
-  const price = number(row.price);
+  const offers = mapOffers(row.offers, text(row.id));
+  const selectedOffer = selectOffer(offers, city);
+  const stockQuantity = selectedOffer?.stockQuantity ?? (city ? 0 : number(row.stock_quantity));
+  const stockStatus =
+    selectedOffer?.stockStatus ??
+    (city ? "sold" : text(row.stock_status, stockQuantity > 0 ? "available" : "sold"));
+  const price = selectedOffer?.price ?? number(row.price);
+  const networkPrices = new Set(
+    offers
+      .filter((offer) => offer.stockStatus !== "hidden" && offer.stockQuantity > 0)
+      .map((offer) => offer.price),
+  );
+  const priceText =
+    !city && selectedOffer && networkPrices.size > 1
+      ? `от ${selectedOffer.priceText}`
+      : (selectedOffer?.priceText ?? text(row.price_text, formatRub(price)));
   const brand = mapBrand(row.brand);
   return {
     id: text(row.id),
@@ -305,10 +425,18 @@ function mapProductCard(row: Row): ProductCardData {
     deviceModelSlug: text(relation(row.device_model).slug) || undefined,
     color: text(row.color),
     price,
-    priceText: text(row.price_text, formatRub(price)),
+    priceText,
     stockQuantity,
     stockStatus,
-    stockStatusLabel: stockLabel(stockStatus, stockQuantity),
+    stockStatusLabel: selectedOffer
+      ? selectedOffer.location.slug === city
+        ? `В наличии в городе ${selectedOffer.location.city}`
+        : selectedOffer.intercityDeliveryEnabled
+          ? `Доставка из города ${selectedOffer.location.city}${selectedOffer.deliveryEstimate ? ` · ${selectedOffer.deliveryEstimate}` : ""}`
+          : stockLabel(stockStatus, stockQuantity)
+      : city
+        ? `Нет в наличии в городе ${city}`
+        : stockLabel(stockStatus, stockQuantity),
     warrantyText: text(row.warranty_text, text(row.warranty)),
     listingImage: assetUrl(row.listing_file, 720, 540),
     listingAlt: text(row.listing_alt, text(row.title)),
@@ -322,6 +450,19 @@ function mapProductCard(row: Row): ProductCardData {
           : "Записаться на просмотр",
     detailHref: `/product/${text(row.id)}`,
     trustFacts: trustFacts(row),
+    offers,
+    selectedOffer,
+    availabilityScope: selectedOffer
+      ? selectedOffer.location.slug === city
+        ? "local"
+        : city
+          ? "delivery"
+          : "network"
+      : city
+        ? "unavailable"
+        : stockQuantity > 0
+          ? "network"
+          : "unavailable",
   };
 }
 
@@ -357,6 +498,8 @@ function mapLegacyCards(
     ctaLabel: "Записаться на просмотр",
     detailHref: `/product/${card.id}`,
     trustFacts: card.trustFacts ?? [],
+    offers: [],
+    availabilityScope: "network",
   }));
 }
 
@@ -381,12 +524,13 @@ export async function getPublishedProducts(
 ): Promise<ProductCatalogResult> {
   const page = normalizePage(filters.page);
   const pageSize = normalizePageSize(filters.pageSize);
+  const cityMode = Boolean(filters.city);
   const params = new URLSearchParams({
     "filter[status][_eq]": "published",
     "filter[stock_status][_neq]": "hidden",
     fields: PRODUCT_CARD_FIELDS,
-    limit: String(pageSize),
-    offset: String((page - 1) * pageSize),
+    limit: cityMode ? "500" : String(pageSize),
+    offset: cityMode ? "0" : String((page - 1) * pageSize),
     sort: productSort(filters.sort),
     meta: "filter_count",
   });
@@ -396,14 +540,32 @@ export async function getPublishedProducts(
   if (filters.brand) params.set("filter[brand][slug][_eq]", filters.brand);
   if (filters.category) params.set("filter[category][slug][_eq]", filters.category);
   if (filters.condition) params.set("filter[condition][_eq]", filters.condition);
-  if (filters.stock) params.set("filter[stock_status][_eq]", filters.stock);
+  if (filters.stock && !cityMode) params.set("filter[stock_status][_eq]", filters.stock);
   if (filters.compatible) {
     params.set("filter[compatible_models][device_models_id][slug][_eq]", filters.compatible);
   }
 
   const response = await directusRequest<Row[]>(`/items/products?${params}`);
   if (response) {
-    const products = response.data.map(mapProductCard);
+    let products = response.data.map((row) => mapProductCard(row, filters.city));
+    if (cityMode) {
+      if (filters.stock) {
+        products = products.filter((product) => product.stockStatus === filters.stock);
+      }
+      products.sort((a, b) => {
+        const rank = { local: 0, delivery: 1, network: 2, unavailable: 3 } as const;
+        return rank[a.availabilityScope ?? "network"] - rank[b.availabilityScope ?? "network"];
+      });
+      const total = products.length;
+      const start = (page - 1) * pageSize;
+      return {
+        products: products.slice(start, start + pageSize),
+        total,
+        page,
+        pageSize,
+        pageCount: Math.max(1, Math.ceil(total / pageSize)),
+      };
+    }
     const total = number(response.meta?.filter_count, products.length);
     return {
       products,

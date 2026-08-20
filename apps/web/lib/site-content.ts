@@ -30,7 +30,7 @@ const marketingFallbackEnhancementKeys: Record<MarketingSlug, Set<string>> = {
 const defaultSiteSettings: SiteSettings = {
   brandName: "I СВОИ",
   tagline: "Хорошие вещи проходят через своих.",
-  city: "Северодвинск",
+  city: "Белгород",
   logoHref: "/",
   logoHeight: 22,
   showBrandName: true,
@@ -39,7 +39,7 @@ const defaultSiteSettings: SiteSettings = {
   footerNote:
     "I СВОИ — новая и проверенная б/у техника разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.",
   footerBrandText:
-    "Техника и аксессуары, о которых всё известно до покупки. Хорошие вещи проходят через своих. Северодвинск.",
+    "Техника и аксессуары, о которых всё известно до покупки. Хорошие вещи проходят через своих. Белгород.",
   footerLegal: "Хорошие вещи проходят через своих.",
   footerCopyright: "© 2026 I СВОИ.",
 };
@@ -82,8 +82,8 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "header-store",
-    label: "Магазин в Северодвинске",
-    url: "/store",
+    label: "Магазин в Белгороде",
+    url: "/belgorod",
     location: "header",
     sort: 2,
     isActive: true,
@@ -192,8 +192,8 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-isvoi-store",
-    label: "Магазин в Северодвинске",
-    url: "/store",
+    label: "Магазин в Белгороде",
+    url: "/belgorod",
     location: "footer",
     parent: "footer-isvoi",
     sort: 1,
@@ -233,7 +233,7 @@ const defaultHeroSection: PageSection = {
   id: "hero-fallback",
   sectionKey: "hero",
   variant: "hero.static",
-  eyebrow: "I СВОИ · Северодвинск",
+  eyebrow: "I СВОИ · Белгород",
   headline: "Техника и аксессуары, о которых всё известно до покупки.",
   body: "Реальные фотографии, состояние батареи, история ремонта, отмеченные дефекты, открытая проверка и письменная гарантия 90 дней.",
   primaryCtaLabel: "Смотреть каталог",
@@ -304,11 +304,11 @@ const defaultStoreSection: PageSection = {
   id: "store-preview-fallback",
   sectionKey: "store_preview",
   variant: "store.steps",
-  eyebrow: "Магазин в Северодвинске",
+  eyebrow: "Магазин в Белгороде",
   headline: "Как проходит покупка.",
   body: "Выберите устройство, проверьте его в магазине и получите документы с гарантией.",
   primaryCtaLabel: "Условия визита",
-  primaryCtaUrl: "/store",
+  primaryCtaUrl: "/belgorod",
   sortOrder: 5,
   isActive: true,
   content: {},

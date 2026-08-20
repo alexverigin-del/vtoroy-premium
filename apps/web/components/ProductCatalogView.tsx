@@ -47,10 +47,11 @@ function queryString(
   return query ? `?${query}` : "";
 }
 
-function sectionHref(type?: ProductType): string {
-  if (type === "device") return "/catalog/tech";
-  if (type === "accessory") return "/catalog/accessories";
-  return "/catalog";
+function sectionHref(type?: ProductType, city?: string): string {
+  const prefix = city ? `/${city}` : "";
+  if (type === "device") return `${prefix}/catalog/tech`;
+  if (type === "accessory") return `${prefix}/catalog/accessories`;
+  return `${prefix}/catalog`;
 }
 
 function optionLabel(type?: ProductType): string {
@@ -153,7 +154,7 @@ function activeFilterChips({
   type?: ProductType;
 }): FilterChip[] {
   const chips: FilterChip[] = [];
-  const basePath = sectionHref(type);
+  const basePath = sectionHref(type, filters.city);
   const push = (key: FilterFieldName, value: ReactNode) => {
     if (!value) return;
     chips.push({
@@ -219,7 +220,7 @@ function CatalogCategoryRail({
   filters: ProductCatalogFilters;
   type?: ProductType;
 }) {
-  const basePath = sectionHref(type);
+  const basePath = sectionHref(type, filters.city);
   const tiles = categoryTiles(categories, filters.category);
   if (tiles.length === 0) return null;
 
@@ -366,13 +367,13 @@ function ActiveFilterChips({ chips }: { chips: FilterChip[] }) {
   );
 }
 
-function CatalogTypeTabs({ activeType }: { activeType?: ProductType }) {
+function CatalogTypeTabs({ activeType, city }: { activeType?: ProductType; city?: string }) {
   return (
     <nav className="mt-8 flex gap-2 overflow-x-auto pb-1" aria-label="Раздел каталога">
       {([undefined, "device", "accessory"] as const).map((type) => (
         <Link
           key={type || "all"}
-          href={sectionHref(type)}
+          href={sectionHref(type, city)}
           aria-current={activeType === type ? "page" : undefined}
           className={
             activeType === type
@@ -414,7 +415,7 @@ function CatalogFilters({
         className="mt-5 rounded-card border border-hairline bg-frost p-4 md:hidden"
         data-component="CatalogFilters"
       >
-        <form action={sectionHref(type)}>
+        <form action={sectionHref(type, filters.city)}>
           <HiddenFilterFields filters={filters} omit={["q"]} type={type} />
           <label>
             <span className="text-xs font-medium text-muted">Поиск</span>
@@ -436,7 +437,7 @@ function CatalogFilters({
             title={<span>Расширенные фильтры</span>}
             triggerClassName={cn(secondaryPillCtaClass, "w-full")}
           >
-            <form action={sectionHref(type)} className="grid gap-3">
+            <form action={sectionHref(type, filters.city)} className="grid gap-3">
               <HiddenFilterFields
                 filters={filters}
                 omit={["brand", "category", "compatible", "condition", "sort", "stock"]}
@@ -472,7 +473,7 @@ function CatalogFilters({
               </label>
               <CatalogAdvancedFilterFields facets={facets} filters={filters} type={type} />
               <div className="grid grid-cols-2 gap-2">
-                <Link href={sectionHref(type)} className={secondaryPillCtaClass}>
+                <Link href={sectionHref(type, filters.city)} className={secondaryPillCtaClass}>
                   Сбросить
                 </Link>
                 <button type="submit" className={primaryPillCtaClass}>
@@ -485,7 +486,7 @@ function CatalogFilters({
       </div>
 
       <form
-        action={sectionHref(type)}
+        action={sectionHref(type, filters.city)}
         className="mt-5 hidden rounded-card border border-hairline bg-frost p-4 md:block"
         data-component="CatalogFilters"
       >
@@ -556,7 +557,7 @@ function CatalogFilters({
           <div className="mt-3 grid gap-3 border-t border-hairline pt-3 md:grid-cols-2 xl:grid-cols-4">
             <CatalogAdvancedFilterFields facets={facets} filters={filters} type={type} />
             <div className="flex items-end gap-2 md:col-span-2 xl:col-span-1 xl:justify-end">
-              <Link href={sectionHref(type)} className={secondaryPillCtaClass}>
+              <Link href={sectionHref(type, filters.city)} className={secondaryPillCtaClass}>
                 Сбросить
               </Link>
               <button type="submit" className={primaryPillCtaClass}>
@@ -618,7 +619,7 @@ export function ProductCatalogView({
   result: ProductCatalogResult;
   type?: ProductType;
 }) {
-  const basePath = sectionHref(type);
+  const basePath = sectionHref(type, filters.city);
   const categories = catalogCategories(facets, type, result.products);
   const chips = activeFilterChips({ categories, facets, filters, type });
   const categorySuggestions = categoryTiles(
@@ -635,7 +636,7 @@ export function ProductCatalogView({
           <p className="mt-5 max-w-prose text-copy leading-relaxed text-graphite">{copy.body}</p>
         </div>
 
-        <CatalogTypeTabs activeType={type} />
+        <CatalogTypeTabs activeType={type} city={filters.city} />
         <CatalogFilters categories={categories} facets={facets} filters={filters} type={type} />
 
         <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

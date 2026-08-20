@@ -223,7 +223,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   const assuranceItems =
     assurance.length > 0
       ? assurance
-      : ["В кругу своих", "С историей и проверкой", "Store в Северодвинске"];
+      : ["В кругу своих", "С историей и проверкой", "Магазин в Белгороде"];
 
   return (
     <section className="mx-auto max-w-page px-4 pb-14 pt-10 text-center md:px-6 md:pb-20 md:pt-20">

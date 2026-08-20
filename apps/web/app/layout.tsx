@@ -7,6 +7,8 @@ import {
 } from "./site-metadata";
 import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
 import { getSiteSettings } from "@/lib/directus";
+import { getStoreLocations } from "@/lib/store-locations";
+import { CityProvider } from "@/components/CityContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -44,7 +46,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-  const settings = await getSiteSettings();
+  const [settings, locations] = await Promise.all([getSiteSettings(), getStoreLocations()]);
 
   return (
     <html lang="ru">
@@ -57,7 +59,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript(websiteJsonLd()) }}
         />
-        {children}
+        <CityProvider locations={locations}>{children}</CityProvider>
         {turnstileEnabled ? (
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"

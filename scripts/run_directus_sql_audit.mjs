@@ -340,6 +340,23 @@ const auditDefinitions = {
       "catalog_v3.publication.guard_missing",
     ],
   },
+  multicity: {
+    script: "scripts/audit_directus_multicity_sql.mjs",
+    zero: [
+      "multicity.schema.tables_missing",
+      "multicity.schema.relations_missing",
+      "multicity.content.belgorod_missing",
+      "multicity.migration.products_without_offer",
+      "multicity.offers.invalid_published",
+      "multicity.offers.split_without_pay",
+      "multicity.permissions.public_missing",
+      "multicity.permissions.public_writes",
+      "multicity.permissions.editor_actions_missing",
+      "multicity.studio.presets_missing",
+      "multicity.content.old_city_mentions",
+      "multicity.guard.missing",
+    ],
+  },
   inventory: {
     script: "scripts/audit_directus_inventory_sql.mjs",
     zero: [
@@ -401,6 +418,7 @@ const prodAuditOrder = [
   "club",
   "conversion-v2",
   "catalog-v3",
+  "multicity",
   "inventory",
   "insights",
 ];

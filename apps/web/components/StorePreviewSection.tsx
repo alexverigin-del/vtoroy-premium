@@ -152,7 +152,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
           <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
             {section.primaryCtaLabel ? (
               <Link
-                href={normalizeSiteUrl(section.primaryCtaUrl || "/store")}
+                href={normalizeSiteUrl(section.primaryCtaUrl || "/belgorod")}
                 className={primaryCtaClass}
               >
                 {section.primaryCtaLabel}

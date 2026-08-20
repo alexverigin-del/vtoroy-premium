@@ -54,6 +54,9 @@ const flowOptions = JSON.stringify({
     "product_brands",
     "product_categories",
     "device_models",
+    "store_locations",
+    "store_location_images",
+    "product_offers",
   ],
 });
 

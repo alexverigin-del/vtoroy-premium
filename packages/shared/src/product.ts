@@ -4,6 +4,54 @@ export type ProductType = "device" | "accessory";
 export type ProductCondition = "new" | "used";
 export type SaleMode = "reservation" | "inquiry" | "online";
 export type ProductStockStatus = "available" | "reserved" | "sold" | "hidden" | string;
+export type StoreLocationStatus = "draft" | "published" | "archived" | string;
+export type FulfillmentMethod = "pickup" | "local_delivery" | "intercity_delivery";
+
+export interface StoreLocation {
+  id: string;
+  slug: string;
+  status: StoreLocationStatus;
+  name: string;
+  city: string;
+  region?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  phone?: string;
+  telegram?: string;
+  email?: string;
+  businessHours?: string;
+  mapUrl?: string;
+  pickupEnabled: boolean;
+  localDeliveryEnabled: boolean;
+  intercityDeliveryEnabled: boolean;
+  seoTitle?: string;
+  metaDescription?: string;
+  heroTitle?: string;
+  heroBody?: string;
+  sort: number;
+}
+
+export interface ProductOffer {
+  id: string;
+  productId: string;
+  location: StoreLocation;
+  localSku: string;
+  status: "draft" | "published" | "archived" | string;
+  price: number;
+  priceText: string;
+  stockQuantity: number;
+  stockStatus: ProductStockStatus;
+  saleMode: SaleMode;
+  pickupEnabled: boolean;
+  localDeliveryEnabled: boolean;
+  intercityDeliveryEnabled: boolean;
+  preparationDays?: number;
+  deliveryEstimate?: string;
+  yandexPayEnabled: boolean;
+  yandexSplitEnabled: boolean;
+  updatedAt?: string;
+}
 
 export interface ProductBrand {
   id: string;
@@ -88,6 +136,8 @@ export interface CatalogProduct {
   passport?: DevicePassport;
   trade: TradeInfo;
   compatibleModels: DeviceModel[];
+  offers: ProductOffer[];
+  selectedOffer?: ProductOffer;
 }
 
 export interface ProductCardData {
@@ -114,6 +164,9 @@ export interface ProductCardData {
   ctaLabel: string;
   detailHref: string;
   trustFacts: string[];
+  offers: ProductOffer[];
+  selectedOffer?: ProductOffer;
+  availabilityScope?: "local" | "delivery" | "network" | "unavailable";
 }
 
 export type ProductCatalogFilters = {
@@ -127,6 +180,7 @@ export type ProductCatalogFilters = {
   sort?: "default" | "updated-desc" | "price-asc" | "price-desc";
   page?: number;
   pageSize?: number;
+  city?: string;
 };
 
 export interface ProductCatalogResult {

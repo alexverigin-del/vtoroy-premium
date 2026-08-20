@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { CatalogProduct, DevicePageSettings, DeviceStoryInfo } from "@vtoroy/shared";
+import type {
+  CatalogProduct,
+  DevicePageSettings,
+  DeviceStoryInfo,
+  ProductOffer,
+} from "@vtoroy/shared";
 
 import { DeviceGallery } from "@/components/DeviceGallery";
 import { PassportSummary } from "@/components/PassportSummary";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
+import { ProductOfferPanel } from "@/components/ProductOfferPanel";
 import {
   brandZoneEyebrowClass,
   detailBackLinkClass,
@@ -56,6 +62,14 @@ function availability(product: CatalogProduct) {
   return "https://schema.org/InStock";
 }
 
+function offerAvailability(offer: ProductOffer) {
+  if (offer.stockQuantity <= 0 || offer.stockStatus === "sold") {
+    return "https://schema.org/OutOfStock";
+  }
+  if (offer.stockStatus === "reserved") return "https://schema.org/LimitedAvailability";
+  return "https://schema.org/InStock";
+}
+
 function productJsonLd(product: CatalogProduct, sellerName: string) {
   return {
     "@context": "https://schema.org",
@@ -68,19 +82,39 @@ function productJsonLd(product: CatalogProduct, sellerName: string) {
     color: product.color || undefined,
     image: [product.listingImage, ...product.gallery.map((image) => image.src)].filter(Boolean),
     itemCondition: itemCondition(product),
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "RUB",
-      price: product.price,
-      availability: availability(product),
-      itemCondition: itemCondition(product),
-      url: `https://isvoi.ru/product/${product.id}`,
-      seller: {
-        "@type": "Organization",
-        "@id": "https://isvoi.ru/#organization",
-        name: sellerName,
-      },
-    },
+    offers:
+      product.offers.length > 0
+        ? product.offers.map((offer) => ({
+            "@type": "Offer",
+            priceCurrency: "RUB",
+            price: offer.price,
+            availability: offerAvailability(offer),
+            itemCondition: itemCondition(product),
+            url: `https://isvoi.ru/product/${product.id}`,
+            availableAtOrFrom: {
+              "@type": "Store",
+              "@id": `https://isvoi.ru/${offer.location.slug}#store`,
+              name: offer.location.name,
+            },
+            seller: {
+              "@type": "Organization",
+              "@id": "https://isvoi.ru/#organization",
+              name: sellerName,
+            },
+          }))
+        : {
+            "@type": "Offer",
+            priceCurrency: "RUB",
+            price: product.price,
+            availability: availability(product),
+            itemCondition: itemCondition(product),
+            url: `https://isvoi.ru/product/${product.id}`,
+            seller: {
+              "@type": "Organization",
+              "@id": "https://isvoi.ru/#organization",
+              name: sellerName,
+            },
+          },
   };
 }
 
@@ -257,13 +291,14 @@ export default async function ProductPage({ params }: PageProps) {
 
             <aside className="card p-6 lg:sticky lg:top-24">
               <p className="text-muted">{product.shortDescription}</p>
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <span className="text-3xl font-semibold tabular-nums">{product.priceText}</span>
-                <span className="rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">
-                  {conditionLabel}
-                </span>
-              </div>
-              <p className="mt-3 text-sm font-medium">{product.stockStatusLabel}</p>
+              <span className="mt-5 inline-flex rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">
+                {conditionLabel}
+              </span>
+              <ProductOfferPanel
+                offers={product.offers}
+                fallbackPrice={product.priceText}
+                fallbackStatus={product.stockStatusLabel}
+              />
 
               {usedDevice ? (
                 <p className="mt-5 rounded-card bg-surface p-4 text-sm text-muted">
@@ -296,7 +331,7 @@ export default async function ProductPage({ params }: PageProps) {
                     Комплект: {product.completeness}
                   </p>
                 ) : null}
-                <Link href="/store" className="mt-3 inline-flex text-sm font-medium text-accent">
+                <Link href="/belgorod" className="mt-3 inline-flex text-sm font-medium text-accent">
                   Уточнить условия в магазине →
                 </Link>
               </div>

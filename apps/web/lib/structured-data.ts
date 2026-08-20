@@ -1,4 +1,4 @@
-import type { BlogPost, ProductCardData, SiteSettings } from "@vtoroy/shared";
+import type { BlogPost, ProductCardData, SiteSettings, StoreLocation } from "@vtoroy/shared";
 
 import type { DeviceCardData } from "./device-card-data";
 
@@ -27,7 +27,7 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
     : "";
   return {
     "@context": "https://schema.org",
-    "@type": ["Organization", "LocalBusiness"],
+    "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
     name: settings?.legalName || settings?.brandName || PUBLIC_BRAND_NAME,
     alternateName: settings?.brandName || PUBLIC_BRAND_NAME,
@@ -47,6 +47,47 @@ export function organizationJsonLd(settings?: SiteSettings | null) {
       : {}),
     ...(settings?.businessHours ? { openingHours: settings.businessHours } : {}),
     ...(telegram ? { sameAs: [telegram] } : {}),
+  };
+}
+
+export function localBusinessJsonLd(location: StoreLocation, settings?: SiteSettings | null) {
+  const telegram = location.telegram
+    ? /^https?:\/\//i.test(location.telegram)
+      ? location.telegram
+      : `https://t.me/${location.telegram.replace(/^@/, "")}`
+    : "";
+  return {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "@id": `${SITE_URL}/${location.slug}#store`,
+    name: location.name,
+    url: `${SITE_URL}/${location.slug}`,
+    parentOrganization: { "@id": `${SITE_URL}/#organization` },
+    ...(location.phone ? { telephone: location.phone } : {}),
+    ...(location.email ? { email: location.email } : {}),
+    ...(location.address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: location.address,
+            addressLocality: location.city,
+            addressRegion: location.region,
+            addressCountry: "RU",
+          },
+        }
+      : {}),
+    ...(location.latitude !== undefined && location.longitude !== undefined
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: location.latitude,
+            longitude: location.longitude,
+          },
+        }
+      : {}),
+    ...(location.businessHours ? { openingHours: location.businessHours } : {}),
+    ...(telegram ? { sameAs: [telegram] } : {}),
+    brand: settings?.brandName || PUBLIC_BRAND_NAME,
   };
 }
 

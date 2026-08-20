@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const CLUB_HOST = "club.isvoi.ru";
+const CITY_HOSTS = new Map([["belgorod.isvoi.ru", "belgorod"]]);
 const MAIN_HOST = "isvoi.ru";
 const WWW_HOST = "www.isvoi.ru";
 const CLUB_SUBDOMAIN_ENABLED = process.env.CLUB_SUBDOMAIN_ENABLED === "1";
@@ -70,12 +71,33 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(`https://${MAIN_HOST}${pathname}${search}`, 301);
   }
 
+  const citySlug = CITY_HOSTS.get(host);
+  if (citySlug) {
+    if (pathname.startsWith("/product/") || shouldPassThrough(pathname)) {
+      return NextResponse.redirect(`https://${MAIN_HOST}${pathname}${search}`, 301);
+    }
+    const cityPath = pathname === "/" ? `/${citySlug}` : `/${citySlug}${pathname}`;
+    return NextResponse.redirect(`https://${MAIN_HOST}${cityPath}${search}`, 301);
+  }
+
+  if (host && host.endsWith(`.${MAIN_HOST}`) && host !== CLUB_HOST && !CITY_HOSTS.has(host)) {
+    return NextResponse.redirect(`https://${MAIN_HOST}${pathname}${search}`, 301);
+  }
+
   if (
     CLUB_SUBDOMAIN_ENABLED &&
     (host === MAIN_HOST || host === WWW_HOST) &&
     (pathname === "/club" || pathname === "/club/")
   ) {
     return NextResponse.redirect(`https://${CLUB_HOST}/`, 301);
+  }
+
+  if (pathname === "/store") {
+    return NextResponse.redirect(new URL(`/belgorod${search}`, request.url), 301);
+  }
+
+  if (pathname === "/stores/belgorod") {
+    return NextResponse.redirect(new URL(`/belgorod${search}`, request.url), 301);
   }
 
   return NextResponse.next();

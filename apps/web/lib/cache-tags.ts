@@ -8,6 +8,8 @@ export const CLUB_CACHE_TAG = "directus:club";
 export const BLOG_POSTS_CACHE_TAG = "directus:blog-posts";
 export const BLOG_TAXONOMY_CACHE_TAG = "directus:blog-taxonomy";
 export const PRODUCTS_CACHE_TAG = "directus:products";
+export const STORE_LOCATIONS_CACHE_TAG = "directus:store-locations";
+export const PRODUCT_OFFERS_CACHE_TAG = "directus:product-offers";
 
 export const SITE_CONTENT_CACHE_TAGS = [
   SITE_SETTINGS_CACHE_TAG,
@@ -20,4 +22,6 @@ export const SITE_CONTENT_CACHE_TAGS = [
   BLOG_POSTS_CACHE_TAG,
   BLOG_TAXONOMY_CACHE_TAG,
   PRODUCTS_CACHE_TAG,
+  STORE_LOCATIONS_CACHE_TAG,
+  PRODUCT_OFFERS_CACHE_TAG,
 ] as const;

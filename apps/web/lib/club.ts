@@ -285,6 +285,8 @@ function mapProductCard(value: unknown): ProductCardData | null {
     ctaLabel: "Смотреть устройство",
     detailHref,
     trustFacts,
+    offers: [],
+    availabilityScope: "network",
   };
 }
 
@@ -379,7 +381,7 @@ export const fallbackClubRules: ClubRuleItem[] = [
 
 export const fallbackClubPageSettings: ClubPageSettings = {
   publicationMode: "pilot_noindex",
-  heroEyebrow: "I СВОИ Club · пилот в Северодвинске",
+  heroEyebrow: "I СВОИ Club · пилот в Белгороде",
   heroTitle: "Своя, пока нужна.",
   heroBody:
     "Пользуйтесь проверенным устройством Apple за фиксированную плату в месяц. В конце срока продолжите, смените модель, выкупите или вернёте.",

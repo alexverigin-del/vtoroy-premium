@@ -7,6 +7,7 @@ import { cn } from "../lib/cn";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
 import { headerCtaClass } from "./ui-classes";
+import { CitySwitcher } from "./CityContext";
 
 function headerCta(settings: SiteSettings, navigation: NavigationItem[]): NavigationItem | null {
   return (
@@ -145,6 +146,7 @@ export function SiteHeader({
         </nav>
 
         <div className="flex items-center gap-2">
+          <CitySwitcher />
           {cta ? (
             <a
               href={navigationHref(cta, "/#final")}
@@ -183,6 +185,7 @@ export function SiteHeader({
             className="mx-auto grid max-w-shell gap-1"
             aria-label="Мобильная навигация"
           >
+            <CitySwitcher mobile />
             {headerItems.map((item) => {
               const children = childrenFor(item.id);
               return (

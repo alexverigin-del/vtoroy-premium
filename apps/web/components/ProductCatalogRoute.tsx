@@ -1,4 +1,5 @@
 import type { ProductCatalogFilters, ProductType } from "@vtoroy/shared";
+import type { StoreLocation } from "@vtoroy/shared";
 
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 import { getProductCatalogFacets, getPublishedProducts } from "@/lib/product-catalog";
@@ -88,12 +89,17 @@ export async function ProductCatalogRoute({
   breadcrumbLabel = "Каталог",
   presets = {},
   searchParams,
+  location,
 }: {
   breadcrumbLabel?: string;
   presets?: Partial<ProductCatalogFilters>;
   searchParams: CatalogSearchParams;
+  location?: StoreLocation;
 }) {
-  const filters = filtersFromSearchParams(searchParams, presets);
+  const filters = filtersFromSearchParams(searchParams, {
+    ...presets,
+    city: location?.slug ?? presets.city,
+  });
   const [page, settings, navigation, result, facets] = await Promise.all([
     getSitePage("catalog"),
     getSiteSettings(),
@@ -102,7 +108,15 @@ export async function ProductCatalogRoute({
     getProductCatalogFacets(),
   ]);
   const chrome = siteChrome(settings, navigation);
-  const copy = catalogCopy(filters.type, page);
+  const baseCopy = catalogCopy(filters.type, page);
+  const copy = location
+    ? {
+        eyebrow: `I СВОИ · ${location.city}`,
+        headline: `Техника и аксессуары для ${location.city}.`,
+        body: `Сначала показываем товары в наличии в городе ${location.city}, затем — доступные с доставкой из других магазинов сети.`,
+      }
+    : baseCopy;
+  const catalogPath = location ? `/${location.slug}/catalog` : "/catalog";
 
   return (
     <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
@@ -113,14 +127,16 @@ export async function ProductCatalogRoute({
             __html: jsonLdScript(
               breadcrumbJsonLd([
                 { name: "Главная", path: "/" },
-                { name: "Каталог", path: "/catalog" },
+                { name: "Каталог", path: catalogPath },
                 ...(breadcrumbLabel === "Каталог"
                   ? []
                   : [
                       {
                         name: breadcrumbLabel,
                         path:
-                          filters.type === "accessory" ? "/catalog/accessories" : "/catalog/tech",
+                          filters.type === "accessory"
+                            ? `${catalogPath}/accessories`
+                            : `${catalogPath}/tech`,
                       },
                     ]),
               ]),

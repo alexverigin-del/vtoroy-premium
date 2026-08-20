@@ -2143,8 +2143,9 @@ Next content-editing priorities:
   при `kind = club`. Настройки Club разделены на сценарии завершения, Passport,
   тарифы, правила, участие и финальный CTA вместо одной длинной группы.
 - Для Editor и Advanced Editor сохранена одинаковая компактная навигация по
-  четырём частым очередям: товары — 8 bookmarks, заявки — 8, предложения — 6,
-  магазины — 3. Пользовательские presets не удаляются; setup заменяет только
+  четырём частым очередям: товары — 8 bookmarks, заявки — 12, предложения — 6,
+  магазины — 3. В заявках сохранены отдельные Club SLA и blog attribution
+  views; пользовательские presets не удаляются, setup заменяет только
   role-scoped bookmarks этих коллекций.
 - Допустимые значения `navigation_items` синхронизированы между UI и role
   permissions: `header`, `footer`, `club_header`, `club_footer`; устаревшие

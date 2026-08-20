@@ -15,9 +15,9 @@ WHERE (many_collection,many_field) IN (
 UNION ALL
 SELECT 'multicity.studio.collection_layout',count(*)::text
 FROM directus_collections
-WHERE (collection='store_locations' AND ("group"<>'isvoi_site_content' OR coalesce(hidden,false)))
-   OR (collection='store_location_images' AND ("group"<>'isvoi_site_content' OR NOT coalesce(hidden,false)))
-   OR (collection='product_offers' AND ("group"<>'isvoi_catalog' OR coalesce(hidden,false)))
+WHERE (collection='store_locations' AND ("group"<>'isvoi_locations' OR coalesce(hidden,false)))
+   OR (collection='store_location_images' AND ("group"<>'isvoi_locations' OR NOT coalesce(hidden,false)))
+   OR (collection='product_offers' AND ("group"<>'isvoi_locations' OR coalesce(hidden,false)))
 UNION ALL
 SELECT 'multicity.content.belgorod_missing',CASE WHEN EXISTS (
   SELECT 1 FROM store_locations WHERE slug='belgorod' AND status='published' AND city='Белгород'
@@ -50,11 +50,11 @@ WHERE policy.name IN ('ISVOI Editor','ISVOI Advanced Editor')
   AND permission.action IN ('read','create','update')
   AND permission.collection IN ('store_locations','store_location_images','product_offers')
 UNION ALL
-SELECT 'multicity.studio.presets_missing',(10-count(*))::text
+SELECT 'multicity.studio.presets_missing',(12-count(*))::text
 FROM directus_presets preset JOIN directus_roles role ON role.id=preset.role
 WHERE role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
   AND preset.collection='product_offers' AND preset."user" IS NULL
-  AND preset.bookmark IN ('Белгород','В наличии локально','Доступно с доставкой','Без цены','Остаток устарел')
+  AND preset.bookmark IN ('Все предложения','Требуют внимания','Белгород','В наличии','Доступно с доставкой','Архив')
 UNION ALL
 SELECT 'multicity.revalidation.collections_missing',(3-count(DISTINCT collection_name))::text
 FROM directus_flows flow

@@ -324,11 +324,24 @@ DO $$ DECLARE role_name text; BEGIN
     PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Без ответственного','person_off','#dc2626',
       '{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"assigned_to":{"_null":true}}]}',
       '["created_at","status","priority","contact","kind","source_path"]','["-created_at"]',60);
-    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Club','workspace_premium','#111827',
-      '{"kind":{"_eq":"club"}}','["created_at","status","contact","club_device_request","club_plan","assigned_to"]','["-created_at"]',60);
-    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Блог и UTM','campaign','#7c3aed',
-      '{"_or":[{"source_path":{"_starts_with":"/blog"}},{"utm_campaign":{"_nempty":true}},{"utm_content":{"_nempty":true}}]}',
-      '["created_at","status","contact","product","source_path","utm_campaign","utm_content"]','["-created_at"]');
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Club: новые','workspace_premium','#2563eb',
+      '{"_and":[{"kind":{"_eq":"club"}},{"status":{"_eq":"new"}}]}',
+      '["created_at","contact","club_device_request","club_offer","club_plan","club_term_months","status","assigned_to"]','["-created_at"]',60);
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Club: без ответственного','person_off','#dc2626',
+      '{"_and":[{"kind":{"_eq":"club"}},{"status":{"_in":["new","in_progress","waiting"]}},{"assigned_to":{"_null":true}}]}',
+      '["created_at","status","contact","club_device_request","club_offer","club_plan","next_action_at"]','["-created_at"]',60);
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Club: расчёт отправлен','send','#d97706',
+      '{"_and":[{"kind":{"_eq":"club"}},{"status":{"_eq":"waiting"}}]}',
+      '["created_at","status","contact","club_device_request","club_offer","club_plan","assigned_to","next_action_at"]','["-created_at"]',60);
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Club: просрочен SLA','event_busy','#dc2626',
+      '{"_and":[{"kind":{"_eq":"club"}},{"status":{"_in":["in_progress","waiting"]}},{"next_action_at":{"_lt":"$NOW"}}]}',
+      '["next_action_at","created_at","status","contact","club_device_request","club_offer","club_plan","assigned_to"]','["next_action_at"]',60);
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Блог: заявки','article','#2563eb',
+      '{"_and":[{"_or":[{"utm_source":{"_eq":"blog"}},{"source_url":{"_contains":"utm_source=blog"}}]},{"_or":[{"utm_content":{"_eq":"article-end"}},{"source_url":{"_contains":"utm_content=article-end"}}]}]}',
+      '["created_at","status","contact","kind","utm_campaign","utm_content","source_path","assigned_to","next_action_at"]','["-created_at"]');
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Блог: устройства','devices','#059669',
+      '{"_and":[{"_or":[{"utm_source":{"_eq":"blog"}},{"source_url":{"_contains":"utm_source=blog"}}]},{"_or":[{"utm_content":{"_eq":"related-device"}},{"source_url":{"_contains":"utm_content=related-device"}}]}]}',
+      '["created_at","status","contact","kind","device_id","utm_campaign","utm_content","source_path","assigned_to"]','["-created_at"]');
     PERFORM pg_temp.isvoi_ux_preset(role_name,'leads','Закрытые заявки','task_alt','#64748b',
       '{"status":{"_in":["won","closed"]}}','["created_at","status","contact","kind","assigned_to","manager_note"]','["-created_at"]');
 

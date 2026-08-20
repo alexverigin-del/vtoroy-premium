@@ -139,16 +139,24 @@ expected_bookmarks(role_name, collection, bookmark) AS (
     ('ISVOI Editor', 'leads', 'В работе'),
     ('ISVOI Editor', 'leads', 'Просрочены'),
     ('ISVOI Editor', 'leads', 'Без ответственного'),
-    ('ISVOI Editor', 'leads', 'Club'),
-    ('ISVOI Editor', 'leads', 'Блог и UTM'),
+    ('ISVOI Editor', 'leads', 'Club: новые'),
+    ('ISVOI Editor', 'leads', 'Club: без ответственного'),
+    ('ISVOI Editor', 'leads', 'Club: расчёт отправлен'),
+    ('ISVOI Editor', 'leads', 'Club: просрочен SLA'),
+    ('ISVOI Editor', 'leads', 'Блог: заявки'),
+    ('ISVOI Editor', 'leads', 'Блог: устройства'),
     ('ISVOI Editor', 'leads', 'Закрытые заявки'),
     ('ISVOI Advanced Editor', 'leads', 'Обработка заявок'),
     ('ISVOI Advanced Editor', 'leads', 'Новые заявки'),
     ('ISVOI Advanced Editor', 'leads', 'В работе'),
     ('ISVOI Advanced Editor', 'leads', 'Просрочены'),
     ('ISVOI Advanced Editor', 'leads', 'Без ответственного'),
-    ('ISVOI Advanced Editor', 'leads', 'Club'),
-    ('ISVOI Advanced Editor', 'leads', 'Блог и UTM'),
+    ('ISVOI Advanced Editor', 'leads', 'Club: новые'),
+    ('ISVOI Advanced Editor', 'leads', 'Club: без ответственного'),
+    ('ISVOI Advanced Editor', 'leads', 'Club: расчёт отправлен'),
+    ('ISVOI Advanced Editor', 'leads', 'Club: просрочен SLA'),
+    ('ISVOI Advanced Editor', 'leads', 'Блог: заявки'),
+    ('ISVOI Advanced Editor', 'leads', 'Блог: устройства'),
     ('ISVOI Advanced Editor', 'leads', 'Закрытые заявки'),
     ('ISVOI Editor', 'product_offers', 'Все предложения'),
     ('ISVOI Editor', 'product_offers', 'Требуют внимания'),
@@ -636,7 +644,7 @@ FROM (
     AND role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
     AND preset.collection IN ('products','leads','product_offers','store_locations')
   GROUP BY preset.role,preset.collection
-  HAVING count(*)>8
+  HAVING count(*)>CASE WHEN preset.collection='leads' THEN 12 ELSE 8 END
 ) excessive
 UNION ALL
 SELECT 'studio.bookmarks.duplicates', count(*)::text

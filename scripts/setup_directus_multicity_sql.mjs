@@ -156,17 +156,17 @@ ON CONFLICT (product,location) DO NOTHING;
 
 INSERT INTO directus_collections (
   collection,icon,note,display_template,archive_field,archive_value,
-  unarchive_value,accountability,sort,color,"group"
+  unarchive_value,accountability,sort,color,"group",hidden
 )
 VALUES
-  ('store_locations','storefront','Города и действующие магазины сети. Не публикуйте непроверенные адреса и контакты.','{{city}} · {{name}}','status','archived','draft','all',18,'#0f766e','isvoi_site_content'),
-  ('store_location_images','photo_library','Реальные фотографии конкретного магазина.','{{location.city}} · {{caption}}','status','archived','draft','all',19,'#0891b2','isvoi_site_content'),
-  ('product_offers','store','Цена, остаток и получение конкретного товара в конкретной точке.','{{product.title}} · {{location.city}} · {{stock_status}}','status','archived','draft','all',24,'#2563eb','isvoi_catalog')
+  ('store_locations','storefront','Города и действующие магазины сети. Не публикуйте непроверенные адреса и контакты.','{{city}} · {{name}}','status','archived','draft','all',18,'#0f766e','isvoi_site_content',false),
+  ('store_location_images','photo_library','Реальные фотографии конкретного магазина.','{{location.city}} · {{caption}}','status','archived','draft','all',19,'#0891b2','isvoi_site_content',true),
+  ('product_offers','store','Цена, остаток и получение конкретного товара в конкретной точке.','{{product.title}} · {{location.city}} · {{stock_status}}','status','archived','draft','all',24,'#2563eb','isvoi_catalog',false)
 ON CONFLICT (collection) DO UPDATE SET
   icon=EXCLUDED.icon,note=EXCLUDED.note,display_template=EXCLUDED.display_template,
   archive_field=EXCLUDED.archive_field,archive_value=EXCLUDED.archive_value,
   unarchive_value=EXCLUDED.unarchive_value,accountability=EXCLUDED.accountability,
-  sort=EXCLUDED.sort,color=EXCLUDED.color,"group"=EXCLUDED."group";
+  sort=EXCLUDED.sort,color=EXCLUDED.color,"group"=EXCLUDED."group",hidden=EXCLUDED.hidden;
 
 CREATE OR REPLACE FUNCTION pg_temp.isvoi_multicity_field(
   p_collection varchar,p_field varchar,p_interface varchar,p_display varchar,
@@ -463,6 +463,4 @@ UNION ALL SELECT 'multicity.belgorod_offers',count(*)::text FROM product_offers 
 UNION ALL SELECT 'multicity.collections',count(*)::text FROM directus_collections WHERE collection IN ('store_locations','store_location_images','product_offers');
 `;
 
-process.stdout.write(
-  rehearse ? `${sql.slice(0, sql.indexOf("\nCOMMIT;"))}\nROLLBACK;\n` : sql,
-);
+process.stdout.write(rehearse ? `${sql.slice(0, sql.indexOf("\nCOMMIT;"))}\nROLLBACK;\n` : sql);

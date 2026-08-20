@@ -69,6 +69,9 @@ WITH expected_collections(collection) AS (
     ('device_details'),
     ('accessory_details'),
     ('product_compatible_models'),
+    ('store_locations'),
+    ('store_location_images'),
+    ('product_offers'),
     ('device_passports'),
     ('trade_options'),
     ('site_pages'),
@@ -397,6 +400,8 @@ FROM (VALUES
   ('site_pages','isvoi_site_content'),('site_settings','isvoi_site_content'),
   ('navigation_items','isvoi_site_content'),('faq_items','isvoi_site_content'),
   ('products','isvoi_catalog'),('device_page_settings','isvoi_catalog'),
+  ('store_locations','isvoi_site_content'),('store_location_images','isvoi_site_content'),
+  ('product_offers','isvoi_catalog'),
   ('device_passports','isvoi_catalog'),('trade_options','isvoi_catalog'),
   ('leads','isvoi_sales'),('blog_posts','isvoi_blog'),
   ('catalog_import_batches','isvoi_imports'),
@@ -413,7 +418,7 @@ FROM directus_collections collection
 WHERE collection.collection IN (
   'page_sections','product_images','device_details','accessory_details',
   'product_compatible_models','lead_comments','blog_posts_tags',
-  'blog_posts_devices','blog_post_blocks'
+  'blog_posts_devices','blog_post_blocks','store_location_images'
 ) AND coalesce(collection.hidden,false)=false
 UNION ALL
 SELECT 'studio.human_collections.missing_ru_labels', count(*)::text

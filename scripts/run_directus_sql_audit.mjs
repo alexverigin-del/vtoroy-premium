@@ -345,6 +345,7 @@ const auditDefinitions = {
     zero: [
       "multicity.schema.tables_missing",
       "multicity.schema.relations_missing",
+      "multicity.studio.collection_layout",
       "multicity.content.belgorod_missing",
       "multicity.migration.products_without_offer",
       "multicity.offers.invalid_published",

@@ -13,6 +13,12 @@ WHERE (many_collection,many_field) IN (
   ('store_location_images','image'),('product_offers','product'),('product_offers','location')
 )
 UNION ALL
+SELECT 'multicity.studio.collection_layout',count(*)::text
+FROM directus_collections
+WHERE (collection='store_locations' AND ("group"<>'isvoi_site_content' OR coalesce(hidden,false)))
+   OR (collection='store_location_images' AND ("group"<>'isvoi_site_content' OR NOT coalesce(hidden,false)))
+   OR (collection='product_offers' AND ("group"<>'isvoi_catalog' OR coalesce(hidden,false)))
+UNION ALL
 SELECT 'multicity.content.belgorod_missing',CASE WHEN EXISTS (
   SELECT 1 FROM store_locations WHERE slug='belgorod' AND status='published' AND city='Белгород'
 ) THEN '0' ELSE '1' END

@@ -2159,3 +2159,14 @@ Next content-editing priorities:
   вычисляемых/импортных полей, убрать dual ownership цены/остатка и городских
   контактов, затем провести ручной desktop acceptance под каждой человеческой
   ролью. Эти задачи нельзя смешивать с metadata-only релизом.
+- Production rollout выполнен коммитами `87cbee0` и `fd90a37`. Перед apply
+  создан и проверен backup
+  `/opt/isvoi/backups/directus/20260820T132205Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.
+- Первый aggregate gate обнаружил drift старых audits относительно нового
+  compact bookmark-контракта. Исправление не ослабило операторский workflow:
+  сохранены четыре отдельные Club SLA views и две blog attribution views,
+  Catalog V3 и multicity audits переведены на актуальные названия/группы.
+  После повторного идемпотентного apply прошли `directus:audit-studio`, полный
+  `directus:audit:prod`, API policy, ops и content ownership; Directus
+  `11.17.4` вернулся в `health=ok`.

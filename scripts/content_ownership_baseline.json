@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-20T12:15:08.948Z",
+  "updatedAt": "2026-08-20T12:45:45.226Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -5963,105 +5963,105 @@
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 287,
+      "line": 286,
       "text": "Бронь",
       "id": "bf20bf5000ef1799"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 288,
+      "line": 287,
       "text": "Нет в наличии",
       "id": "0a7060828b0c5293"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 289,
+      "line": 288,
       "text": "В наличии",
       "id": "ee12223b1db5c736"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 373,
+      "line": 372,
       "text": "Совместимость по модели",
       "id": "f410220b0089efb4"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 374,
+      "line": 373,
       "text": "Универсальный аксессуар",
       "id": "b754b2d0ab4f0236"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 381,
+      "line": 380,
       "text": "Б/у",
       "id": "e9a97d04cb576ab0"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 381,
+      "line": 380,
       "text": "Грейд ${device.grade}",
       "id": "47260cce2d821a7c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 387,
+      "line": 386,
       "text": "Новое",
       "id": "d6d52553dfb8f98c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 413,
+      "line": 412,
       "text": "от ${selectedOffer.priceText}",
       "id": "c8d0ffd4c467aed5"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 433,
+      "line": 432,
       "text": "В наличии в городе ${selectedOffer.location.city}",
       "id": "b7964a944b5e4f0c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 435,
+      "line": 434,
       "text": "Доставка из города ${selectedOffer.location.city}${selectedOffer.deliveryEstimate ?",
       "id": "c228852b8d8ebbc4"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 438,
+      "line": 437,
       "text": "Нет в наличии в городе ${city}",
       "id": "c6650196ac014978"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 447,
+      "line": 446,
       "text": "Узнать о поступлении",
       "id": "7d7c26a6200ffdbb"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 449,
+      "line": 448,
       "text": "Забронировать",
       "id": "4c7cb1d4b7028946"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 450,
+      "line": 449,
       "text": "Записаться на просмотр",
       "id": "8828cf903958ac01"
     },
@@ -6125,8 +6125,8 @@
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
       "line": 58,
-      "text": "Все устройства",
-      "id": "0fed2055fb5952db"
+      "text": "Весь каталог",
+      "id": "d0978045a82131e8"
     },
     {
       "file": "apps/web/lib/site-content.ts",

@@ -444,6 +444,10 @@ SET label=replace(replace(replace(label,'Северодвинске','Белго
     page=CASE WHEN COALESCE(custom_url,url) IN ('/store','/belgorod') THEN NULL ELSE page END
 WHERE label LIKE '%Северодвин%' OR COALESCE(custom_url,url) IN ('/store','/belgorod');
 
+UPDATE navigation_items
+SET label='Весь каталог', label_short=NULL
+WHERE id='4b65c9e1-1f90-4f7d-9f89-3c8b8a001001';
+
 UPDATE site_pages
 SET title=replace(replace(replace(title,'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород'),
     meta_description=replace(replace(replace(COALESCE(meta_description,''),'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород')

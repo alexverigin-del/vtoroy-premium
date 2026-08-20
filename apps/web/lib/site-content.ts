@@ -55,7 +55,7 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "header-catalog-all",
-    label: "Все устройства",
+    label: "Весь каталог",
     url: "/catalog",
     location: "header",
     parent: "header-catalog",

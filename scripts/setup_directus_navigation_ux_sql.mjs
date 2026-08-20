@@ -66,7 +66,7 @@ SELECT pg_temp.isvoi_navigation_item(
   '3eaf7a0d-13a5-4a0e-a729-518f4c6db201','Каталог','/catalog','header',NULL,1,'page','catalog'
 );
 SELECT pg_temp.isvoi_navigation_item(
-  '4b65c9e1-1f90-4f7d-9f89-3c8b8a001001','Все устройства','/catalog','header',
+  '4b65c9e1-1f90-4f7d-9f89-3c8b8a001001','Весь каталог','/catalog','header',
   '3eaf7a0d-13a5-4a0e-a729-518f4c6db201',1,'page','catalog'
 );
 SELECT pg_temp.isvoi_navigation_item(

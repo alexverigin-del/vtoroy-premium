@@ -13,7 +13,7 @@ process.stdout.write(String.raw`
 WITH canonical_main(id,location,parent,label,url,item_role,sort) AS (
   VALUES
     ('3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'header'::varchar,NULL::uuid,'Каталог'::varchar,'/catalog'::varchar,'link'::varchar,1),
-    ('4b65c9e1-1f90-4f7d-9f89-3c8b8a001001'::uuid,'header','3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'Все устройства','/catalog','link',1),
+    ('4b65c9e1-1f90-4f7d-9f89-3c8b8a001001'::uuid,'header','3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'Весь каталог','/catalog','link',1),
     ('8e8217b9-6331-40c3-96f4-a98e8a1a69e4'::uuid,'header','3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'Техника','/catalog/tech','link',2),
     ('afa57d77-9c2f-4b65-9798-7ebe9b5bfdab'::uuid,'header','3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'Аксессуары','/catalog/accessories','link',3),
     ('64cf08a2-06fe-4a34-a6f2-7f264562d543'::uuid,'header',NULL::uuid,'Магазин в Белгороде','/belgorod','link',2),

@@ -103,14 +103,22 @@ WITH expected_collections(collection) AS (
 ),
 expected_bookmarks(role_name, collection, bookmark) AS (
   VALUES
-    ('ISVOI Editor', 'products', 'Нужны фото'),
-    ('ISVOI Editor', 'products', 'Нужен текст'),
+    ('ISVOI Editor', 'products', 'Требует заполнения'),
     ('ISVOI Editor', 'products', 'Нужен Passport или диагностика'),
-    ('ISVOI Editor', 'products', 'Нет цены или остатка'),
     ('ISVOI Editor', 'products', 'Готово к проверке'),
     ('ISVOI Editor', 'products', 'Опубликовано'),
     ('ISVOI Editor', 'products', 'Продано или скрыто'),
+    ('ISVOI Editor', 'products', 'Техника'),
+    ('ISVOI Editor', 'products', 'Аксессуары'),
     ('ISVOI Editor', 'products', 'Аксессуары без совместимости'),
+    ('ISVOI Advanced Editor', 'products', 'Требует заполнения'),
+    ('ISVOI Advanced Editor', 'products', 'Нужен Passport или диагностика'),
+    ('ISVOI Advanced Editor', 'products', 'Готово к проверке'),
+    ('ISVOI Advanced Editor', 'products', 'Опубликовано'),
+    ('ISVOI Advanced Editor', 'products', 'Продано или скрыто'),
+    ('ISVOI Advanced Editor', 'products', 'Техника'),
+    ('ISVOI Advanced Editor', 'products', 'Аксессуары'),
+    ('ISVOI Advanced Editor', 'products', 'Аксессуары без совместимости'),
     ('ISVOI Editor', 'site_pages', 'Опубликованные страницы'),
     ('ISVOI Editor', 'site_pages', 'Черновики страниц'),
     ('ISVOI Editor', 'page_sections', 'Главная'),
@@ -126,13 +134,40 @@ expected_bookmarks(role_name, collection, bookmark) AS (
     ('ISVOI Editor', 'navigation_items', 'Скрытые / архив'),
     ('ISVOI Editor', 'faq_items', 'Все активные FAQ'),
     ('ISVOI Editor', 'faq_items', 'Скрытые FAQ'),
+    ('ISVOI Editor', 'leads', 'Обработка заявок'),
     ('ISVOI Editor', 'leads', 'Новые заявки'),
     ('ISVOI Editor', 'leads', 'В работе'),
-    ('ISVOI Editor', 'leads', 'Без ответственного'),
     ('ISVOI Editor', 'leads', 'Просрочены'),
-    ('ISVOI Editor', 'leads', 'Без источника'),
+    ('ISVOI Editor', 'leads', 'Без ответственного'),
+    ('ISVOI Editor', 'leads', 'Club'),
+    ('ISVOI Editor', 'leads', 'Блог и UTM'),
     ('ISVOI Editor', 'leads', 'Закрытые заявки'),
-    ('ISVOI Editor', 'leads', 'Обработка заявок'),
+    ('ISVOI Advanced Editor', 'leads', 'Обработка заявок'),
+    ('ISVOI Advanced Editor', 'leads', 'Новые заявки'),
+    ('ISVOI Advanced Editor', 'leads', 'В работе'),
+    ('ISVOI Advanced Editor', 'leads', 'Просрочены'),
+    ('ISVOI Advanced Editor', 'leads', 'Без ответственного'),
+    ('ISVOI Advanced Editor', 'leads', 'Club'),
+    ('ISVOI Advanced Editor', 'leads', 'Блог и UTM'),
+    ('ISVOI Advanced Editor', 'leads', 'Закрытые заявки'),
+    ('ISVOI Editor', 'product_offers', 'Все предложения'),
+    ('ISVOI Editor', 'product_offers', 'Требуют внимания'),
+    ('ISVOI Editor', 'product_offers', 'Белгород'),
+    ('ISVOI Editor', 'product_offers', 'В наличии'),
+    ('ISVOI Editor', 'product_offers', 'Доступно с доставкой'),
+    ('ISVOI Editor', 'product_offers', 'Архив'),
+    ('ISVOI Advanced Editor', 'product_offers', 'Все предложения'),
+    ('ISVOI Advanced Editor', 'product_offers', 'Требуют внимания'),
+    ('ISVOI Advanced Editor', 'product_offers', 'Белгород'),
+    ('ISVOI Advanced Editor', 'product_offers', 'В наличии'),
+    ('ISVOI Advanced Editor', 'product_offers', 'Доступно с доставкой'),
+    ('ISVOI Advanced Editor', 'product_offers', 'Архив'),
+    ('ISVOI Editor', 'store_locations', 'Опубликованные магазины'),
+    ('ISVOI Editor', 'store_locations', 'Черновики магазинов'),
+    ('ISVOI Editor', 'store_locations', 'Архив магазинов'),
+    ('ISVOI Advanced Editor', 'store_locations', 'Опубликованные магазины'),
+    ('ISVOI Advanced Editor', 'store_locations', 'Черновики магазинов'),
+    ('ISVOI Advanced Editor', 'store_locations', 'Архив магазинов'),
     ('ISVOI Editor', 'catalog_import_batches', 'Новые партии'),
     ('ISVOI Editor', 'catalog_import_batches', 'В работе'),
     ('ISVOI Editor', 'catalog_import_batches', 'Проверены к импорту'),
@@ -400,8 +435,8 @@ FROM (VALUES
   ('site_pages','isvoi_site_content'),('site_settings','isvoi_site_content'),
   ('navigation_items','isvoi_site_content'),('faq_items','isvoi_site_content'),
   ('products','isvoi_catalog'),('device_page_settings','isvoi_catalog'),
-  ('store_locations','isvoi_site_content'),('store_location_images','isvoi_site_content'),
-  ('product_offers','isvoi_catalog'),
+  ('store_locations','isvoi_locations'),('store_location_images','isvoi_locations'),
+  ('product_offers','isvoi_locations'),
   ('device_passports','isvoi_catalog'),('trade_options','isvoi_catalog'),
   ('leads','isvoi_sales'),('blog_posts','isvoi_blog'),
   ('catalog_import_batches','isvoi_imports'),
@@ -499,6 +534,110 @@ WHERE policy.name='ISVOI Inventory Manager' AND permission.action='update'
     OR (permission.collection='inventory_import_issues' AND permission.fields<>'resolved,resolution_note')
     OR permission.collection='inventory_receipt_lines'
   )
+UNION ALL
+SELECT 'studio.fields.orphan_group_references', count(*)::text
+FROM directus_fields field
+LEFT JOIN directus_fields parent
+  ON parent.collection=field.collection AND parent.field=field."group"
+WHERE field."group" IS NOT NULL AND parent.field IS NULL
+UNION ALL
+SELECT 'studio.locations.group_missing', count(*)::text
+FROM (VALUES
+  ('isvoi_locations',NULL::text),
+  ('store_locations','isvoi_locations'),
+  ('store_location_images','isvoi_locations'),
+  ('product_offers','isvoi_locations')
+) expected(collection,group_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_collections collection
+  WHERE collection.collection=expected.collection
+    AND (expected.group_name IS NULL OR collection."group"=expected.group_name)
+    AND (expected.collection='store_location_images' OR coalesce(collection.hidden,false)=false)
+    AND (
+      expected.collection<>'isvoi_locations'
+      OR EXISTS (
+        SELECT 1 FROM jsonb_array_elements(coalesce(collection.translations,'[]'::json)::jsonb) translation
+        WHERE translation->>'language'='ru-RU' AND translation->>'translation'='Магазины и наличие'
+      )
+    )
+)
+UNION ALL
+SELECT 'studio.locations.form_groups_missing', count(*)::text
+FROM (VALUES
+  ('store_locations','group_publication'),('store_locations','group_contacts'),
+  ('store_locations','group_fulfillment'),('store_locations','group_content'),
+  ('store_locations','group_relations'),('store_locations','group_system'),
+  ('product_offers','group_identity'),('product_offers','group_stock'),
+  ('product_offers','group_fulfillment'),('product_offers','group_payment'),
+  ('product_offers','group_source'),('product_offers','group_system')
+) expected(collection,field_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection=expected.collection AND field.field=expected.field_name
+    AND field.interface='group-detail'
+)
+UNION ALL
+SELECT 'studio.locations.ungrouped_business_fields', count(*)::text
+FROM directus_fields field
+WHERE field.collection IN ('store_locations','product_offers')
+  AND field.field<>'id' AND field."group" IS NULL
+  AND coalesce(field.special,'') NOT LIKE '%group%'
+UNION ALL
+SELECT 'studio.navigation.permission_location_mismatch', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name IN ('ISVOI Editor','ISVOI Advanced Editor')
+  AND permission.collection='navigation_items' AND permission.action IN ('create','update')
+  AND (
+    permission.validation IS NULL
+    OR permission.validation::text NOT LIKE '%club_header%'
+    OR permission.validation::text NOT LIKE '%club_footer%'
+    OR permission.validation::text LIKE '%"mobile"%'
+    OR permission.validation::text LIKE '%"utility"%'
+    OR permission.validation::text LIKE '%"cta"%'
+  )
+UNION ALL
+SELECT 'studio.leads.club_context_group_missing', count(*)::text
+FROM (VALUES ('group_context')) expected(field_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='leads' AND field.field=expected.field_name
+    AND field.interface='group-detail' AND field.conditions::text LIKE '%club%'
+)
+UNION ALL
+SELECT 'studio.leads.club_context_fields_misgrouped', count(*)::text
+FROM (VALUES
+  ('club_offer'),('club_plan'),('club_term_months'),('club_budget_text'),
+  ('club_device_request'),('club_consent_version'),('club_consent_at')
+) expected(field_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='leads' AND field.field=expected.field_name
+    AND field."group"='group_context'
+)
+UNION ALL
+SELECT 'studio.club.settings_groups_missing', count(*)::text
+FROM (VALUES
+  ('group_story'),('group_passport'),('group_plans'),('group_rules'),
+  ('group_participation'),('group_final')
+) expected(field_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='club_page_settings' AND field.field=expected.field_name
+    AND field.interface='group-detail'
+)
+UNION ALL
+SELECT 'studio.bookmarks.too_many', count(*)::text
+FROM (
+  SELECT preset.role,preset.collection
+  FROM directus_presets preset
+  JOIN directus_roles role ON role.id=preset.role
+  WHERE preset."user" IS NULL AND preset.bookmark IS NOT NULL
+    AND role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
+    AND preset.collection IN ('products','leads','product_offers','store_locations')
+  GROUP BY preset.role,preset.collection
+  HAVING count(*)>8
+) excessive
 UNION ALL
 SELECT 'studio.bookmarks.duplicates', count(*)::text
 FROM (

@@ -13,9 +13,9 @@ https://api.isvoi.ru/admin/
 Use `Каталог` -> `Товары` (`products`) as the only editor-facing catalog entry
 point.
 
-- Start with bookmarks: `Нужны фото`, `Нужен текст`,
-  `Нужен Passport или диагностика`, `Нет цены или остатка`,
-  `Готово к проверке` and `Опубликовано`.
+- Start with bookmarks: `Требует заполнения`,
+  `Нужен Passport или диагностика`, `Готово к проверке`, `Опубликовано`,
+  `Техника` or `Аксессуары`.
 - Product photos are added in the `Фото` group through the related
   `product_images` rows. Do not paste URLs into JSON or legacy fields.
 - `Тип товара` controls the form: device fields are shown for equipment;
@@ -113,9 +113,11 @@ Detailed guide: `docs/global-content-editor-guide.md`.
 
 Use `Заявки` (`leads`).
 
-- Start from `Новые заявки`.
+- Start from `Обработка заявок` or `Новые заявки`.
 - Move active work to `В работе` or `Ждем ответа`.
 - Keep manager notes in `Заметка менеджера` or `История обработки`.
+- Для Club-заявки поля предложения, тарифа, срока, бюджета, модели и согласия
+  собраны в отдельной группе `Контекст Club`; у обычных заявок группа скрыта.
 - Для атрибуции блога проверяйте `Блог: заявки` после CTA в статье и
   `Блог: устройства` после переходов из статьи в карточки устройств. Оба
   представления опираются на `utm_source=blog`, `utm_campaign=<slug статьи>` и
@@ -124,6 +126,24 @@ Use `Заявки` (`leads`).
   everyday processing.
 
 Detailed guide: `docs/leads-workflow-editor-guide.md`.
+
+## Stores And Availability
+
+Use `Магазины и наличие` as the entry point for multicity operations.
+
+- `Магазины и города` (`store_locations`) owns the address, contacts,
+  fulfillment methods, city-page copy and related photos.
+- `Предложения магазинов` (`product_offers`) owns a product's local price,
+  stock and fulfillment terms. Start with `Требуют внимания`, then use
+  `Белгород`, `В наличии` or `Доступно с доставкой`.
+- Edit store photos from the parent store card; the technical image collection
+  stays hidden from the flat navigation.
+- `Яндекс Сплит` is shown only when `Яндекс Пэй` is enabled. Delivery terms are
+  shown only when the corresponding fulfillment method is active.
+- Do not treat a saved view as an access boundary. Add a location-filtered role
+  before onboarding an editor who must only see one city.
+
+Detailed guide: `docs/multicity-catalog.md`.
 
 ## Blog
 
@@ -268,16 +288,18 @@ These commands execute their SQL checks against production and return a
 non-zero exit code for blocker metrics. Use `npm run directus:audit:prod` as
 the aggregate release gate.
 
-The native Studio layout is reproduced by the idempotent final migration:
+The native Studio layout is reproduced by the idempotent migrations:
 
 ```bash
 npm run directus:setup:studio-ux-v2
+npm run directus:setup:studio-ux-v3
 ```
 
-Run it after older schema/setup scripts. It owns workflow groups, Russian
-labels, field conditions, role-scoped bookmarks and human permission
-allowlists. `--rollback` can be passed directly to the generator for a safe
-production transaction rehearsal.
+Run v3 after v2, multicity and navigation setup scripts. V2 owns the base
+workflow and role model; v3 groups stores/offers, restores the Club lead
+context, aligns navigation validation and keeps the four busiest collections
+to a compact set of role-parity bookmarks. `--rollback` can be passed directly
+to either generator for a safe production transaction rehearsal.
 
 ## Role Boundaries
 

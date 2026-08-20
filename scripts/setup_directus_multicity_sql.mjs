@@ -438,8 +438,10 @@ UPDATE navigation_items
 SET label=replace(replace(replace(label,'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород'),
     label_short=replace(replace(replace(COALESCE(label_short,label),'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород'),
     url=CASE WHEN COALESCE(custom_url,url)='/store' THEN '/belgorod' ELSE url END,
-    custom_url=CASE WHEN COALESCE(custom_url,url)='/store' THEN '/belgorod' ELSE custom_url END
-WHERE label LIKE '%Северодвин%' OR COALESCE(custom_url,url)='/store';
+    custom_url=CASE WHEN COALESCE(custom_url,url) IN ('/store','/belgorod') THEN '/belgorod' ELSE custom_url END,
+    link_type=CASE WHEN COALESCE(custom_url,url) IN ('/store','/belgorod') THEN 'custom' ELSE link_type END,
+    page=CASE WHEN COALESCE(custom_url,url) IN ('/store','/belgorod') THEN NULL ELSE page END
+WHERE label LIKE '%Северодвин%' OR COALESCE(custom_url,url) IN ('/store','/belgorod');
 
 UPDATE site_pages
 SET title=replace(replace(replace(title,'Северодвинске','Белгороде'),'Северодвинска','Белгорода'),'Северодвинск','Белгород'),

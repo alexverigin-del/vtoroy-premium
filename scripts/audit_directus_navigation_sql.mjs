@@ -16,7 +16,7 @@ WITH canonical_main(id,location,parent,label,url,item_role,sort) AS (
     ('4b65c9e1-1f90-4f7d-9f89-3c8b8a001001'::uuid,'header','3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'Все устройства','/catalog','link',1),
     ('8e8217b9-6331-40c3-96f4-a98e8a1a69e4'::uuid,'header','3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'Техника','/catalog/tech','link',2),
     ('afa57d77-9c2f-4b65-9798-7ebe9b5bfdab'::uuid,'header','3eaf7a0d-13a5-4a0e-a729-518f4c6db201'::uuid,'Аксессуары','/catalog/accessories','link',3),
-    ('64cf08a2-06fe-4a34-a6f2-7f264562d543'::uuid,'header',NULL::uuid,'Магазин в Северодвинске','/store','link',2),
+    ('64cf08a2-06fe-4a34-a6f2-7f264562d543'::uuid,'header',NULL::uuid,'Магазин в Белгороде','/belgorod','link',2),
     ('39c1e80f-c497-48ef-8665-1ac2f53ddb85'::uuid,'header',NULL::uuid,'Как мы проверяем','/passport','link',3),
     ('0cc75f59-e244-458c-86e0-e86b4b31b3b4'::uuid,'header',NULL::uuid,'Продать или обменять','/trade','link',4),
     ('e2d4a482-55aa-4c98-bd37-0c84bf279d01'::uuid,'header',NULL::uuid,'Блог','/blog','link',5),
@@ -29,7 +29,7 @@ WITH canonical_main(id,location,parent,label,url,item_role,sort) AS (
     ('5a465d6f-8a34-4654-9206-a4656219c5d3'::uuid,'footer','dd29ad40-2d90-4a92-8143-b8a9d22136ce'::uuid,'Как мы проверяем','/passport','link',1),
     ('747f3fb7-3c3e-4477-850d-8b833b7658f5'::uuid,'footer','dd29ad40-2d90-4a92-8143-b8a9d22136ce'::uuid,'Продать или обменять','/trade','link',2),
     ('98310275-35d5-4e2e-a248-5ddf871b68be'::uuid,'footer','dd29ad40-2d90-4a92-8143-b8a9d22136ce'::uuid,'Club — пилот','/club','link',3),
-    ('5a2a6b8d-73e6-4b15-9dfc-1b91c7f16001'::uuid,'footer','0c0ea292-7eb0-4983-af42-cd78f24d0a4b'::uuid,'Магазин в Северодвинске','/store','link',1),
+    ('5a2a6b8d-73e6-4b15-9dfc-1b91c7f16001'::uuid,'footer','0c0ea292-7eb0-4983-af42-cd78f24d0a4b'::uuid,'Магазин в Белгороде','/belgorod','link',1),
     ('e2d4a482-55aa-4c98-bd37-0c84bf279d02'::uuid,'footer','0c0ea292-7eb0-4983-af42-cd78f24d0a4b'::uuid,'Блог','/blog','link',2)
 ), expected_bookmarks(role_name,bookmark) AS (
   SELECT role_name,bookmark
@@ -126,6 +126,9 @@ WHERE item.id IS NULL
    OR item.parent IS DISTINCT FROM expected.parent
    OR item.label IS DISTINCT FROM expected.label
    OR item.url IS DISTINCT FROM expected.url
+   OR (expected.url='/belgorod' AND (
+     item.custom_url IS DISTINCT FROM '/belgorod' OR item.link_type IS DISTINCT FROM 'custom' OR item.page IS NOT NULL
+   ))
    OR item.item_role IS DISTINCT FROM expected.item_role
    OR item.sort IS DISTINCT FROM expected.sort
    OR item.is_active IS DISTINCT FROM true
@@ -167,7 +170,7 @@ WHERE item.location='footer' AND item.is_active=true
 UNION ALL
 SELECT 'navigation.site_city_mismatch', count(*)::text
 FROM site_settings
-WHERE COALESCE(city,'')<>'Северодвинск'
+WHERE COALESCE(city,'')<>'Белгород'
 UNION ALL
 SELECT 'navigation.studio.bookmarks_missing', count(*)::text
 FROM expected_bookmarks expected

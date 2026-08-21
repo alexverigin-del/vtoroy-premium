@@ -11,6 +11,7 @@
  *     node scripts/import_site_assets.mjs --dry-run
  *
  * Add --replace to patch page_sections.image/content even when already set.
+ * Add --replace-file to replace an existing Directus file while preserving its id.
  * Add --upload-only to only upload missing files and skip page_sections patches.
  * Add --only-title to sync one deterministic asset without touching the rest.
  */
@@ -32,7 +33,7 @@ const MIME_BY_EXT = new Map([
 
 const SECTION_ASSETS = [
   {
-    file: "hero-apple-like-single-phone-clean.webp",
+    file: "critical-home-hero.webp",
     title: "isvoi:site:home:hero",
     page: "home",
     section: "hero",
@@ -75,6 +76,7 @@ function parseArgs(argv) {
     folder: "ISVOI Site Assets",
     dryRun: false,
     replace: false,
+    replaceFile: false,
     uploadOnly: false,
     onlyTitle: "",
   };
@@ -82,6 +84,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--replace") args.replace = true;
+    else if (arg === "--replace-file") args.replaceFile = true;
     else if (arg === "--upload-only") args.uploadOnly = true;
     else if (arg === "--only-title") {
       args.onlyTitle = argv[++i];
@@ -241,9 +244,9 @@ RETURNING id;
   }
 }
 
-async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun }) {
+async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun, replaceFile }) {
   const existing = existingFiles.get(title);
-  if (existing?.id) {
+  if (existing?.id && !replaceFile) {
     console.log(`[skip] file ${title} -> ${existing.id}`);
     return existing.id;
   }
@@ -251,8 +254,8 @@ async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun 
     throw new Error(`Missing site asset: ${filePath}`);
   }
   if (dryRun) {
-    console.log(`[dry-run] upload ${filePath} as ${title}`);
-    return null;
+    console.log(`[dry-run] ${existing?.id ? "replace" : "upload"} ${filePath} as ${title}`);
+    return existing?.id ?? null;
   }
 
   const ext = path.extname(filePath).toLowerCase();
@@ -264,24 +267,27 @@ async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun 
   form.append("description", "ISVOI site/editorial image");
   form.append("file", new Blob([bytes], { type: mime }), path.basename(filePath));
 
-  const res = await fetch(`${cfg.url}/files?fields=id`, {
-    method: "POST",
+  const endpoint = existing?.id ? `/files/${existing.id}?fields=id` : "/files?fields=id";
+  const res = await fetch(`${cfg.url}${endpoint}`, {
+    method: existing?.id ? "PATCH" : "POST",
     headers: headers(cfg, null),
     body: form,
   });
   const text = await res.text();
   const json = text ? JSON.parse(text) : {};
   if (!res.ok) {
-    const fallbackId = await localDirectusFileInsert(filePath, { title, folder, mime });
+    const fallbackId = existing?.id
+      ? ""
+      : await localDirectusFileInsert(filePath, { title, folder, mime });
     if (fallbackId) {
       existingFiles.set(title, { id: fallbackId, title });
       console.log(`[upload:fallback] file ${title} -> ${fallbackId}`);
       return fallbackId;
     }
-    throw new Error(`POST /files failed: ${res.status} ${text}`);
+    throw new Error(`${existing?.id ? "PATCH" : "POST"} ${endpoint} failed: ${res.status} ${text}`);
   }
   existingFiles.set(title, json.data);
-  console.log(`[upload] file ${title} -> ${json.data.id}`);
+  console.log(`[${existing?.id ? "replace" : "upload"}] file ${title} -> ${json.data.id}`);
   return json.data.id;
 }
 
@@ -356,6 +362,7 @@ async function main() {
       title: asset.title,
       folder: folderId,
       dryRun: args.dryRun,
+      replaceFile: args.replaceFile,
     });
     if (!args.uploadOnly) {
       await patchSectionImage(cfg, asset, fileId, args);

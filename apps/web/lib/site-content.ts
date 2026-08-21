@@ -242,7 +242,7 @@ function homepageFallbackSection(
 const defaultHeroSection = homepageFallbackSection(
   "hero",
   "hero-fallback",
-  "/assets/hero-apple-like-single-phone-clean.webp",
+  "/assets/critical-home-hero.webp",
 );
 const defaultTrustSection = homepageFallbackSection("trust", "trust-fallback");
 const defaultCatalogPreviewSection = homepageFallbackSection(

@@ -2271,3 +2271,22 @@ Next content-editing priorities:
 - SQL сначала прошёл production rehearsal с `ROLLBACK`, затем был применён.
   После apply прошли `directus:audit-homepage-copy`,
   `directus:audit-page-sections`, content ownership и полный `web:verify`.
+
+### Hero с проверенной линейкой устройств (2026-08-21)
+
+- Главная использует предоставленную композицию из трёх смартфонов в разных
+  ракурсах. Исходный PNG без crop перекодирован в WebP `1672x941`, quality 86;
+  critical-файл `apps/web/public/assets/critical-home-hero.webp` весит около
+  39 KB.
+- Directus остаётся владельцем изображения: сохранены relation и UUID файла
+  `cd194999-a3b9-456a-a724-55ef798e10c5` в папке `ISVOI Site Assets`.
+  Локальный WebP является только first-viewport performance override; при смене
+  relation в Studio сайт автоматически вернётся к Directus asset URL.
+- Alt-текст хранится в `home.hero.content.visual.image_alt` и контролируется
+  точным homepage-copy audit. Passport overlay остаётся выключенным: отдельная
+  Passport-секция раскрывает проверку ниже по странице.
+- `import_site_assets.mjs --replace-file` заменяет бинарник существующего
+  Directus File через API, сохраняя UUID и не создавая orphan-файл.
+- Перед production apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260821T205329Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.

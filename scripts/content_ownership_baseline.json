@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-21T20:06:24.446Z",
+  "updatedAt": "2026-08-21T20:50:20.304Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -2141,168 +2141,161 @@
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 134,
-      "text": "Премиальный графитовый смартфон на светло-серой студийной поверхности",
-      "id": "b5901ef3b9b5985e"
-    },
-    {
-      "file": "apps/web/components/HomeSectionRenderer.tsx",
-      "kind": "string",
-      "line": 156,
+      "line": 151,
       "text": "I СВОИ Passport вещи",
       "id": "aabe1369e6197172"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 158,
+      "line": 153,
       "text": "256 GB · Графитовый",
       "id": "48cfeb64b48e2129"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 160,
+      "line": 155,
       "text": "Грейд",
       "id": "f48e8b84d9e8cfb3"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 165,
+      "line": 160,
       "text": "Батарея",
       "id": "fed069a28144714d"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 166,
+      "line": 161,
       "text": "не вскрывался",
       "id": "1a2b671d249e2922"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 166,
+      "line": 161,
       "text": "Ремонт",
       "id": "313baa3ed0750eae"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 167,
+      "line": 162,
       "text": "работает",
       "id": "d803e56ed2fe7b1d"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 168,
+      "line": 163,
       "text": "Влага",
       "id": "00461cc620c79dc1"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 168,
+      "line": 163,
       "text": "следов нет",
       "id": "4c0fd037d95373d4"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 174,
+      "line": 169,
       "text": "Предварительная стоимость при обновлении через 6 месяцев",
       "id": "a4e3326204d44287"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 176,
+      "line": 171,
       "text": "до 42 000 ₽",
       "id": "308650ab066401fe"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 177,
+      "line": 172,
       "text": "Гарантия",
       "id": "6508b3958454e966"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 178,
+      "line": 173,
       "text": "90 дней",
       "id": "11c3a150801605e7"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 220,
+      "line": 213,
       "text": "Подобрать проверенную вещь",
       "id": "87aebe5ab3724cd6"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 222,
+      "line": 215,
       "text": "Оценить свою вещь",
       "id": "e3b53ff6f5e2adbf"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 227,
+      "line": 220,
       "text": "В кругу своих",
       "id": "cf6f8eb7b0513f1d"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 227,
+      "line": 220,
       "text": "Магазин в Белгороде",
       "id": "bf581adcdfff9024"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 227,
+      "line": 220,
       "text": "С историей и проверкой",
       "id": "b7823b9812c2358a"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 260,
+      "line": 253,
       "text": "Принципы клуба",
       "id": "e22925e6bb4dcbc8"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 405,
+      "line": 398,
       "text": "Правила круга",
       "id": "905d150da09930ae"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 488,
+      "line": 481,
       "text": "Отзывы",
       "id": "849a24d49ca97907"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 536,
+      "line": 529,
       "text": "Частые вопросы",
       "id": "286a800bddd544d1"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
-      "line": 566,
+      "line": 559,
       "text": "Выберите свой сценарий",
       "id": "8fe5a2c8f1466b70"
     },

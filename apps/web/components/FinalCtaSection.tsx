@@ -2,18 +2,23 @@
 
 import type { FormEvent } from "react";
 import { useId, useState } from "react";
+import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { RichText } from "./RichText";
+import { normalizeSiteUrl } from "./site-chrome-utils";
 import { useLeadIntake } from "./useLeadIntake";
 import {
   homeSectionLabelClass,
   leadFieldClass,
   leadHoneypotClass,
+  primaryCtaClass,
+  secondaryCtaClass,
   submitButtonClass,
 } from "./ui-classes";
 
 type FinalCtaForm = {
+  showScenario: boolean;
   scenarioLabel: string;
   scenarioAriaLabel: string;
   scenarioOptions: string[];
@@ -24,6 +29,17 @@ type FinalCtaForm = {
   submitLabel: string;
   consentNote: string;
   note: string;
+};
+
+type ClosingContent = {
+  headline: string;
+  body: string;
+  brand: string;
+  tagline: string;
+  primaryCtaLabel: string;
+  primaryCtaUrl: string;
+  secondaryCtaLabel: string;
+  secondaryCtaUrl: string;
 };
 
 function stringList(value: unknown): string[] {
@@ -47,6 +63,7 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
   const note = text("note", "note", "Оставьте контакт, и мы предложим спокойный следующий шаг.");
 
   return {
+    showScenario: record.showScenario !== false && record.show_scenario !== false,
     scenarioLabel: text("scenarioLabel", "scenario_label", "Что хотите сделать?"),
     scenarioAriaLabel: text("scenarioAriaLabel", "scenario_aria_label", "Сценарий обращения"),
     scenarioOptions:
@@ -73,6 +90,24 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
   };
 }
 
+function closingContent(value: unknown): ClosingContent | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const text = (key: string): string =>
+    typeof record[key] === "string" ? String(record[key]) : "";
+  const closing = {
+    headline: text("headline"),
+    body: text("body"),
+    brand: text("brand"),
+    tagline: text("tagline"),
+    primaryCtaLabel: text("primary_cta_label"),
+    primaryCtaUrl: text("primary_cta_url"),
+    secondaryCtaLabel: text("secondary_cta_label"),
+    secondaryCtaUrl: text("secondary_cta_url"),
+  };
+  return Object.values(closing).some(Boolean) ? closing : null;
+}
+
 export function FinalCtaSection({
   section,
   source = "home_final_cta",
@@ -86,12 +121,13 @@ export function FinalCtaSection({
       ? proof
       : ["варианты под задачу", "без агрессивных продаж", "сначала проверка - потом решение"];
   const form = finalCtaFormContent(section.content.form);
+  const closing = closingContent(section.content.closing);
   const footerNote =
     typeof section.content.footerNote === "string"
       ? section.content.footerNote
       : typeof section.content.footer_note === "string"
         ? section.content.footer_note
-        : "Белгород. Действующий магазин сети I СВОИ и понятный контакт перед визитом.";
+        : "";
 
   const [scenario, setScenario] = useState(form.scenarioOptions[0] ?? "");
   const [device, setDevice] = useState("");
@@ -162,23 +198,30 @@ export function FinalCtaSection({
             aria-busy={state === "submitting"}
             className="rounded-card border border-hairline bg-frost p-4 md:p-5"
           >
-            <label className="block text-sm font-medium text-carbon" htmlFor={scenarioId}>
-              <span>{form.scenarioLabel}</span>
-              <select
-                id={scenarioId}
-                name="scenario"
-                aria-label={form.scenarioAriaLabel}
-                value={scenario}
-                onChange={(event) => setScenario(event.target.value)}
-                className={leadFieldClass}
-              >
-                {form.scenarioOptions.map((option) => (
-                  <option key={option}>{option}</option>
-                ))}
-              </select>
-            </label>
+            {form.showScenario ? (
+              <label className="block text-sm font-medium text-carbon" htmlFor={scenarioId}>
+                <span>{form.scenarioLabel}</span>
+                <select
+                  id={scenarioId}
+                  name="scenario"
+                  aria-label={form.scenarioAriaLabel}
+                  value={scenario}
+                  onChange={(event) => setScenario(event.target.value)}
+                  className={leadFieldClass}
+                >
+                  {form.scenarioOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <input name="scenario" type="hidden" value={scenario} />
+            )}
 
-            <label className="mt-4 block text-sm font-medium text-carbon" htmlFor={deviceId}>
+            <label
+              className={cn("block text-sm font-medium text-carbon", form.showScenario && "mt-4")}
+              htmlFor={deviceId}
+            >
               <span>{form.deviceLabel}</span>
               <input
                 id={deviceId}
@@ -253,7 +296,49 @@ export function FinalCtaSection({
           </form>
         </div>
 
-        <p className="mt-6 text-sm leading-relaxed text-ash">{footerNote}</p>
+        {footerNote ? <p className="mt-6 text-sm leading-relaxed text-ash">{footerNote}</p> : null}
+
+        {closing ? (
+          <div className="mx-auto mt-16 max-w-copy text-center md:mt-20">
+            {closing.headline ? (
+              <h2 className="text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+                {closing.headline}
+              </h2>
+            ) : null}
+            {closing.body ? (
+              <RichText
+                className="mt-5 text-copy leading-relaxed text-graphite"
+                html={closing.body}
+              />
+            ) : null}
+            {closing.brand ? (
+              <strong className="mt-8 block text-xl font-semibold text-carbon">
+                {closing.brand}
+              </strong>
+            ) : null}
+            {closing.tagline ? <p className="mt-2 text-graphite">{closing.tagline}</p> : null}
+            {closing.primaryCtaLabel || closing.secondaryCtaLabel ? (
+              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                {closing.primaryCtaLabel ? (
+                  <Link
+                    href={normalizeSiteUrl(closing.primaryCtaUrl || "/catalog")}
+                    className={primaryCtaClass}
+                  >
+                    {closing.primaryCtaLabel}
+                  </Link>
+                ) : null}
+                {closing.secondaryCtaLabel ? (
+                  <Link
+                    href={normalizeSiteUrl(closing.secondaryCtaUrl || "/passport")}
+                    className={secondaryCtaClass}
+                  >
+                    {closing.secondaryCtaLabel}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </section>
   );

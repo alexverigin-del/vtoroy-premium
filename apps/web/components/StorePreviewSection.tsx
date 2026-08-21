@@ -13,8 +13,8 @@ type StepItem = {
 
 type VisualContent = {
   imageAlt: string;
-  captionTitle: string;
-  captionText: string;
+  captionTitle?: string;
+  captionText?: string;
 };
 
 const DEFAULT_STEPS: StepItem[] = [
@@ -70,13 +70,8 @@ function visualContent(value: unknown): VisualContent {
       "image_alt",
       "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
     ),
-    captionTitle: textField(record, "captionTitle", "caption_title", "Store как точка доверия."),
-    captionText: textField(
-      record,
-      "captionText",
-      "caption_text",
-      "Чистая витрина, видимая ответственность и спокойная консультация без давления.",
-    ),
+    captionTitle: textField(record, "captionTitle", "caption_title", "") || undefined,
+    captionText: textField(record, "captionText", "caption_text", "") || undefined,
   };
 }
 
@@ -85,6 +80,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
   const steps = stepList(section.content.steps);
   const renderedSteps = steps.length > 0 ? steps : DEFAULT_STEPS;
   const imageSrc = section.image || "/assets/store-real-premium-hero.webp";
+  const note = typeof section.content.note === "string" ? section.content.note : "";
 
   return (
     <section className="bg-frost py-16 md:py-20" id="store">
@@ -113,14 +109,20 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             sizes="(min-width: 1180px) 1180px, 92vw"
             className="object-cover"
           />
-          <div className="absolute inset-x-4 bottom-4 rounded-card border border-hairline bg-white p-4 md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
-            <strong className="block text-base font-semibold text-carbon">
-              {visual.captionTitle}
-            </strong>
-            <span className="mt-2 block text-sm leading-relaxed text-graphite">
-              {visual.captionText}
-            </span>
-          </div>
+          {visual.captionTitle || visual.captionText ? (
+            <div className="absolute inset-x-4 bottom-4 rounded-card border border-hairline bg-white p-4 md:inset-x-auto md:bottom-6 md:left-6 md:max-w-overlay md:p-5">
+              {visual.captionTitle ? (
+                <strong className="block text-base font-semibold text-carbon">
+                  {visual.captionTitle}
+                </strong>
+              ) : null}
+              {visual.captionText ? (
+                <span className="mt-2 block text-sm leading-relaxed text-graphite">
+                  {visual.captionText}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <ol className="mt-8 grid overflow-hidden rounded-card border border-hairline bg-white md:grid-cols-2 lg:grid-cols-4">
@@ -147,6 +149,13 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
             );
           })}
         </ol>
+
+        {note ? (
+          <RichText
+            className="mx-auto mt-8 max-w-copy text-center text-copy leading-relaxed text-graphite"
+            html={note}
+          />
+        ) : null}
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (
           <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">

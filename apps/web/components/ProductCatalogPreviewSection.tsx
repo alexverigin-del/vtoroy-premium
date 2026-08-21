@@ -17,6 +17,7 @@ export function ProductCatalogPreviewSection({
     typeof section.content.limit === "number" && section.content.limit > 0
       ? section.content.limit
       : 8;
+  const note = typeof section.content.note === "string" ? section.content.note : "";
   return (
     <section className="bg-white py-16 md:py-20" id="catalog">
       <div className="mx-auto max-w-page px-4 md:px-6">
@@ -48,16 +49,30 @@ export function ProductCatalogPreviewSection({
           </p>
         )}
 
+        {note ? (
+          <RichText
+            className="mx-auto mt-8 max-w-copy text-center text-copy leading-relaxed text-graphite"
+            html={note}
+          />
+        ) : null}
+
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link
-            href={normalizeSiteUrl(section.primaryCtaUrl || "/catalog")}
-            className={primaryCtaClass}
-          >
-            {section.primaryCtaLabel || "Смотреть каталог"}
-          </Link>
-          <Link href="/catalog/accessories" className={secondaryCtaClass}>
-            Смотреть аксессуары
-          </Link>
+          {section.primaryCtaLabel ? (
+            <Link
+              href={normalizeSiteUrl(section.primaryCtaUrl || "/catalog")}
+              className={primaryCtaClass}
+            >
+              {section.primaryCtaLabel}
+            </Link>
+          ) : null}
+          {section.secondaryCtaLabel ? (
+            <Link
+              href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog/accessories")}
+              className={secondaryCtaClass}
+            >
+              {section.secondaryCtaLabel}
+            </Link>
+          ) : null}
         </div>
       </div>
     </section>

@@ -21,24 +21,6 @@ type ValuationContent = {
   amount: string;
 };
 
-const DEFAULT_CHOICES: ChoiceItem[] = [
-  {
-    title: "Получить деньги сейчас",
-    text: "Спокойный выкуп по честной оценке. Деньги в день обращения, без ожидания случайного покупателя.",
-    icon: "money",
-  },
-  {
-    title: "Передать дальше через комиссию",
-    text: "Мы проводим вещь дальше за вас - с Passport и проверкой. Вы получаете больше, круг получает проверенную вещь.",
-    icon: "chart",
-  },
-  {
-    title: "Обновиться на следующую",
-    text: "Передаёте текущую вещь в зачёт и доплачиваете разницу. Обновление без продажи и хлопот.",
-    icon: "swap",
-  },
-];
-
 function textField(
   record: Record<string, unknown>,
   camelKey: string,
@@ -67,18 +49,30 @@ function choiceList(value: unknown): ChoiceItem[] {
   });
 }
 
-function valuationContent(value: unknown): ValuationContent {
+function valuationContent(value: unknown): ValuationContent | null {
   const record = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  if (Object.keys(record).length === 0) return null;
 
   return {
-    heading: textField(record, "heading", "heading", "Пример оценки и перехода"),
-    fromDevice: textField(record, "fromDevice", "from_device", "iPhone 12"),
-    fromNote: textField(record, "fromNote", "from_note", "ваш, грейд B · 128 GB"),
-    toDevice: textField(record, "toDevice", "to_device", "iPhone 13 Pro / 14 Pro"),
-    toNote: textField(record, "toNote", "to_note", "проверенный, с Passport"),
-    label: textField(record, "label", "label", "Доплата при переходе - от"),
-    amount: textField(record, "amount", "amount", "19 900 ₽"),
+    heading: textField(record, "heading", "heading", ""),
+    fromDevice: textField(record, "fromDevice", "from_device", ""),
+    fromNote: textField(record, "fromNote", "from_note", ""),
+    toDevice: textField(record, "toDevice", "to_device", ""),
+    toNote: textField(record, "toNote", "to_note", ""),
+    label: textField(record, "label", "label", ""),
+    amount: textField(record, "amount", "amount", ""),
   };
+}
+
+function stepList(value: unknown): { title: string; text: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title : "";
+    const text = typeof record.text === "string" ? record.text : "";
+    return title ? [{ title, text }] : [];
+  });
 }
 
 function Icon({ name }: { name: string }) {
@@ -145,7 +139,7 @@ function ArrowIcon() {
 
 export function TradePreviewSection({ section }: { section: PageSection }) {
   const choices = choiceList(section.content.choices);
-  const renderedChoices = choices.length > 0 ? choices : DEFAULT_CHOICES;
+  const renderedChoices = choices;
   const choicesGridClass =
     renderedChoices.length === 1
       ? "md:grid-cols-1"
@@ -153,6 +147,8 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
         ? "md:grid-cols-2"
         : "md:grid-cols-3";
   const valuation = valuationContent(section.content.valuation);
+  const steps = stepList(section.content.steps);
+  const note = typeof section.content.note === "string" ? section.content.note : "";
 
   return (
     <section className="bg-white py-16 md:py-20" id="trade">
@@ -173,48 +169,84 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-card border border-hairline bg-frost">
-          <div className={cn("grid", choicesGridClass)}>
-            {renderedChoices.map((choice, index) => (
-              <div
-                key={`${choice.title}-${choice.text}`}
-                className={cn(
-                  "p-5 md:p-6",
-                  index > 0 ? "border-t border-hairline md:border-l md:border-t-0" : "",
-                )}
-              >
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-card bg-white text-link-blue">
-                  <Icon name={choice.icon} />
-                </span>
-                <div className="mt-4 text-lg font-semibold leading-tight text-carbon">
-                  {choice.title}
+        {renderedChoices.length > 0 ? (
+          <div className="mt-10 overflow-hidden rounded-card border border-hairline bg-frost">
+            <div className={cn("grid", choicesGridClass)}>
+              {renderedChoices.map((choice, index) => (
+                <div
+                  key={`${choice.title}-${choice.text}`}
+                  className={cn(
+                    "p-5 md:p-6",
+                    index > 0 ? "border-t border-hairline md:border-l md:border-t-0" : "",
+                  )}
+                >
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-card bg-white text-link-blue">
+                    <Icon name={choice.icon} />
+                  </span>
+                  <div className="mt-4 text-lg font-semibold leading-tight text-carbon">
+                    {choice.title}
+                  </div>
+                  <div className="mt-3 text-sm leading-relaxed text-graphite">{choice.text}</div>
                 </div>
-                <div className="mt-3 text-sm leading-relaxed text-graphite">{choice.text}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
 
-        <div className="mt-8 rounded-card border border-hairline bg-frost p-5 md:p-6">
-          <div className={homeSectionLabelClass}>{valuation.heading}</div>
-          <div className="mt-5 grid items-center gap-4 md:grid-cols-trade">
-            <div className="rounded-card border border-hairline bg-white p-5">
-              <div className="text-xl font-semibold text-carbon">{valuation.fromDevice}</div>
-              <div className="mt-2 text-sm leading-relaxed text-ash">{valuation.fromNote}</div>
+        {steps.length > 0 ? (
+          <ol className="mx-auto mt-8 flex max-w-content flex-col items-stretch justify-center overflow-hidden rounded-card border border-hairline bg-frost md:flex-row md:items-center">
+            {steps.map((step, index) => (
+              <li
+                key={step.title}
+                className="flex min-w-0 flex-1 flex-col items-center md:flex-row"
+              >
+                {index > 0 ? (
+                  <span className="block px-2 text-2xl text-link-blue" aria-hidden="true">
+                    ↓
+                  </span>
+                ) : null}
+                <div className="w-full p-5 text-center">
+                  <strong className="text-carbon">{step.title}</strong>
+                  {step.text ? (
+                    <span className="mt-1 block text-sm leading-relaxed text-graphite">
+                      {step.text}
+                    </span>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        ) : null}
+
+        {valuation ? (
+          <div className="mt-8 rounded-card border border-hairline bg-frost p-5 md:p-6">
+            <div className={homeSectionLabelClass}>{valuation.heading}</div>
+            <div className="mt-5 grid items-center gap-4 md:grid-cols-trade">
+              <div className="rounded-card border border-hairline bg-white p-5">
+                <div className="text-xl font-semibold text-carbon">{valuation.fromDevice}</div>
+                <div className="mt-2 text-sm leading-relaxed text-ash">{valuation.fromNote}</div>
+              </div>
+              <div className="flex justify-center">
+                <ArrowIcon />
+              </div>
+              <div className="rounded-card border border-hairline bg-white p-5">
+                <div className="text-xl font-semibold text-carbon">{valuation.toDevice}</div>
+                <div className="mt-2 text-sm leading-relaxed text-ash">{valuation.toNote}</div>
+              </div>
             </div>
-            <div className="flex justify-center">
-              <ArrowIcon />
-            </div>
-            <div className="rounded-card border border-hairline bg-white p-5">
-              <div className="text-xl font-semibold text-carbon">{valuation.toDevice}</div>
-              <div className="mt-2 text-sm leading-relaxed text-ash">{valuation.toNote}</div>
+            <div className="mt-5 rounded-card bg-carbon px-5 py-4 text-white">
+              <div className="text-sm text-white/70">{valuation.label}</div>
+              <div className="mt-1 text-3xl font-semibold">{valuation.amount}</div>
             </div>
           </div>
-          <div className="mt-5 rounded-card bg-carbon px-5 py-4 text-white">
-            <div className="text-sm text-white/70">{valuation.label}</div>
-            <div className="mt-1 text-3xl font-semibold">{valuation.amount}</div>
-          </div>
-        </div>
+        ) : null}
+
+        {note ? (
+          <RichText
+            className="mx-auto mt-8 max-w-copy text-center text-copy leading-relaxed text-graphite"
+            html={note}
+          />
+        ) : null}
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (
           <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">

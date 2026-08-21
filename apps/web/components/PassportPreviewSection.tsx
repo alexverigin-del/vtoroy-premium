@@ -18,15 +18,19 @@ type PassportRow = {
 };
 
 type PassportCard = {
+  heading: string;
   device: string;
   sub: string;
   grade: string;
   gradeLabel: string;
   rows: PassportRow[];
-  exitLabel: string;
-  exitValue: string;
+  exitLabel?: string;
+  exitValue?: string;
   warranty: string;
   warrantyStrong: string;
+  status: string;
+  ctaLabel: string;
+  ctaUrl: string;
 };
 
 const DEFAULT_FEATURES: FeatureItem[] = [
@@ -105,20 +109,19 @@ function passportCard(value: unknown): PassportCard {
   const rows = passportRows(record.rows);
 
   return {
+    heading: textField(record, "heading", "heading", ""),
     device: textField(record, "device", "device", "iPhone 13 Pro"),
-    sub: textField(record, "sub", "sub", "256 GB · Графитовый · IMEI ···4821"),
+    sub: textField(record, "sub", "sub", "256 GB · Graphite"),
     grade: textField(record, "grade", "grade", "A-"),
     gradeLabel: textField(record, "gradeLabel", "grade_label", "Грейд"),
     rows: rows.length > 0 ? rows : DEFAULT_ROWS,
-    exitLabel: textField(
-      record,
-      "exitLabel",
-      "exit_label",
-      "Предварительная стоимость при обновлении через 6 месяцев",
-    ),
-    exitValue: textField(record, "exitValue", "exit_value", "до 42 000 ₽"),
-    warranty: textField(record, "warranty", "warranty", "Гарантия"),
-    warrantyStrong: textField(record, "warrantyStrong", "warranty_strong", "90 дней"),
+    exitLabel: textField(record, "exitLabel", "exit_label", "") || undefined,
+    exitValue: textField(record, "exitValue", "exit_value", "") || undefined,
+    warranty: textField(record, "warranty", "warranty", ""),
+    warrantyStrong: textField(record, "warrantyStrong", "warranty_strong", ""),
+    status: textField(record, "status", "status", ""),
+    ctaLabel: textField(record, "ctaLabel", "cta_label", ""),
+    ctaUrl: textField(record, "ctaUrl", "cta_url", ""),
   };
 }
 
@@ -218,6 +221,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
   const features = featureList(section.content.features);
   const renderedFeatures = features.length > 0 ? features : DEFAULT_FEATURES;
   const card = passportCard(section.content.passport);
+  const note = typeof section.content.note === "string" ? section.content.note : "";
 
   return (
     <section
@@ -258,6 +262,10 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             ))}
           </ul>
 
+          {note ? (
+            <RichText className="mt-6 text-copy leading-relaxed text-graphite" html={note} />
+          ) : null}
+
           {section.primaryCtaLabel || section.secondaryCtaLabel ? (
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               {section.primaryCtaLabel ? (
@@ -280,7 +288,15 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
 
-        <div className="rounded-card border border-hairline bg-white p-4 md:p-6">
+        <div
+          className="rounded-card border border-hairline bg-white p-4 md:p-6"
+          id="passport-example"
+        >
+          {card.heading ? (
+            <div className="mb-5 text-xl font-semibold leading-tight text-carbon">
+              {card.heading}
+            </div>
+          ) : null}
           <div className="flex items-start justify-between gap-4 border-b border-hairline pb-5">
             <div>
               <div className="text-xl font-semibold text-carbon">{card.device}</div>
@@ -296,27 +312,43 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             {card.rows.map((row) => (
               <div
                 key={`${row.label}-${row.value}`}
-                className="flex items-center justify-between gap-4 rounded-card bg-frost px-4 py-3 text-sm"
+                className="flex items-start justify-between gap-4 rounded-card bg-frost px-4 py-3 text-sm"
               >
                 <span className="flex items-center gap-2 text-graphite">
                   <span className={cn("h-2 w-2 rounded-full", dotClasses(row.state))} />
                   {row.label}
                 </span>
-                <span className="font-semibold text-carbon">{row.value}</span>
+                <span className="whitespace-pre-line text-right font-semibold leading-relaxed text-carbon">
+                  {row.value}
+                </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-5 rounded-card bg-carbon px-5 py-4 text-white">
-            <span className="block text-sm text-white/70">{card.exitLabel}</span>
-            <span className="mt-1 block text-2xl font-semibold">{card.exitValue}</span>
-          </div>
+          {card.exitLabel && card.exitValue ? (
+            <div className="mt-5 rounded-card bg-carbon px-5 py-4 text-white">
+              <span className="block text-sm text-white/70">{card.exitLabel}</span>
+              <span className="mt-1 block text-2xl font-semibold">{card.exitValue}</span>
+            </div>
+          ) : null}
 
           <div className="mt-5 flex items-center justify-between gap-4">
-            <span className="text-sm text-graphite">
-              {card.warranty} <b className="text-carbon">{card.warrantyStrong}</b> · проверка
-              пройдена
-            </span>
+            <div className="text-sm text-graphite">
+              {card.warranty || card.warrantyStrong ? (
+                <span>
+                  {card.warranty} <b className="text-carbon">{card.warrantyStrong}</b>
+                </span>
+              ) : null}
+              {card.status ? <strong className="block text-success">{card.status}</strong> : null}
+              {card.ctaLabel && card.ctaUrl ? (
+                <Link
+                  className="mt-2 inline-flex font-semibold text-link-blue hover:underline"
+                  href={normalizeSiteUrl(card.ctaUrl)}
+                >
+                  {card.ctaLabel}
+                </Link>
+              ) : null}
+            </div>
             <PassportQr />
           </div>
         </div>

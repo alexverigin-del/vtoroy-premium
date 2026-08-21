@@ -92,6 +92,7 @@ export interface NavigationItem {
 export interface SectionContent {
   // hero
   assurance?: string[];
+  show_passport?: boolean;
   // trust
   items?: { title: string; text: string }[];
   testimonials?: {
@@ -170,6 +171,8 @@ export interface SectionContent {
   // final_cta
   proof?: string[];
   form?: {
+    showScenario?: boolean;
+    show_scenario?: boolean;
     scenarioLabel?: string;
     scenario_label?: string;
     scenarioAriaLabel?: string;
@@ -192,9 +195,20 @@ export interface SectionContent {
   };
   footerNote?: string;
   footer_note?: string;
+  closing?: {
+    headline?: string;
+    body?: string;
+    brand?: string;
+    tagline?: string;
+    primary_cta_label?: string;
+    primary_cta_url?: string;
+    secondary_cta_label?: string;
+    secondary_cta_url?: string;
+  };
   // passport_preview
   features?: { title: string; text: string; icon?: string }[];
   passport?: {
+    heading?: string;
     ariaLabel?: string;
     aria_label?: string;
     device?: string;
@@ -210,12 +224,18 @@ export interface SectionContent {
     warranty?: string;
     warrantyStrong?: string;
     warranty_strong?: string;
+    status?: string;
+    ctaLabel?: string;
+    cta_label?: string;
+    ctaUrl?: string;
+    cta_url?: string;
   };
   // trade_calculator_intro
   note?: string;
   disclaimer?: string;
   // faq
   faqKeys?: string[];
+  faq_keys?: string[];
   // passport_disclaimer / generic text
   text?: string;
   // escape hatch for anything else

@@ -224,6 +224,8 @@ function HomeHeroSection({ section }: { section: PageSection }) {
     assurance.length > 0
       ? assurance
       : ["В кругу своих", "С историей и проверкой", "Магазин в Белгороде"];
+  const note = typeof section.content.note === "string" ? section.content.note : "";
+  const showPassport = section.content.show_passport !== false;
 
   return (
     <section className="mx-auto max-w-page px-4 pb-14 pt-10 text-center md:px-6 md:pb-20 md:pt-20">
@@ -266,6 +268,8 @@ function HomeHeroSection({ section }: { section: PageSection }) {
         ))}
       </div>
 
+      {note ? <p className="mx-auto mt-5 max-w-copy font-semibold text-carbon">{note}</p> : null}
+
       <div className="relative mx-auto mt-8 min-h-hero-visual max-w-stage overflow-hidden rounded-img bg-frost md:mt-10 md:min-h-hero-visual-lg">
         <Image
           src={imageSrc}
@@ -277,47 +281,49 @@ function HomeHeroSection({ section }: { section: PageSection }) {
           sizes="(min-width: 1180px) 1040px, 92vw"
           className="object-cover"
         />
-        <div className={heroPassportCardClass} aria-label={passport.ariaLabel}>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-base font-semibold text-carbon">{passport.device}</div>
-              <div className="mt-1 text-sm text-ash">{passport.sub}</div>
-            </div>
-            <div className="rounded-card border border-hairline bg-frost px-3 py-2 text-center">
-              <b className="block text-lg text-carbon">{passport.grade}</b>
-              <span className="text-caption uppercase tracking-caption text-ash">
-                {passport.gradeLabel}
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-2">
-            {passport.rows.map((row) => (
-              <div
-                key={`${row.label}-${row.value}`}
-                className="flex items-center justify-between gap-4 rounded-card bg-frost px-3 py-2 text-sm"
-              >
-                <span className="flex items-center gap-2 text-graphite">
-                  <span className={cn("h-2 w-2 rounded-full", statusClasses(row.state))} />
-                  {row.label}
-                </span>
-                <span className="font-medium text-carbon">{row.value}</span>
+        {showPassport ? (
+          <div className={heroPassportCardClass} aria-label={passport.ariaLabel}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-base font-semibold text-carbon">{passport.device}</div>
+                <div className="mt-1 text-sm text-ash">{passport.sub}</div>
               </div>
-            ))}
-          </div>
+              <div className="rounded-card border border-hairline bg-frost px-3 py-2 text-center">
+                <b className="block text-lg text-carbon">{passport.grade}</b>
+                <span className="text-caption uppercase tracking-caption text-ash">
+                  {passport.gradeLabel}
+                </span>
+              </div>
+            </div>
 
-          <div className="mt-4 rounded-card bg-carbon px-4 py-3 text-white">
-            <span className="block text-xs text-white/70">{passport.exitLabel}</span>
-            <span className="mt-1 block text-lg font-semibold">{passport.exitValue}</span>
-          </div>
+            <div className="mt-4 grid gap-2">
+              {passport.rows.map((row) => (
+                <div
+                  key={`${row.label}-${row.value}`}
+                  className="flex items-center justify-between gap-4 rounded-card bg-frost px-3 py-2 text-sm"
+                >
+                  <span className="flex items-center gap-2 text-graphite">
+                    <span className={cn("h-2 w-2 rounded-full", statusClasses(row.state))} />
+                    {row.label}
+                  </span>
+                  <span className="font-medium text-carbon">{row.value}</span>
+                </div>
+              ))}
+            </div>
 
-          <div className="mt-4 flex items-center justify-between gap-4">
-            <span className="text-sm text-graphite">
-              {passport.warranty} <b className="text-carbon">{passport.warrantyStrong}</b>
-            </span>
-            <PassportQr />
+            <div className="mt-4 rounded-card bg-carbon px-4 py-3 text-white">
+              <span className="block text-xs text-white/70">{passport.exitLabel}</span>
+              <span className="mt-1 block text-lg font-semibold">{passport.exitValue}</span>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <span className="text-sm text-graphite">
+                {passport.warranty} <b className="text-carbon">{passport.warrantyStrong}</b>
+              </span>
+              <PassportQr />
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </section>
   );
@@ -392,7 +398,7 @@ function MarketTensionSection({ section }: { section: PageSection }) {
 
 function CircleRulesSection({ section }: { section: PageSection }) {
   const items = sectionItemList(section.content.items);
-  if (items.length === 0) return null;
+  if (!section.headline && !section.body && items.length === 0) return null;
 
   return (
     <section className="bg-frost py-14 md:py-20" aria-label={section.eyebrow || "Правила круга"}>
@@ -412,26 +418,28 @@ function CircleRulesSection({ section }: { section: PageSection }) {
             />
           ) : null}
         </div>
-        <ol className="mx-auto mt-8 grid max-w-content gap-3 md:mt-10 md:grid-cols-4">
-          {items.slice(0, 4).map((item, index) => (
-            <li
-              key={`${item.title}-${item.text}`}
-              className="rounded-card border border-hairline bg-white p-5"
-            >
-              <span className="text-sm font-semibold text-link-blue">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              {item.title ? (
-                <h3 className="mt-4 text-lg font-semibold leading-tight text-carbon">
-                  {item.title}
-                </h3>
-              ) : null}
-              {item.text ? (
-                <p className="mt-3 text-sm leading-relaxed text-graphite">{item.text}</p>
-              ) : null}
-            </li>
-          ))}
-        </ol>
+        {items.length > 0 ? (
+          <ol className="mx-auto mt-8 grid max-w-content gap-3 md:mt-10 md:grid-cols-4">
+            {items.slice(0, 4).map((item, index) => (
+              <li
+                key={`${item.title}-${item.text}`}
+                className="rounded-card border border-hairline bg-white p-5"
+              >
+                <span className="text-sm font-semibold text-link-blue">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                {item.title ? (
+                  <h3 className="mt-4 text-lg font-semibold leading-tight text-carbon">
+                    {item.title}
+                  </h3>
+                ) : null}
+                {item.text ? (
+                  <p className="mt-3 text-sm leading-relaxed text-graphite">{item.text}</p>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        ) : null}
       </div>
     </section>
   );
@@ -440,26 +448,49 @@ function CircleRulesSection({ section }: { section: PageSection }) {
 function TrustSection({ section }: { section: PageSection }) {
   const items = sectionItemList(section.content.items);
   if (items.length === 0) return null;
+  const note = typeof section.content.note === "string" ? section.content.note : "";
 
   return (
     <section
-      className="border-y border-hairline bg-white py-8"
+      className="border-y border-hairline bg-white py-14 md:py-20"
       aria-label={section.eyebrow || "Принципы клуба"}
     >
-      <div className="mx-auto grid max-w-page gap-px px-4 md:grid-cols-4 md:px-6">
-        {items.map((item) => (
-          <div
-            key={`${item.title}-${item.text}`}
-            className="bg-frost px-5 py-6 text-center md:px-6"
-          >
-            <div className="text-2xl font-semibold leading-tight text-carbon md:text-3xl">
-              {item.title}
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <div className="mx-auto max-w-copy text-center">
+          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
+          {section.headline ? (
+            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+              {section.headline}
+            </h2>
+          ) : null}
+          {section.body ? (
+            <RichText
+              className="mt-4 text-copy leading-relaxed text-graphite"
+              html={section.body}
+              nodes={section.bodyRichText}
+            />
+          ) : null}
+        </div>
+        <div className="mt-8 grid gap-px overflow-hidden rounded-card border border-hairline bg-hairline md:grid-cols-4">
+          {items.map((item) => (
+            <div
+              key={`${item.title}-${item.text}`}
+              className="bg-frost px-5 py-6 text-center md:px-6"
+            >
+              <div className="text-2xl font-semibold leading-tight text-carbon md:text-3xl">
+                {item.title}
+              </div>
+              <div className="mx-auto mt-2 max-w-caption text-sm leading-relaxed text-ash">
+                {item.text}
+              </div>
             </div>
-            <div className="mx-auto mt-2 max-w-caption text-sm leading-relaxed text-ash">
-              {item.text}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        {note ? (
+          <p className="mx-auto mt-8 max-w-copy text-center font-semibold leading-relaxed text-carbon">
+            {note}
+          </p>
+        ) : null}
       </div>
     </section>
   );
@@ -539,7 +570,7 @@ function HomeFaqSection({ section }: { section: PageSection }) {
               <summary className="cursor-pointer list-none p-5 font-semibold text-carbon marker:hidden md:p-6">
                 {item.title}
               </summary>
-              <p className="border-t border-hairline px-5 py-4 text-sm leading-relaxed text-graphite md:px-6">
+              <p className="whitespace-pre-line border-t border-hairline px-5 py-4 text-sm leading-relaxed text-graphite md:px-6">
                 {item.text}
               </p>
             </details>

@@ -168,6 +168,24 @@ const auditDefinitions = {
       "page_sections.inactive_page_active_sections",
     ],
   },
+  "homepage-copy": {
+    script: "scripts/audit_directus_homepage_copy_sql.mjs",
+    zero: [
+      "homepage_copy.sections.missing_or_duplicate",
+      "homepage_copy.sections.text_mismatch",
+      "homepage_copy.sections.unexpected_active",
+      "homepage_copy.footer.mismatch",
+      "homepage_copy.forbidden.city",
+      "homepage_copy.forbidden.commission",
+      "homepage_copy.forbidden.demo_values",
+      "homepage_copy.faq.missing_or_duplicate",
+      "homepage_copy.faq.text_mismatch",
+    ],
+    equals: {
+      "homepage_copy.info.section_count": "9",
+      "homepage_copy.info.faq_count": "6",
+    },
+  },
   leads: {
     script: "scripts/audit_directus_leads_sql.mjs",
     zero: [
@@ -422,6 +440,7 @@ const prodAuditOrder = [
   "navigation",
   "legacy-fallback",
   "page-sections",
+  "homepage-copy",
   "leads",
   "files",
   "import",

@@ -2170,3 +2170,30 @@ Next content-editing priorities:
   После повторного идемпотентного apply прошли `directus:audit-studio`, полный
   `directus:audit:prod`, API policy, ops и content ownership; Directus
   `11.17.4` вернулся в `health=ok`.
+
+## 2026-08-21 — Канонические тексты главной
+
+- Утверждённый источник текстов главной хранится без изменений в
+  `docs/source-copy/writing-block.md`. Его SHA-256:
+  `d677114610f4cf170ddda0a3a0cf22d3b9ab242b4bf0feddd2381bef0bcc9aeb`.
+- Каноническое распределение строк по полям Directus хранится в
+  `apps/web/data/homepage-copy.json`. Разрешены только две редакционные
+  операции: замена `Северодвинск` на `Белгород` и полное исключение фрагментов
+  о комиссионной продаже с главной. SEO, legal/copyright, consent, статусы формы
+  и отдельная страница `/trade` этим релизом не меняются.
+- Главная состоит из девяти активных секций: Hero, главное отличие, каталог,
+  Passport, принцип I СВОИ, магазин, Trade, FAQ и составной блок подбора с
+  финальным экраном. `market_tension`, `path_router`, `club_preview`,
+  `diagnostics_compare` и `social_proof` остаются неактивными.
+- SQL для применения генерируется только из канонического JSON командой
+  `npm run directus:update-homepage-copy-sql`. Безопасная репетиция выполняется
+  с `-- --rollback`. Точный production-контракт проверяет
+  `npm run directus:audit-homepage-copy`; он включён в
+  `npm run directus:audit:prod`.
+- Fallback главной читает тот же канонический JSON. Демонстрационные IMEI,
+  суммы выкупа/доплаты, valuation Trade и подпись Store не показываются без
+  явных данных Directus. Выбор сценария в финальной форме скрыт, но заявка
+  сохраняет техническое значение `Найти устройство`.
+- Перед production apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260821T141601Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущен, потому что `OFFSITE_BACKUP_DEST` не настроен.

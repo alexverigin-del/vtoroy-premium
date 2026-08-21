@@ -1,4 +1,5 @@
 import type { NavigationItem, PageSection, SitePage, SiteSettings } from "@vtoroy/shared";
+import homepageCopyData from "@/data/homepage-copy.json";
 import marketingPagesData from "@/data/marketing-pages.json";
 
 export const dynamic = "force-dynamic";
@@ -29,17 +30,15 @@ const marketingFallbackEnhancementKeys: Record<MarketingSlug, Set<string>> = {
 
 const defaultSiteSettings: SiteSettings = {
   brandName: "I СВОИ",
-  tagline: "Хорошие вещи проходят через своих.",
+  tagline: homepageCopyData.footer.tagline,
   city: "Белгород",
   logoHref: "/",
   logoHeight: 22,
   showBrandName: true,
   headerCtaLabel: "Смотреть каталог",
   headerCtaUrl: "/catalog",
-  footerNote:
-    "I СВОИ — новая и проверенная б/у техника разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.",
-  footerBrandText:
-    "Техника и аксессуары, о которых всё известно до покупки. Хорошие вещи проходят через своих. Белгород.",
+  footerNote: homepageCopyData.footer.footer_note,
+  footerBrandText: homepageCopyData.footer.footer_brand_text,
   footerLegal: "Хорошие вещи проходят через своих.",
   footerCopyright: "© 2026 I СВОИ.",
 };
@@ -210,165 +209,56 @@ const defaultNavigationItems: NavigationItem[] = [
   },
 ];
 
-const defaultCatalogPreviewSection: PageSection = {
-  id: "catalog-preview-fallback",
-  sectionKey: "catalog_preview",
-  variant: "catalog.grid",
-  eyebrow: "В наличии",
-  headline: "Техника и аксессуары в наличии.",
-  body: "Точная модель, память, цвет, состояние, батарея, ремонт, цена и наличие.",
-  primaryCtaLabel: "Смотреть весь каталог",
-  primaryCtaUrl: "/catalog",
-  secondaryCtaLabel: "Получить варианты",
-  secondaryCtaUrl: "#final",
-  sortOrder: 3,
-  isActive: true,
-  content: {
-    limit: 6,
-    showFilters: false,
-  },
-};
+type HomepageCopySection = (typeof homepageCopyData.sections)[number];
 
-const defaultHeroSection: PageSection = {
-  id: "hero-fallback",
-  sectionKey: "hero",
-  variant: "hero.static",
-  eyebrow: "I СВОИ · Белгород",
-  headline: "Техника и аксессуары, о которых всё известно до покупки.",
-  body: "Реальные фотографии, состояние батареи, история ремонта, отмеченные дефекты, открытая проверка и письменная гарантия 90 дней.",
-  primaryCtaLabel: "Смотреть каталог",
-  primaryCtaUrl: "/catalog",
-  secondaryCtaLabel: "Оценить свою технику",
-  secondaryCtaUrl: "/trade",
-  sortOrder: 1,
-  isActive: true,
-  image: "/assets/hero-apple-like-single-phone-clean.webp",
-  content: {
-    assurance: ["Реальные фото", "Проверка при посетителе", "Гарантия 90 дней"],
-    visual: {
-      image_alt: "Премиальный графитовый смартфон на светло-серой студийной поверхности",
-    },
-    passport: {
-      aria_label: "I СВОИ Passport вещи",
-      device: "iPhone 13 Pro",
-      sub: "256 GB · Графитовый",
-      grade: "A−",
-      grade_label: "Грейд",
-      rows: [
-        { label: "Батарея", value: "89%", state: "ok" },
-        { label: "Ремонт", value: "не вскрывался", state: "ok" },
-        { label: "Face ID", value: "работает", state: "ok" },
-        { label: "Влага", value: "следов нет", state: "ok" },
-      ],
-      exit_label: "Предварительная стоимость при обновлении через 6 месяцев",
-      exit_value: "после повторной диагностики",
-      warranty: "Гарантия",
-      warranty_strong: "90 дней",
-    },
-  },
-};
+function homepageFallbackSection(
+  sectionKey: HomepageCopySection["section_key"],
+  id: string,
+  image?: string,
+): PageSection {
+  const section = homepageCopyData.sections.find((item) => item.section_key === sectionKey);
+  if (!section) throw new Error(`Missing canonical homepage section: ${sectionKey}`);
+  return {
+    id,
+    sectionKey: section.section_key,
+    variant: section.variant,
+    eyebrow: section.eyebrow ?? undefined,
+    headline: section.headline ?? undefined,
+    body: section.body ?? undefined,
+    primaryCtaLabel: section.primary_cta_label ?? undefined,
+    primaryCtaUrl: section.primary_cta_url ?? undefined,
+    secondaryCtaLabel: section.secondary_cta_label ?? undefined,
+    secondaryCtaUrl: section.secondary_cta_url ?? undefined,
+    image,
+    sortOrder: section.sort_order,
+    isActive: true,
+    content: section.content as PageSection["content"],
+  };
+}
 
-const defaultTrustSection: PageSection = {
-  id: "trust-fallback",
-  sectionKey: "trust",
-  variant: "trust.strip",
-  eyebrow: "До оплаты",
-  headline: "Что вы узнаете об устройстве заранее.",
-  sortOrder: 2,
-  isActive: true,
-  content: {
-    items: [
-      { title: "Состояние", text: "Грейд и заметные дефекты." },
-      { title: "Батарея и функции", text: "Результаты диагностики." },
-      { title: "Ремонт", text: "Подтверждённая история вмешательств." },
-      { title: "Гарантия", text: "Письменные условия на 90 дней." },
-    ],
-  },
-};
-
-const defaultPassportSection: PageSection = {
-  id: "passport-preview-fallback",
-  sectionKey: "passport_preview",
-  variant: "passport.split",
-  eyebrow: "Passport · документ о проверке",
-  headline: "Состояние видно до решения о покупке.",
-  body: "Дата диагностики, грейд, ремонт, функции и отмеченные дефекты — в одном документе.",
-  primaryCtaLabel: "Как мы проверяем",
-  primaryCtaUrl: "/passport",
-  sortOrder: 4,
-  isActive: true,
-  content: {},
-};
-
-const defaultStoreSection: PageSection = {
-  id: "store-preview-fallback",
-  sectionKey: "store_preview",
-  variant: "store.steps",
-  eyebrow: "Магазин в Белгороде",
-  headline: "Как проходит покупка.",
-  body: "Выберите устройство, проверьте его в магазине и получите документы с гарантией.",
-  primaryCtaLabel: "Условия визита",
-  primaryCtaUrl: "/belgorod",
-  sortOrder: 5,
-  isActive: true,
-  content: {},
-};
-
-const defaultTradeSection: PageSection = {
-  id: "trade-preview-fallback",
-  sectionKey: "trade_preview",
-  variant: "trade.choices",
-  eyebrow: "Trade · продажа или обмен",
-  headline: "Оцените свою технику без объявлений.",
-  body: "Предварительная оценка уточняется после диагностики.",
-  primaryCtaLabel: "Получить предварительную оценку",
-  primaryCtaUrl: "/trade",
-  sortOrder: 6,
-  isActive: true,
-  content: {},
-};
-
-const defaultFaqSection: PageSection = {
-  id: "home-faq-fallback",
-  sectionKey: "faq",
-  variant: "faq",
-  eyebrow: "Коротко о главном",
-  headline: "Частые вопросы.",
-  sortOrder: 8,
-  isActive: true,
-  content: {
-    items: [
-      {
-        title: "Можно проверить устройство перед покупкой?",
-        text: "Да. Состояние и функции сверяются в магазине до решения о покупке.",
-      },
-      {
-        title: "Предварительная оценка Trade окончательная?",
-        text: "Нет. Итоговая сумма подтверждается после повторной диагностики.",
-      },
-    ],
-  },
-};
-
-const defaultFinalSection: PageSection = {
-  id: "final-cta-fallback",
-  sectionKey: "final_cta",
-  variant: "final.form",
-  eyebrow: "Подбор",
-  headline: "Не нашли подходящую модель?",
-  body: "Оставьте модель, необязательный бюджет и удобный контакт — предложим доступные варианты.",
-  secondaryCtaLabel: "Оценить свою технику",
-  secondaryCtaUrl: "/trade",
-  sortOrder: 9,
-  isActive: true,
-  content: {
-    form: {
-      scenario_options: ["Найти устройство", "Подобрать несколько вариантов"],
-      submit_label: "Получить варианты",
-      note: "Ответим по указанному контакту.",
-    },
-  },
-};
+const defaultHeroSection = homepageFallbackSection(
+  "hero",
+  "hero-fallback",
+  "/assets/hero-apple-like-single-phone-clean.webp",
+);
+const defaultTrustSection = homepageFallbackSection("trust", "trust-fallback");
+const defaultCatalogPreviewSection = homepageFallbackSection(
+  "catalog_preview",
+  "catalog-preview-fallback",
+);
+const defaultPassportSection = homepageFallbackSection(
+  "passport_preview",
+  "passport-preview-fallback",
+);
+const defaultStoreSection = homepageFallbackSection(
+  "store_preview",
+  "store-preview-fallback",
+  "/assets/store-real-premium-hero.webp",
+);
+const defaultTradeSection = homepageFallbackSection("trade_preview", "trade-preview-fallback");
+const defaultCircleRulesSection = homepageFallbackSection("circle_rules", "circle-rules-fallback");
+const defaultFaqSection = homepageFallbackSection("faq", "home-faq-fallback");
+const defaultFinalSection = homepageFallbackSection("final_cta", "final-cta-fallback");
 
 const defaultMarketTensionSection: PageSection = {
   id: "market-tension-fallback",
@@ -402,37 +292,6 @@ const defaultMarketTensionSection: PageSection = {
         },
       ],
     },
-  },
-};
-
-const defaultCircleRulesSection: PageSection = {
-  id: "circle-rules-fallback",
-  sectionKey: "circle_rules",
-  variant: "trust.strip",
-  eyebrow: "Правила круга",
-  headline: "Доверие держится на проверяемых вещах.",
-  body: "Каждое правило должно быть видно в карточке, в Store и в разговоре перед сделкой.",
-  sortOrder: 3,
-  isActive: true,
-  content: {
-    items: [
-      {
-        title: "Открытая проверка",
-        text: "Экран, корпус, аккумулятор, связь, камеры и следы влаги проверяются при вас.",
-      },
-      {
-        title: "Фиксация нюансов",
-        text: "Дефекты и следы использования не прячутся: они влияют на грейд и цену.",
-      },
-      {
-        title: "Письменная гарантия",
-        text: "Условия гарантии показываются до покупки и остаются частью сделки.",
-      },
-      {
-        title: "Предварительная стоимость при обновлении",
-        text: "Расчёт помогает планировать обновление и подтверждается повторной диагностикой.",
-      },
-    ],
   },
 };
 
@@ -517,7 +376,6 @@ function marketingSections(slug: MarketingSlug, sections: PageSection[] = []): P
 function homeSections(sections: PageSection[] = []): PageSection[] {
   const deprecated = new Set([
     defaultMarketTensionSection.sectionKey,
-    defaultCircleRulesSection.sectionKey,
     "path_router",
     "club_preview",
     "diagnostics_compare",
@@ -535,6 +393,7 @@ function homeSections(sections: PageSection[] = []): PageSection[] {
     byKey.set("catalog_preview", defaultCatalogPreviewSection);
   }
   if (!byKey.has("passport_preview")) byKey.set("passport_preview", defaultPassportSection);
+  if (!byKey.has("circle_rules")) byKey.set("circle_rules", defaultCircleRulesSection);
   if (!byKey.has("store_preview")) byKey.set("store_preview", defaultStoreSection);
   if (!byKey.has("trade_preview")) byKey.set("trade_preview", defaultTradeSection);
   if (!byKey.has("faq")) byKey.set("faq", defaultFaqSection);

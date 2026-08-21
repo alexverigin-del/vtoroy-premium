@@ -1,6 +1,7 @@
 import type { NavigationItem, PageSection, SitePage, SiteSettings } from "@vtoroy/shared";
 import homepageCopyData from "@/data/homepage-copy.json";
 import marketingPagesData from "@/data/marketing-pages.json";
+import { prepareRichText } from "@/lib/rich-text";
 
 export const dynamic = "force-dynamic";
 
@@ -218,13 +219,15 @@ function homepageFallbackSection(
 ): PageSection {
   const section = homepageCopyData.sections.find((item) => item.section_key === sectionKey);
   if (!section) throw new Error(`Missing canonical homepage section: ${sectionKey}`);
+  const body = prepareRichText(section.body);
   return {
     id,
     sectionKey: section.section_key,
     variant: section.variant,
     eyebrow: section.eyebrow ?? undefined,
     headline: section.headline ?? undefined,
-    body: section.body ?? undefined,
+    body: body.html || undefined,
+    bodyRichText: body.nodes,
     primaryCtaLabel: section.primary_cta_label ?? undefined,
     primaryCtaUrl: section.primary_cta_url ?? undefined,
     secondaryCtaLabel: section.secondary_cta_label ?? undefined,

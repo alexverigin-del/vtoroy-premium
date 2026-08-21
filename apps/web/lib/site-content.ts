@@ -1,7 +1,7 @@
 import type { NavigationItem, PageSection, SitePage, SiteSettings } from "@vtoroy/shared";
 import homepageCopyData from "@/data/homepage-copy.json";
 import marketingPagesData from "@/data/marketing-pages.json";
-import { prepareRichText } from "@/lib/rich-text";
+import { prepareRichText, prepareSectionContentRichText } from "@/lib/rich-text";
 
 export const dynamic = "force-dynamic";
 
@@ -235,7 +235,7 @@ function homepageFallbackSection(
     image,
     sortOrder: section.sort_order,
     isActive: true,
-    content: section.content as PageSection["content"],
+    content: prepareSectionContentRichText(section.content as PageSection["content"]),
   };
 }
 

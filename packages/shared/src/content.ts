@@ -198,6 +198,7 @@ export interface SectionContent {
   closing?: {
     headline?: string;
     body?: string;
+    bodyRichText?: RichTextNode[];
     brand?: string;
     tagline?: string;
     primary_cta_label?: string;
@@ -232,6 +233,7 @@ export interface SectionContent {
   };
   // trade_calculator_intro
   note?: string;
+  noteRichText?: RichTextNode[];
   disclaimer?: string;
   // faq
   faqKeys?: string[];

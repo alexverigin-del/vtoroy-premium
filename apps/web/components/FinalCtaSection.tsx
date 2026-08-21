@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { useId, useState } from "react";
 import Link from "next/link";
-import type { PageSection } from "@vtoroy/shared";
+import type { PageSection, RichTextNode } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { RichText } from "./RichText";
 import { normalizeSiteUrl } from "./site-chrome-utils";
@@ -34,6 +34,7 @@ type FinalCtaForm = {
 type ClosingContent = {
   headline: string;
   body: string;
+  bodyRichText?: RichTextNode[];
   brand: string;
   tagline: string;
   primaryCtaLabel: string;
@@ -98,6 +99,9 @@ function closingContent(value: unknown): ClosingContent | null {
   const closing = {
     headline: text("headline"),
     body: text("body"),
+    bodyRichText: Array.isArray(record.bodyRichText)
+      ? (record.bodyRichText as RichTextNode[])
+      : undefined,
     brand: text("brand"),
     tagline: text("tagline"),
     primaryCtaLabel: text("primary_cta_label"),
@@ -309,6 +313,7 @@ export function FinalCtaSection({
               <RichText
                 className="mt-5 text-copy leading-relaxed text-graphite"
                 html={closing.body}
+                nodes={closing.bodyRichText}
               />
             ) : null}
             {closing.brand ? (

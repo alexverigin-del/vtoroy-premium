@@ -263,7 +263,11 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
           </ul>
 
           {note ? (
-            <RichText className="mt-6 text-copy leading-relaxed text-graphite" html={note} />
+            <RichText
+              className="mt-6 text-copy leading-relaxed text-graphite"
+              html={note}
+              nodes={section.content.noteRichText}
+            />
           ) : null}
 
           {section.primaryCtaLabel || section.secondaryCtaLabel ? (

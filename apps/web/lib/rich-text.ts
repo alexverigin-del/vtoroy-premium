@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { RichTextNode, RichTextTag } from "@vtoroy/shared";
+import type { RichTextNode, RichTextTag, SectionContent } from "@vtoroy/shared";
 import { parseDocument } from "htmlparser2";
 import sanitizeHtml from "sanitize-html";
 
@@ -78,5 +78,26 @@ export function prepareRichText(value: unknown): { html: string; nodes: RichText
     nodes: document.children
       .map((node) => toRichTextNode(node))
       .filter((node): node is RichTextNode => node !== null),
+  };
+}
+
+export function prepareSectionContentRichText(value: SectionContent): SectionContent {
+  const note = prepareRichText(value.note);
+  const closing = value.closing;
+  const closingBody = prepareRichText(closing?.body);
+
+  return {
+    ...value,
+    ...(note.html ? { note: note.html, noteRichText: note.nodes } : {}),
+    ...(closing
+      ? {
+          closing: {
+            ...closing,
+            ...(closingBody.html
+              ? { body: closingBody.html, bodyRichText: closingBody.nodes }
+              : {}),
+          },
+        }
+      : {}),
   };
 }

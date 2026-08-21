@@ -21,7 +21,7 @@ import {
   SITE_SETTINGS_CACHE_TAG,
 } from "@/lib/cache-tags";
 import type { DeviceCardData } from "@/lib/device-card-data";
-import { prepareRichText } from "@/lib/rich-text";
+import { prepareRichText, prepareSectionContentRichText } from "@/lib/rich-text";
 import { fallbackDevices } from "@/data/devices";
 
 // Directus client for the Catalog MVP.
@@ -1007,6 +1007,7 @@ export const getDeviceBySlug = cache(async function getDeviceBySlug(
 
 function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
   const body = prepareRichText(row.body);
+  const content = prepareSectionContentRichText(json(row.content, {}));
 
   return {
     id: str(row.id),
@@ -1024,7 +1025,7 @@ function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
     image: str(row.image) ? mediaUrl(row.image, "section") : "",
     sortOrder: num(row.sort_order),
     isActive: bool(row.is_active, true),
-    content: json(row.content, {}),
+    content,
   };
 }
 

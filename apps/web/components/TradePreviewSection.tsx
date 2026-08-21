@@ -245,6 +245,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
           <RichText
             className="mx-auto mt-8 max-w-copy text-center text-copy leading-relaxed text-graphite"
             html={note}
+            nodes={section.content.noteRichText}
           />
         ) : null}
 

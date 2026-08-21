@@ -166,15 +166,15 @@ export function FinalCtaSection({
   }
 
   return (
-    <section className="bg-frost py-16 md:py-20" id="final" data-component="FinalCtaSection">
+    <section className="bg-frost py-14 md:py-20" id="final" data-component="FinalCtaSection">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="grid gap-6 rounded-card border border-hairline bg-white p-5 md:grid-cols-lead md:p-8">
-          <div className="flex flex-col justify-center">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
+          <div className="flex flex-col justify-center lg:col-span-6 lg:pt-6">
             {section.eyebrow ? (
               <div className={homeSectionLabelClass}>{section.eyebrow}</div>
             ) : null}
             {section.headline ? (
-              <h2 className="mt-3 max-w-heading text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-4xl">
+              <h2 className="mt-3 max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
                 {section.headline}
               </h2>
             ) : null}
@@ -185,22 +185,26 @@ export function FinalCtaSection({
                 nodes={section.bodyRichText}
               />
             ) : null}
-            <div className="mt-6 flex flex-wrap gap-2">
+            <ul className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">
               {renderedProof.map((item) => (
-                <span
+                <li
                   key={item}
-                  className="rounded-full border border-hairline bg-frost px-3 py-2 text-sm font-medium text-graphite"
+                  className="flex items-start gap-2 text-sm font-medium leading-relaxed text-graphite"
                 >
+                  <span
+                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-success"
+                    aria-hidden="true"
+                  />
                   {item}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
 
           <form
             onSubmit={handleSubmit}
             aria-busy={state === "submitting"}
-            className="rounded-card border border-hairline bg-frost p-4 md:p-5"
+            className="rounded-card border border-hairline bg-white p-5 lg:col-span-5 lg:col-start-8 lg:p-6"
           >
             {form.showScenario ? (
               <label className="block text-sm font-medium text-carbon" htmlFor={scenarioId}>
@@ -300,48 +304,56 @@ export function FinalCtaSection({
           </form>
         </div>
 
-        {footerNote ? <p className="mt-6 text-sm leading-relaxed text-ash">{footerNote}</p> : null}
+        {footerNote ? (
+          <p className="mt-5 text-sm leading-relaxed text-ash lg:ml-auto lg:max-w-form">
+            {footerNote}
+          </p>
+        ) : null}
 
         {closing ? (
-          <div className="mx-auto mt-16 max-w-copy text-center md:mt-20">
-            {closing.headline ? (
-              <h2 className="text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-                {closing.headline}
-              </h2>
-            ) : null}
-            {closing.body ? (
-              <RichText
-                className="mt-5 text-copy leading-relaxed text-graphite"
-                html={closing.body}
-                nodes={closing.bodyRichText}
-              />
-            ) : null}
-            {closing.brand ? (
-              <strong className="mt-8 block text-xl font-semibold text-carbon">
-                {closing.brand}
-              </strong>
-            ) : null}
-            {closing.tagline ? <p className="mt-2 text-graphite">{closing.tagline}</p> : null}
-            {closing.primaryCtaLabel || closing.secondaryCtaLabel ? (
-              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                {closing.primaryCtaLabel ? (
-                  <Link
-                    href={normalizeSiteUrl(closing.primaryCtaUrl || "/catalog")}
-                    className={primaryCtaClass}
-                  >
-                    {closing.primaryCtaLabel}
-                  </Link>
-                ) : null}
-                {closing.secondaryCtaLabel ? (
-                  <Link
-                    href={normalizeSiteUrl(closing.secondaryCtaUrl || "/passport")}
-                    className={secondaryCtaClass}
-                  >
-                    {closing.secondaryCtaLabel}
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
+          <div className="mt-14 grid gap-6 border-t border-hairline pt-12 md:mt-20 md:pt-16 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-6">
+              {closing.headline ? (
+                <h2 className="max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+                  {closing.headline}
+                </h2>
+              ) : null}
+            </div>
+            <div className="lg:col-span-5 lg:col-start-8">
+              {closing.body ? (
+                <RichText
+                  className="text-copy leading-relaxed text-graphite"
+                  html={closing.body}
+                  nodes={closing.bodyRichText}
+                />
+              ) : null}
+              {closing.brand ? (
+                <strong className="mt-8 block text-xl font-semibold text-carbon">
+                  {closing.brand}
+                </strong>
+              ) : null}
+              {closing.tagline ? <p className="mt-2 text-graphite">{closing.tagline}</p> : null}
+              {closing.primaryCtaLabel || closing.secondaryCtaLabel ? (
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  {closing.primaryCtaLabel ? (
+                    <Link
+                      href={normalizeSiteUrl(closing.primaryCtaUrl || "/catalog")}
+                      className={primaryCtaClass}
+                    >
+                      {closing.primaryCtaLabel}
+                    </Link>
+                  ) : null}
+                  {closing.secondaryCtaLabel ? (
+                    <Link
+                      href={normalizeSiteUrl(closing.secondaryCtaUrl || "/passport")}
+                      className={secondaryCtaClass}
+                    >
+                      {closing.secondaryCtaLabel}
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>

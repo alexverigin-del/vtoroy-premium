@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
+import { HomeSectionIntro } from "./HomeSectionIntro";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { RichText } from "./RichText";
 import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
@@ -151,26 +152,12 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
   const note = typeof section.content.note === "string" ? section.content.note : "";
 
   return (
-    <section className="bg-white py-16 md:py-20" id="trade">
+    <section className="bg-frost py-14 md:py-20" id="trade">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy text-center">
-          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-          {section.headline ? (
-            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-              {section.headline}
-            </h2>
-          ) : null}
-          {section.body ? (
-            <RichText
-              className="mt-4 text-copy leading-relaxed text-graphite"
-              html={section.body}
-              nodes={section.bodyRichText}
-            />
-          ) : null}
-        </div>
+        <HomeSectionIntro section={section} />
 
         {renderedChoices.length > 0 ? (
-          <div className="mt-10 overflow-hidden rounded-card border border-hairline bg-frost">
+          <div className="mt-8 overflow-hidden rounded-card border border-hairline bg-white md:mt-10">
             <div className={cn("grid", choicesGridClass)}>
               {renderedChoices.map((choice, index) => (
                 <div
@@ -180,7 +167,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
                     index > 0 ? "border-t border-hairline md:border-l md:border-t-0" : "",
                   )}
                 >
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-card bg-white text-link-blue">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-card bg-frost text-link-blue">
                     <Icon name={choice.icon} />
                   </span>
                   <div className="mt-4 text-lg font-semibold leading-tight text-carbon">
@@ -194,7 +181,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
         ) : null}
 
         {steps.length > 0 ? (
-          <ol className="mx-auto mt-8 flex max-w-content flex-col items-stretch justify-center overflow-hidden rounded-card border border-hairline bg-frost md:flex-row md:items-center">
+          <ol className="mt-8 flex flex-col items-stretch justify-center border-y border-hairline md:flex-row md:items-center">
             {steps.map((step, index) => (
               <li
                 key={step.title}
@@ -243,14 +230,14 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
 
         {note ? (
           <RichText
-            className="mx-auto mt-8 max-w-copy text-center text-copy leading-relaxed text-graphite"
+            className="mt-8 max-w-copy text-copy leading-relaxed text-graphite"
             html={note}
             nodes={section.content.noteRichText}
           />
         ) : null}
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (
-          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/trade")}

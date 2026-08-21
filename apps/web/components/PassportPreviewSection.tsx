@@ -225,15 +225,15 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
 
   return (
     <section
-      className="bg-frost py-16 md:py-20"
+      className="bg-white py-14 md:py-20"
       id="passport"
       data-component="PassportPreviewSection"
     >
-      <div className="mx-auto grid max-w-page gap-8 px-4 md:grid-cols-passport md:px-6">
+      <div className="mx-auto grid max-w-page gap-10 px-4 md:grid-cols-passport md:px-6 lg:gap-12">
         <div className="flex flex-col justify-center">
           {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
           {section.headline ? (
-            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+            <h2 className="mt-3 max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
@@ -245,11 +245,11 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             />
           ) : null}
 
-          <ul className="mt-8 overflow-hidden rounded-card border border-hairline bg-white">
+          <ul className="mt-8 border-y border-hairline">
             {renderedFeatures.map((feature, index) => (
               <li
                 key={`${feature.title}-${feature.text}`}
-                className={cn("flex gap-4 p-4", index > 0 ? "border-t border-hairline" : "")}
+                className={cn("flex gap-4 py-4", index > 0 ? "border-t border-hairline" : "")}
               >
                 <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-frost text-link-blue">
                   <Icon name={feature.icon} />
@@ -293,7 +293,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
         </div>
 
         <div
-          className="rounded-card border border-hairline bg-white p-4 md:p-6"
+          className="rounded-card border border-hairline bg-frost p-4 md:p-6"
           id="passport-example"
         >
           {card.heading ? (
@@ -306,7 +306,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
               <div className="text-xl font-semibold text-carbon">{card.device}</div>
               <div className="mt-1 text-sm text-ash">{card.sub}</div>
             </div>
-            <div className="rounded-card border border-hairline bg-frost px-4 py-3 text-center">
+            <div className="rounded-card border border-hairline bg-white px-4 py-3 text-center">
               <b className="block text-2xl text-carbon">{card.grade}</b>
               <span className="text-xs uppercase tracking-caption text-ash">{card.gradeLabel}</span>
             </div>
@@ -316,7 +316,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
             {card.rows.map((row) => (
               <div
                 key={`${row.label}-${row.value}`}
-                className="flex items-start justify-between gap-4 rounded-card bg-frost px-4 py-3 text-sm"
+                className="flex items-start justify-between gap-4 rounded-card bg-white px-4 py-3 text-sm"
               >
                 <span className="flex items-center gap-2 text-graphite">
                   <span className={cn("h-2 w-2 rounded-full", dotClasses(row.state))} />

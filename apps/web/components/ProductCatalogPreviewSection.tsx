@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { PageSection, ProductCardData } from "@vtoroy/shared";
 
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { HomeSectionIntro } from "./HomeSectionIntro";
 import { ProductCard } from "./ProductCard";
 import { RichText } from "./RichText";
-import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
+import { primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 export function ProductCatalogPreviewSection({
   section,
@@ -19,26 +20,14 @@ export function ProductCatalogPreviewSection({
       : 8;
   const note = typeof section.content.note === "string" ? section.content.note : "";
   return (
-    <section className="bg-white py-16 md:py-20" id="catalog">
+    <section className="bg-frost py-14 md:py-20" id="catalog">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy text-center">
-          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-          <h2 className="mt-3 text-3xl font-semibold leading-tight text-carbon md:text-5xl">
-            {section.headline || "Техника и аксессуары в наличии"}
-          </h2>
-          {section.body ? (
-            <RichText
-              className="mt-4 text-copy leading-relaxed text-graphite"
-              html={section.body}
-              nodes={section.bodyRichText}
-            />
-          ) : null}
-        </div>
+        <HomeSectionIntro section={section} />
 
         {products.length > 0 ? (
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4">
             {products.slice(0, limit).map((product, index) => (
-              <li key={product.id}>
+              <li key={product.id} className={index > 1 ? "hidden sm:block" : undefined}>
                 <ProductCard product={product} imagePriority={index < 4} />
               </li>
             ))}
@@ -51,13 +40,13 @@ export function ProductCatalogPreviewSection({
 
         {note ? (
           <RichText
-            className="mx-auto mt-8 max-w-copy text-center text-copy leading-relaxed text-graphite"
+            className="mt-8 max-w-copy text-copy leading-relaxed text-graphite"
             html={note}
             nodes={section.content.noteRichText}
           />
         ) : null}
 
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           {section.primaryCtaLabel ? (
             <Link
               href={normalizeSiteUrl(section.primaryCtaUrl || "/catalog")}

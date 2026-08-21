@@ -5,6 +5,7 @@ import { ProductCatalogPreviewSection } from "./ProductCatalogPreviewSection";
 import { ClubPreviewSection } from "./ClubPreviewSection";
 import { DiagnosticsCompareSection } from "./DiagnosticsCompareSection";
 import { FinalCtaSection } from "./FinalCtaSection";
+import { HomeSectionIntro } from "./HomeSectionIntro";
 import { PassportPreviewSection } from "./PassportPreviewSection";
 import { RichText } from "./RichText";
 import { StorePreviewSection } from "./StorePreviewSection";
@@ -239,17 +240,17 @@ function HomeHeroSection({ section }: { section: PageSection }) {
       ) : null}
       {section.body ? (
         <RichText
-          className="mx-auto mt-4 max-w-body-copy text-base leading-relaxed text-graphite md:mt-5 md:text-xl"
+          className="mx-auto mt-4 max-w-body-copy text-base leading-relaxed text-graphite md:mt-5 md:text-xl [&_p+p]:mt-3 md:[&_p+p]:mt-5"
           html={section.body}
           nodes={section.bodyRichText}
         />
       ) : null}
 
-      <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center md:mt-8">
-        <Link href={primaryUrl} className={primaryCtaClass}>
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-center md:mt-8">
+        <Link href={primaryUrl} className={cn(primaryCtaClass, "px-3 sm:px-7")}>
           {primaryLabel}
         </Link>
-        <Link href={secondaryUrl} className={secondaryCtaClass}>
+        <Link href={secondaryUrl} className={cn(secondaryCtaClass, "px-3 sm:px-7")}>
           {secondaryLabel}
         </Link>
       </div>
@@ -402,44 +403,49 @@ function CircleRulesSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-frost py-14 md:py-20" aria-label={section.eyebrow || "Правила круга"}>
-      <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy text-center">
+      <div className="mx-auto grid max-w-page gap-8 px-4 md:px-6 lg:grid-cols-12 lg:gap-10">
+        <div className="lg:col-span-5">
           {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
           {section.headline ? (
-            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+            <h2 className="mt-3 max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
+        </div>
+        <div className="lg:col-span-6 lg:col-start-7">
           {section.body ? (
             <RichText
-              className="mt-4 text-copy leading-relaxed text-graphite"
+              className="text-copy leading-relaxed text-graphite"
               html={section.body}
               nodes={section.bodyRichText}
             />
           ) : null}
+          {items.length > 0 ? (
+            <ol className="mt-8 border-y border-hairline">
+              {items.slice(0, 4).map((item, index) => (
+                <li
+                  key={`${item.title}-${item.text}`}
+                  className={cn(
+                    "grid grid-cols-12 gap-4 py-4",
+                    index > 0 && "border-t border-hairline",
+                  )}
+                >
+                  <span className="col-span-2 text-sm font-semibold text-link-blue">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="col-span-10">
+                    {item.title ? (
+                      <h3 className="font-semibold text-carbon">{item.title}</h3>
+                    ) : null}
+                    {item.text ? (
+                      <p className="mt-1 text-sm leading-relaxed text-graphite">{item.text}</p>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : null}
         </div>
-        {items.length > 0 ? (
-          <ol className="mx-auto mt-8 grid max-w-content gap-3 md:mt-10 md:grid-cols-4">
-            {items.slice(0, 4).map((item, index) => (
-              <li
-                key={`${item.title}-${item.text}`}
-                className="rounded-card border border-hairline bg-white p-5"
-              >
-                <span className="text-sm font-semibold text-link-blue">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                {item.title ? (
-                  <h3 className="mt-4 text-lg font-semibold leading-tight text-carbon">
-                    {item.title}
-                  </h3>
-                ) : null}
-                {item.text ? (
-                  <p className="mt-3 text-sm leading-relaxed text-graphite">{item.text}</p>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        ) : null}
       </div>
     </section>
   );
@@ -456,40 +462,30 @@ function TrustSection({ section }: { section: PageSection }) {
       aria-label={section.eyebrow || "Принципы клуба"}
     >
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy text-center">
-          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-          {section.headline ? (
-            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-              {section.headline}
-            </h2>
-          ) : null}
-          {section.body ? (
-            <RichText
-              className="mt-4 text-copy leading-relaxed text-graphite"
-              html={section.body}
-              nodes={section.bodyRichText}
-            />
-          ) : null}
-        </div>
-        <div className="mt-8 grid gap-px overflow-hidden rounded-card border border-hairline bg-hairline md:grid-cols-4">
-          {items.map((item) => (
+        <HomeSectionIntro section={section} />
+        <div className="mt-8 grid border-y border-hairline md:mt-10 md:grid-cols-2 lg:grid-cols-4">
+          {items.map((item, index) => (
             <div
               key={`${item.title}-${item.text}`}
-              className="bg-frost px-5 py-6 text-center md:px-6"
+              className={cn(
+                "py-6 text-left",
+                index > 0 && "border-t border-hairline",
+                index === 1 && "md:border-l md:border-t-0 md:pl-6",
+                index === 2 && "md:border-t lg:border-l lg:border-t-0 lg:pl-6",
+                index === 3 && "md:border-l md:border-t md:pl-6 lg:border-t-0",
+                index > 0 && "lg:border-l lg:pl-6",
+                index < 3 && "lg:pr-6",
+              )}
             >
-              <div className="text-2xl font-semibold leading-tight text-carbon md:text-3xl">
+              <div className="text-xl font-semibold leading-tight text-carbon md:text-2xl">
                 {item.title}
               </div>
-              <div className="mx-auto mt-2 max-w-caption text-sm leading-relaxed text-ash">
-                {item.text}
-              </div>
+              <div className="mt-2 max-w-caption text-sm leading-relaxed text-ash">{item.text}</div>
             </div>
           ))}
         </div>
         {note ? (
-          <p className="mx-auto mt-8 max-w-copy text-center font-semibold leading-relaxed text-carbon">
-            {note}
-          </p>
+          <p className="mt-8 max-w-copy font-semibold leading-relaxed text-carbon">{note}</p>
         ) : null}
       </div>
     </section>
@@ -552,25 +548,25 @@ function HomeFaqSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-white py-14 md:py-20" aria-label="Частые вопросы">
-      <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy text-center">
+      <div className="mx-auto grid max-w-page gap-8 px-4 md:px-6 lg:grid-cols-12 lg:gap-10">
+        <div className="lg:col-span-4">
           {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
           {section.headline ? (
-            <h2 className="mt-3 text-3xl font-semibold leading-tight text-carbon md:text-5xl">
+            <h2 className="mt-3 text-balance text-3xl font-semibold leading-tight text-carbon md:text-5xl">
               {section.headline}
             </h2>
           ) : null}
         </div>
-        <div className="mx-auto mt-8 max-w-faq overflow-hidden rounded-card border border-hairline">
+        <div className="border-y border-hairline lg:col-span-7 lg:col-start-6">
           {items.map((item, index) => (
             <details
               key={`${item.title}-${index}`}
               className={index ? "border-t border-hairline" : ""}
             >
-              <summary className="cursor-pointer list-none p-5 font-semibold text-carbon marker:hidden md:p-6">
+              <summary className="focus-ring cursor-pointer list-none px-1 py-5 font-semibold text-carbon marker:hidden md:py-6">
                 {item.title}
               </summary>
-              <p className="whitespace-pre-line border-t border-hairline px-5 py-4 text-sm leading-relaxed text-graphite md:px-6">
+              <p className="whitespace-pre-line border-t border-hairline px-1 py-4 text-sm leading-relaxed text-graphite">
                 {item.text}
               </p>
             </details>

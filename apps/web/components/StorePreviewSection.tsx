@@ -2,9 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
+import { HomeSectionIntro } from "./HomeSectionIntro";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { RichText } from "./RichText";
-import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
+import { primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 type StepItem = {
   title: string;
@@ -83,25 +84,11 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
   const note = typeof section.content.note === "string" ? section.content.note : "";
 
   return (
-    <section className="bg-frost py-16 md:py-20" id="store">
+    <section className="bg-white py-14 md:py-20" id="store">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto max-w-copy text-center">
-          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-          {section.headline ? (
-            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-              {section.headline}
-            </h2>
-          ) : null}
-          {section.body ? (
-            <RichText
-              className="mt-4 text-copy leading-relaxed text-graphite"
-              html={section.body}
-              nodes={section.bodyRichText}
-            />
-          ) : null}
-        </div>
+        <HomeSectionIntro section={section} />
 
-        <div className="relative mt-10 min-h-store-visual overflow-hidden rounded-img border border-hairline bg-white md:min-h-section-visual">
+        <div className="relative mt-8 min-h-visual-md overflow-hidden rounded-img border border-hairline bg-frost md:mt-10 md:min-h-marketing-tall">
           <Image
             src={imageSrc}
             alt={visual.imageAlt}
@@ -125,19 +112,20 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
 
-        <ol className="mt-8 grid overflow-hidden rounded-card border border-hairline bg-white md:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-8 grid border-y border-hairline md:grid-cols-2 lg:grid-cols-4">
           {renderedSteps.map((step, index) => {
             const number = String(index + 1).padStart(2, "0");
             return (
               <li
                 key={`${step.title}-${step.text}`}
                 className={cn(
-                  "p-5",
+                  "py-5",
                   index > 0 ? "border-t border-hairline" : "",
-                  index === 1 ? "md:border-t-0" : "",
-                  index % 2 === 1 ? "md:border-l md:border-hairline" : "",
+                  index === 1 ? "md:border-t-0 md:pl-6" : "",
+                  index % 2 === 1 ? "md:border-l md:border-hairline" : "md:pr-6",
                   index > 1 ? "md:border-t md:border-hairline lg:border-t-0" : "",
-                  index > 0 ? "lg:border-l lg:border-hairline" : "",
+                  index > 0 ? "lg:border-l lg:border-hairline lg:pl-6" : "",
+                  index < renderedSteps.length - 1 ? "lg:pr-6" : "",
                 )}
               >
                 <div className="text-sm font-semibold text-link-blue">{number}</div>
@@ -152,14 +140,14 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
 
         {note ? (
           <RichText
-            className="mx-auto mt-8 max-w-copy text-center text-copy leading-relaxed text-graphite"
+            className="mt-8 max-w-copy text-copy leading-relaxed text-graphite"
             html={note}
             nodes={section.content.noteRichText}
           />
         ) : null}
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (
-          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {section.primaryCtaLabel ? (
               <Link
                 href={normalizeSiteUrl(section.primaryCtaUrl || "/belgorod")}

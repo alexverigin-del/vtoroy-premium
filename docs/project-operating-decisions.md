@@ -2293,3 +2293,8 @@ Next content-editing priorities:
 - Перед production apply создан и проверен backup
   `/opt/isvoi/backups/directus/20260821T205329Z`; PostgreSQL и uploads прошли
   SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.
+- Production обновлён до `3699472`: файл заменён с сохранением UUID, Directus
+  хранит `critical-home-hero.webp` (`39214` bytes, `1672x941`), защищённая
+  revalidation выполнена. `directus:audit-homepage-copy`,
+  `directus:audit-files`, `smoke:prod`, `smoke:images` и desktop/mobile
+  `smoke:visual` прошли; PM2 `isvoi-web` остался `online`.

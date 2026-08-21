@@ -15,16 +15,19 @@ export function HomeSectionIntro({ section, align = "split", className }: HomeSe
 
   if (align === "center") {
     return (
-      <div className={cn("mx-auto max-w-copy text-center", className)}>
+      <div
+        className={cn("mx-auto max-w-copy text-center", className)}
+        data-component="HomeSectionIntro"
+      >
         {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
         {section.headline ? (
-          <h2 className="mt-3 text-balance text-3xl font-semibold leading-tight text-carbon md:text-5xl">
+          <h2 className="mt-3 text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
             {section.headline}
           </h2>
         ) : null}
         {section.body ? (
           <RichText
-            className="mt-4 text-copy leading-relaxed text-graphite"
+            className="mx-auto mt-4 max-w-body-copy text-copy font-normal leading-relaxed text-graphite"
             html={section.body}
             nodes={section.bodyRichText}
           />

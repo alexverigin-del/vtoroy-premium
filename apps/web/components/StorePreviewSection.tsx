@@ -86,7 +86,7 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-white py-14 md:py-20" id="store">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <HomeSectionIntro section={section} />
+        <HomeSectionIntro section={section} align="center" />
 
         <div className="relative mt-8 min-h-visual-md overflow-hidden rounded-img border border-hairline bg-frost md:mt-10 md:min-h-marketing-tall">
           <Image

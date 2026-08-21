@@ -154,7 +154,7 @@ export function TradePreviewSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-frost py-14 md:py-20" id="trade">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <HomeSectionIntro section={section} />
+        <HomeSectionIntro section={section} align="center" />
 
         {renderedChoices.length > 0 ? (
           <div className="mt-8 overflow-hidden rounded-card border border-hairline bg-white md:mt-10">

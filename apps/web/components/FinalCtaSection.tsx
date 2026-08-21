@@ -168,7 +168,7 @@ export function FinalCtaSection({
   return (
     <section className="bg-frost py-14 md:py-20" id="final" data-component="FinalCtaSection">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <HomeSectionIntro section={section} />
+        <HomeSectionIntro section={section} align="split" />
         <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
           <div className="lg:col-span-6">
             <ul className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">

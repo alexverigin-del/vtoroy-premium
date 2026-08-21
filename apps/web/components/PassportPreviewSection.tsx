@@ -231,7 +231,7 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
       data-component="PassportPreviewSection"
     >
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <HomeSectionIntro section={section} />
+        <HomeSectionIntro section={section} align="center" />
         <div className="mt-8 grid gap-10 md:mt-10 md:grid-cols-passport lg:gap-12">
           <div>
             <ul className="border-y border-hairline">

@@ -22,7 +22,7 @@ export function ProductCatalogPreviewSection({
   return (
     <section className="bg-frost py-14 md:py-20" id="catalog">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <HomeSectionIntro section={section} />
+        <HomeSectionIntro section={section} align="center" />
 
         {products.length > 0 ? (
           <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4">

@@ -404,10 +404,10 @@ function CircleRulesSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-frost py-14 md:py-20" aria-label={section.eyebrow || "Правила круга"}>
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <HomeSectionIntro section={section} />
+        <HomeSectionIntro section={section} align="center" />
         {items.length > 0 ? (
-          <div className="mt-8 grid lg:grid-cols-12 lg:gap-10">
-            <ol className="border-y border-hairline lg:col-span-6 lg:col-start-7">
+          <div className="mt-8 md:mt-10">
+            <ol className="mx-auto max-w-copy border-y border-hairline">
               {items.slice(0, 4).map((item, index) => (
                 <li
                   key={`${item.title}-${item.text}`}
@@ -448,7 +448,7 @@ function TrustSection({ section }: { section: PageSection }) {
       aria-label={section.eyebrow || "Принципы клуба"}
     >
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <HomeSectionIntro section={section} />
+        <HomeSectionIntro section={section} align="center" />
         <div className="mt-8 grid border-y border-hairline md:mt-10 md:grid-cols-2 lg:grid-cols-4">
           {items.map((item, index) => (
             <div
@@ -535,40 +535,21 @@ function HomeFaqSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-white py-14 md:py-20" aria-label="Частые вопросы">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-        <div
-          className={cn(
-            "grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10",
-            section.eyebrow && "mt-3",
-          )}
-        >
-          <div className="lg:col-span-5">
-            {section.headline ? (
-              <h2 className="max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-                {section.headline}
-              </h2>
-            ) : null}
-          </div>
-          <div className="border-b border-hairline lg:col-span-6 lg:col-start-7">
-            {items.map((item, index) => (
-              <details
-                key={`${item.title}-${index}`}
-                className={index ? "border-t border-hairline" : ""}
-              >
-                <summary
-                  className={cn(
-                    "focus-ring cursor-pointer list-none px-1 pb-5 font-semibold leading-snug text-carbon marker:hidden md:pb-6",
-                    index > 0 && "pt-5 md:pt-6",
-                  )}
-                >
-                  {item.title}
-                </summary>
-                <p className="whitespace-pre-line border-t border-hairline px-1 py-4 text-sm leading-relaxed text-graphite">
-                  {item.text}
-                </p>
-              </details>
-            ))}
-          </div>
+        <HomeSectionIntro section={section} align="center" />
+        <div className="mx-auto mt-8 max-w-copy border-y border-hairline md:mt-10">
+          {items.map((item, index) => (
+            <details
+              key={`${item.title}-${index}`}
+              className={index ? "border-t border-hairline" : ""}
+            >
+              <summary className="focus-ring cursor-pointer list-none px-1 py-5 font-semibold leading-snug text-carbon marker:hidden md:py-6">
+                {item.title}
+              </summary>
+              <p className="whitespace-pre-line border-t border-hairline px-1 py-4 text-sm leading-relaxed text-graphite">
+                {item.text}
+              </p>
+            </details>
+          ))}
         </div>
       </div>
     </section>

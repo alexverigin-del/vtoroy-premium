@@ -2242,3 +2242,22 @@ Next content-editing priorities:
 - Обязательный gate для таких правок: Prettier, ESLint, TypeScript,
   Tailwind post-audit, content ownership audit, production build, bundle budget
   и ручной desktop/mobile viewport-check без горизонтального переполнения.
+
+### Редактирование блоков главной в Studio (2026-08-21)
+
+- Девять активных секций главной проверены по production metadata и permissions.
+  Editor меняет основные тексты, CTA, порядок, видимость и связанные файлы;
+  структурные массивы в `page_sections.content` остаются у Advanced Editor/Admin.
+- FAQ главной используют категорию `home`. Она добавлена в варианты поля и
+  validation прав Editor, а для редактора создано представление `Главная FAQ`.
+  Регресс блокирует метрика `studio.faq.home_editability_missing` в
+  `npm run directus:audit-studio` и агрегатном `directus:audit:prod`.
+- Точный аудит `directus:audit-homepage-copy` по-прежнему сверяет production с
+  `apps/web/data/homepage-copy.json`: изменение утверждённого текста в Studio
+  требует синхронного обновления канонического источника в репозитории.
+- Перед metadata apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260821T195505Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.
+- После apply и перезапуска Directus прошли `directus:audit-studio`,
+  `directus:audit-homepage-copy` и `directus:audit-page-sections`. Канонические
+  тексты девяти секций и шести FAQ не изменились.

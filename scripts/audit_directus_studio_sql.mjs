@@ -133,6 +133,7 @@ expected_bookmarks(role_name, collection, bookmark) AS (
     ('ISVOI Editor', 'navigation_items', 'Ссылки подвала'),
     ('ISVOI Editor', 'navigation_items', 'Скрытые / архив'),
     ('ISVOI Editor', 'faq_items', 'Все активные FAQ'),
+    ('ISVOI Editor', 'faq_items', 'Главная FAQ'),
     ('ISVOI Editor', 'faq_items', 'Скрытые FAQ'),
     ('ISVOI Editor', 'leads', 'Обработка заявок'),
     ('ISVOI Editor', 'leads', 'Новые заявки'),
@@ -263,6 +264,52 @@ WHERE df.collection = 'faq_items'
     OR jsonb_typeof(df.validation::jsonb) <> 'object'
     OR NOT (df.validation::jsonb ? df.field)
   )
+UNION ALL
+SELECT 'studio.faq.home_editability_missing', count(*)::text
+FROM (
+  SELECT 1
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM directus_fields
+    WHERE collection = 'faq_items'
+      AND field = 'category'
+      AND options::jsonb @> '{"choices":[{"value":"home"}]}'::jsonb
+      AND validation::jsonb @> '{"category":{"_in":["home"]}}'::jsonb
+  )
+  UNION ALL
+  SELECT 1
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM directus_permissions dp
+    JOIN directus_policies policy ON policy.id = dp.policy
+    WHERE policy.name = 'ISVOI Editor'
+      AND dp.collection = 'faq_items'
+      AND dp.action = 'create'
+      AND dp.validation::jsonb @> '{"category":{"_in":["home"]}}'::jsonb
+  )
+  UNION ALL
+  SELECT 1
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM directus_permissions dp
+    JOIN directus_policies policy ON policy.id = dp.policy
+    WHERE policy.name = 'ISVOI Editor'
+      AND dp.collection = 'faq_items'
+      AND dp.action = 'update'
+      AND dp.validation::jsonb @> '{"category":{"_in":["home"]}}'::jsonb
+  )
+  UNION ALL
+  SELECT 1
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM directus_presets preset
+    JOIN directus_roles role ON role.id = preset.role
+    WHERE role.name = 'ISVOI Editor'
+      AND preset.collection = 'faq_items'
+      AND preset.bookmark = 'Главная FAQ'
+      AND preset."user" IS NULL
+  )
+) missing
 UNION ALL
 SELECT 'studio.site_settings.singleton_not_one', (
   CASE

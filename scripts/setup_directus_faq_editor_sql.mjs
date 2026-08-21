@@ -98,7 +98,7 @@ SELECT isvoi_upsert_directus_field('faq_items', 'question', 'input', NULL, '{"pl
 SELECT isvoi_upsert_directus_field('faq_items', 'answer', 'input-rich-text-html', NULL, '{"toolbar":["bold","italic","bullist","link","removeformat"],"folder":"ISVOI Editorial"}'::json, NULL, 'full', 3, 'Ответ обычным человеческим текстом. Не вставляйте сложную HTML-вёрстку, скрипты и стили.', false, false, true, NULL, 'group_answer', 'Ответ', '{"answer":{"_nnull":true}}'::json, 'Заполните ответ.');
 
 SELECT isvoi_upsert_directus_field('faq_items', 'page', 'select-dropdown-m2o', 'related-values', '{"template":"{{title}} · {{slug}}","filter":{"status":{"_eq":"published"}}}'::json, NULL, 'half', 21, 'Страница, к которой относится вопрос. Если вопрос общий, оставьте поле пустым и выберите категорию general.', false, false, false, 'm2o', 'group_placement', 'Страница');
-SELECT isvoi_upsert_directus_field('faq_items', 'category', 'select-dropdown', 'labels', '{"choices":[{"text":"Общее","value":"general","color":"#6b7280"},{"text":"Каталог","value":"catalog","color":"#111827"},{"text":"Store","value":"store","color":"#2563eb"},{"text":"Trade","value":"trade","color":"#7c3aed"},{"text":"Passport","value":"passport","color":"#dc2626"},{"text":"Club","value":"club","color":"#ca8a04"}]}'::json, NULL, 'half', 22, 'Категория нужна для фильтров в Studio и автоматического подбора FAQ на странице.', false, false, true, NULL, 'group_placement', 'Категория', '{"category":{"_in":["general","catalog","store","trade","passport","club"]}}'::json, 'Выберите одну из рабочих категорий FAQ.');
+SELECT isvoi_upsert_directus_field('faq_items', 'category', 'select-dropdown', 'labels', '{"choices":[{"text":"Общее","value":"general","color":"#6b7280"},{"text":"Главная","value":"home","color":"#0f766e"},{"text":"Каталог","value":"catalog","color":"#111827"},{"text":"Store","value":"store","color":"#2563eb"},{"text":"Trade","value":"trade","color":"#7c3aed"},{"text":"Passport","value":"passport","color":"#dc2626"},{"text":"Club","value":"club","color":"#ca8a04"}]}'::json, NULL, 'half', 22, 'Категория нужна для фильтров в Studio и автоматического подбора FAQ на странице.', false, false, true, NULL, 'group_placement', 'Категория', '{"category":{"_in":["general","home","catalog","store","trade","passport","club"]}}'::json, 'Выберите одну из рабочих категорий FAQ.');
 SELECT isvoi_upsert_directus_field('faq_items', 'sort', 'input', NULL, '{"min":1,"step":1}'::json, NULL, 'half', 23, 'Порядок показа внутри страницы или категории. Меньшее число будет выше.', false, false, false, NULL, 'group_placement', 'Порядок');
 SELECT isvoi_upsert_directus_field('faq_items', 'is_active', 'boolean', 'boolean', NULL, NULL, 'half', 24, 'Выключите, чтобы временно скрыть вопрос с сайта без удаления.', false, false, false, NULL, 'group_placement', 'Показывать на сайте');
 
@@ -154,6 +154,7 @@ $$;
 
 SELECT isvoi_upsert_preset('ISVOI Editor', 'faq_items', 'Все активные FAQ', 'quiz', '#10b981', '{"is_active":{"_eq":true}}'::json, '{"tabular":{"sort":["category","sort"],"fields":["is_active","category","page","sort","question"],"page":1}}'::json);
 SELECT isvoi_upsert_preset('ISVOI Editor', 'faq_items', 'Общие FAQ', 'help', '#6b7280', '{"category":{"_eq":"general"}}'::json, '{"tabular":{"sort":["sort","question"],"fields":["is_active","category","sort","question"],"page":1}}'::json);
+SELECT isvoi_upsert_preset('ISVOI Editor', 'faq_items', 'Главная FAQ', 'home', '#0f766e', '{"_or":[{"category":{"_eq":"home"}},{"page":{"slug":{"_eq":"home"}}}]}'::json, '{"tabular":{"sort":["sort","question"],"fields":["is_active","page","category","sort","question"],"page":1}}'::json);
 SELECT isvoi_upsert_preset('ISVOI Editor', 'faq_items', 'Каталог FAQ', 'inventory_2', '#111827', '{"category":{"_eq":"catalog"}}'::json, '{"tabular":{"sort":["sort","question"],"fields":["is_active","category","sort","question"],"page":1}}'::json);
 SELECT isvoi_upsert_preset('ISVOI Editor', 'faq_items', 'Store FAQ', 'storefront', '#2563eb', '{"_or":[{"category":{"_eq":"store"}},{"page":{"slug":{"_eq":"store"}}}]}'::json, '{"tabular":{"sort":["sort","question"],"fields":["is_active","page","category","sort","question"],"page":1}}'::json);
 SELECT isvoi_upsert_preset('ISVOI Editor', 'faq_items', 'Trade FAQ', 'sync_alt', '#7c3aed', '{"_or":[{"category":{"_eq":"trade"}},{"page":{"slug":{"_eq":"trade"}}}]}'::json, '{"tabular":{"sort":["sort","question"],"fields":["is_active","page","category","sort","question"],"page":1}}'::json);
@@ -237,7 +238,7 @@ SELECT isvoi_upsert_permission(
   'create',
   'key,question,answer,page,category,sort,is_active',
   NULL,
-  '{"key":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"question":{"_nnull":true},"answer":{"_nnull":true},"category":{"_in":["general","catalog","store","trade","passport","club"]}}'::json,
+  '{"key":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"question":{"_nnull":true},"answer":{"_nnull":true},"category":{"_in":["general","home","catalog","store","trade","passport","club"]}}'::json,
   '{"category":"general","is_active":true,"sort":100}'::json
 );
 SELECT isvoi_upsert_permission(
@@ -246,7 +247,7 @@ SELECT isvoi_upsert_permission(
   'update',
   'key,question,answer,page,category,sort,is_active',
   NULL,
-  '{"key":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"question":{"_nnull":true},"answer":{"_nnull":true},"category":{"_in":["general","catalog","store","trade","passport","club"]}}'::json
+  '{"key":{"_regex":"^[a-z0-9]+(?:-[a-z0-9]+)*$"},"question":{"_nnull":true},"answer":{"_nnull":true},"category":{"_in":["general","home","catalog","store","trade","passport","club"]}}'::json
 );
 SELECT isvoi_delete_permission('ISVOI Editor', 'faq_items', 'delete');
 
@@ -272,7 +273,7 @@ UNION ALL
 SELECT 'faq_editor.presets', count(*)::text
 FROM directus_presets
 WHERE collection = 'faq_items'
-  AND bookmark IN ('Все активные FAQ', 'Общие FAQ', 'Каталог FAQ', 'Store FAQ', 'Trade FAQ', 'Passport FAQ', 'Club FAQ', 'Скрытые FAQ')
+  AND bookmark IN ('Все активные FAQ', 'Общие FAQ', 'Главная FAQ', 'Каталог FAQ', 'Store FAQ', 'Trade FAQ', 'Passport FAQ', 'Club FAQ', 'Скрытые FAQ')
   AND role IN (SELECT id FROM directus_roles WHERE name = 'ISVOI Editor')
 UNION ALL
 SELECT 'faq_editor.editor_permissions', count(*)::text

@@ -102,7 +102,8 @@ Detailed guide: `docs/global-content-editor-guide.md`.
 
 Use `FAQ` (`faq_items`).
 
-- Start with bookmarks by page/category.
+- For the homepage, start with the `Главная FAQ` bookmark. Other pages have
+  bookmarks by page/category.
 - Hide old questions with `Показывать на сайте = false`; do not delete them
   during normal editing.
 - Keep `Ключ` stable if a page section references a fixed FAQ list.

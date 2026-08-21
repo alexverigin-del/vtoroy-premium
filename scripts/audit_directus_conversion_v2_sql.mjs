@@ -25,7 +25,7 @@ SELECT 'conversion_v2.home_deprecated_active', count(*)::text
 FROM page_sections ps
 JOIN site_pages sp ON sp.id = ps.page
 WHERE sp.slug = 'home' AND ps.is_active = true
-  AND ps.section_key IN ('market_tension', 'circle_rules', 'path_router', 'club_preview', 'diagnostics_compare')
+  AND ps.section_key IN ('market_tension', 'path_router', 'club_preview', 'diagnostics_compare')
 UNION ALL
 SELECT 'conversion_v2.published_devices_missing_required_fields.warning', count(*)::text
 FROM devices

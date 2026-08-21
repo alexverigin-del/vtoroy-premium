@@ -403,25 +403,11 @@ function CircleRulesSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-frost py-14 md:py-20" aria-label={section.eyebrow || "Правила круга"}>
-      <div className="mx-auto grid max-w-page gap-8 px-4 md:px-6 lg:grid-cols-12 lg:gap-10">
-        <div className="lg:col-span-5">
-          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-          {section.headline ? (
-            <h2 className="mt-3 max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-              {section.headline}
-            </h2>
-          ) : null}
-        </div>
-        <div className="lg:col-span-6 lg:col-start-7">
-          {section.body ? (
-            <RichText
-              className="text-copy leading-relaxed text-graphite"
-              html={section.body}
-              nodes={section.bodyRichText}
-            />
-          ) : null}
-          {items.length > 0 ? (
-            <ol className="mt-8 border-y border-hairline">
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <HomeSectionIntro section={section} />
+        {items.length > 0 ? (
+          <div className="mt-8 grid lg:grid-cols-12 lg:gap-10">
+            <ol className="border-y border-hairline lg:col-span-6 lg:col-start-7">
               {items.slice(0, 4).map((item, index) => (
                 <li
                   key={`${item.title}-${item.text}`}
@@ -444,8 +430,8 @@ function CircleRulesSection({ section }: { section: PageSection }) {
                 </li>
               ))}
             </ol>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -548,29 +534,41 @@ function HomeFaqSection({ section }: { section: PageSection }) {
 
   return (
     <section className="bg-white py-14 md:py-20" aria-label="Частые вопросы">
-      <div className="mx-auto grid max-w-page gap-8 px-4 md:px-6 lg:grid-cols-12 lg:gap-10">
-        <div className="lg:col-span-4">
-          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-          {section.headline ? (
-            <h2 className="mt-3 text-balance text-3xl font-semibold leading-tight text-carbon md:text-5xl">
-              {section.headline}
-            </h2>
-          ) : null}
-        </div>
-        <div className="border-y border-hairline lg:col-span-7 lg:col-start-6">
-          {items.map((item, index) => (
-            <details
-              key={`${item.title}-${index}`}
-              className={index ? "border-t border-hairline" : ""}
-            >
-              <summary className="focus-ring cursor-pointer list-none px-1 py-5 font-semibold text-carbon marker:hidden md:py-6">
-                {item.title}
-              </summary>
-              <p className="whitespace-pre-line border-t border-hairline px-1 py-4 text-sm leading-relaxed text-graphite">
-                {item.text}
-              </p>
-            </details>
-          ))}
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
+        <div
+          className={cn(
+            "grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10",
+            section.eyebrow && "mt-3",
+          )}
+        >
+          <div className="lg:col-span-5">
+            {section.headline ? (
+              <h2 className="max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
+                {section.headline}
+              </h2>
+            ) : null}
+          </div>
+          <div className="border-b border-hairline lg:col-span-6 lg:col-start-7">
+            {items.map((item, index) => (
+              <details
+                key={`${item.title}-${index}`}
+                className={index ? "border-t border-hairline" : ""}
+              >
+                <summary
+                  className={cn(
+                    "focus-ring cursor-pointer list-none px-1 pb-5 font-semibold leading-snug text-carbon marker:hidden md:pb-6",
+                    index > 0 && "pt-5 md:pt-6",
+                  )}
+                >
+                  {item.title}
+                </summary>
+                <p className="whitespace-pre-line border-t border-hairline px-1 py-4 text-sm leading-relaxed text-graphite">
+                  {item.text}
+                </p>
+              </details>
+            ))}
+          </div>
         </div>
       </div>
     </section>

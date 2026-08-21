@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
+import { HomeSectionIntro } from "./HomeSectionIntro";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { RichText } from "./RichText";
-import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
+import { primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
 type FeatureItem = {
   title: string;
@@ -229,131 +230,122 @@ export function PassportPreviewSection({ section }: { section: PageSection }) {
       id="passport"
       data-component="PassportPreviewSection"
     >
-      <div className="mx-auto grid max-w-page gap-10 px-4 md:grid-cols-passport md:px-6 lg:gap-12">
-        <div className="flex flex-col justify-center">
-          {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
-          {section.headline ? (
-            <h2 className="mt-3 max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-              {section.headline}
-            </h2>
-          ) : null}
-          {section.body ? (
-            <RichText
-              className="mt-4 text-copy leading-relaxed text-graphite"
-              html={section.body}
-              nodes={section.bodyRichText}
-            />
-          ) : null}
-
-          <ul className="mt-8 border-y border-hairline">
-            {renderedFeatures.map((feature, index) => (
-              <li
-                key={`${feature.title}-${feature.text}`}
-                className={cn("flex gap-4 py-4", index > 0 ? "border-t border-hairline" : "")}
-              >
-                <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-frost text-link-blue">
-                  <Icon name={feature.icon} />
-                </span>
-                <div>
-                  <div className="font-semibold text-carbon">{feature.title}</div>
-                  <div className="mt-1 text-sm leading-relaxed text-graphite">{feature.text}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {note ? (
-            <RichText
-              className="mt-6 text-copy leading-relaxed text-graphite"
-              html={note}
-              nodes={section.content.noteRichText}
-            />
-          ) : null}
-
-          {section.primaryCtaLabel || section.secondaryCtaLabel ? (
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {section.primaryCtaLabel ? (
-                <Link
-                  href={normalizeSiteUrl(section.primaryCtaUrl || "/passport")}
-                  className={primaryCtaClass}
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        <HomeSectionIntro section={section} />
+        <div className="mt-8 grid gap-10 md:mt-10 md:grid-cols-passport lg:gap-12">
+          <div>
+            <ul className="border-y border-hairline">
+              {renderedFeatures.map((feature, index) => (
+                <li
+                  key={`${feature.title}-${feature.text}`}
+                  className={cn("flex gap-4 py-4", index > 0 ? "border-t border-hairline" : "")}
                 >
-                  {section.primaryCtaLabel}
-                </Link>
-              ) : null}
-              {section.secondaryCtaLabel ? (
-                <Link
-                  href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
-                  className={secondaryCtaClass}
-                >
-                  {section.secondaryCtaLabel}
-                </Link>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
+                  <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-frost text-link-blue">
+                    <Icon name={feature.icon} />
+                  </span>
+                  <div>
+                    <div className="font-semibold text-carbon">{feature.title}</div>
+                    <div className="mt-1 text-sm leading-relaxed text-graphite">{feature.text}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
 
-        <div
-          className="rounded-card border border-hairline bg-frost p-4 md:p-6"
-          id="passport-example"
-        >
-          {card.heading ? (
-            <div className="mb-5 text-xl font-semibold leading-tight text-carbon">
-              {card.heading}
-            </div>
-          ) : null}
-          <div className="flex items-start justify-between gap-4 border-b border-hairline pb-5">
-            <div>
-              <div className="text-xl font-semibold text-carbon">{card.device}</div>
-              <div className="mt-1 text-sm text-ash">{card.sub}</div>
-            </div>
-            <div className="rounded-card border border-hairline bg-white px-4 py-3 text-center">
-              <b className="block text-2xl text-carbon">{card.grade}</b>
-              <span className="text-xs uppercase tracking-caption text-ash">{card.gradeLabel}</span>
-            </div>
+            {note ? (
+              <RichText
+                className="mt-6 text-copy leading-relaxed text-graphite"
+                html={note}
+                nodes={section.content.noteRichText}
+              />
+            ) : null}
+
+            {section.primaryCtaLabel || section.secondaryCtaLabel ? (
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                {section.primaryCtaLabel ? (
+                  <Link
+                    href={normalizeSiteUrl(section.primaryCtaUrl || "/passport")}
+                    className={primaryCtaClass}
+                  >
+                    {section.primaryCtaLabel}
+                  </Link>
+                ) : null}
+                {section.secondaryCtaLabel ? (
+                  <Link
+                    href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
+                    className={secondaryCtaClass}
+                  >
+                    {section.secondaryCtaLabel}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
-          <div className="mt-5 grid gap-3">
-            {card.rows.map((row) => (
-              <div
-                key={`${row.label}-${row.value}`}
-                className="flex items-start justify-between gap-4 rounded-card bg-white px-4 py-3 text-sm"
-              >
-                <span className="flex items-center gap-2 text-graphite">
-                  <span className={cn("h-2 w-2 rounded-full", dotClasses(row.state))} />
-                  {row.label}
-                </span>
-                <span className="whitespace-pre-line text-right font-semibold leading-relaxed text-carbon">
-                  {row.value}
+          <div
+            className="rounded-card border border-hairline bg-frost p-4 md:p-6"
+            id="passport-example"
+          >
+            {card.heading ? (
+              <div className="mb-5 text-xl font-semibold leading-tight text-carbon">
+                {card.heading}
+              </div>
+            ) : null}
+            <div className="flex items-start justify-between gap-4 border-b border-hairline pb-5">
+              <div>
+                <div className="text-xl font-semibold text-carbon">{card.device}</div>
+                <div className="mt-1 text-sm text-ash">{card.sub}</div>
+              </div>
+              <div className="rounded-card border border-hairline bg-white px-4 py-3 text-center">
+                <b className="block text-2xl text-carbon">{card.grade}</b>
+                <span className="text-xs uppercase tracking-caption text-ash">
+                  {card.gradeLabel}
                 </span>
               </div>
-            ))}
-          </div>
-
-          {card.exitLabel && card.exitValue ? (
-            <div className="mt-5 rounded-card bg-carbon px-5 py-4 text-white">
-              <span className="block text-sm text-white/70">{card.exitLabel}</span>
-              <span className="mt-1 block text-2xl font-semibold">{card.exitValue}</span>
             </div>
-          ) : null}
 
-          <div className="mt-5 flex items-center justify-between gap-4">
-            <div className="text-sm text-graphite">
-              {card.warranty || card.warrantyStrong ? (
-                <span>
-                  {card.warranty} <b className="text-carbon">{card.warrantyStrong}</b>
-                </span>
-              ) : null}
-              {card.status ? <strong className="block text-success">{card.status}</strong> : null}
-              {card.ctaLabel && card.ctaUrl ? (
-                <Link
-                  className="mt-2 inline-flex font-semibold text-link-blue hover:underline"
-                  href={normalizeSiteUrl(card.ctaUrl)}
+            <div className="mt-5 grid gap-3">
+              {card.rows.map((row) => (
+                <div
+                  key={`${row.label}-${row.value}`}
+                  className="flex items-start justify-between gap-4 rounded-card bg-white px-4 py-3 text-sm"
                 >
-                  {card.ctaLabel}
-                </Link>
-              ) : null}
+                  <span className="flex items-center gap-2 text-graphite">
+                    <span className={cn("h-2 w-2 rounded-full", dotClasses(row.state))} />
+                    {row.label}
+                  </span>
+                  <span className="whitespace-pre-line text-right font-semibold leading-relaxed text-carbon">
+                    {row.value}
+                  </span>
+                </div>
+              ))}
             </div>
-            <PassportQr />
+
+            {card.exitLabel && card.exitValue ? (
+              <div className="mt-5 rounded-card bg-carbon px-5 py-4 text-white">
+                <span className="block text-sm text-white/70">{card.exitLabel}</span>
+                <span className="mt-1 block text-2xl font-semibold">{card.exitValue}</span>
+              </div>
+            ) : null}
+
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="text-sm text-graphite">
+                {card.warranty || card.warrantyStrong ? (
+                  <span>
+                    {card.warranty} <b className="text-carbon">{card.warrantyStrong}</b>
+                  </span>
+                ) : null}
+                {card.status ? <strong className="block text-success">{card.status}</strong> : null}
+                {card.ctaLabel && card.ctaUrl ? (
+                  <Link
+                    className="mt-2 inline-flex font-semibold text-link-blue hover:underline"
+                    href={normalizeSiteUrl(card.ctaUrl)}
+                  >
+                    {card.ctaLabel}
+                  </Link>
+                ) : null}
+              </div>
+              <PassportQr />
+            </div>
           </div>
         </div>
       </div>

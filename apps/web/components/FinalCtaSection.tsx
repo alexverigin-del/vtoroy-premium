@@ -5,11 +5,11 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import type { PageSection, RichTextNode } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
+import { HomeSectionIntro } from "./HomeSectionIntro";
 import { RichText } from "./RichText";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { useLeadIntake } from "./useLeadIntake";
 import {
-  homeSectionLabelClass,
   leadFieldClass,
   leadHoneypotClass,
   primaryCtaClass,
@@ -168,23 +168,9 @@ export function FinalCtaSection({
   return (
     <section className="bg-frost py-14 md:py-20" id="final" data-component="FinalCtaSection">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
-          <div className="flex flex-col justify-center lg:col-span-6 lg:pt-6">
-            {section.eyebrow ? (
-              <div className={homeSectionLabelClass}>{section.eyebrow}</div>
-            ) : null}
-            {section.headline ? (
-              <h2 className="mt-3 max-w-heading text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">
-                {section.headline}
-              </h2>
-            ) : null}
-            {section.body ? (
-              <RichText
-                className="mt-4 max-w-form text-copy leading-relaxed text-graphite"
-                html={section.body}
-                nodes={section.bodyRichText}
-              />
-            ) : null}
+        <HomeSectionIntro section={section} />
+        <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
+          <div className="lg:col-span-6">
             <ul className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">
               {renderedProof.map((item) => (
                 <li

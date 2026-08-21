@@ -161,6 +161,7 @@ allowed_keys(key) AS (
     ('state'),
     ('statusFilterLabel'),
     ('statusFilters'),
+    ('status'),
     ('steps'),
     ('sub'),
     ('submit_label'),

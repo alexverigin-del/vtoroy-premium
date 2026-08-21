@@ -27,6 +27,9 @@ type FinalCtaForm = {
   contactLabel: string;
   contactPlaceholder: string;
   submitLabel: string;
+  submittingLabel: string;
+  successNote: string;
+  errorNote: string;
   consentNote: string;
   note: string;
 };
@@ -61,7 +64,11 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
     ? stringList(record.scenarioOptions)
     : stringList(record.scenario_options);
   const publicScenarioOptions = scenarioOptions.filter((option) => !/\bClub\b/iu.test(option));
-  const note = text("note", "note", "Оставьте контакт, и мы предложим спокойный следующий шаг.");
+  const rawNote = text("note", "note", "Оставьте контакт, и мы предложим спокойный следующий шаг.");
+  const note = /Прототип|в реальном запуске|\bCRM\b/iu.test(rawNote)
+    ? "Ответим по указанному контакту."
+    : rawNote;
+  const submitLabel = text("submitLabel", "submit_label", "Получить варианты");
 
   return {
     showScenario: record.showScenario !== false && record.show_scenario !== false,
@@ -79,15 +86,16 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
     ),
     contactLabel: text("contactLabel", "contact_label", "Контакт для ответа"),
     contactPlaceholder: text("contactPlaceholder", "contact_placeholder", "Телефон или Telegram"),
-    submitLabel: text("submitLabel", "submit_label", "Получить варианты"),
+    submitLabel,
+    submittingLabel: text("submittingLabel", "submitting_label", submitLabel),
+    successNote: text("successNote", "success_note", note),
+    errorNote: text("errorNote", "error_note", note),
     consentNote: text(
       "consentNote",
       "consent_note",
       "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
     ),
-    note: /Прототип|в реальном запуске|\bCRM\b/iu.test(note)
-      ? "Ответим по указанному контакту."
-      : note,
+    note,
   };
 }
 
@@ -269,7 +277,7 @@ export function FinalCtaSection({
               type="submit"
               disabled={state === "submitting" || !turnstileReady}
             >
-              {state === "submitting" ? "Отправляем..." : form.submitLabel}
+              {state === "submitting" ? form.submittingLabel : form.submitLabel}
             </button>
 
             <p
@@ -282,9 +290,9 @@ export function FinalCtaSection({
               )}
             >
               {state === "success"
-                ? "Заявка принята. Мы свяжемся с вами и предложим спокойный следующий шаг."
+                ? form.successNote
                 : state === "error"
-                  ? "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз."
+                  ? form.errorNote
                   : form.note}
             </p>
           </form>

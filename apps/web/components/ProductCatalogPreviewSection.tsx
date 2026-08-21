@@ -19,6 +19,12 @@ export function ProductCatalogPreviewSection({
       ? section.content.limit
       : 8;
   const note = typeof section.content.note === "string" ? section.content.note : "";
+  const emptyState =
+    section.content.emptyState && typeof section.content.emptyState === "object"
+      ? section.content.emptyState
+      : null;
+  const emptyStateBody =
+    emptyState && typeof emptyState.body === "string" ? emptyState.body.trim() : "";
   return (
     <section className="bg-frost py-14 md:py-20" id="catalog">
       <div className="mx-auto max-w-page px-4 md:px-6">
@@ -32,11 +38,11 @@ export function ProductCatalogPreviewSection({
               </li>
             ))}
           </ul>
-        ) : (
+        ) : emptyStateBody ? (
           <p className="mt-10 rounded-card border border-hairline bg-frost p-8 text-center text-muted">
-            Каталог обновляется. Оставьте заявку — проверим поступления и предложим варианты.
+            {emptyStateBody}
           </p>
-        )}
+        ) : null}
 
         {note ? (
           <RichText

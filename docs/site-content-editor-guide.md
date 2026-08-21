@@ -43,6 +43,10 @@ image, attach it through `Главное изображение блока`.
 `JSON-настройки блока` is an advanced field for structured parts of a block:
 cards, steps, comparison rows, FAQ keys and similar repeatable content.
 
+For the homepage, this field also owns the catalog preview empty-state text in
+`catalog_preview.emptyState.body` and the final form state texts in
+`final_cta.form.submitting_label`, `success_note` and `error_note`.
+
 The ordinary `ISVOI Editor` role uses this field for review only. To edit and
 save JSON in Studio, assign the `ISVOI Advanced Editor` role and run the
 page-sections/content audits after the change.

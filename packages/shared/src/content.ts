@@ -189,6 +189,12 @@ export interface SectionContent {
     contact_placeholder?: string;
     submitLabel?: string;
     submit_label?: string;
+    submittingLabel?: string;
+    submitting_label?: string;
+    successNote?: string;
+    success_note?: string;
+    errorNote?: string;
+    error_note?: string;
     consentNote?: string;
     consent_note?: string;
     note?: string;

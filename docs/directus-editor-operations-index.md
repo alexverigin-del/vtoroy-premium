@@ -76,6 +76,9 @@ Use `Страницы сайта` (`site_pages`) first.
 - Open the page, then edit its owned `Секции страницы`.
 - Do not change `Ключ блока`, `Тип блока` or JSON settings without a developer
   review.
+- Homepage catalog empty-state and final-form submit/success/error copy live in
+  the corresponding section's `JSON-настройки блока`; they are editable by
+  Advanced Editor/Admin and protected by the exact homepage-copy audit.
 - For images, use `Главное изображение блока`; it points to Directus Files and
   lets the site optimize the asset.
 

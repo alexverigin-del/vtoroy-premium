@@ -2261,3 +2261,13 @@ Next content-editing priorities:
 - После apply и перезапуска Directus прошли `directus:audit-studio`,
   `directus:audit-homepage-copy` и `directus:audit-page-sections`. Канонические
   тексты девяти секций и шести FAQ не изменились.
+- Content ownership главной закрыт полностью: empty-state превью каталога
+  хранится в `catalog_preview.content.emptyState.body`, а подписи отправки,
+  успеха и ошибки формы — в `final_cta.content.form`. React-компоненты больше не
+  содержат эти публичные строки; exact homepage audit контролирует production.
+- Перед production apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260821T201124Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.
+- SQL сначала прошёл production rehearsal с `ROLLBACK`, затем был применён.
+  После apply прошли `directus:audit-homepage-copy`,
+  `directus:audit-page-sections`, content ownership и полный `web:verify`.

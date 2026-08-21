@@ -2197,3 +2197,18 @@ Next content-editing priorities:
 - Перед production apply создан и проверен backup
   `/opt/isvoi/backups/directus/20260821T141601Z`; PostgreSQL и uploads прошли
   SHA-256. Offsite copy пропущен, потому что `OFFSITE_BACKUP_DEST` не настроен.
+- Production rollout выполнен цепочкой `656009d`, `41fa52f`, `dbab8c9`,
+  `39e8fd6`, `dbb2c4c`. Точный homepage audit, Page Sections audit и полный
+  `directus:audit:prod` прошли; API policy, ops, consent и content ownership
+  остались зелёными.
+- После SQL apply обязательна защищённая revalidation через
+  `/api/revalidate/site-content`: первый visual smoke поймал старый SSG-слепок,
+  собранный до изменения Directus. PM2 restart сам по себе не заменяет этот шаг.
+- Вложенные `content.note` и `content.closing.body` проходят server-side
+  `prepareSectionContentRichText` и передаются в client components безопасными
+  React-нодами. `dangerouslySetInnerHTML` не используется; production HTML не
+  содержит видимых экранированных `<p>`/`<strong>`.
+- После revalidation прошли `smoke:copy`, `smoke:prod`, `smoke:images` и
+  desktop/mobile `smoke:visual`. Скриншоты вручную проверены на порядок секций,
+  переполнение, длинный Passport, четыре шага Store, две Trade-плашки, шесть FAQ
+  и составной финальный блок.

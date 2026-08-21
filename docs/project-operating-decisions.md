@@ -2286,7 +2286,10 @@ Next content-editing priorities:
   точным homepage-copy audit. Passport overlay остаётся выключенным: отдельная
   Passport-секция раскрывает проверку ниже по странице.
 - `import_site_assets.mjs --replace-file` заменяет бинарник существующего
-  Directus File через API, сохраняя UUID и не создавая orphan-файл.
+  Directus File через API, сохраняя UUID и не создавая orphan-файл. На
+  production сервисный токен не имеет системных Files update-полей, поэтому
+  скрипт использует локальный Docker/PostgreSQL fallback с проверкой upload-path
+  и обновлением `filesize`, `width`, `height` и `modified_on`.
 - Перед production apply создан и проверен backup
   `/opt/isvoi/backups/directus/20260821T205329Z`; PostgreSQL и uploads прошли
   SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.

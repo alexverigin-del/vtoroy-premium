@@ -21,6 +21,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, readdirSync } from "node:fs";
 import { copyFile, readFile, stat, unlink } from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 
 const MIME_BY_EXT = new Map([
   [".jpg", "image/jpeg"],
@@ -165,7 +166,7 @@ function sqlLiteral(value) {
   return `'${String(value).replaceAll("'", "''")}'`;
 }
 
-function localPsqlScalar(sql) {
+function localPsqlLines(sql) {
   const composeFile = path.resolve("infra/directus-beget/docker-compose.yml");
   const result = spawnSync(
     "docker",
@@ -190,13 +191,19 @@ function localPsqlScalar(sql) {
   if (result.status !== 0) {
     throw new Error(result.stderr || result.stdout || "Local Directus SQL failed.");
   }
-  return (
-    result.stdout
-      .trim()
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .find((line) => /^[0-9a-f-]{36}$/i.test(line)) || ""
-  );
+  return result.stdout
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function localPsqlScalar(sql) {
+  return localPsqlLines(sql).find((line) => /^[0-9a-f-]{36}$/i.test(line)) || "";
+}
+
+function localPsqlText(sql) {
+  return localPsqlLines(sql)[0] || "";
 }
 
 async function localDirectusFileInsert(filePath, { title, folder, mime }) {
@@ -244,6 +251,43 @@ RETURNING id;
   }
 }
 
+async function localDirectusFileReplace(filePath, { id, title, mime }) {
+  const composeFile = path.resolve("infra/directus-beget/docker-compose.yml");
+  const uploadsDir = path.resolve("infra/directus-beget/uploads");
+  if (!existsSync(composeFile) || !existsSync(uploadsDir)) return "";
+
+  const filenameDisk = localPsqlText(`
+SELECT filename_disk
+FROM directus_files
+WHERE id = ${sqlLiteral(id)}::uuid
+  AND title = ${sqlLiteral(title)}
+LIMIT 1;
+`);
+  if (!filenameDisk) return "";
+
+  const target = path.resolve(uploadsDir, filenameDisk);
+  if (!target.startsWith(`${uploadsDir}${path.sep}`)) {
+    throw new Error(`Unsafe Directus upload path: ${target}`);
+  }
+
+  await copyFile(filePath, target);
+  const [{ size }, metadata] = await Promise.all([stat(target), sharp(filePath).metadata()]);
+  const updatedId = localPsqlScalar(`
+UPDATE directus_files
+SET filename_download = ${sqlLiteral(path.basename(filePath))},
+    type = ${sqlLiteral(mime)},
+    filesize = ${size},
+    width = ${metadata.width ?? "NULL"},
+    height = ${metadata.height ?? "NULL"},
+    modified_on = now()
+WHERE id = ${sqlLiteral(id)}::uuid
+  AND title = ${sqlLiteral(title)}
+RETURNING id;
+`);
+  if (!updatedId) throw new Error(`Local Directus file replace failed for ${title}.`);
+  return updatedId;
+}
+
 async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun, replaceFile }) {
   const existing = existingFiles.get(title);
   if (existing?.id && !replaceFile) {
@@ -277,11 +321,13 @@ async function ensureFile(cfg, existingFiles, { filePath, title, folder, dryRun,
   const json = text ? JSON.parse(text) : {};
   if (!res.ok) {
     const fallbackId = existing?.id
-      ? ""
+      ? await localDirectusFileReplace(filePath, { id: existing.id, title, mime })
       : await localDirectusFileInsert(filePath, { title, folder, mime });
     if (fallbackId) {
       existingFiles.set(title, { id: fallbackId, title });
-      console.log(`[upload:fallback] file ${title} -> ${fallbackId}`);
+      console.log(
+        `[${existing?.id ? "replace" : "upload"}:fallback] file ${title} -> ${fallbackId}`,
+      );
       return fallbackId;
     }
     throw new Error(`${existing?.id ? "PATCH" : "POST"} ${endpoint} failed: ${res.status} ${text}`);

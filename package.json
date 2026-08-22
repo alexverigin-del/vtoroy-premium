@@ -75,6 +75,8 @@
     "directus:audit-club:sql": "node scripts/audit_directus_club_sql.mjs",
     "directus:audit-content-ownership": "node scripts/audit_content_ownership.mjs",
     "directus:cache:permissions": "bash scripts/clear_directus_permission_cache.sh",
+    "directus:content-patch": "node scripts/directus_content_patch.mjs",
+    "directus:content-patch:test": "node scripts/test_directus_content_patch.mjs",
     "directus:restore-rehearsal": "bash scripts/restore_rehearsal_from_offsite.sh",
     "directus:setup:file-folders": "node scripts/setup_directus_file_folders_sql.mjs",
     "directus:setup:files-cleanup": "node scripts/setup_directus_files_cleanup_sql.mjs",

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "replace-with-date-and-purpose",
+  "description": "Describe the exact editor-facing content change",
+  "collection": "page_sections",
+  "selector": {
+    "id": "replace-with-production-row-id"
+  },
+  "changes": {
+    "closing_headline": "New approved value",
+    "content.example_key": "New approved nested value"
+  },
+  "remove": [],
+  "revalidate": "site-content"
+}

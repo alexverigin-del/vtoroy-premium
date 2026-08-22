@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-08-19.
+Last updated: 2026-08-22.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -22,6 +22,7 @@ startup reading order is:
 8. `docs/catalog-workflow.md`
 9. `docs/catalog-operator-guide.md`
 10. `docs/directus-backup-restore.md`
+11. `docs/directus-content-patches.md`
 
 Before assuming the state of the project, compare local git, GitHub and
 production:
@@ -2343,3 +2344,38 @@ Next content-editing priorities:
   legacy через `device`. API policy проверяет `service.product_passport` и
   `service.product_trade`; permissions setup не должен возвращать фильтр только
   по legacy `device`.
+
+### Безопасные точечные изменения контента Directus (2026-08-22)
+
+- Production Directus остаётся источником истины для редакторского текста.
+  Setup/seed/reset-скрипты не входят в обычный deploy и не применяются ради
+  добавления одного поля или изменения одного блока.
+- Для инженерных правок существующего контента добавлен
+  `npm run directus:content-patch`. Декларативные patch-файлы хранятся в
+  `directus/content-patches/`; полный runbook находится в
+  `docs/directus-content-patches.md`.
+- Workflow состоит из `--capture-lock`, preview с обязательным SQL `ROLLBACK`
+  и отдельного `--apply --confirm <patch-id>`. Apply принимает только
+  закоммиченный неизменённый файл из `origin/master` и только одну запись.
+- Lock содержит SHA-256 всего production-row и доступную дату обновления.
+  Перед apply состояние читается повторно, а тот же hash включается в атомарный
+  `UPDATE`; параллельная Studio-правка приводит к отказу без перезаписи.
+- Перед реальным `UPDATE` автоматически создаётся и проверяется свежий backup
+  PostgreSQL/uploads. После изменения Directus перезапускается для сброса
+  устаревшего data cache, выполняется protected site revalidation и повторная
+  проверка всех заявленных путей.
+- Инструмент запрещает Directus system collections, лиды, импорт, склад,
+  чувствительные поля, идентификаторы, ownership и timestamps. Изменения
+  вложенного JSON сохраняют все неуказанные ключи.
+- Любое несовпадение snapshot считается сигналом повторно изучить Activity и
+  актуальную запись, а не поводом автоматически обновить lock.
+- Инструмент использует PostgreSQL, потому что site service token остаётся
+  read-only, и не создаёт Studio revision от имени редактора. Аудит-следом
+  инженерной правки служат patch-файл в Git, commit, путь проверенного backup и
+  эта операционная запись; обычное редактирование по-прежнему выполняется в
+  Studio.
+- Интеграционный rehearsal выполнен на production-записи `home.final_cta`:
+  показан точный diff поля `closing_headline`, SQL-транзакция завершилась
+  `ROLLBACK`, а SHA-256 snapshot до и после остался
+  `7bf8d24f66c154735f14c9144cf13f455870a8c0ffc656f1dccf0306638046c2`.
+  Контент не изменялся, backup и revalidation для preview не запускались.

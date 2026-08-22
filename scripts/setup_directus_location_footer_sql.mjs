@@ -93,6 +93,10 @@ SELECT pg_temp.isvoi_location_footer_field(
   'Юридический адрес'
 );
 
+UPDATE directus_fields
+SET note='HTTPS-ссылка на карту. Вставляйте только URL, без iframe-кода.'
+WHERE collection='store_locations' AND field='map_url';
+
 CREATE OR REPLACE FUNCTION pg_temp.isvoi_append_location_footer_fields(
   p_policy text,p_action varchar
 ) RETURNS void LANGUAGE plpgsql AS $$
@@ -136,6 +140,10 @@ SET address=coalesce(nullif(location.address,''),settings.address),
   ogrn=coalesce(nullif(location.ogrn,''),settings.ogrn)
 FROM global_settings settings
 WHERE location.slug='belgorod';
+
+UPDATE store_locations
+SET map_url=substring(map_url FROM 'src="([^"]+)"')
+WHERE map_url ~* '^\s*<iframe[^>]+src="https://';
 
 DO $guard$
 BEGIN

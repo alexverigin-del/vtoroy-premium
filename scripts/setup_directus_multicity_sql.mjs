@@ -202,7 +202,7 @@ SELECT pg_temp.isvoi_multicity_field('store_locations','address','input-multilin
 SELECT pg_temp.isvoi_multicity_field('store_locations','latitude','input',NULL,'{"min":-90,"max":90,"step":0.000001}','half',6,'Широта точки.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','longitude','input',NULL,'{"min":-180,"max":180,"step":0.000001}','half',6,'Долгота точки.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','business_hours','input',NULL,NULL,'half',7,'Проверенные часы работы.',NULL,NULL,false);
-SELECT pg_temp.isvoi_multicity_field('store_locations','map_url','input',NULL,NULL,'half',8,'HTTPS-ссылка на карту.',NULL,NULL,false);
+SELECT pg_temp.isvoi_multicity_field('store_locations','map_url','input',NULL,NULL,'half',8,'HTTPS-ссылка на карту. Вставляйте только URL, без iframe-кода.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','phone','input',NULL,NULL,'half',9,'Публичный телефон.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','telegram','input',NULL,NULL,'half',10,'Публичный Telegram.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','email','input',NULL,NULL,'half',11,'Публичный email.',NULL,NULL,false);

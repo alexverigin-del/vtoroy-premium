@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-22T17:57:22.101Z",
+  "updatedAt": "2026-08-22T19:19:28.199Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -1356,99 +1356,57 @@
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "string",
-      "line": 25,
-      "text": "Контакты и визит в магазин.",
-      "id": "fdcf7a7a30bcc704"
-    },
-    {
-      "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "string",
-      "line": 25,
+      "kind": "jsx-text",
+      "line": 21,
       "text": "Получение и доставка.",
-      "id": "629c65a79ccd246e"
+      "id": "411444c0f1b8e5ab"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "jsx-text",
-      "line": 31,
-      "text": "Магазин",
-      "id": "98c68925f012e53e"
-    },
-    {
-      "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "string",
-      "line": 33,
-      "text": "Точный адрес уточняется перед визитом.",
-      "id": "32de60211e3ec8e6"
-    },
-    {
-      "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "string",
-      "line": 36,
-      "text": "Часы работы уточняются перед визитом.",
-      "id": "dad658d2dabd0fab"
-    },
-    {
-      "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "jsx-text",
-      "line": 40,
-      "text": "Связаться",
-      "id": "df903e83ba43cd36"
-    },
-    {
-      "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "jsx-text",
-      "line": 48,
-      "text": "Контакты обновляются.",
-      "id": "f18ea2cd4991b0a9"
-    },
-    {
-      "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "jsx-text",
-      "line": 56,
+      "line": 26,
       "text": "Самовывоз",
       "id": "35584f5c1cda02dd"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "string",
-      "line": 59,
+      "line": 29,
       "text": "Доступен из магазина в городе ${location.city} после подтверждения резерва.",
       "id": "a9f31c14fd52359d"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "string",
-      "line": 60,
+      "line": 30,
       "text": "Самовывоз для этой точки пока недоступен.",
       "id": "aa78deefec1c4bdb"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "jsx-text",
-      "line": 64,
+      "line": 34,
       "text": "Из другого города",
       "id": "f4d825f36de1b3f6"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "string",
-      "line": 67,
+      "line": 37,
       "text": "Доступные предложения других магазинов отмечаются в каталоге вместе со сроком доставки.",
       "id": "a94a5c5eac62a635"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "string",
-      "line": 68,
+      "line": 38,
       "text": "Межгородская доставка для этой точки пока недоступна.",
       "id": "27bc058a35a9bddf"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "jsx-text",
-      "line": 75,
+      "line": 43,
       "text": "Смотреть каталог города",
       "id": "cf1ddfade087b2ee"
     },
@@ -2106,93 +2064,114 @@
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 31,
+      "line": 44,
       "text": "Магазины I СВОИ",
       "id": "5c320c154bd4cea2"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 34,
+      "kind": "string",
+      "line": 48,
       "text": "I СВОИ · магазины",
-      "id": "7e994aa8f1b5b31c"
-    },
-    {
-      "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 35,
-      "text": "Адрес, контакты и реквизиты зависят от города.",
-      "id": "bc8149342ce61156"
-    },
-    {
-      "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 38,
-      "text": "Выберите магазин, чтобы увидеть актуальные данные перед визитом.",
-      "id": "113428583485ab5e"
-    },
-    {
-      "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 63,
-      "text": "Все магазины",
-      "id": "227f6c1948de3c1a"
+      "id": "f12f3a321ebf740b"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 101,
+      "line": 51,
+      "text": "Адрес, контакты и реквизиты зависят от города.",
+      "id": "dfd58a206100057a"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 55,
+      "text": "Выберите магазин, чтобы увидеть актуальные данные перед визитом.",
+      "id": "1f30c1e73ca374c2"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 80,
+      "text": "Все магазины",
+      "id": "b1abe32d0419f087"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 117,
+      "text": "I СВОИ · {city}",
+      "id": "0f35bf2c8e602883"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 122,
       "text": "Контакты магазина",
       "id": "5124d1bc068d2373"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 101,
+      "line": 122,
       "text": "Контакты магазина в городе ${city}",
       "id": "c0197b762eb48bf0"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 121,
+      "kind": "string",
+      "line": 141,
       "text": "Открыть на карте ↗",
-      "id": "cd1fe0f084795434"
-    },
-    {
-      "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 129,
-      "text": "Контакты и визит",
-      "id": "3ebc154ce6856561"
-    },
-    {
-      "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 138,
-      "text": "Связаться",
-      "id": "5cb11b0dc2fbd329"
-    },
-    {
-      "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 161,
-      "text": "Контакты уточняются",
-      "id": "83dae3ec1e47b940"
-    },
-    {
-      "file": "apps/web/components/FooterStorePanel.tsx",
-      "kind": "jsx-text",
-      "line": 166,
-      "text": "Часы работы",
-      "id": "3b3518e043fc903a"
+      "id": "451d6413b24c6606"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 170,
+      "line": 149,
+      "text": "Магазин в {city}",
+      "id": "e84e09fbcaa9c981"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 158,
+      "text": "Связаться",
+      "id": "f12034330c101ccf"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 183,
+      "text": "Контакты уточняются",
+      "id": "cafbb258ccb0a87c"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 190,
+      "text": "Часы работы",
+      "id": "a0915ad6641229bc"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 193,
       "text": "Уточняются перед визитом",
       "id": "4f3091a0c25f9f96"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 203,
+      "text": "Продавец",
+      "id": "5c1ea6b0c9e35e2b"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 210,
+      "text": "Юридический адрес",
+      "id": "cf49428436dbc406"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
@@ -6005,238 +5984,329 @@
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
+      "line": 45,
+      "text": "I СВОИ · {city}",
+      "id": "4dbfab6a67ba0d92"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 46,
+      "text": "Открыть на карте ↗",
+      "id": "01b8f9133219d75b"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 47,
+      "text": "Магазин в {city}",
+      "id": "2003fcbcb341d258"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 48,
+      "text": "Связаться",
+      "id": "c0a3ba1a7f1125d4"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 49,
+      "text": "Часы работы",
+      "id": "7d06a9ac6a6ed8cf"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
       "line": 50,
+      "text": "Продавец",
+      "id": "1e4f7fb912bb9179"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 51,
+      "text": "Юридический адрес",
+      "id": "0067511bd6d81209"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 52,
+      "text": "Контакты уточняются",
+      "id": "648b911c62fa072a"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 53,
+      "text": "Уточняются перед визитом",
+      "id": "e41e0190cc91f48d"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 54,
+      "text": "I СВОИ · магазины",
+      "id": "50a224e63f3c3e47"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 55,
+      "text": "Адрес, контакты и реквизиты зависят от города.",
+      "id": "be4b2f546656f18f"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 56,
+      "text": "Выберите магазин, чтобы увидеть актуальные данные перед визитом.",
+      "id": "7b5ac3d81edec846"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 57,
+      "text": "Все магазины",
+      "id": "34fddedb01356b78"
+    },
+    {
+      "file": "apps/web/lib/site-content.ts",
+      "kind": "string",
+      "line": 63,
       "text": "Каталог",
       "id": "10b545ae32293186"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 58,
+      "line": 71,
       "text": "Весь каталог",
       "id": "d0978045a82131e8"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 67,
+      "line": 80,
       "text": "Техника",
       "id": "400557170b9d85fc"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 76,
+      "line": 89,
       "text": "Аксессуары",
       "id": "d273e5f528cd5d8f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 85,
+      "line": 98,
       "text": "Магазин в Белгороде",
       "id": "562e86470dc2d3bd"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 93,
+      "line": 106,
       "text": "Как мы проверяем",
       "id": "6ddacab94680bc71"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 101,
+      "line": 114,
       "text": "Продать или обменять",
       "id": "b6dd3b92804bd510"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 109,
+      "line": 122,
       "text": "Блог",
       "id": "d4f8137e8de4362b"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 117,
+      "line": 130,
       "text": "Покупка",
       "id": "72a53e2190d597b0"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 152,
+      "line": 165,
       "text": "Сервисы",
       "id": "48775f2c530a5a88"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 178,
+      "line": 191,
       "text": "Club — пилот",
       "id": "2bc47fdbe9fcfe1a"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 271,
+      "line": 284,
       "text": "Не просто витрина",
       "id": "788f22c33aed5755"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 272,
+      "line": 285,
       "text": "Покупка начинается с ответа: чему здесь можно доверять?",
       "id": "d95e00eb9b1a6b8a"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 273,
+      "line": 286,
       "text": "Мы показываем разницу до карточки товара: не обещание «как новая», а проверка, нюансы, гарантия и понятный следующий шаг.",
       "id": "2b6db3acdecebe60"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 278,
+      "line": 291,
       "text": "Что решает покупатель",
       "id": "9c192ca1a23e1e9f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 279,
+      "line": 292,
       "text": "Случайный рынок",
       "id": "d526b5e50bd0787f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 283,
+      "line": 296,
       "text": "История вещи",
       "id": "f58c264d443858ba"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 284,
+      "line": 297,
       "text": "зависит от слов продавца",
       "id": "ab7eb7f334b95202"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 285,
+      "line": 298,
       "text": "собрана в Passport до решения",
       "id": "7268c8bfa1ddac35"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 288,
+      "line": 301,
       "text": "Состояние",
       "id": "26e8dea6c210e6d7"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 289,
+      "line": 302,
       "text": "нюансы всплывают после встречи",
       "id": "4dd799b75789131a"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 290,
+      "line": 303,
       "text": "фиксируется открыто, включая дефекты",
       "id": "2776eebd3eccea17"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 293,
+      "line": 306,
       "text": "После покупки",
       "id": "b3027dc486fa96d1"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 294,
+      "line": 307,
       "text": "дальше вы снова одни",
       "id": "0336d88b743f37ee"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 295,
+      "line": 308,
       "text": "есть гарантия и предварительная оценка Trade",
       "id": "8c89a775bc06025c"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 437,
+      "line": 450,
       "text": "Оставить заявку",
       "id": "933c4d020613ed34"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 464,
+      "line": 477,
       "text": "Как работает",
       "id": "e9f2d12dce70a3c4"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 472,
+      "line": 485,
       "text": "Устройства",
       "id": "3f28889998b92b21"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 480,
+      "line": 493,
       "text": "Тарифы",
       "id": "7bfb8823f5029b5f"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 488,
+      "line": 501,
       "text": "Правила",
       "id": "8a544a77642c6167"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 544,
+      "line": 557,
       "text": "I СВОИ Club",
       "id": "b09a876ec745fd46"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 546,
+      "line": 559,
       "text": "Получить расчёт Club",
       "id": "365c47085744fda1"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 549,
+      "line": 562,
       "text": "Club — пилотная модель владения техникой по фиксированному ежемесячному сценарию: продлить, сменить, выкупить или вернуть.",
       "id": "a56801ef10a0bfb0"
     },
     {
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
-      "line": 550,
+      "line": 563,
       "text": "Club — аренда/подписка. Устройство остаётся собственностью I СВОИ до выкупа.",
       "id": "eed1f00922a396d0"
     },

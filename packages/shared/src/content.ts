@@ -61,6 +61,19 @@ export interface SiteSettings {
   footerBrandText?: string;
   footerLegal?: string;
   footerCopyright?: string;
+  footerContactEyebrow?: string;
+  footerMapLabel?: string;
+  footerStoreLabel?: string;
+  footerContactHeading?: string;
+  footerHoursHeading?: string;
+  footerSellerLabel?: string;
+  footerLegalAddressLabel?: string;
+  footerContactsFallback?: string;
+  footerHoursFallback?: string;
+  footerNetworkEyebrow?: string;
+  footerNetworkTitle?: string;
+  footerNetworkBody?: string;
+  footerAllStoresLabel?: string;
   maintenanceMode?: boolean;
 }
 

@@ -17,11 +17,6 @@ export default async function CityDeliveryPage({ params }: { params: Promise<{ s
   if (!location) notFound();
   const chrome = siteChrome(settings, navigation);
   return (
-    <CityInfoPage
-      location={location}
-      settings={chrome.settings}
-      navigation={chrome.navigation}
-      variant="delivery"
-    />
+    <CityInfoPage location={location} settings={chrome.settings} navigation={chrome.navigation} />
   );
 }

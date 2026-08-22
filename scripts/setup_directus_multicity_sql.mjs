@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS store_locations (
   inn varchar(32),
   ogrn varchar(32),
   legal_address text,
+  footer_eyebrow varchar(160),
   hero_file uuid,
   pickup_enabled boolean NOT NULL DEFAULT true,
   local_delivery_enabled boolean NOT NULL DEFAULT false,
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS store_locations (
 ALTER TABLE store_locations ADD COLUMN IF NOT EXISTS inn varchar(32);
 ALTER TABLE store_locations ADD COLUMN IF NOT EXISTS ogrn varchar(32);
 ALTER TABLE store_locations ADD COLUMN IF NOT EXISTS legal_address text;
+ALTER TABLE store_locations ADD COLUMN IF NOT EXISTS footer_eyebrow varchar(160);
 
 CREATE TABLE IF NOT EXISTS store_location_images (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -210,6 +212,7 @@ SELECT pg_temp.isvoi_multicity_field('store_locations','legal_name','input',NULL
 SELECT pg_temp.isvoi_multicity_field('store_locations','inn','input',NULL,NULL,'half',13,'ИНН продавца этой точки.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','ogrn','input',NULL,NULL,'half',14,'ОГРН или ОГРНИП продавца этой точки.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','legal_address','input-multiline',NULL,NULL,'full',15,'Юридический адрес продавца, если отличается от магазина.',NULL,NULL,false);
+SELECT pg_temp.isvoi_multicity_field('store_locations','footer_eyebrow','input',NULL,NULL,'full',16,'Необязательное переопределение eyebrow footer для этого города.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','hero_file','file-image','image',NULL,'half',13,'Реальная фотография магазина.','m2o',NULL,false);
 SELECT pg_temp.isvoi_multicity_field('store_locations','pickup_enabled','boolean','boolean',NULL,'half',14,'Доступен самовывоз.',NULL,NULL,true);
 SELECT pg_temp.isvoi_multicity_field('store_locations','local_delivery_enabled','boolean','boolean',NULL,'half',15,'Доступна локальная доставка.',NULL,NULL,true);
@@ -275,7 +278,7 @@ FROM (VALUES
   ('store_locations','phone','Телефон'),('store_locations','telegram','Telegram'),
     ('store_locations','email','Email'),('store_locations','legal_name','Юридический продавец'),
     ('store_locations','inn','ИНН'),('store_locations','ogrn','ОГРН / ОГРНИП'),
-    ('store_locations','legal_address','Юридический адрес'),
+    ('store_locations','legal_address','Юридический адрес'),('store_locations','footer_eyebrow','Eyebrow футера'),
   ('store_locations','hero_file','Главная фотография'),('store_locations','pickup_enabled','Самовывоз'),
   ('store_locations','local_delivery_enabled','Локальная доставка'),
   ('store_locations','intercity_delivery_enabled','Межгородская доставка'),
@@ -342,7 +345,7 @@ BEGIN
 END $$;
 
 SELECT pg_temp.isvoi_multicity_permission('ISVOI Public Read','store_locations','read',
-  'id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,hero_file,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort,images,offers',
+  'id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,footer_eyebrow,hero_file,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort,images,offers',
   '{"status":{"_eq":"published"}}'::json);
 SELECT pg_temp.isvoi_multicity_permission('ISVOI Public Read','store_location_images','read',
   'id,location,image,status,alt,caption,sort',
@@ -357,7 +360,7 @@ BEGIN
   FOREACH role_name IN ARRAY ARRAY['ISVOI Editor','ISVOI Advanced Editor'] LOOP
     FOREACH collection_name IN ARRAY ARRAY['store_locations','store_location_images','product_offers'] LOOP
       fields := CASE collection_name
-        WHEN 'store_locations' THEN 'id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,hero_file,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort,created_at,updated_at,images,offers'
+        WHEN 'store_locations' THEN 'id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,footer_eyebrow,hero_file,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort,created_at,updated_at,images,offers'
         WHEN 'store_location_images' THEN 'id,location,image,status,alt,caption,sort,created_at,updated_at'
         ELSE 'id,product,location,local_sku,status,price,price_text,stock_quantity,stock_status,sale_mode,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,preparation_days,delivery_estimate,yandex_pay_enabled,yandex_split_enabled,source_system,source_id,created_at,updated_at' END;
       PERFORM pg_temp.isvoi_multicity_permission(role_name,collection_name,'read',fields,NULL);

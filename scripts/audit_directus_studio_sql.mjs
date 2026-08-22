@@ -359,6 +359,7 @@ FROM (
     ('site_settings', 'group_brand'),
     ('site_settings', 'group_contacts'),
     ('site_settings', 'group_footer'),
+    ('site_settings', 'group_footer_contacts'),
     ('site_settings', 'group_technical')
 ) AS expected(collection, field)
 WHERE NOT EXISTS (
@@ -612,7 +613,7 @@ WHERE NOT EXISTS (
       expected.collection<>'isvoi_locations'
       OR EXISTS (
         SELECT 1 FROM jsonb_array_elements(coalesce(collection.translations,'[]'::json)::jsonb) translation
-        WHERE translation->>'language'='ru-RU' AND translation->>'translation'='Магазины и наличие'
+        WHERE translation->>'language'='ru-RU' AND translation->>'translation'='Магазины, адреса и наличие'
       )
     )
 )

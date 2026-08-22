@@ -26,6 +26,7 @@ export interface StoreLocation {
   inn?: string;
   ogrn?: string;
   legalAddress?: string;
+  footerEyebrow?: string;
   pickupEnabled: boolean;
   localDeliveryEnabled: boolean;
   intercityDeliveryEnabled: boolean;

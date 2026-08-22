@@ -6,10 +6,21 @@ SELECT 'multicity.schema.tables_missing' AS check_name,
 FROM information_schema.tables
 WHERE table_schema='public' AND table_name IN ('store_locations','store_location_images','product_offers')
 UNION ALL
-SELECT 'multicity.schema.location_footer_fields_missing',(4-count(*))::text
+SELECT 'multicity.schema.location_footer_fields_missing',(5-count(*))::text
 FROM information_schema.columns
 WHERE table_schema='public' AND table_name='store_locations'
-  AND column_name IN ('legal_name','inn','ogrn','legal_address')
+  AND column_name IN ('legal_name','inn','ogrn','legal_address','footer_eyebrow')
+UNION ALL
+SELECT 'multicity.schema.site_footer_copy_fields_missing',(13-count(*))::text
+FROM information_schema.columns
+WHERE table_schema='public' AND table_name='site_settings'
+  AND column_name IN (
+    'footer_contact_eyebrow','footer_map_label','footer_store_label',
+    'footer_contact_heading','footer_hours_heading','footer_seller_label',
+    'footer_legal_address_label','footer_contacts_fallback','footer_hours_fallback',
+    'footer_network_eyebrow','footer_network_title','footer_network_body',
+    'footer_all_stores_label'
+  )
 UNION ALL
 SELECT 'multicity.schema.relations_missing',(5-count(*))::text
 FROM directus_relations
@@ -41,6 +52,22 @@ SELECT 'multicity.content.invalid_map_url',count(*)::text
 FROM store_locations
 WHERE status='published' AND NULLIF(map_url,'') IS NOT NULL
   AND map_url !~* '^https://'
+UNION ALL
+SELECT 'multicity.content.site_footer_copy_incomplete',count(*)::text
+FROM site_settings settings
+WHERE NULLIF(to_jsonb(settings)->>'footer_contact_eyebrow','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_map_label','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_store_label','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_contact_heading','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_hours_heading','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_seller_label','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_legal_address_label','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_contacts_fallback','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_hours_fallback','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_network_eyebrow','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_network_title','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_network_body','') IS NULL
+   OR NULLIF(to_jsonb(settings)->>'footer_all_stores_label','') IS NULL
 UNION ALL
 SELECT 'multicity.migration.products_without_offer',count(*)::text
 FROM products p WHERE NOT EXISTS (SELECT 1 FROM product_offers o WHERE o.product=p.id)
@@ -81,6 +108,36 @@ WHERE NOT EXISTS (
     AND (','||coalesce(permission.fields,'')||',') LIKE '%,inn,%'
     AND (','||coalesce(permission.fields,'')||',') LIKE '%,ogrn,%'
     AND (','||coalesce(permission.fields,'')||',') LIKE '%,legal_address,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_eyebrow,%'
+)
+UNION ALL
+SELECT 'multicity.permissions.site_footer_copy_fields_missing',count(*)::text
+FROM (VALUES
+  ('ISVOI Public Read','read'),
+  ('ISVOI Editor','read'),('ISVOI Editor','update'),
+  ('ISVOI Advanced Editor','read'),('ISVOI Advanced Editor','update')
+) expected(policy_name,action_name)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name=expected.policy_name
+    AND permission.collection='site_settings'
+    AND permission.action=expected.action_name
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,group_footer_contacts,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_contact_eyebrow,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_map_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_store_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_contact_heading,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_hours_heading,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_seller_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_legal_address_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_contacts_fallback,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_hours_fallback,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_network_eyebrow,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_network_title,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_network_body,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_all_stores_label,%'
 )
 UNION ALL
 SELECT 'multicity.permissions.editor_actions_missing',(18-count(*))::text

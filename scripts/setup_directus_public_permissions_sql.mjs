@@ -192,7 +192,7 @@ BEGIN
     p_policy_name,
     'site_settings',
     'read',
-    'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+    'id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright,footer_contact_eyebrow,footer_map_label,footer_store_label,footer_contact_heading,footer_hours_heading,footer_seller_label,footer_legal_address_label,footer_contacts_fallback,footer_hours_fallback,footer_network_eyebrow,footer_network_title,footer_network_body,footer_all_stores_label',
     NULL
   );
 

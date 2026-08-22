@@ -1,27 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
-import { CityInfoPage } from "@/components/CityInfoPage";
-import { getNavigationItems, getSiteSettings } from "@/lib/directus";
-import { siteChrome } from "@/lib/site-content";
 import { getStoreLocation } from "@/lib/store-locations";
 
 export const revalidate = 300;
 
-export default async function CityContactsPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CityContactsRoute({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [location, settings, navigation] = await Promise.all([
-    getStoreLocation(slug),
-    getSiteSettings(),
-    getNavigationItems(),
-  ]);
+  const location = await getStoreLocation(slug);
   if (!location) notFound();
-  const chrome = siteChrome(settings, navigation);
-  return (
-    <CityInfoPage
-      location={location}
-      settings={chrome.settings}
-      navigation={chrome.navigation}
-      variant="contacts"
-    />
-  );
+  permanentRedirect(`/${location.slug}`);
 }

@@ -42,6 +42,19 @@ const defaultSiteSettings: SiteSettings = {
   footerBrandText: homepageCopyData.footer.footer_brand_text,
   footerLegal: "Хорошие вещи проходят через своих.",
   footerCopyright: "© 2026 I СВОИ.",
+  footerContactEyebrow: "I СВОИ · {city}",
+  footerMapLabel: "Открыть на карте ↗",
+  footerStoreLabel: "Магазин в {city}",
+  footerContactHeading: "Связаться",
+  footerHoursHeading: "Часы работы",
+  footerSellerLabel: "Продавец",
+  footerLegalAddressLabel: "Юридический адрес",
+  footerContactsFallback: "Контакты уточняются",
+  footerHoursFallback: "Уточняются перед визитом",
+  footerNetworkEyebrow: "I СВОИ · магазины",
+  footerNetworkTitle: "Адрес, контакты и реквизиты зависят от города.",
+  footerNetworkBody: "Выберите магазин, чтобы увидеть актуальные данные перед визитом.",
+  footerAllStoresLabel: "Все магазины",
 };
 
 const defaultNavigationItems: NavigationItem[] = [

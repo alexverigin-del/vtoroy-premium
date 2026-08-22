@@ -7,14 +7,7 @@ import { getStoreLocations } from "@/lib/store-locations";
 const SITE_URL = "https://isvoi.ru";
 
 const staticRoutes = ["", "/catalog", "/catalog/tech", "/passport", "/trade", "/blog"] as const;
-const managedInfoRoutes = [
-  "/about",
-  "/contacts",
-  "/warranty",
-  "/payment",
-  "/privacy",
-  "/terms",
-] as const;
+const managedInfoRoutes = ["/about", "/warranty", "/payment", "/privacy", "/terms"] as const;
 
 function validDate(value?: string): Date | undefined {
   if (!value) return undefined;
@@ -81,12 +74,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: now,
         changeFrequency: "daily" as const,
         priority: 0.8,
-      },
-      {
-        url: `${SITE_URL}/${location.slug}/contacts`,
-        lastModified: now,
-        changeFrequency: "monthly" as const,
-        priority: 0.6,
       },
       {
         url: `${SITE_URL}/${location.slug}/delivery`,

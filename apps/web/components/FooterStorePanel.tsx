@@ -26,17 +26,33 @@ function valueOrFallback(
   return locationValue || (allowFallback ? fallbackValue : undefined);
 }
 
-function NetworkLocations({ locations }: { locations: StoreLocation[] }) {
+function cityLabel(template: string, city: string): string {
+  return template
+    .replaceAll("{city}", city)
+    .replace(/\s*·\s*$/, "")
+    .trim();
+}
+
+function NetworkLocations({
+  locations,
+  settings,
+}: {
+  locations: StoreLocation[];
+  settings: SiteSettings;
+}) {
   return (
     <section className="border-b border-hairline py-10 md:py-12" aria-label="Магазины I СВОИ">
       <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-5">
-          <p className="text-sm font-semibold leading-snug text-link-blue">I СВОИ · магазины</p>
+          <p className="text-sm font-semibold leading-snug text-link-blue">
+            {settings.footerNetworkEyebrow || "I СВОИ · магазины"}
+          </p>
           <h2 className="mt-3 max-w-heading text-2xl font-semibold leading-tight text-carbon md:text-3xl">
-            Адрес, контакты и реквизиты зависят от города.
+            {settings.footerNetworkTitle || "Адрес, контакты и реквизиты зависят от города."}
           </h2>
           <p className="mt-3 max-w-copy text-sm leading-relaxed text-graphite">
-            Выберите магазин, чтобы увидеть актуальные данные перед визитом.
+            {settings.footerNetworkBody ||
+              "Выберите магазин, чтобы увидеть актуальные данные перед визитом."}
           </p>
         </div>
         <div className="grid border-t border-hairline sm:grid-cols-2 lg:col-span-7 lg:border-t-0">
@@ -61,7 +77,7 @@ function NetworkLocations({ locations }: { locations: StoreLocation[] }) {
             href="/stores"
             className="inline-flex min-h-14 items-center font-semibold text-link-blue outline-none hover:underline focus-visible:shadow-focus sm:px-5"
           >
-            Все магазины
+            {settings.footerAllStoresLabel || "Все магазины"}
           </Link>
         </div>
       </div>
@@ -71,7 +87,9 @@ function NetworkLocations({ locations }: { locations: StoreLocation[] }) {
 
 export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
   const { locations, selected } = useCity();
-  if (!selected && locations.length > 1) return <NetworkLocations locations={locations} />;
+  if (!selected && locations.length > 1) {
+    return <NetworkLocations locations={locations} settings={settings} />;
+  }
 
   const location = selected ?? locations[0] ?? null;
   const allowFallback = locations.length <= 1;
@@ -94,6 +112,9 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
 
   const hasContacts = phone || telegram || email;
   const hasLegal = legalName || inn || ogrn || legalAddress;
+  const eyebrow =
+    location?.footerEyebrow ||
+    cityLabel(settings.footerContactEyebrow || "I СВОИ · {city}", city || "");
 
   return (
     <section
@@ -102,9 +123,7 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
     >
       <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-6">
-          <p className="text-sm font-semibold leading-snug text-link-blue">
-            I СВОИ{city ? ` · ${city}` : ""}
-          </p>
+          <p className="text-sm font-semibold leading-snug text-link-blue">{eyebrow}</p>
           <h2 className="mt-3 max-w-copy text-2xl font-semibold leading-tight text-carbon md:text-3xl">
             {address || name}
           </h2>
@@ -119,15 +138,15 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
                 rel="noreferrer"
                 target="_blank"
               >
-                Открыть на карте ↗
+                {settings.footerMapLabel || "Открыть на карте ↗"}
               </a>
             ) : null}
             {location ? (
               <Link
                 className="inline-flex min-h-11 items-center text-graphite outline-none hover:text-link-blue hover:underline focus-visible:shadow-focus"
-                href={`/${location.slug}/contacts`}
+                href={`/${location.slug}`}
               >
-                Контакты и визит
+                {cityLabel(settings.footerStoreLabel || "Магазин в {city}", location.city)}
               </Link>
             ) : null}
           </div>
@@ -135,7 +154,9 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
 
         <div className="grid border-t border-hairline sm:grid-cols-2 lg:col-span-6 lg:border-t-0">
           <div className="py-5 sm:pr-6 lg:py-0">
-            <h3 className="text-xs font-semibold uppercase tracking-caption text-ash">Связаться</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-caption text-ash">
+              {settings.footerContactHeading || "Связаться"}
+            </h3>
             <div className="mt-2 grid">
               {phone ? (
                 <a className={contactLinkClass} href={phoneHref(phone)}>
@@ -158,16 +179,18 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
                 </a>
               ) : null}
               {!hasContacts ? (
-                <span className="mt-3 text-sm text-ash">Контакты уточняются</span>
+                <span className="mt-3 text-sm text-ash">
+                  {settings.footerContactsFallback || "Контакты уточняются"}
+                </span>
               ) : null}
             </div>
           </div>
           <div className="border-t border-hairline py-5 sm:border-l sm:border-t-0 sm:pl-6 lg:py-0">
             <h3 className="text-xs font-semibold uppercase tracking-caption text-ash">
-              Часы работы
+              {settings.footerHoursHeading || "Часы работы"}
             </h3>
             <p className="mt-3 max-w-caption text-base font-medium leading-relaxed text-carbon">
-              {businessHours || "Уточняются перед визитом"}
+              {businessHours || settings.footerHoursFallback || "Уточняются перед визитом"}
             </p>
           </div>
         </div>
@@ -175,10 +198,18 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
 
       {hasLegal ? (
         <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-hairline pt-4 text-xs leading-relaxed text-ash">
-          {legalName ? <span>Продавец: {legalName}</span> : null}
+          {legalName ? (
+            <span>
+              {settings.footerSellerLabel || "Продавец"}: {legalName}
+            </span>
+          ) : null}
           {inn ? <span>ИНН {inn}</span> : null}
           {ogrn ? <span>ОГРН {ogrn}</span> : null}
-          {legalAddress ? <span>Юридический адрес: {legalAddress}</span> : null}
+          {legalAddress ? (
+            <span>
+              {settings.footerLegalAddressLabel || "Юридический адрес"}: {legalAddress}
+            </span>
+          ) : null}
         </div>
       ) : null}
     </section>

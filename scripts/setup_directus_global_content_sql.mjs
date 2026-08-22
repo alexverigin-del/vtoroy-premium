@@ -21,6 +21,19 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS legal_name text;
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS inn varchar(32);
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS ogrn varchar(32);
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS privacy_url text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_contact_eyebrow varchar(160);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_map_label varchar(120);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_store_label varchar(120);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_contact_heading varchar(120);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_hours_heading varchar(120);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_seller_label varchar(120);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_legal_address_label varchar(120);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_contacts_fallback varchar(240);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_hours_fallback varchar(240);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_network_eyebrow varchar(160);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_network_title varchar(240);
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_network_body text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_all_stores_label varchar(120);
 
 DO $$
 BEGIN
@@ -166,6 +179,7 @@ $$;
 SELECT isvoi_upsert_directus_field('site_settings', 'group_brand', 'group-detail', NULL, '{"headerIcon":"storefront","start":"open"}'::json, NULL, 'full', 1, 'Название, позиционирование и базовый город.', false, false, false, 'alias,no-data,group', NULL, 'Бренд');
 SELECT isvoi_upsert_directus_field('site_settings', 'group_contacts', 'group-detail', NULL, '{"headerIcon":"contact_phone","start":"open"}'::json, NULL, 'full', 20, 'Публичные контакты сайта.', false, false, false, 'alias,no-data,group', NULL, 'Контакты');
 SELECT isvoi_upsert_directus_field('site_settings', 'group_footer', 'group-detail', NULL, '{"headerIcon":"vertical_align_bottom","start":"open"}'::json, NULL, 'full', 40, 'Тексты подвала сайта.', false, false, false, 'alias,no-data,group', NULL, 'Footer');
+SELECT isvoi_upsert_directus_field('site_settings', 'group_footer_contacts', 'group-detail', NULL, '{"headerIcon":"contact_phone","start":"open"}'::json, NULL, 'full', 50, 'Общие подписи блока контактов в footer. Городские данные редактируются в магазинах.', false, false, false, 'alias,no-data,group', NULL, 'Footer · контакты');
 SELECT isvoi_upsert_directus_field('site_settings', 'group_technical', 'group-detail', NULL, '{"headerIcon":"settings","start":"closed"}'::json, NULL, 'full', 70, 'Технические переключатели и изображения по умолчанию.', false, false, false, 'alias,no-data,group', NULL, 'Техническое');
 SELECT isvoi_upsert_directus_field('site_settings', 'id', 'input', NULL, NULL, NULL, 'half', 2, 'Системный singleton id.', true, true, false, NULL, 'group_brand', 'ID');
 SELECT isvoi_upsert_directus_field('site_settings', 'brand_name', 'input', NULL, NULL, NULL, 'half', 3, 'Название бренда в шапке и footer.', false, false, true, NULL, 'group_brand', 'Название бренда');
@@ -185,6 +199,19 @@ SELECT isvoi_upsert_directus_field('site_settings', 'footer_brand_text', 'input-
 SELECT isvoi_upsert_directus_field('site_settings', 'footer_note', 'input-multiline', NULL, NULL, NULL, 'full', 42, 'Дополнительная заметка в footer.', false, false, false, NULL, 'group_footer', 'Заметка');
 SELECT isvoi_upsert_directus_field('site_settings', 'footer_legal', 'input-multiline', NULL, NULL, NULL, 'full', 43, 'Юридический текст или дисклеймер.', false, false, false, NULL, 'group_footer', 'Юридический текст');
 SELECT isvoi_upsert_directus_field('site_settings', 'footer_copyright', 'input', NULL, NULL, NULL, 'full', 44, 'Строка copyright.', false, false, false, NULL, 'group_footer', 'Copyright');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_contact_eyebrow', 'input', NULL, NULL, NULL, 'full', 51, 'Используйте {city} для автоматической подстановки выбранного города.', false, false, false, NULL, 'group_footer_contacts', 'Eyebrow контактов');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_map_label', 'input', NULL, NULL, NULL, 'half', 52, 'Подпись ссылки на карту.', false, false, false, NULL, 'group_footer_contacts', 'Ссылка: карта');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_store_label', 'input', NULL, NULL, NULL, 'half', 53, 'Подпись ссылки на городской магазин. Используйте {city} для автоматической подстановки.', false, false, false, NULL, 'group_footer_contacts', 'Ссылка: магазин');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_contact_heading', 'input', NULL, NULL, NULL, 'half', 54, 'Название колонки со способами связи.', false, false, false, NULL, 'group_footer_contacts', 'Заголовок способов связи');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_hours_heading', 'input', NULL, NULL, NULL, 'half', 55, 'Название колонки с часами работы.', false, false, false, NULL, 'group_footer_contacts', 'Заголовок часов работы');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_seller_label', 'input', NULL, NULL, NULL, 'half', 56, 'Подпись юридического продавца.', false, false, false, NULL, 'group_footer_contacts', 'Подпись продавца');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_legal_address_label', 'input', NULL, NULL, NULL, 'half', 57, 'Подпись юридического адреса.', false, false, false, NULL, 'group_footer_contacts', 'Подпись юридического адреса');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_contacts_fallback', 'input', NULL, NULL, NULL, 'half', 58, 'Текст при отсутствии контактов.', false, false, false, NULL, 'group_footer_contacts', 'Нет контактов');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_hours_fallback', 'input', NULL, NULL, NULL, 'half', 59, 'Текст при отсутствии часов работы.', false, false, false, NULL, 'group_footer_contacts', 'Нет часов работы');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_network_eyebrow', 'input', NULL, NULL, NULL, 'full', 60, 'Eyebrow режима выбора города.', false, false, false, NULL, 'group_footer_contacts', 'Сеть: eyebrow');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_network_title', 'input', NULL, NULL, NULL, 'full', 61, 'Заголовок режима выбора города.', false, false, false, NULL, 'group_footer_contacts', 'Сеть: заголовок');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_network_body', 'input-multiline', NULL, NULL, NULL, 'full', 62, 'Пояснение над списком городов.', false, false, false, NULL, 'group_footer_contacts', 'Сеть: пояснение');
+SELECT isvoi_upsert_directus_field('site_settings', 'footer_all_stores_label', 'input', NULL, NULL, NULL, 'full', 63, 'Подпись ссылки на список магазинов.', false, false, false, NULL, 'group_footer_contacts', 'Сеть: все магазины');
 SELECT isvoi_upsert_directus_field('site_settings', 'default_og_image', 'file-image', 'file', '{"folder":"ISVOI Site Assets"}'::json, NULL, 'half', 71, 'Картинка по умолчанию для соцсетей. Используйте ISVOI Site Assets.', false, false, false, 'm2o', 'group_technical', 'OG-картинка по умолчанию');
 SELECT isvoi_upsert_directus_field('site_settings', 'maintenance_mode', 'boolean', 'boolean', NULL, NULL, 'half', 72, 'Технический флаг. Включайте только осознанно; сайт может использовать его как аварийный режим.', false, false, false, NULL, 'group_technical', 'Maintenance mode');
 
@@ -294,14 +321,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'read',
-  'group_brand,group_contacts,group_footer,group_technical,id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright',
+  'group_brand,group_contacts,group_footer,group_footer_contacts,group_technical,id,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,maintenance_mode,footer_note,footer_brand_text,footer_copyright,footer_contact_eyebrow,footer_map_label,footer_store_label,footer_contact_heading,footer_hours_heading,footer_seller_label,footer_legal_address_label,footer_contacts_fallback,footer_hours_fallback,footer_network_eyebrow,footer_network_title,footer_network_body,footer_all_stores_label',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'site_settings',
   'update',
-  'group_brand,group_contacts,group_footer,group_technical,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,maintenance_mode',
+  'group_brand,group_contacts,group_footer,group_footer_contacts,group_technical,brand_name,tagline,city,logo_file,logo_alt,logo_href,logo_width,logo_height,logo_caption,show_brand_name,header_cta_label,header_cta_url,phone,telegram,email,address,business_hours,map_url,legal_name,inn,ogrn,privacy_url,default_og_image,footer_legal,footer_note,footer_brand_text,footer_copyright,footer_contact_eyebrow,footer_map_label,footer_store_label,footer_contact_heading,footer_hours_heading,footer_seller_label,footer_legal_address_label,footer_contacts_fallback,footer_hours_fallback,footer_network_eyebrow,footer_network_title,footer_network_body,footer_all_stores_label,maintenance_mode',
   NULL
 );
 

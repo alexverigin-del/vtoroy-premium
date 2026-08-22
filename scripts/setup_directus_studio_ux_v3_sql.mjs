@@ -102,7 +102,7 @@ INSERT INTO directus_collections(
   'isvoi_locations','storefront',
   'Магазины, локальные цены, остатки и способы получения. Начните с магазина или представления «Требуют внимания».',
   false,false,25,
-  '[{"language":"ru-RU","translation":"Магазины и наличие"}]'::json,'open'
+  '[{"language":"ru-RU","translation":"Магазины, адреса и наличие"}]'::json,'open'
 )
 ON CONFLICT (collection) DO UPDATE SET
   icon=EXCLUDED.icon,note=EXCLUDED.note,hidden=false,singleton=false,sort=EXCLUDED.sort,
@@ -145,6 +145,7 @@ SELECT pg_temp.isvoi_ux_field('store_locations','business_hours','group_contacts
 SELECT pg_temp.isvoi_ux_field('store_locations','map_url','group_contacts',6,'full');
 SELECT pg_temp.isvoi_ux_field('store_locations','latitude','group_contacts',7,'half');
 SELECT pg_temp.isvoi_ux_field('store_locations','longitude','group_contacts',8,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','footer_eyebrow','group_contacts',9,'full');
 SELECT pg_temp.isvoi_ux_field('store_locations','legal_name','group_legal',1,'full');
 SELECT pg_temp.isvoi_ux_field('store_locations','inn','group_legal',2,'half');
 SELECT pg_temp.isvoi_ux_field('store_locations','ogrn','group_legal',3,'half');

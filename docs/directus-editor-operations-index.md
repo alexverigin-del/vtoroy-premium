@@ -78,7 +78,11 @@ Use `Страницы сайта` (`site_pages`) first.
   review.
 - Homepage catalog empty-state and final-form submit/success/error copy live in
   the corresponding section's `JSON-настройки блока`; they are editable by
-  Advanced Editor/Admin and protected by the exact homepage-copy audit.
+  Advanced Editor/Admin and protected by the homepage-copy audit.
+- The lower homepage block headed `Хорошие вещи проходят через своих.` is
+  edited in `Главная` → `Секции страницы` → `final_cta` →
+  `Завершающий бренд-блок`. Its headline, rich text, brand caption and both CTA
+  pairs are ordinary editor fields; do not duplicate them in JSON.
 - For images, use `Главное изображение блока`; it points to Directus Files and
   lets the site optimize the asset.
 

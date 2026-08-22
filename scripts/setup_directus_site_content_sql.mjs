@@ -15,6 +15,16 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+ALTER TABLE page_sections
+  ADD COLUMN IF NOT EXISTS closing_headline text,
+  ADD COLUMN IF NOT EXISTS closing_body text,
+  ADD COLUMN IF NOT EXISTS closing_brand varchar(255),
+  ADD COLUMN IF NOT EXISTS closing_tagline text,
+  ADD COLUMN IF NOT EXISTS closing_primary_cta_label varchar(255),
+  ADD COLUMN IF NOT EXISTS closing_primary_cta_url text,
+  ADD COLUMN IF NOT EXISTS closing_secondary_cta_label varchar(255),
+  ADD COLUMN IF NOT EXISTS closing_secondary_cta_url text;
+
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -174,6 +184,7 @@ SELECT isvoi_upsert_directus_field('site_pages', 'sections', 'list-o2m', NULL, '
 SELECT isvoi_upsert_directus_field('page_sections', 'group_placement', 'group-detail', NULL, '{"headerIcon":"low_priority","start":"open"}'::json, NULL, 'full', 1, 'Где находится блок и как он рендерится.', false, false, false, 'alias,no-data,group', NULL, 'Публикация');
 SELECT isvoi_upsert_directus_field('page_sections', 'group_copy', 'group-detail', NULL, '{"headerIcon":"article","start":"open"}'::json, NULL, 'full', 20, 'Тексты, которые чаще всего правит редактор.', false, false, false, 'alias,no-data,group', NULL, 'Тексты');
 SELECT isvoi_upsert_directus_field('page_sections', 'group_actions', 'group-detail', NULL, '{"headerIcon":"touch_app","start":"closed"}'::json, NULL, 'full', 50, 'Кнопки блока.', false, false, false, 'alias,no-data,group', NULL, 'Кнопки');
+SELECT isvoi_upsert_directus_field('page_sections', 'group_closing', 'group-detail', NULL, '{"headerIcon":"format_quote","start":"open"}'::json, NULL, 'full', 60, 'Второй брендовый блок внутри финальной секции главной. Здесь редактируется текст «Хорошие вещи проходят через своих» и его кнопки.', false, true, false, 'alias,no-data,group', NULL, 'Завершающий бренд-блок');
 SELECT isvoi_upsert_directus_field('page_sections', 'group_media', 'group-detail', NULL, '{"headerIcon":"image","start":"open"}'::json, NULL, 'full', 70, 'Нетоварные изображения для страницы. Товарные фото живут отдельно в device_images.', false, false, false, 'alias,no-data,group', NULL, 'Изображение');
 SELECT isvoi_upsert_directus_field('page_sections', 'group_advanced', 'group-detail', NULL, '{"headerIcon":"data_object","start":"closed"}'::json, NULL, 'full', 90, 'Структурные данные для сложных блоков: карточки, шаги, таблицы, FAQ. Если не уверены — не менять.', false, false, false, 'alias,no-data,group', NULL, 'Расширенные настройки');
 SELECT isvoi_upsert_directus_field('page_sections', 'id', 'input', NULL, NULL, NULL, 'half', 2, 'Системный ID.', true, true, false, 'uuid', 'group_placement', 'ID');
@@ -190,8 +201,33 @@ SELECT isvoi_upsert_directus_field('page_sections', 'primary_cta_label', 'input'
 SELECT isvoi_upsert_directus_field('page_sections', 'primary_cta_url', 'input', NULL, NULL, NULL, 'half', 52, 'Ссылка главной кнопки, например /catalog или /store.', false, false, false, NULL, 'group_actions', 'Ссылка главной кнопки');
 SELECT isvoi_upsert_directus_field('page_sections', 'secondary_cta_label', 'input', NULL, NULL, NULL, 'half', 53, 'Текст второй кнопки.', false, false, false, NULL, 'group_actions', 'Вторая кнопка');
 SELECT isvoi_upsert_directus_field('page_sections', 'secondary_cta_url', 'input', NULL, NULL, NULL, 'half', 54, 'Ссылка второй кнопки.', false, false, false, NULL, 'group_actions', 'Ссылка второй кнопки');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_headline', 'input-multiline', NULL, NULL, NULL, 'full', 61, 'Крупный заголовок слева в завершающем бренд-блоке.', false, false, false, NULL, 'group_closing', 'Заголовок бренд-блока');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_body', 'input-rich-text-html', NULL, NULL, NULL, 'full', 62, 'Основной текст справа. Допустимы абзацы и выделение жирным без сложной вёрстки.', false, false, false, NULL, 'group_closing', 'Основной текст бренд-блока');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_brand', 'input', NULL, NULL, NULL, 'half', 63, 'Название бренда над короткой подписью.', false, false, false, NULL, 'group_closing', 'Название бренда');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_tagline', 'input', NULL, NULL, NULL, 'half', 64, 'Короткая строка под названием бренда.', false, false, false, NULL, 'group_closing', 'Подпись бренда');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_primary_cta_label', 'input', NULL, NULL, NULL, 'half', 65, 'Текст синей кнопки завершающего блока.', false, false, false, NULL, 'group_closing', 'Главная кнопка');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_primary_cta_url', 'input', NULL, NULL, NULL, 'half', 66, 'Внутренний адрес, например /catalog.', false, false, false, NULL, 'group_closing', 'Ссылка главной кнопки');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_secondary_cta_label', 'input', NULL, NULL, NULL, 'half', 67, 'Текст второй кнопки завершающего блока.', false, false, false, NULL, 'group_closing', 'Вторая кнопка');
+SELECT isvoi_upsert_directus_field('page_sections', 'closing_secondary_cta_url', 'input', NULL, NULL, NULL, 'half', 68, 'Внутренний адрес, например /passport.', false, false, false, NULL, 'group_closing', 'Ссылка второй кнопки');
 SELECT isvoi_upsert_directus_field('page_sections', 'image', 'file-image', 'file', '{"folder":"ISVOI Site Assets"}'::json, NULL, 'full', 71, 'Главное нетоварное изображение блока. Загружайте и выбирайте файлы из папки ISVOI Site Assets. Сайт отдаёт его через Directus assets с resize/WebP/AVIF.', false, false, false, 'm2o', 'group_media', 'Главное изображение блока');
 SELECT isvoi_upsert_directus_field('page_sections', 'content', 'input-code', NULL, '{"language":"json","lineWrapping":true}'::json, NULL, 'full', 91, 'JSON-настройки для сложных блоков. Для обычного текста и главной картинки используйте поля выше. Править JSON может только расширенный редактор. Не добавляйте image_src/imageSrc, файловые пути или прямые asset URL в JSON.', false, false, false, 'json', 'group_advanced', 'JSON-настройки блока');
+
+UPDATE directus_fields
+SET hidden = true,
+  conditions = '[{"name":"Финальная секция главной","rule":{"section_key":{"_eq":"final_cta"}},"hidden":false,"readonly":false,"required":false,"options":{}}]'::json
+WHERE collection = 'page_sections' AND field = 'group_closing';
+
+UPDATE page_sections
+SET closing_headline = COALESCE(NULLIF(closing_headline, ''), content::jsonb #>> '{closing,headline}'),
+  closing_body = COALESCE(NULLIF(closing_body, ''), content::jsonb #>> '{closing,body}'),
+  closing_brand = COALESCE(NULLIF(closing_brand, ''), content::jsonb #>> '{closing,brand}'),
+  closing_tagline = COALESCE(NULLIF(closing_tagline, ''), content::jsonb #>> '{closing,tagline}'),
+  closing_primary_cta_label = COALESCE(NULLIF(closing_primary_cta_label, ''), content::jsonb #>> '{closing,primary_cta_label}'),
+  closing_primary_cta_url = COALESCE(NULLIF(closing_primary_cta_url, ''), content::jsonb #>> '{closing,primary_cta_url}'),
+  closing_secondary_cta_label = COALESCE(NULLIF(closing_secondary_cta_label, ''), content::jsonb #>> '{closing,secondary_cta_label}'),
+  closing_secondary_cta_url = COALESCE(NULLIF(closing_secondary_cta_url, ''), content::jsonb #>> '{closing,secondary_cta_url}'),
+  content = (content::jsonb - 'closing')::json
+WHERE section_key = 'final_cta' AND content::jsonb ? 'closing';
 
 DROP FUNCTION isvoi_upsert_directus_field(varchar, varchar, varchar, varchar, json, json, varchar, integer, text, boolean, boolean, boolean, varchar, varchar, text);
 
@@ -310,7 +346,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'read',
-  'group_placement,group_copy,group_actions,group_media,group_advanced,id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
+  'group_placement,group_copy,group_actions,group_closing,group_media,group_advanced,id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url,image,sort_order,is_active,content',
   NULL
 );
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
@@ -319,14 +355,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'update',
-  'group_placement,group_copy,group_actions,group_media,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
+  'group_placement,group_copy,group_actions,group_closing,group_media,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url,image',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Advanced Editor',
   'page_sections',
   'update',
-  'group_placement,group_copy,group_actions,group_media,group_advanced,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
+  'group_placement,group_copy,group_actions,group_closing,group_media,group_advanced,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url,image,content',
   NULL
 );
 

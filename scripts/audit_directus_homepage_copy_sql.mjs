@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 
-import { loadHomepageCopy, sqlJson, sqlLiteral } from "./lib/homepage-copy.mjs";
+import {
+  databaseSectionContent,
+  loadHomepageCopy,
+  sqlJson,
+  sqlLiteral,
+} from "./lib/homepage-copy.mjs";
 
 const copy = loadHomepageCopy();
 const sectionValues = copy.sections
   .map(
     (section) =>
-      `(${sqlLiteral(section.section_key)}, ${sqlLiteral(section.variant)}, ${section.sort_order}, ${sqlLiteral(section.eyebrow)}, ${sqlLiteral(section.headline)}, ${sqlLiteral(section.body)}, ${sqlLiteral(section.primary_cta_label)}, ${sqlLiteral(section.primary_cta_url)}, ${sqlLiteral(section.secondary_cta_label)}, ${sqlLiteral(section.secondary_cta_url)}, ${sqlJson(section.content)})`,
+      `(${sqlLiteral(section.section_key)}, ${sqlLiteral(section.variant)}, ${section.sort_order}, ${sqlLiteral(section.eyebrow)}, ${sqlLiteral(section.headline)}, ${sqlLiteral(section.body)}, ${sqlLiteral(section.primary_cta_label)}, ${sqlLiteral(section.primary_cta_url)}, ${sqlLiteral(section.secondary_cta_label)}, ${sqlLiteral(section.secondary_cta_url)}, ${sqlJson(databaseSectionContent(section))})`,
   )
   .join(",\n    ");
 const faqValues = copy.faq_items
@@ -52,6 +57,26 @@ JOIN home ON ps.page = home.id
 LEFT JOIN expected_sections expected ON expected.section_key = ps.section_key
 WHERE coalesce(ps.is_active, false) = true AND expected.section_key IS NULL
 UNION ALL
+SELECT 'homepage_copy.closing.required_fields', count(*)::text
+FROM page_sections ps
+JOIN home ON ps.page = home.id
+WHERE ps.section_key = 'final_cta'
+  AND (
+    nullif(btrim(ps.closing_headline), '') IS NULL
+    OR nullif(btrim(ps.closing_body), '') IS NULL
+    OR nullif(btrim(ps.closing_brand), '') IS NULL
+    OR nullif(btrim(ps.closing_tagline), '') IS NULL
+    OR nullif(btrim(ps.closing_primary_cta_label), '') IS NULL
+    OR nullif(btrim(ps.closing_primary_cta_url), '') IS NULL
+    OR nullif(btrim(ps.closing_secondary_cta_label), '') IS NULL
+    OR nullif(btrim(ps.closing_secondary_cta_url), '') IS NULL
+  )
+UNION ALL
+SELECT 'homepage_copy.closing.legacy_json', count(*)::text
+FROM page_sections ps
+JOIN home ON ps.page = home.id
+WHERE ps.section_key = 'final_cta' AND ps.content::jsonb ? 'closing'
+UNION ALL
 SELECT 'homepage_copy.footer.mismatch', count(*)::text
 FROM site_settings
 WHERE tagline IS DISTINCT FROM ${sqlLiteral(copy.footer.tagline)}
@@ -61,17 +86,20 @@ UNION ALL
 SELECT 'homepage_copy.forbidden.city', count(*)::text
 FROM page_sections ps
 JOIN home ON ps.page = home.id
-WHERE concat_ws(' ', ps.eyebrow, ps.headline, ps.body, ps.content::text) ILIKE '%Северодвинск%'
+WHERE concat_ws(' ', ps.eyebrow, ps.headline, ps.body, ps.content::text,
+  ps.closing_headline, ps.closing_body, ps.closing_brand, ps.closing_tagline) ILIKE '%Северодвинск%'
 UNION ALL
 SELECT 'homepage_copy.forbidden.commission', count(*)::text
 FROM page_sections ps
 JOIN home ON ps.page = home.id
-WHERE concat_ws(' ', ps.eyebrow, ps.headline, ps.body, ps.content::text) ~* '(комисси|передать на комиссию)'
+WHERE concat_ws(' ', ps.eyebrow, ps.headline, ps.body, ps.content::text,
+  ps.closing_headline, ps.closing_body, ps.closing_brand, ps.closing_tagline) ~* '(комисси|передать на комиссию)'
 UNION ALL
 SELECT 'homepage_copy.forbidden.demo_values', count(*)::text
 FROM page_sections ps
 JOIN home ON ps.page = home.id
-WHERE concat_ws(' ', ps.eyebrow, ps.headline, ps.body, ps.content::text) ~* '(IMEI|19 900|42 000)'
+WHERE concat_ws(' ', ps.eyebrow, ps.headline, ps.body, ps.content::text,
+  ps.closing_headline, ps.closing_body, ps.closing_brand, ps.closing_tagline) ~* '(IMEI|19 900|42 000)'
 UNION ALL
 SELECT 'homepage_copy.info.section_count', count(*)::text
 FROM expected_sections;

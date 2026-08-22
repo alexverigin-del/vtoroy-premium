@@ -1007,6 +1007,7 @@ export const getDeviceBySlug = cache(async function getDeviceBySlug(
 
 function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
   const body = prepareRichText(row.body);
+  const closingBody = prepareRichText(row.closing_body);
   const content = prepareSectionContentRichText(json(row.content, {}));
 
   return {
@@ -1022,6 +1023,15 @@ function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
     primaryCtaUrl: str(row.primary_cta_url),
     secondaryCtaLabel: str(row.secondary_cta_label),
     secondaryCtaUrl: str(row.secondary_cta_url),
+    closingHeadline: str(row.closing_headline),
+    closingBody: closingBody.html,
+    closingBodyRichText: closingBody.nodes,
+    closingBrand: str(row.closing_brand),
+    closingTagline: str(row.closing_tagline),
+    closingPrimaryCtaLabel: str(row.closing_primary_cta_label),
+    closingPrimaryCtaUrl: str(row.closing_primary_cta_url),
+    closingSecondaryCtaLabel: str(row.closing_secondary_cta_label),
+    closingSecondaryCtaUrl: str(row.closing_secondary_cta_url),
     image: str(row.image) ? mediaUrl(row.image, "section") : "",
     sortOrder: num(row.sort_order),
     isActive: bool(row.is_active, true),

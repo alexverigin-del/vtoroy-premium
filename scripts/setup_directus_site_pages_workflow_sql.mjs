@@ -300,7 +300,7 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'read',
-  'group_placement,group_copy,group_actions,group_media,group_advanced,id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
+  'group_placement,group_copy,group_actions,group_closing,group_media,group_advanced,id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url,image,sort_order,is_active,content',
   NULL
 );
 SELECT isvoi_delete_permission('ISVOI Editor', 'page_sections', 'create');
@@ -309,14 +309,14 @@ SELECT isvoi_upsert_permission(
   'ISVOI Editor',
   'page_sections',
   'update',
-  'group_placement,group_copy,group_actions,group_media,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image',
+  'group_placement,group_copy,group_actions,group_closing,group_media,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url,image',
   NULL
 );
 SELECT isvoi_upsert_permission(
   'ISVOI Advanced Editor',
   'page_sections',
   'update',
-  'group_placement,group_copy,group_actions,group_media,group_advanced,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,content',
+  'group_placement,group_copy,group_actions,group_closing,group_media,group_advanced,sort_order,is_active,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url,image,content',
   NULL
 );
 

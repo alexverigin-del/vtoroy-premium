@@ -120,6 +120,32 @@ function closingContent(value: unknown): ClosingContent | null {
   return Object.values(closing).some(Boolean) ? closing : null;
 }
 
+function managedClosingContent(section: PageSection): ClosingContent | null {
+  const closing = {
+    headline: section.closingHeadline || "",
+    body: section.closingBody || "",
+    bodyRichText: section.closingBodyRichText,
+    brand: section.closingBrand || "",
+    tagline: section.closingTagline || "",
+    primaryCtaLabel: section.closingPrimaryCtaLabel || "",
+    primaryCtaUrl: section.closingPrimaryCtaUrl || "",
+    secondaryCtaLabel: section.closingSecondaryCtaLabel || "",
+    secondaryCtaUrl: section.closingSecondaryCtaUrl || "",
+  };
+  return [
+    closing.headline,
+    closing.body,
+    closing.brand,
+    closing.tagline,
+    closing.primaryCtaLabel,
+    closing.primaryCtaUrl,
+    closing.secondaryCtaLabel,
+    closing.secondaryCtaUrl,
+  ].some(Boolean) || Boolean(closing.bodyRichText?.length)
+    ? closing
+    : null;
+}
+
 export function FinalCtaSection({
   section,
   source = "home_final_cta",
@@ -133,7 +159,7 @@ export function FinalCtaSection({
       ? proof
       : ["варианты под задачу", "без агрессивных продаж", "сначала проверка - потом решение"];
   const form = finalCtaFormContent(section.content.form);
-  const closing = closingContent(section.content.closing);
+  const closing = managedClosingContent(section) ?? closingContent(section.content.closing);
   const footerNote =
     typeof section.content.footerNote === "string"
       ? section.content.footerNote

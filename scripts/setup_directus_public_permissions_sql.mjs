@@ -184,7 +184,7 @@ BEGIN
     p_policy_name,
     'page_sections',
     'read',
-    'id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,image,sort_order,is_active,content',
+    'id,page,section_key,variant,eyebrow,headline,subheadline,body,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url,image,sort_order,is_active,content',
     '{"_and":[{"is_active":{"_eq":true}},{"page":{"status":{"_eq":"published"}}}]}'::json
   );
 

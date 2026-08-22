@@ -265,6 +265,16 @@ export interface PageSection {
   primaryCtaUrl?: string;
   secondaryCtaLabel?: string;
   secondaryCtaUrl?: string;
+  /** Editor-facing fields for the secondary brand block inside final_cta. */
+  closingHeadline?: string;
+  closingBody?: string;
+  closingBodyRichText?: RichTextNode[];
+  closingBrand?: string;
+  closingTagline?: string;
+  closingPrimaryCtaLabel?: string;
+  closingPrimaryCtaUrl?: string;
+  closingSecondaryCtaLabel?: string;
+  closingSecondaryCtaUrl?: string;
   /** Absolute image URL (already resolved from a Directus file id). */
   image?: string;
   sortOrder: number;

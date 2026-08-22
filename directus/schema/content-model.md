@@ -128,24 +128,32 @@ One row per template-backed page. SEO + which page owns which sections.
 Structured content blocks. **Not** free-form HTML. A section is identified by a
 stable `section_key`, rendered by a fixed component chosen via `variant`.
 
-| Field                 | Type                 | Notes                                                         |
-| --------------------- | -------------------- | ------------------------------------------------------------- |
-| `id`                  | uuid (PK)            |                                                               |
-| `page`                | M2O → `site_pages`   | Owning page.                                                  |
-| `section_key`         | string               | Stable id, e.g. `hero`, `trust`, `store_preview` (see table). |
-| `variant`             | string (enum)        | Layout variant the component supports (e.g. `hero.split`).    |
-| `eyebrow`             | string               | Small kicker above the headline.                              |
-| `headline`            | string               |                                                               |
-| `subheadline`         | string               |                                                               |
-| `body`                | text                 | Rich text / markdown for the paragraph.                       |
-| `primary_cta_label`   | string               |                                                               |
-| `primary_cta_url`     | string               |                                                               |
-| `secondary_cta_label` | string               |                                                               |
-| `secondary_cta_url`   | string               |                                                               |
-| `image`               | M2O → directus_files | Section image (e.g. hero photo).                              |
-| `sort_order`          | integer              | Order within the page.                                        |
-| `is_active`           | boolean              | Hide without deleting.                                        |
-| `content`             | JSON                 | Section-specific typed data (see per-section shapes below).   |
+| Field                         | Type                 | Notes                                                            |
+| ----------------------------- | -------------------- | ---------------------------------------------------------------- |
+| `id`                          | uuid (PK)            |                                                                  |
+| `page`                        | M2O → `site_pages`   | Owning page.                                                     |
+| `section_key`                 | string               | Stable id, e.g. `hero`, `trust`, `store_preview` (see table).    |
+| `variant`                     | string (enum)        | Layout variant the component supports (e.g. `hero.split`).       |
+| `eyebrow`                     | string               | Small kicker above the headline.                                 |
+| `headline`                    | string               |                                                                  |
+| `subheadline`                 | string               |                                                                  |
+| `body`                        | text                 | Rich text / markdown for the paragraph.                          |
+| `primary_cta_label`           | string               |                                                                  |
+| `primary_cta_url`             | string               |                                                                  |
+| `secondary_cta_label`         | string               |                                                                  |
+| `secondary_cta_url`           | string               |                                                                  |
+| `image`                       | M2O → directus_files | Section image (e.g. hero photo).                                 |
+| `closing_headline`            | string               | Final homepage brand-block headline; shown only for `final_cta`. |
+| `closing_body`                | text                 | Final homepage brand-block rich text.                            |
+| `closing_brand`               | string               | Brand line in the final homepage block.                          |
+| `closing_tagline`             | string               | Tagline under the brand line.                                    |
+| `closing_primary_cta_label`   | string               | Primary action label in the final homepage block.                |
+| `closing_primary_cta_url`     | string               | Primary action URL in the final homepage block.                  |
+| `closing_secondary_cta_label` | string               | Secondary action label in the final homepage block.              |
+| `closing_secondary_cta_url`   | string               | Secondary action URL in the final homepage block.                |
+| `sort_order`                  | integer              | Order within the page.                                           |
+| `is_active`                   | boolean              | Hide without deleting.                                           |
+| `content`                     | JSON                 | Section-specific typed data (see per-section shapes below).      |
 
 For section imagery, use the `image` M2O relation to Directus Files. Do not put
 `image_src`, `imageSrc`, `/assets/...` or `https://api.isvoi.ru/assets/...`
@@ -529,6 +537,14 @@ floating Passport card from Directus.
   "body": "Оставьте сценарий — найти вещь, передать свою дальше или войти в Club. В ответ вы получите понятные варианты: история, состояние, Passport и цена выхода.",
   "sort_order": 10,
   "is_active": true,
+  "closing_headline": "Хорошие вещи проходят через своих.",
+  "closing_body": "<p>У техники может быть пробег.</p><p>Могут быть следы использования.</p><p>Может быть история.</p>",
+  "closing_brand": "I СВОИ",
+  "closing_tagline": "Проверенная техника для своих.",
+  "closing_primary_cta_label": "Смотреть технику",
+  "closing_primary_cta_url": "/catalog",
+  "closing_secondary_cta_label": "Как мы проверяем",
+  "closing_secondary_cta_url": "/passport",
   "content": {
     "proof": ["варианты под задачу", "без агрессивных продаж", "сначала проверка — потом решение"],
     "form": {
@@ -551,6 +567,11 @@ floating Passport card from Directus.
   }
 }
 ```
+
+The final brand block is intentionally stored in the flat `closing_*` fields,
+not in `content.closing`. In Studio these fields appear in the conditional
+`Завершающий бренд-блок` group only for `section_key = final_cta`. The JSON
+field remains responsible for the structured form/proof data.
 
 ### `page_sections` — trade calculator intro
 

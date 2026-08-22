@@ -99,6 +99,9 @@ const auditDefinitions = {
       "studio.club.settings_groups_missing",
       "studio.bookmarks.too_many",
       "studio.bookmarks.duplicates",
+      "studio.homepage_closing.fields_missing",
+      "studio.homepage_closing.editor_permissions_missing",
+      "studio.homepage_closing.group_condition_missing",
     ],
   },
   catalog: {
@@ -175,6 +178,8 @@ const auditDefinitions = {
       "homepage_copy.sections.missing_or_duplicate",
       "homepage_copy.sections.text_mismatch",
       "homepage_copy.sections.unexpected_active",
+      "homepage_copy.closing.required_fields",
+      "homepage_copy.closing.legacy_json",
       "homepage_copy.footer.mismatch",
       "homepage_copy.forbidden.city",
       "homepage_copy.forbidden.commission",

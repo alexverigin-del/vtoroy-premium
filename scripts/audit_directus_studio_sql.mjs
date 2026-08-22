@@ -701,5 +701,46 @@ FROM (
   WHERE preset."user" IS NULL AND preset.bookmark IS NOT NULL
   GROUP BY preset.role,preset.collection,preset.bookmark
   HAVING count(*)>1
-) duplicate;
+) duplicate
+UNION ALL
+SELECT 'studio.homepage_closing.fields_missing', count(*)::text
+FROM (VALUES
+  ('closing_headline'),('closing_body'),('closing_brand'),('closing_tagline'),
+  ('closing_primary_cta_label'),('closing_primary_cta_url'),
+  ('closing_secondary_cta_label'),('closing_secondary_cta_url')
+) expected(field_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='page_sections' AND field.field=expected.field_name
+    AND field."group"='group_closing'
+    AND nullif(field.note,'') IS NOT NULL
+    AND field.translations::text LIKE '%ru-RU%'
+)
+UNION ALL
+SELECT 'studio.homepage_closing.editor_permissions_missing', count(*)::text
+FROM (VALUES
+  ('ISVOI Editor','closing_headline'),('ISVOI Editor','closing_body'),
+  ('ISVOI Editor','closing_brand'),('ISVOI Editor','closing_tagline'),
+  ('ISVOI Editor','closing_primary_cta_label'),('ISVOI Editor','closing_primary_cta_url'),
+  ('ISVOI Editor','closing_secondary_cta_label'),('ISVOI Editor','closing_secondary_cta_url'),
+  ('ISVOI Advanced Editor','closing_headline'),('ISVOI Advanced Editor','closing_body'),
+  ('ISVOI Advanced Editor','closing_brand'),('ISVOI Advanced Editor','closing_tagline'),
+  ('ISVOI Advanced Editor','closing_primary_cta_label'),('ISVOI Advanced Editor','closing_primary_cta_url'),
+  ('ISVOI Advanced Editor','closing_secondary_cta_label'),('ISVOI Advanced Editor','closing_secondary_cta_url')
+) expected(role_name,field_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name=expected.role_name AND permission.collection='page_sections'
+    AND permission.action='update'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,'||expected.field_name||',%'
+)
+UNION ALL
+SELECT 'studio.homepage_closing.group_condition_missing', count(*)::text
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='page_sections' AND field.field='group_closing'
+    AND field.interface='group-detail' AND coalesce(field.hidden,false)=true
+    AND field.conditions::text LIKE '%final_cta%'
+);
 `);

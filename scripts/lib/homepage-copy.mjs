@@ -100,6 +100,12 @@ export function loadHomepageCopy() {
   return canonical;
 }
 
+export function databaseSectionContent(section) {
+  const content = structuredClone(section.content ?? {});
+  delete content.closing;
+  return content;
+}
+
 export function sqlLiteral(value) {
   if (value === null || value === undefined) return "NULL";
   return `'${String(value).replaceAll("'", "''")}'`;

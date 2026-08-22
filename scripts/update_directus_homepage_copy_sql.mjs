@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
-import { loadHomepageCopy, sqlJson, sqlLiteral } from "./lib/homepage-copy.mjs";
+import {
+  databaseSectionContent,
+  loadHomepageCopy,
+  sqlJson,
+  sqlLiteral,
+} from "./lib/homepage-copy.mjs";
 
 const copy = loadHomepageCopy();
 const rollback = process.argv.includes("--rollback");
@@ -27,6 +32,7 @@ const faqIds = {
 const lines = ["BEGIN;", "SET LOCAL lock_timeout = '5s';"];
 
 for (const section of copy.sections) {
+  const closing = section.content?.closing ?? {};
   const fields = {
     variant: section.variant,
     eyebrow: section.eyebrow,
@@ -36,6 +42,14 @@ for (const section of copy.sections) {
     primary_cta_url: section.primary_cta_url,
     secondary_cta_label: section.secondary_cta_label,
     secondary_cta_url: section.secondary_cta_url,
+    closing_headline: closing.headline,
+    closing_body: closing.body,
+    closing_brand: closing.brand,
+    closing_tagline: closing.tagline,
+    closing_primary_cta_label: closing.primary_cta_label,
+    closing_primary_cta_url: closing.primary_cta_url,
+    closing_secondary_cta_label: closing.secondary_cta_label,
+    closing_secondary_cta_url: closing.secondary_cta_url,
   };
   lines.push(`
 UPDATE page_sections ps
@@ -47,15 +61,26 @@ SET variant = ${sqlLiteral(fields.variant)},
     primary_cta_url = ${sqlLiteral(fields.primary_cta_url)},
     secondary_cta_label = ${sqlLiteral(fields.secondary_cta_label)},
     secondary_cta_url = ${sqlLiteral(fields.secondary_cta_url)},
+    closing_headline = COALESCE(${sqlLiteral(fields.closing_headline)}, closing_headline),
+    closing_body = COALESCE(${sqlLiteral(fields.closing_body)}, closing_body),
+    closing_brand = COALESCE(${sqlLiteral(fields.closing_brand)}, closing_brand),
+    closing_tagline = COALESCE(${sqlLiteral(fields.closing_tagline)}, closing_tagline),
+    closing_primary_cta_label = COALESCE(${sqlLiteral(fields.closing_primary_cta_label)}, closing_primary_cta_label),
+    closing_primary_cta_url = COALESCE(${sqlLiteral(fields.closing_primary_cta_url)}, closing_primary_cta_url),
+    closing_secondary_cta_label = COALESCE(${sqlLiteral(fields.closing_secondary_cta_label)}, closing_secondary_cta_label),
+    closing_secondary_cta_url = COALESCE(${sqlLiteral(fields.closing_secondary_cta_url)}, closing_secondary_cta_url),
     sort_order = ${section.sort_order},
     is_active = true,
-    content = ${sqlJson(section.content)}
+    content = ${sqlJson(databaseSectionContent(section))}
 FROM site_pages sp
 WHERE ps.page = sp.id AND sp.slug = 'home' AND ps.section_key = ${sqlLiteral(section.section_key)};
 
 INSERT INTO page_sections (
   id, page, section_key, variant, eyebrow, headline, body,
   primary_cta_label, primary_cta_url, secondary_cta_label, secondary_cta_url,
+  closing_headline, closing_body, closing_brand, closing_tagline,
+  closing_primary_cta_label, closing_primary_cta_url,
+  closing_secondary_cta_label, closing_secondary_cta_url,
   sort_order, is_active, content
 )
 SELECT ${sqlLiteral(sectionIds[section.section_key])}::uuid, sp.id,
@@ -63,7 +88,11 @@ SELECT ${sqlLiteral(sectionIds[section.section_key])}::uuid, sp.id,
   ${sqlLiteral(fields.eyebrow)}, ${sqlLiteral(fields.headline)}, ${sqlLiteral(fields.body)},
   ${sqlLiteral(fields.primary_cta_label)}, ${sqlLiteral(fields.primary_cta_url)},
   ${sqlLiteral(fields.secondary_cta_label)}, ${sqlLiteral(fields.secondary_cta_url)},
-  ${section.sort_order}, true, ${sqlJson(section.content)}
+  ${sqlLiteral(fields.closing_headline)}, ${sqlLiteral(fields.closing_body)},
+  ${sqlLiteral(fields.closing_brand)}, ${sqlLiteral(fields.closing_tagline)},
+  ${sqlLiteral(fields.closing_primary_cta_label)}, ${sqlLiteral(fields.closing_primary_cta_url)},
+  ${sqlLiteral(fields.closing_secondary_cta_label)}, ${sqlLiteral(fields.closing_secondary_cta_url)},
+  ${section.sort_order}, true, ${sqlJson(databaseSectionContent(section))}
 FROM site_pages sp
 WHERE sp.slug = 'home'
   AND NOT EXISTS (

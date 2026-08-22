@@ -2298,3 +2298,16 @@ Next content-editing priorities:
   revalidation выполнена. `directus:audit-homepage-copy`,
   `directus:audit-files`, `smoke:prod`, `smoke:images` и desktop/mobile
   `smoke:visual` прошли; PM2 `isvoi-web` остался `online`.
+
+### Редактирование завершающего бренд-блока главной (2026-08-22)
+
+- Нижняя часть `home.final_cta` больше не принадлежит техническому
+  `page_sections.content.closing`. Для неё добавлены editor-facing поля
+  `closing_*`, собранные в условную группу `Завершающий бренд-блок`, которая
+  показывается только у секции `final_cta`.
+- Renderer сначала читает отдельные Directus-поля; legacy JSON остаётся только
+  временным fallback для локальных данных. Production migration переносит
+  существующие значения и удаляет ключ `closing` из JSON без изменения copy.
+- Обычный Editor и Advanced Editor могут менять заголовок, WYSIWYG-текст,
+  название/подпись бренда и обе CTA. Homepage-copy audit проверяет наличие
+  полей и запрещённые формулировки, но не фиксирует редакторский текст побайтно.

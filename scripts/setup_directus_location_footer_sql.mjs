@@ -238,8 +238,6 @@ END $$;
 SELECT pg_temp.isvoi_append_site_footer_copy_fields('ISVOI Public Read','read');
 SELECT pg_temp.isvoi_append_site_footer_copy_fields('ISVOI Editor','read');
 SELECT pg_temp.isvoi_append_site_footer_copy_fields('ISVOI Editor','update');
-SELECT pg_temp.isvoi_append_site_footer_copy_fields('ISVOI Advanced Editor','read');
-SELECT pg_temp.isvoi_append_site_footer_copy_fields('ISVOI Advanced Editor','update');
 
 UPDATE site_settings
 SET footer_contact_eyebrow=coalesce(nullif(footer_contact_eyebrow,''),'I СВОИ · {city}'),

@@ -2535,8 +2535,8 @@ Next content-editing priorities:
   подписи обеих ссылок — в глобальных настройках.
 - Setup и audits расширены идемпотентно; пустые новые поля получают текущие
   публичные подписи, а непустые редакторские значения не перезаписываются.
-  На момент этой записи изменение подготовлено локально и ещё не применено к
-  production Directus.
+  Изменение применено к production Directus в release `c3b4e59`; подробности
+  резервного копирования и проверки зафиксированы ниже.
 
 ### Контакты без отдельной дублирующей страницы (2026-08-22)
 
@@ -2556,3 +2556,23 @@ Next content-editing priorities:
 - Ранее подготовленный contacts-page setup удалён до применения. Единственный
   rehearsal завершился `ROLLBACK`; production Directus и ручные тексты
   черновика не менялись.
+
+### Выкат управления городским футером (2026-08-22)
+
+- Перед изменением Directus создан backup
+  `/opt/isvoi/backups/directus/20260822T192134Z`; `postgres.sql.gz` и
+  `uploads.tar.gz` прошли SHA-256. Offsite copy пропущен, поскольку
+  `OFFSITE_BACKUP_DEST` не настроен.
+- Release `c3b4e59` отправлен в `master` и применён на production. Directus
+  получил 13 глобальных полей группы `Footer · контакты`, городское поле
+  `footer_eyebrow` и новое название группы `Магазины, адреса и наличие`.
+- Вторая footer-ссылка управляется полем `footer_store_label` с шаблоном
+  `Магазин в {city}` и ведёт на `/{slug}`. Карта остаётся прямой внешней
+  ссылкой. Черновик `Контакты` не публиковался и его ручные данные не менялись.
+- После SQL удалены только 122 Redis-ключа `permissions:*`, Directus
+  перезапущен и вернулся в `health=ok`; `FLUSHALL` не использовался. Protected
+  site-content revalidation завершилась успешно.
+- Advanced Editor получает поля `site_settings` через назначенную Editor
+  policy, поэтому отдельные дублирующие строки permissions не создаются. Audit
+  проверяет реальные строки Public Read + Editor read/update и сохраняет
+  `non-admin wildcards = 0`.

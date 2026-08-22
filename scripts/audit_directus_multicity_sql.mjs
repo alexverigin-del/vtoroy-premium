@@ -114,8 +114,7 @@ UNION ALL
 SELECT 'multicity.permissions.site_footer_copy_fields_missing',count(*)::text
 FROM (VALUES
   ('ISVOI Public Read','read'),
-  ('ISVOI Editor','read'),('ISVOI Editor','update'),
-  ('ISVOI Advanced Editor','read'),('ISVOI Advanced Editor','update')
+  ('ISVOI Editor','read'),('ISVOI Editor','update')
 ) expected(policy_name,action_name)
 WHERE NOT EXISTS (
   SELECT 1

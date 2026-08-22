@@ -2490,5 +2490,28 @@ Next content-editing priorities:
   Белгорода из текущих глобальных настроек и не перезаписывает ручные значения.
 - `directus:audit-multicity` проверяет наличие полей, полноту опубликованных
   городов, HTTPS map URL и точные service/editor permissions. При росте сети
-  новый город нельзя публиковать без адреса, телефона, часов, карты, продавца
+  новый город нельзя публиковать без адреса, телефона, часов, карты, продавца,
   ИНН и ОГРН/ОГРНИП.
+- Production rollout выполнен коммитами `8e6eafe` и `56101f8`. Перед первой
+  транзакцией создан и проверен backup
+  `/opt/isvoi/backups/directus/20260822T181003Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущен из-за отсутствующего
+  `OFFSITE_BACKUP_DEST`.
+- Setup дважды прошёл rehearsal с `ROLLBACK`, затем применён с `COMMIT`.
+  Production получил четыре юридических поля и пять Studio-полей вместе с
+  группой. Backfill изменил только запись Белгорода и не перезаписывает
+  непустые редакторские значения.
+- Legacy `map_url` содержал полный Yandex iframe. Миграция идемпотентно
+  извлекла его HTTPS `src`; Studio-подсказка теперь требует URL без iframe.
+  `multicity.content.invalid_map_url` после исправления равен `0`.
+- PostgreSQL permissions были корректны, но внешний Redis сохранял старый
+  Directus permission cache после restart. Точечно удалены 106 ключей
+  `permissions:*`; `FLUSHALL` и очистка data/image cache не выполнялись.
+  После обновления cache service token читает `store_locations` с `200`, а
+  anonymous API по-прежнему возвращает `403`.
+- Protected site-content revalidation выполнена после восстановления
+  service-read. Публичный HTML содержит одну ссылку `Открыть на карте`, данные
+  продавца и не содержит iframe в `href`.
+- Production прошёл `web:verify`, bundle budget, полный
+  `directus:audit:prod`, functional/image/copy smoke и повторный desktop/mobile
+  visual smoke главной. Production checkout завершил выкат на `56101f8`.

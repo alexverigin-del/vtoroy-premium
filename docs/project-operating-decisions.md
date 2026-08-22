@@ -2379,3 +2379,30 @@ Next content-editing priorities:
   `ROLLBACK`, а SHA-256 snapshot до и после остался
   `7bf8d24f66c154735f14c9144cf13f455870a8c0ffc656f1dccf0306638046c2`.
   Контент не изменялся, backup и revalidation для preview не запускались.
+
+### Service-read Passport и Trade для Catalog V3 (2026-08-22)
+
+- После очистки устаревшего permission cache обнаружилось, что production
+  policy `ISVOI Public Read` для `device_passports` и `trade_options` разрешала
+  только legacy relation `device`. Server-side Next не мог читать связанные с
+  `products` Passport и Trade, поэтому `/product/iphone-13-pro` терял Passport,
+  историю устройства и Trade offer.
+- Перед изменением создан и проверен backup
+  `/opt/isvoi/backups/directus/20260822T165232Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущен, потому что `OFFSITE_BACKUP_DEST` не настроен.
+- После явного разрешения пользователя применён узкий SQL patch ровно к двум
+  `read`-строкам. Поля теперь включают одновременно `product` и `device`.
+  Product-ветка разрешает только `published`, `content_status=ready` и
+  `stock_status != hidden`; Trade дополнительно требует `is_active=true`.
+- Анонимный API не открывался, write/delete/system permissions не менялись.
+  Rehearsal вернул `target_rows=2` и завершился `ROLLBACK`; apply также изменил
+  ровно две строки и завершился `COMMIT`.
+- Удалены только 104 Redis-ключа `permissions:*`, Directus перезапущен и
+  вернулся в `health=ok`. Protected `site-content` revalidation выполнена.
+- API policy подтвердил `403` для anonymous requests и `200` для
+  `service.product_passport` / `service.product_trade`. Полный
+  `directus:audit:prod` прошёл: public writes, non-admin wildcards и non-admin
+  system permissions остаются `0`.
+- Production Playwright smoke прошёл. `/product/iphone-13-pro` содержит один
+  Passport-блок, один блок истории устройства, один Trade offer и lead form;
+  legacy `/device/iphone-13-pro` сохраняет ожидаемый `301`.

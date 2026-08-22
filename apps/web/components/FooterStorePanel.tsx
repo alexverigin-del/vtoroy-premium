@@ -127,9 +127,6 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
           <h2 className="mt-3 max-w-copy text-2xl font-semibold leading-tight text-carbon md:text-3xl">
             {address || name}
           </h2>
-          {address && name !== address ? (
-            <p className="mt-2 text-sm leading-relaxed text-ash">{name}</p>
-          ) : null}
           <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
             {mapUrl ? (
               <a

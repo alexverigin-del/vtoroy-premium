@@ -29,6 +29,24 @@ BEGIN
 END
 $home_guard$;
 
+UPDATE directus_fields AS field
+SET options = jsonb_set(
+  coalesce(field.options::jsonb, '{}'::jsonb),
+  '{choices}',
+  coalesce(field.options::jsonb -> 'choices', '[]'::jsonb) || jsonb_build_array(
+    jsonb_build_object('text', 'Новая техника', 'value', 'new.tech', 'color', '#2563eb')
+  )
+)::json
+WHERE field.collection = 'page_sections'
+  AND field.field = 'variant'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(
+      coalesce(field.options::jsonb -> 'choices', '[]'::jsonb)
+    ) choice
+    WHERE choice ->> 'value' = 'new.tech'
+  );
+
 INSERT INTO page_sections (
   id, page, section_key, variant, eyebrow, headline, body,
   primary_cta_label, primary_cta_url,
@@ -100,6 +118,15 @@ SELECT 'home_new_tech.order', string_agg(ps.section_key, ',' ORDER BY ps.sort_or
 FROM page_sections AS ps
 JOIN site_pages AS sp ON sp.id = ps.page
 WHERE sp.slug = 'home' AND coalesce(ps.is_active, false) = true;
+
+SELECT 'home_new_tech.variant_choice_count' AS check_name, count(*)::text AS value
+FROM directus_fields AS field
+CROSS JOIN LATERAL jsonb_array_elements(
+  coalesce(field.options::jsonb -> 'choices', '[]'::jsonb)
+) choice
+WHERE field.collection = 'page_sections'
+  AND field.field = 'variant'
+  AND choice ->> 'value' = 'new.tech';
 
 ${apply ? "COMMIT;" : "ROLLBACK;"}
 `);

@@ -2321,3 +2321,12 @@ Next content-editing priorities:
   с `ROLLBACK`, затем были применены. Protected revalidation выполнена.
   `web:verify`, `directus:audit:prod`, `smoke:prod` и desktop/mobile
   `smoke:visual` прошли; публичный вид и copy главной не изменились.
+- После первой пользовательской правки выяснилось, что Directus продолжал
+  отдавать старую permission-схему из Redis: значения сохранялись в PostgreSQL,
+  но server token получал `403` на явные `closing_*`, а `fields=*` молча их
+  исключал. Удалены только 187 ключей `permissions:*`, затем Directus дождался
+  health и была выполнена protected revalidation; `FLUSHALL` не использовался.
+- Для предотвращения повтора добавлена команда
+  `npm run directus:cache:permissions`. API policy audit теперь отдельно
+  проверяет `service.homepage_closing` реальным `DIRECTUS_TOKEN`. Chromium
+  подтвердил видимость отредактированного блока на desktop и mobile.

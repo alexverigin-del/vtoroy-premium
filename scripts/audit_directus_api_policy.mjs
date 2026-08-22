@@ -120,6 +120,25 @@ for (const check of checks) {
 if (serviceToken) {
   const serviceChecks = [
     {
+      name: "service.homepage_closing",
+      path: "/items/page_sections?fields=id,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url&filter[section_key][_eq]=final_cta&filter[page][slug][_eq]=home&limit=1",
+      validate(data) {
+        const section = Array.isArray(data) ? data[0] : null;
+        return (
+          section &&
+          section.id &&
+          section.closing_headline &&
+          section.closing_body &&
+          section.closing_brand &&
+          section.closing_tagline &&
+          section.closing_primary_cta_label &&
+          section.closing_primary_cta_url &&
+          section.closing_secondary_cta_label &&
+          section.closing_secondary_cta_url
+        );
+      },
+    },
+    {
       name: "service.club_page_settings",
       path: "/items/club_page_settings?fields=publication_mode,hero_title,form_device_label,consent_version,privacy_url&limit=1",
       validate(data) {
@@ -184,7 +203,7 @@ if (serviceToken) {
     }
   }
 } else {
-  console.log("service.club_fields: skipped (DIRECTUS_TOKEN unavailable in this environment)");
+  console.log("service.managed_fields: skipped (DIRECTUS_TOKEN unavailable in this environment)");
 }
 
 if (failed) {

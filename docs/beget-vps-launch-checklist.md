@@ -531,18 +531,17 @@ before rebuilding Next.js so its schema and permission caches match the
 database:
 
 ```bash
-cd /opt/isvoi/infra/directus-beget
-docker compose restart directus
-curl -fsS http://127.0.0.1:8055/server/health
-
 cd /opt/isvoi
+npm run directus:cache:permissions
+
 npm run directus:audit-api-policy
 ```
 
 Do not use `FLUSHALL` on a shared or production Redis. When direct SQL changes
-permissions, invalidate only Directus permission keys and the configured
-`CACHE_NAMESPACE`, then restart Directus. Preserve collaboration, counters and
-any unrelated application keys.
+permissions, `directus:cache:permissions` deletes only `permissions:*`, restarts
+Directus and waits for health. Preserve collaboration, counters, Directus
+content cache and any unrelated application keys. Run protected Next
+revalidation separately after the API policy audit passes.
 
 The API policy audit uses `.env.local` only on the server and never prints the
 token. Its Club checks must return `200`; anonymous content checks must remain

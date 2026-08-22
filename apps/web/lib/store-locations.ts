@@ -54,6 +54,10 @@ function mapLocation(row: Row): StoreLocation {
     email: text(row.email) || undefined,
     businessHours: text(row.business_hours) || undefined,
     mapUrl: text(row.map_url) || undefined,
+    legalName: text(row.legal_name) || undefined,
+    inn: text(row.inn) || undefined,
+    ogrn: text(row.ogrn) || undefined,
+    legalAddress: text(row.legal_address) || undefined,
     pickupEnabled: row.pickup_enabled !== false,
     localDeliveryEnabled: row.local_delivery_enabled === true,
     intercityDeliveryEnabled: row.intercity_delivery_enabled === true,
@@ -73,7 +77,7 @@ async function requestLocations(): Promise<StoreLocation[]> {
     const params = new URLSearchParams({
       "filter[status][_eq]": "published",
       fields:
-        "id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort",
+        "id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort",
       sort: "sort,city",
       limit: "100",
     });

@@ -22,6 +22,10 @@ export interface StoreLocation {
   email?: string;
   businessHours?: string;
   mapUrl?: string;
+  legalName?: string;
+  inn?: string;
+  ogrn?: string;
+  legalAddress?: string;
   pickupEnabled: boolean;
   localDeliveryEnabled: boolean;
   intercityDeliveryEnabled: boolean;

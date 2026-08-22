@@ -6,6 +6,11 @@ SELECT 'multicity.schema.tables_missing' AS check_name,
 FROM information_schema.tables
 WHERE table_schema='public' AND table_name IN ('store_locations','store_location_images','product_offers')
 UNION ALL
+SELECT 'multicity.schema.location_footer_fields_missing',(4-count(*))::text
+FROM information_schema.columns
+WHERE table_schema='public' AND table_name='store_locations'
+  AND column_name IN ('legal_name','inn','ogrn','legal_address')
+UNION ALL
 SELECT 'multicity.schema.relations_missing',(5-count(*))::text
 FROM directus_relations
 WHERE (many_collection,many_field) IN (
@@ -22,6 +27,20 @@ UNION ALL
 SELECT 'multicity.content.belgorod_missing',CASE WHEN EXISTS (
   SELECT 1 FROM store_locations WHERE slug='belgorod' AND status='published' AND city='Белгород'
 ) THEN '0' ELSE '1' END
+UNION ALL
+SELECT 'multicity.content.published_footer_incomplete',count(*)::text
+FROM store_locations
+WHERE status='published' AND (
+  NULLIF(address,'') IS NULL OR NULLIF(phone,'') IS NULL
+  OR NULLIF(business_hours,'') IS NULL OR NULLIF(map_url,'') IS NULL
+  OR NULLIF(legal_name,'') IS NULL OR NULLIF(inn,'') IS NULL
+  OR NULLIF(ogrn,'') IS NULL
+)
+UNION ALL
+SELECT 'multicity.content.invalid_map_url',count(*)::text
+FROM store_locations
+WHERE status='published' AND NULLIF(map_url,'') IS NOT NULL
+  AND map_url !~* '^https://'
 UNION ALL
 SELECT 'multicity.migration.products_without_offer',count(*)::text
 FROM products p WHERE NOT EXISTS (SELECT 1 FROM product_offers o WHERE o.product=p.id)
@@ -43,6 +62,26 @@ SELECT 'multicity.permissions.public_writes',count(*)::text
 FROM directus_permissions permission JOIN directus_policies policy ON policy.id=permission.policy
 WHERE policy.name='ISVOI Public Read' AND permission.action<>'read'
   AND permission.collection IN ('store_locations','store_location_images','product_offers')
+UNION ALL
+SELECT 'multicity.permissions.location_footer_fields_missing',count(*)::text
+FROM (VALUES
+  ('ISVOI Public Read','read'),
+  ('ISVOI Editor','read'),('ISVOI Editor','create'),('ISVOI Editor','update'),
+  ('ISVOI Advanced Editor','read'),('ISVOI Advanced Editor','create'),
+  ('ISVOI Advanced Editor','update')
+) expected(policy_name,action_name)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name=expected.policy_name
+    AND permission.collection='store_locations'
+    AND permission.action=expected.action_name
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,legal_name,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,inn,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,ogrn,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,legal_address,%'
+)
 UNION ALL
 SELECT 'multicity.permissions.editor_actions_missing',(18-count(*))::text
 FROM directus_permissions permission JOIN directus_policies policy ON policy.id=permission.policy

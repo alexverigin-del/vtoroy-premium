@@ -620,6 +620,7 @@ UNION ALL
 SELECT 'studio.locations.form_groups_missing', count(*)::text
 FROM (VALUES
   ('store_locations','group_publication'),('store_locations','group_contacts'),
+  ('store_locations','group_legal'),
   ('store_locations','group_fulfillment'),('store_locations','group_content'),
   ('store_locations','group_relations'),('store_locations','group_system'),
   ('product_offers','group_identity'),('product_offers','group_stock'),

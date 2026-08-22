@@ -1,5 +1,6 @@
 import type { NavigationItem, SiteSettings } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
+import { FooterStorePanel } from "./FooterStorePanel";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
 
@@ -8,15 +9,6 @@ const footerLinkClass =
 
 const mobileFooterSummaryClass =
   "flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-card px-4 text-sm font-semibold text-carbon outline-none transition marker:hidden focus-visible:shadow-focus";
-
-function telegramHref(value: string): string {
-  if (/^https?:\/\//i.test(value)) return value;
-  return `https://t.me/${value.replace(/^@/, "")}`;
-}
-
-function phoneHref(value: string): string {
-  return `tel:${value.replace(/[^\d+]/g, "")}`;
-}
 
 export function SiteFooter({
   settings,
@@ -46,65 +38,23 @@ export function SiteFooter({
 
   return (
     <footer
-      className={cn("border-t border-hairline bg-white py-12", className)}
+      className={cn("border-t border-hairline bg-white", className)}
       data-component="SiteFooter"
     >
       <div className="mx-auto max-w-shell px-5">
-        {settings.phone ||
-        settings.telegram ||
-        settings.email ||
-        settings.address ||
-        settings.businessHours ? (
-          <address className="grid gap-2 border-b border-hairline pb-8 text-sm not-italic text-graphite sm:grid-cols-2 lg:grid-cols-4">
-            {settings.phone ? (
-              <a className={footerLinkClass} href={phoneHref(settings.phone)}>
-                {settings.phone}
-              </a>
-            ) : null}
-            {settings.telegram ? (
-              <a
-                className={footerLinkClass}
-                href={telegramHref(settings.telegram)}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Telegram
-              </a>
-            ) : null}
-            {settings.email ? (
-              <a className={footerLinkClass} href={`mailto:${settings.email}`}>
-                {settings.email}
-              </a>
-            ) : null}
-            {settings.address ? (
-              settings.mapUrl ? (
-                <a
-                  className={footerLinkClass}
-                  href={settings.mapUrl}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {settings.address}
-                </a>
-              ) : (
-                <span className="flex min-h-11 items-center">{settings.address}</span>
-              )
-            ) : null}
-            {settings.businessHours ? (
-              <span className="flex min-h-11 items-center">{settings.businessHours}</span>
-            ) : null}
-          </address>
-        ) : null}
-        {settings.footerNote ? (
-          <p className="max-w-copy-wide text-sm leading-relaxed text-ash">{settings.footerNote}</p>
-        ) : null}
-        <div className="mt-9 grid content-start gap-4 md:hidden">
+        <FooterStorePanel settings={settings} />
+        <div className="grid content-start gap-4 pt-10 md:hidden">
           <SiteLogo settings={settings} />
           <p className="max-w-caption text-sm leading-relaxed text-ash">
             {settings.footerBrandText || settings.tagline}
           </p>
+          {settings.footerNote ? (
+            <p className="max-w-caption text-sm font-medium leading-relaxed text-graphite">
+              {settings.footerNote}
+            </p>
+          ) : null}
         </div>
-        <div className="mt-8 grid gap-2 md:hidden">
+        <div className="mt-8 grid gap-2 pb-10 md:hidden">
           {columns.map((column) => {
             const links = columnLinks(column.id);
             return (
@@ -138,12 +88,17 @@ export function SiteFooter({
             );
           })}
         </div>
-        <div className="mt-9 hidden gap-8 md:grid md:grid-cols-footer">
+        <div className="hidden gap-8 py-10 md:grid md:grid-cols-footer">
           <div className="grid content-start gap-4">
             <SiteLogo settings={settings} />
             <p className="max-w-caption text-sm leading-relaxed text-ash">
               {settings.footerBrandText || settings.tagline}
             </p>
+            {settings.footerNote ? (
+              <p className="max-w-caption text-sm font-medium leading-relaxed text-graphite">
+                {settings.footerNote}
+              </p>
+            ) : null}
           </div>
           {columns.map((column) => {
             const links = columnLinks(column.id);
@@ -167,11 +122,8 @@ export function SiteFooter({
             );
           })}
         </div>
-        <div className="mt-10 flex flex-wrap gap-3 border-t border-hairline pt-5 text-xs text-ash">
+        <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-hairline py-5 text-xs text-ash">
           {settings.footerCopyright ? <span>{settings.footerCopyright}</span> : null}
-          {settings.legalName ? <span>{settings.legalName}</span> : null}
-          {settings.inn ? <span>ИНН {settings.inn}</span> : null}
-          {settings.ogrn ? <span>ОГРН {settings.ogrn}</span> : null}
           {settings.privacyUrl ? (
             <a className="underline-offset-4 hover:underline" href={settings.privacyUrl}>
               Обработка персональных данных

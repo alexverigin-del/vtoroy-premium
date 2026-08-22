@@ -166,6 +166,7 @@ export function FinalCtaSection({
       : typeof section.content.footer_note === "string"
         ? section.content.footer_note
         : "";
+  const isHomepage = source === "home_final_cta";
 
   const [scenario, setScenario] = useState(form.scenarioOptions[0] ?? "");
   const [device, setDevice] = useState("");
@@ -205,17 +206,41 @@ export function FinalCtaSection({
         <HomeSectionIntro section={section} align="split" />
         <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
           <div className="lg:col-span-6">
-            <ul className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-              {renderedProof.map((item) => (
+            <ul
+              className={cn(
+                isHomepage
+                  ? "grid grid-cols-2 border-y border-hairline"
+                  : "mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2",
+              )}
+            >
+              {renderedProof.map((item, index) => (
                 <li
                   key={item}
-                  className="flex items-start gap-2 text-sm font-medium leading-relaxed text-graphite"
+                  className={cn(
+                    isHomepage
+                      ? "flex min-h-28 flex-col justify-between gap-5 py-5 text-base font-semibold leading-snug text-carbon sm:min-h-32 sm:py-6 sm:text-xl"
+                      : "flex items-start gap-2 text-sm font-medium leading-relaxed text-graphite",
+                    isHomepage && index % 2 === 0 && "border-r border-hairline pr-4 sm:pr-6",
+                    isHomepage && index % 2 === 1 && "pl-4 sm:pl-6",
+                    isHomepage && index < 2 && "border-b border-hairline",
+                  )}
                 >
-                  <span
-                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-success"
-                    aria-hidden="true"
-                  />
-                  {item}
+                  {isHomepage ? (
+                    <>
+                      <span className="text-sm font-semibold text-link-blue" aria-hidden="true">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="max-w-56 text-balance">{item}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span
+                        className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-success"
+                        aria-hidden="true"
+                      />
+                      {item}
+                    </>
+                  )}
                 </li>
               ))}
             </ul>

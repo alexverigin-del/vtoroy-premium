@@ -2406,3 +2406,17 @@ Next content-editing priorities:
 - Production Playwright smoke прошёл. `/product/iphone-13-pro` содержит один
   Passport-блок, один блок истории устройства, один Trade offer и lead form;
   legacy `/device/iphone-13-pro` сохраняет ожидаемый `301`.
+
+### Матрица результата в домашнем CTA (2026-08-22)
+
+- Четыре пункта «что покажем» в `home.final_cta` оформлены крупной плоской
+  матрицей 2×2 с индексами `01–04`, усиленной типографикой и hairline-сеткой.
+  Это заполняет левую колонку рядом с lead form без декоративных карточек и
+  без новой icon dependency.
+- Значения списка продолжают читаться из `page_sections.content.proof` и
+  редактируются в Directus Studio; публичный copy в React не добавлялся.
+- Расширенная композиция включается только для `source=home_final_cta`.
+  Переиспользующий компонент `/trade` сохраняет компактный bullet-list.
+- Локально прошли Prettier, ESLint, TypeScript, Tailwind и content ownership
+  audits, production Next build, bundle budget и desktop/mobile visual smoke
+  для `/` и `/trade`. На ширине `390px` горизонтального переполнения нет.

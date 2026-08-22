@@ -24,7 +24,7 @@ echo "Deleted Directus permission cache keys: $deleted"
 docker compose restart directus
 
 for _ in $(seq 1 30); do
-  if curl -fsS "$HEALTH_URL" >/dev/null; then
+  if curl -fsS "$HEALTH_URL" >/dev/null 2>&1; then
     echo "Directus health: ok"
     exit 0
   fi

@@ -2444,3 +2444,22 @@ Next content-editing priorities:
   десяти секций, но не сравнивает редакторский текст production Directus с
   seed JSON побайтно. Studio audit дополнительно требует вариант `new.tech`
   в штатном dropdown.
+- Production rollout выполнен коммитами `5cb9b51` и `7d09d61`. Перед SQL
+  создан и проверен backup
+  `/opt/isvoi/backups/directus/20260822T172505Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущен из-за отсутствующего
+  `OFFSITE_BACKUP_DEST`.
+- Узкий SQL дважды прошёл rehearsal с `ROLLBACK`, затем создал ровно одну
+  секцию и один dropdown choice. Повторное применение дало `INSERT 0 0`, что
+  подтвердило идемпотентность. Общий homepage-copy reset не запускался.
+- Directus после restart вернулся в `health=ok`; первый запрос через восемь
+  секунд попал в ожидаемое окно прогрева `502`, повторный прошёл после полной
+  готовности контейнера.
+- Next.js собран из чистого generated `.next` при остановленном PM2, чтобы
+  исключить смешивание старых и новых chunk hashes. Build завершился
+  `status=0`, PM2 и публичный HTTPS вернулись в `200`, protected revalidation
+  выполнена.
+- `directus:audit:prod`, функциональный, image, copy и desktop/mobile visual
+  smoke прошли. Production DOM подтвердил порядок Store → New Tech → Trade,
+  CTA `/catalog/tech?condition=new`, отсутствие page errors и горизонтального
+  overflow на 1366 и 390 px.

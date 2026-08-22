@@ -2311,3 +2311,13 @@ Next content-editing priorities:
 - Обычный Editor и Advanced Editor могут менять заголовок, WYSIWYG-текст,
   название/подпись бренда и обе CTA. Homepage-copy audit проверяет наличие
   полей и запрещённые формулировки, но не фиксирует редакторский текст побайтно.
+- Реализация выкачена коммитами `4fabbc7` и `0f295b2`. Второй коммит сохраняет
+  `page_sections` скрытой технической коллекцией: редактор открывает секции
+  через `Страницы сайта`, а не через отдельный пункт верхнего меню Studio.
+- Перед schema apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260822T153034Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.
+- SQL-модель, перенос текста и permissions сначала прошли production rehearsal
+  с `ROLLBACK`, затем были применены. Protected revalidation выполнена.
+  `web:verify`, `directus:audit:prod`, `smoke:prod` и desktop/mobile
+  `smoke:visual` прошли; публичный вид и copy главной не изменились.

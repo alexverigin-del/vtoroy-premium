@@ -107,6 +107,12 @@ SELECT isvoi_upsert_collection_metadata(
   'Секции страниц'
 );
 
+-- Sections remain available through the page relation, but stay out of the
+-- top-level editor navigation as a technical child collection.
+UPDATE directus_collections
+SET hidden = true
+WHERE collection = 'page_sections';
+
 DROP FUNCTION isvoi_upsert_collection_metadata(varchar, varchar, text, varchar, varchar, varchar, integer, varchar, text);
 
 CREATE OR REPLACE FUNCTION isvoi_upsert_directus_field(

@@ -118,10 +118,10 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
 
   return (
     <section
-      className="border-b border-hairline py-10 md:py-12"
+      className="border-b border-hairline pt-10 md:pt-12"
       aria-label={city ? `Контакты магазина в городе ${city}` : "Контакты магазина"}
     >
-      <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
+      <div className="grid gap-8 pb-10 md:pb-12 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-6">
           <p className="text-sm font-semibold leading-snug text-link-blue">{eyebrow}</p>
           <h2 className="mt-3 max-w-copy text-xl font-semibold leading-tight text-carbon md:text-2xl">
@@ -194,7 +194,7 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
       </div>
 
       {hasLegal ? (
-        <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-hairline pt-4 text-xs leading-relaxed text-ash">
+        <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-hairline py-4 text-xs leading-relaxed text-ash">
           {legalName ? (
             <span>
               {settings.footerSellerLabel || "Продавец"}: {legalName}

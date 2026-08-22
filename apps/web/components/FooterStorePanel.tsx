@@ -124,7 +124,7 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
       <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-6">
           <p className="text-sm font-semibold leading-snug text-link-blue">{eyebrow}</p>
-          <h2 className="mt-3 max-w-copy text-2xl font-semibold leading-tight text-carbon md:text-3xl">
+          <h2 className="mt-3 max-w-copy text-xl font-semibold leading-tight text-carbon md:text-2xl">
             {address || name}
           </h2>
           <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">

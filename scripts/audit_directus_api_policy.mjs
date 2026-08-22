@@ -139,6 +139,22 @@ if (serviceToken) {
       },
     },
     {
+      name: "service.product_passport",
+      path: "/items/device_passports?fields=id,product,story_title&filter[product][status][_eq]=published&limit=1",
+      validate(data) {
+        const passport = Array.isArray(data) ? data[0] : null;
+        return Boolean(passport?.id && passport?.product);
+      },
+    },
+    {
+      name: "service.product_trade",
+      path: "/items/trade_options?fields=id,product,value,label&filter[product][status][_eq]=published&filter[is_active][_eq]=true&limit=1",
+      validate(data) {
+        const trade = Array.isArray(data) ? data[0] : null;
+        return Boolean(trade?.id && trade?.product);
+      },
+    },
+    {
       name: "service.club_page_settings",
       path: "/items/club_page_settings?fields=publication_mode,hero_title,form_device_label,consent_version,privacy_url&limit=1",
       validate(data) {

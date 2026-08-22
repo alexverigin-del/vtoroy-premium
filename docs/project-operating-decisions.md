@@ -2171,25 +2171,24 @@ Next content-editing priorities:
   `directus:audit:prod`, API policy, ops и content ownership; Directus
   `11.17.4` вернулся в `health=ok`.
 
-## 2026-08-21 — Канонические тексты главной
+## 2026-08-21 — Исходная миграция текстов главной
 
-- Утверждённый источник текстов главной хранится без изменений в
-  `docs/source-copy/writing-block.md`. Его SHA-256:
+- Исходный утверждённый текст релиза хранится без изменений в
+  `docs/source-copy/writing-block.md` как reference/seed. Его SHA-256:
   `d677114610f4cf170ddda0a3a0cf22d3b9ab242b4bf0feddd2381bef0bcc9aeb`.
-- Каноническое распределение строк по полям Directus хранится в
-  `apps/web/data/homepage-copy.json`. Разрешены только две редакционные
-  операции: замена `Северодвинск` на `Белгород` и полное исключение фрагментов
-  о комиссионной продаже с главной. SEO, legal/copyright, consent, статусы формы
-  и отдельная страница `/trade` этим релизом не меняются.
+- Исходное распределение строк по полям хранится в
+  `apps/web/data/homepage-copy.json`. После запуска редакторская версия в
+  production Directus является источником истины; JSON используется для
+  fallback/seed и не должен автоматически перезаписывать Studio-правки.
 - Главная состоит из девяти активных секций: Hero, главное отличие, каталог,
   Passport, принцип I СВОИ, магазин, Trade, FAQ и составной блок подбора с
   финальным экраном. `market_tension`, `path_router`, `club_preview`,
   `diagnostics_compare` и `social_proof` остаются неактивными.
-- SQL для применения генерируется только из канонического JSON командой
-  `npm run directus:update-homepage-copy-sql`. Безопасная репетиция выполняется
-  с `-- --rollback`. Точный production-контракт проверяет
-  `npm run directus:audit-homepage-copy`; он включён в
-  `npm run directus:audit:prod`.
+- SQL полного сброса генерируется из reference JSON командой
+  `npm run directus:update-homepage-copy-sql -- --confirm-copy-reset` и не
+  является deploy-шагом. Безопасная репетиция доступна с `-- --rollback`.
+  `directus:audit-homepage-copy` проверяет структуру и guardrails, но не
+  побайтное равенство редакторского текста seed-файлу.
 - Fallback главной читает тот же канонический JSON. Демонстрационные IMEI,
   суммы выкупа/доплаты, valuation Trade и подпись Store не показываются без
   явных данных Directus. Выбор сценария в финальной форме скрыт, но заявка
@@ -2215,10 +2214,10 @@ Next content-editing priorities:
 
 ### Визуальная архитектура главной (2026-08-21)
 
-- Канонический текст главной и его Directus ownership не меняются при
-  визуальной доработке. Секционные компоненты отвечают только за композицию,
-  адаптивность и поверхности; `directus:audit-homepage-copy` остаётся точным
-  контрактом дословности.
+- Редакторский текст главной остаётся в Directus при визуальной доработке.
+  Секционные компоненты отвечают только за композицию, адаптивность и
+  поверхности; audit контролирует структуру и обязательные поля, но не
+  возвращает текст к seed-версии.
 - Повторяемая вводная часть секций собрана в `HomeSectionIntro`. Trust, Catalog,
   Passport, принцип I СВОИ, Store, Trade и FAQ используют центрированную
   презентационную композицию по образцу `/trade`: H2 ограничен `780px`, вводный
@@ -2252,9 +2251,10 @@ Next content-editing priorities:
   validation прав Editor, а для редактора создано представление `Главная FAQ`.
   Регресс блокирует метрика `studio.faq.home_editability_missing` в
   `npm run directus:audit-studio` и агрегатном `directus:audit:prod`.
-- Точный аудит `directus:audit-homepage-copy` по-прежнему сверяет production с
-  `apps/web/data/homepage-copy.json`: изменение утверждённого текста в Studio
-  требует синхронного обновления канонического источника в репозитории.
+- `directus:audit-homepage-copy` разрешает редакторские изменения в Studio и
+  проверяет состав секций, variants, обязательный copy, FAQ-связи и запрещённые
+  legacy-формулировки. Seed JSON синхронизируется отдельно только при намеренном
+  изменении аварийного fallback.
 - Перед metadata apply создан и проверен backup
   `/opt/isvoi/backups/directus/20260821T195505Z`; PostgreSQL и uploads прошли
   SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.
@@ -2264,7 +2264,7 @@ Next content-editing priorities:
 - Content ownership главной закрыт полностью: empty-state превью каталога
   хранится в `catalog_preview.content.emptyState.body`, а подписи отправки,
   успеха и ошибки формы — в `final_cta.content.form`. React-компоненты больше не
-  содержат эти публичные строки; exact homepage audit контролирует production.
+  содержат эти публичные строки; production Directus контролирует copy.
 - Перед production apply создан и проверен backup
   `/opt/isvoi/backups/directus/20260821T201124Z`; PostgreSQL и uploads прошли
   SHA-256, offsite copy пропущен из-за отсутствия `OFFSITE_BACKUP_DEST`.
@@ -2283,7 +2283,7 @@ Next content-editing priorities:
   Локальный WebP является только first-viewport performance override; при смене
   relation в Studio сайт автоматически вернётся к Directus asset URL.
 - Alt-текст хранится в `home.hero.content.visual.image_alt` и контролируется
-  точным homepage-copy audit. Passport overlay остаётся выключенным: отдельная
+  page-section/content audits. Passport overlay остаётся выключенным: отдельная
   Passport-секция раскрывает проверку ниже по странице.
 - `import_site_assets.mjs --replace-file` заменяет бинарник существующего
   Directus File через API, сохраняя UUID и не создавая orphan-файл. На
@@ -2330,3 +2330,16 @@ Next content-editing priorities:
   `npm run directus:cache:permissions`. API policy audit теперь отдельно
   проверяет `service.homepage_closing` реальным `DIRECTUS_TOKEN`. Chromium
   подтвердил видимость отредактированного блока на desktop и mobile.
+- Общий homepage-copy reset больше не является штатным deploy-шагом. Команда
+  `directus:update-homepage-copy-sql` разрешает только `--rollback`; реальный
+  reset требует явного `--confirm-copy-reset` и считается намеренным возвратом
+  к seed/fallback-текстам. Production Directus является владельцем редакторских
+  текстов главной.
+- Homepage-copy audit больше не сравнивает редакторский copy побайтно с JSON.
+  Он контролирует состав и variants секций, обязательные значения, FAQ-связи,
+  отсутствие legacy `content.closing` и запрещённых формулировок.
+- Public/service permissions для `device_passports` и `trade_options` обязаны
+  поддерживать обе связи переходного периода: Catalog V3 через `product` и
+  legacy через `device`. API policy проверяет `service.product_passport` и
+  `service.product_trade`; permissions setup не должен возвращать фильтр только
+  по legacy `device`.

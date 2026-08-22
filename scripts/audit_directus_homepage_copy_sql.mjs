@@ -35,21 +35,12 @@ SELECT 'homepage_copy.sections.missing_or_duplicate' AS check_name, count(*)::te
 FROM expected_sections expected
 WHERE (SELECT count(*) FROM page_sections ps, home WHERE ps.page = home.id AND ps.section_key = expected.section_key) <> 1
 UNION ALL
-SELECT 'homepage_copy.sections.text_mismatch', count(*)::text
+SELECT 'homepage_copy.sections.contract_mismatch', count(*)::text
 FROM expected_sections expected
 JOIN home ON true
 JOIN page_sections ps ON ps.page = home.id AND ps.section_key = expected.section_key
 WHERE ps.variant IS DISTINCT FROM expected.variant
-   OR ps.sort_order IS DISTINCT FROM expected.sort_order
-   OR ps.eyebrow IS DISTINCT FROM expected.eyebrow
-   OR ps.headline IS DISTINCT FROM expected.headline
-   OR ps.body IS DISTINCT FROM expected.body
-   OR ps.primary_cta_label IS DISTINCT FROM expected.primary_cta_label
-   OR ps.primary_cta_url IS DISTINCT FROM expected.primary_cta_url
-   OR ps.secondary_cta_label IS DISTINCT FROM expected.secondary_cta_label
-   OR ps.secondary_cta_url IS DISTINCT FROM expected.secondary_cta_url
-   OR ps.content::jsonb IS DISTINCT FROM expected.content::jsonb
-   OR coalesce(ps.is_active, false) IS DISTINCT FROM true
+   OR nullif(btrim(ps.headline), '') IS NULL
 UNION ALL
 SELECT 'homepage_copy.sections.unexpected_active', count(*)::text
 FROM page_sections ps
@@ -77,11 +68,11 @@ FROM page_sections ps
 JOIN home ON ps.page = home.id
 WHERE ps.section_key = 'final_cta' AND ps.content::jsonb ? 'closing'
 UNION ALL
-SELECT 'homepage_copy.footer.mismatch', count(*)::text
+SELECT 'homepage_copy.footer.required_copy', count(*)::text
 FROM site_settings
-WHERE tagline IS DISTINCT FROM ${sqlLiteral(copy.footer.tagline)}
-   OR footer_brand_text IS DISTINCT FROM ${sqlLiteral(copy.footer.footer_brand_text)}
-   OR footer_note IS DISTINCT FROM ${sqlLiteral(copy.footer.footer_note)}
+WHERE nullif(btrim(tagline), '') IS NULL
+   OR nullif(btrim(footer_brand_text), '') IS NULL
+   OR nullif(btrim(footer_note), '') IS NULL
 UNION ALL
 SELECT 'homepage_copy.forbidden.city', count(*)::text
 FROM page_sections ps
@@ -114,16 +105,15 @@ SELECT 'homepage_copy.faq.missing_or_duplicate' AS check_name, count(*)::text AS
 FROM expected_faq expected
 WHERE (SELECT count(*) FROM faq_items item WHERE item.key = expected.key) <> 1
 UNION ALL
-SELECT 'homepage_copy.faq.text_mismatch', count(*)::text
+SELECT 'homepage_copy.faq.contract_invalid', count(*)::text
 FROM expected_faq expected
 JOIN faq_items item ON item.key = expected.key
 JOIN home ON true
-WHERE item.sort IS DISTINCT FROM expected.sort
-   OR item.question IS DISTINCT FROM expected.question
-   OR item.answer IS DISTINCT FROM expected.answer
-   OR item.page IS DISTINCT FROM home.id
+WHERE item.page IS DISTINCT FROM home.id
    OR item.category IS DISTINCT FROM 'home'
    OR coalesce(item.is_active, false) IS DISTINCT FROM true
+   OR nullif(btrim(item.question), '') IS NULL
+   OR nullif(btrim(item.answer), '') IS NULL
 UNION ALL
 SELECT 'homepage_copy.info.faq_count', count(*)::text
 FROM expected_faq;

@@ -9,6 +9,14 @@ import {
 
 const copy = loadHomepageCopy();
 const rollback = process.argv.includes("--rollback");
+const confirmedReset = process.argv.includes("--confirm-copy-reset");
+
+if (!rollback && !confirmedReset) {
+  console.error(
+    "Refusing to overwrite editable homepage copy. Use --rollback for rehearsal or --confirm-copy-reset for an intentional full reset.",
+  );
+  process.exit(1);
+}
 const sectionIds = {
   hero: "c9f5ef87-cde7-4bf1-a97b-00134a0f5001",
   trust: "c9f5ef87-cde7-4bf1-a97b-00134a0f5002",

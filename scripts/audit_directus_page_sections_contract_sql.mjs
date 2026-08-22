@@ -68,6 +68,7 @@ WITH allowed_variants(variant) AS (
     ('hero.static'),
     ('levels'),
     ('live.example'),
+    ('new.tech'),
     ('page.cta'),
     ('page.hero'),
     ('passport.split'),

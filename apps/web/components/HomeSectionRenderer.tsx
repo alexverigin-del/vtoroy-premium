@@ -5,6 +5,7 @@ import { ProductCatalogPreviewSection } from "./ProductCatalogPreviewSection";
 import { ClubPreviewSection } from "./ClubPreviewSection";
 import { DiagnosticsCompareSection } from "./DiagnosticsCompareSection";
 import { FinalCtaSection } from "./FinalCtaSection";
+import { NewTechSection } from "./NewTechSection";
 import { HomeSectionIntro } from "./HomeSectionIntro";
 import { PassportPreviewSection } from "./PassportPreviewSection";
 import { RichText } from "./RichText";
@@ -612,6 +613,7 @@ export function HomeSectionRenderer({ section, products = [] }: HomeSectionRende
   if (section.sectionKey === "passport_preview")
     return <PassportPreviewSection section={section} />;
   if (section.sectionKey === "store_preview") return <StorePreviewSection section={section} />;
+  if (section.sectionKey === "new_tech") return <NewTechSection section={section} />;
   if (section.sectionKey === "trade_preview") return <TradePreviewSection section={section} />;
   if (section.sectionKey === "social_proof") return <SocialProofSection section={section} />;
   if (section.sectionKey === "faq") return <HomeFaqSection section={section} />;

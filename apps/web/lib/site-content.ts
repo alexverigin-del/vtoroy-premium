@@ -258,6 +258,7 @@ const defaultStoreSection = homepageFallbackSection(
   "store-preview-fallback",
   "/assets/store-real-premium-hero.webp",
 );
+const defaultNewTechSection = homepageFallbackSection("new_tech", "new-tech-fallback");
 const defaultTradeSection = homepageFallbackSection("trade_preview", "trade-preview-fallback");
 const defaultCircleRulesSection = homepageFallbackSection("circle_rules", "circle-rules-fallback");
 const defaultFaqSection = homepageFallbackSection("faq", "home-faq-fallback");
@@ -398,6 +399,7 @@ function homeSections(sections: PageSection[] = []): PageSection[] {
   if (!byKey.has("passport_preview")) byKey.set("passport_preview", defaultPassportSection);
   if (!byKey.has("circle_rules")) byKey.set("circle_rules", defaultCircleRulesSection);
   if (!byKey.has("store_preview")) byKey.set("store_preview", defaultStoreSection);
+  if (!byKey.has("new_tech")) byKey.set("new_tech", defaultNewTechSection);
   if (!byKey.has("trade_preview")) byKey.set("trade_preview", defaultTradeSection);
   if (!byKey.has("faq")) byKey.set("faq", defaultFaqSection);
   if (!byKey.has("final_cta")) byKey.set("final_cta", defaultFinalSection);

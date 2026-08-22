@@ -102,6 +102,7 @@ const auditDefinitions = {
       "studio.homepage_closing.fields_missing",
       "studio.homepage_closing.editor_permissions_missing",
       "studio.homepage_closing.group_condition_missing",
+      "studio.page_sections.new_tech_variant_choice_missing",
     ],
   },
   catalog: {
@@ -188,7 +189,7 @@ const auditDefinitions = {
       "homepage_copy.faq.contract_invalid",
     ],
     equals: {
-      "homepage_copy.info.section_count": "9",
+      "homepage_copy.info.section_count": "10",
       "homepage_copy.info.faq_count": "6",
     },
   },

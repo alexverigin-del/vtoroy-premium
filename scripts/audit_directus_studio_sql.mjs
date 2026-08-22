@@ -742,5 +742,16 @@ WHERE NOT EXISTS (
   WHERE field.collection='page_sections' AND field.field='group_closing'
     AND field.interface='group-detail' AND coalesce(field.hidden,false)=true
     AND field.conditions::text LIKE '%final_cta%'
+)
+UNION ALL
+SELECT 'studio.page_sections.new_tech_variant_choice_missing', count(*)::text
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_fields field
+  CROSS JOIN LATERAL jsonb_array_elements(
+    coalesce(field.options::jsonb -> 'choices', '[]'::jsonb)
+  ) choice
+  WHERE field.collection='page_sections' AND field.field='variant'
+    AND choice ->> 'value'='new.tech'
 );
 `);

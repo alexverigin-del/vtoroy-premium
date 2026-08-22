@@ -40,6 +40,8 @@ FROM expected_sections expected
 JOIN home ON true
 JOIN page_sections ps ON ps.page = home.id AND ps.section_key = expected.section_key
 WHERE ps.variant IS DISTINCT FROM expected.variant
+   OR ps.sort_order IS DISTINCT FROM expected.sort_order
+   OR coalesce(ps.is_active, false) IS DISTINCT FROM true
    OR nullif(btrim(ps.headline), '') IS NULL
 UNION ALL
 SELECT 'homepage_copy.sections.unexpected_active', count(*)::text

@@ -84,6 +84,9 @@ Use `Страницы сайта` (`site_pages`) first.
   edited in `Главная` → `Секции страницы` → `final_cta` →
   `Завершающий бренд-блок`. Its headline, rich text, brand caption and both CTA
   pairs are ordinary editor fields; do not duplicate them in JSON.
+- The homepage block `Иногда история начинается с вас.` is edited in
+  `Главная` → `Секции страницы` → `new_tech`. Its eyebrow, headline, body and
+  CTA are ordinary fields; the advanced JSON field is not used by this block.
 - For images, use `Главное изображение блока`; it points to Directus Files and
   lets the site optimize the asset.
 

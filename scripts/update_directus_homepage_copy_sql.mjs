@@ -24,6 +24,7 @@ const sectionIds = {
   passport_preview: "c9f5ef87-cde7-4bf1-a97b-00134a0f5004",
   circle_rules: "c9f5ef87-cde7-4bf1-a97b-00134a0f5005",
   store_preview: "c9f5ef87-cde7-4bf1-a97b-00134a0f5006",
+  new_tech: "c9f5ef87-cde7-4bf1-a97b-00134a0f5010",
   trade_preview: "c9f5ef87-cde7-4bf1-a97b-00134a0f5007",
   faq: "c9f5ef87-cde7-4bf1-a97b-00134a0f5008",
   final_cta: "c9f5ef87-cde7-4bf1-a97b-00134a0f5009",

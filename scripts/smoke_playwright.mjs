@@ -318,6 +318,8 @@ async function smokeHome(page, baseUrl) {
 async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/catalog") {
   const url = joinUrl(baseUrl, route);
   await gotoOk(page, url);
+  const visibleText = await page.locator("body").innerText();
+  assert(!/б\/у/iu.test(visibleText), `${route}: legacy public condition terminology is visible`);
   const seo = await assertSeoAndStructuredData(page, route, [
     "Organization",
     "WebSite",
@@ -344,6 +346,10 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/cata
   const city = await catalog.getAttribute("data-city");
   const citySlug = await catalog.getAttribute("data-city-slug");
   if (city) {
+    assert(
+      !visibleText.includes(`Сейчас в ${city}`),
+      `${route}: city token is used with an unsafe grammatical preposition`,
+    );
     const stockOptions = await page
       .locator('select[name="stock"]')
       .first()

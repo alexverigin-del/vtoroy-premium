@@ -55,6 +55,9 @@ async function gotoOk(page, url) {
   const response = await page.goto(url, { waitUntil: "networkidle", timeout: 30_000 });
   assert(response, `No response for ${url}`);
   assert(response.ok(), `${url} returned HTTP ${response.status()}`);
+  const visibleText = await page.locator("body").innerText();
+  assert(!visibleText.includes("{city}"), `${url}: unresolved {city} token is visible`);
+  assert(!/Северодвинск/iu.test(visibleText), `${url}: retired city name is visible`);
   return response;
 }
 
@@ -199,7 +202,9 @@ async function assertSeoAndStructuredData(page, label, expectedTypes) {
 
   assert(report.title.trim().length > 0, `${label}: expected document title`);
   assert(report.description.trim().length > 0, `${label}: expected meta description`);
-  const expectedCanonicalOrigin = new URL(page.url()).origin;
+  const expectedCanonicalOrigin = normalizeBaseUrl(
+    process.env.SMOKE_CANONICAL_ORIGIN || new URL(page.url()).origin,
+  );
   assert(
     report.canonical.startsWith(expectedCanonicalOrigin),
     `${label}: expected canonical URL to start with ${expectedCanonicalOrigin}, got ${report.canonical}`,
@@ -310,10 +315,10 @@ async function smokeHome(page, baseUrl) {
   return { route: "/", leadForms, jsonLdTypes: seo.jsonLdTypes.length };
 }
 
-async function smokeCatalog(page, baseUrl, requireDirectusAssets) {
-  const url = joinUrl(baseUrl, "/catalog");
+async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/catalog") {
+  const url = joinUrl(baseUrl, route);
   await gotoOk(page, url);
-  const seo = await assertSeoAndStructuredData(page, "catalog", [
+  const seo = await assertSeoAndStructuredData(page, route, [
     "Organization",
     "WebSite",
     "BreadcrumbList",
@@ -324,14 +329,50 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets) {
   } else {
     await waitForLoadedImages(page, 1);
   }
-  await assertImages(page, "catalog", 1, requireDirectusAssets);
+  await assertImages(page, route, 1, requireDirectusAssets);
+
+  const conditionOptions = await page.locator('select[name="condition"] option').allTextContents();
+  if (conditionOptions.length > 0) {
+    assert(
+      conditionOptions.includes("С пробегом") &&
+        !conditionOptions.some((item) => /б\/у/iu.test(item)),
+      `${route}: condition filter does not follow public terminology`,
+    );
+  }
+
+  const catalog = page.locator('[data-component="ProductCatalogView"]');
+  const city = await catalog.getAttribute("data-city");
+  const citySlug = await catalog.getAttribute("data-city-slug");
+  if (city) {
+    const stockOptions = await page
+      .locator('select[name="stock"]')
+      .first()
+      .locator("option")
+      .allTextContents();
+    assert(
+      stockOptions.includes(`${city} · В наличии`),
+      `${route}: local availability option is missing for ${city}`,
+    );
+    assert(
+      stockOptions.includes("Доставка из другого города"),
+      `${route}: delivery availability option is missing`,
+    );
+    assert(
+      !citySlug ||
+        !(await page.locator('[data-component="ProductCard"]').allTextContents()).some((item) =>
+          item.toLowerCase().includes(`${citySlug.toLowerCase()} ·`),
+        ),
+      `${route}: a technical city slug is visible in a product card`,
+    );
+  }
 
   const cardCount = await page.locator("a[href^='/product/'], a[href*='/product/']").count();
   if (requireDirectusAssets) {
     assert(cardCount > 0, "catalog: expected at least one device link");
   }
   return {
-    route: "/catalog",
+    route,
+    city: city || undefined,
     directusImages: await countLoadedDirectusImages(page),
     deviceLinks: cardCount,
     jsonLdTypes: seo.jsonLdTypes.length,
@@ -579,8 +620,8 @@ async function main() {
       for (const route of routes) {
         if (route === "/") {
           results.push(await smokeHome(page, baseUrl));
-        } else if (route === "/catalog") {
-          results.push(await smokeCatalog(page, baseUrl, requireDirectusAssets));
+        } else if (route === "/catalog" || route.includes("/catalog")) {
+          results.push(await smokeCatalog(page, baseUrl, requireDirectusAssets, route));
         } else if (route === "/store") {
           results.push(await smokeStore(page, baseUrl, requireDirectusAssets));
         } else if (route.startsWith("/product/")) {

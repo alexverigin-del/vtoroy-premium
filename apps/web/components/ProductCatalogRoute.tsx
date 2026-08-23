@@ -39,7 +39,12 @@ function filtersFromSearchParams(
     condition: condition === "new" || condition === "used" ? condition : presets.condition,
     compatible: first(searchParams.compatible) || undefined,
     stock:
-      stock === "available" || stock === "reserved" || stock === "sold" ? stock : presets.stock,
+      stock === "available" ||
+      stock === "reserved" ||
+      stock === "sold" ||
+      (stock === "delivery" && presets.city)
+        ? stock
+        : presets.stock,
     sort:
       sort === "updated-desc" || sort === "price-asc" || sort === "price-desc" ? sort : "default",
     page: pageNumber(searchParams.page),
@@ -58,12 +63,13 @@ function catalogCopy(type: ProductType | undefined, page: Awaited<ReturnType<typ
         item.isActive &&
         (item.sectionKey === "catalog_page_live" || item.variant === "catalog.grid"),
     ) ?? null;
+  const emptyState = section?.content.emptyState;
 
   if (type === "device") {
     return {
       eyebrow: "I СВОИ · Техника",
-      headline: "Новая и проверенная б/у техника.",
-      body: "Сравнивайте бренды, состояние, точные характеристики и наличие. Для б/у техники показываем Passport и результаты диагностики.",
+      headline: "Новая техника и техника с пробегом.",
+      body: "Сравнивайте бренды, состояние, точные характеристики и наличие. Для техники с пробегом показываем Passport и результаты диагностики.",
     };
   }
 
@@ -80,8 +86,12 @@ function catalogCopy(type: ProductType | undefined, page: Awaited<ReturnType<typ
     headline: text(section?.headline, "Техника и аксессуары в наличии."),
     body: text(
       section?.body,
-      "Новая и проверенная б/у техника разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.",
+      "Новая техника и техника с пробегом разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.",
     ),
+    emptyTitle: emptyState?.headline,
+    emptyBody: emptyState?.body,
+    emptyCtaLabel: emptyState?.ctaLabel,
+    emptyCtaUrl: emptyState?.ctaUrl,
   };
 }
 
@@ -99,6 +109,7 @@ export async function ProductCatalogRoute({
   const filters = filtersFromSearchParams(searchParams, {
     ...presets,
     city: location?.slug ?? presets.city,
+    cityName: location?.city ?? presets.cityName,
   });
   const [page, settings, navigation, result, facets] = await Promise.all([
     getSitePage("catalog"),
@@ -111,9 +122,14 @@ export async function ProductCatalogRoute({
   const baseCopy = catalogCopy(filters.type, page);
   const copy = location
     ? {
-        eyebrow: `I СВОИ · ${location.city}`,
-        headline: `Техника и аксессуары для ${location.city}.`,
-        body: `Сначала показываем товары в наличии в городе ${location.city}, затем — доступные с доставкой из других магазинов сети.`,
+        eyebrow: text(location.catalogEyebrow, `I СВОИ · ${location.city}`),
+        headline: text(location.catalogTitle, `${location.city} · Техника и аксессуары.`),
+        body: text(
+          location.catalogBody,
+          "Сначала показываем товары в наличии в выбранном магазине, затем — доступные с доставкой из других городов.",
+        ),
+        emptyTitle: location.catalogEmptyTitle,
+        emptyBody: location.catalogEmptyBody,
       }
     : baseCopy;
   const catalogPath = location ? `/${location.slug}/catalog` : "/catalog";
@@ -150,6 +166,7 @@ export async function ProductCatalogRoute({
           }}
         />
         <ProductCatalogView
+          city={location?.city}
           copy={copy}
           facets={facets}
           filters={filters}

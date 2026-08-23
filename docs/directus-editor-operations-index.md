@@ -34,8 +34,9 @@ Use `Страницы сайта` (`site_pages`) -> `catalog` for the public `/c
 page wrapper.
 
 - SEO title, meta description and social image live on the `catalog` page row.
-- Hero label, headline, intro text, filter/sort labels, empty state and CTA
-  live in the `catalog_page_live` section.
+- Hero label, headline, intro text, empty state and CTA live in the
+  `catalog_page_live` section. Filter/sort labels are system terminology and
+  automatically adapt to the selected city; editors do not override them.
 - Product cards come from `products`, `product_images`, `device_passports` and
   `trade_options`.
 

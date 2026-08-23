@@ -19,6 +19,7 @@ import type {
 
 import { getDeviceBySlug, getPublishedDeviceCards, directusAssetUrl } from "./directus";
 import { PRODUCTS_CACHE_TAG } from "./cache-tags";
+import { cityScopedLabel } from "./city-copy";
 
 const DIRECTUS_URL = (
   process.env.DIRECTUS_URL ??
@@ -288,6 +289,21 @@ function stockLabel(value: string, quantity: number): string {
   return "В наличии";
 }
 
+function offerHasStock(offer: ProductOffer | undefined): boolean {
+  return Boolean(
+    offer &&
+    offer.stockStatus !== "hidden" &&
+    offer.stockStatus !== "sold" &&
+    offer.stockQuantity > 0,
+  );
+}
+
+function offerCanDeliver(offer: ProductOffer | undefined): boolean {
+  return Boolean(
+    offerHasStock(offer) && offer?.stockStatus === "available" && offer.intercityDeliveryEnabled,
+  );
+}
+
 function mapOfferLocation(value: unknown): StoreLocation {
   const row = relation(value);
   return {
@@ -348,16 +364,14 @@ function mapOffers(value: unknown, productId: string): ProductOffer[] {
 }
 
 function selectOffer(offers: ProductOffer[], city?: string): ProductOffer | undefined {
-  const available = offers.filter(
-    (offer) => offer.stockStatus !== "hidden" && offer.stockQuantity > 0,
-  );
+  const stocked = offers.filter(offerHasStock);
   if (city) {
     return (
-      available.find((offer) => offer.location.slug === city) ??
-      available.find((offer) => offer.intercityDeliveryEnabled)
+      stocked.find((offer) => offer.location.slug === city) ??
+      stocked.find((offer) => offerCanDeliver(offer))
     );
   }
-  return available.sort((a, b) => a.price - b.price)[0] ?? offers[0];
+  return stocked.sort((a, b) => a.price - b.price)[0] ?? offers[0];
 }
 
 function trustFacts(row: Row): string[] {
@@ -377,7 +391,7 @@ function trustFacts(row: Row): string[] {
         ]
       : condition === "used"
         ? [
-            device?.grade ? `Грейд ${device.grade}` : "Б/у",
+            device?.grade ? `Грейд ${device.grade}` : "С пробегом",
             device?.batteryText,
             "Passport",
             text(row.warranty_text) || text(row.warranty),
@@ -392,11 +406,13 @@ function trustFacts(row: Row): string[] {
   return values.flatMap((value) => (value ? [value] : [])).slice(0, 3);
 }
 
-function mapProductCard(row: Row, city?: string): ProductCardData {
+function mapProductCard(row: Row, city?: string, cityName?: string): ProductCardData {
   const productType = text(row.product_type) === "accessory" ? "accessory" : "device";
   const condition = text(row.condition) === "new" ? "new" : "used";
   const offers = mapOffers(row.offers, text(row.id));
   const selectedOffer = selectOffer(offers, city);
+  const selectedOfferHasStock = offerHasStock(selectedOffer);
+  const selectedOfferIsLocal = Boolean(city && selectedOffer?.location.slug === city);
   const stockQuantity = selectedOffer?.stockQuantity ?? (city ? 0 : number(row.stock_quantity));
   const stockStatus =
     selectedOffer?.stockStatus ??
@@ -428,13 +444,19 @@ function mapProductCard(row: Row, city?: string): ProductCardData {
     stockQuantity,
     stockStatus,
     stockStatusLabel: selectedOffer
-      ? selectedOffer.location.slug === city
-        ? `${selectedOffer.location.city} · В наличии`
-        : selectedOffer.intercityDeliveryEnabled
-          ? `Доставка из города ${selectedOffer.location.city}${selectedOffer.deliveryEstimate ? ` · ${selectedOffer.deliveryEstimate}` : ""}`
-          : stockLabel(stockStatus, stockQuantity)
+      ? selectedOfferIsLocal
+        ? cityScopedLabel(
+            selectedOffer.location.city,
+            stockLabel(selectedOffer.stockStatus, selectedOffer.stockQuantity),
+          )
+        : city && offerCanDeliver(selectedOffer)
+          ? `${selectedOffer.location.city} · Доставка${selectedOffer.deliveryEstimate ? ` · ${selectedOffer.deliveryEstimate}` : ""}`
+          : cityScopedLabel(
+              selectedOffer.location.city,
+              stockLabel(selectedOffer.stockStatus, selectedOffer.stockQuantity),
+            )
       : city
-        ? `${city} · Нет в наличии`
+        ? cityScopedLabel(cityName || city, "Нет в наличии")
         : stockLabel(stockStatus, stockQuantity),
     warrantyText: text(row.warranty_text, text(row.warranty)),
     listingImage: assetUrl(row.listing_file, 720, 540),
@@ -451,15 +473,17 @@ function mapProductCard(row: Row, city?: string): ProductCardData {
     trustFacts: trustFacts(row),
     offers,
     selectedOffer,
-    availabilityScope: selectedOffer
-      ? selectedOffer.location.slug === city
+    availabilityScope: selectedOfferHasStock
+      ? selectedOfferIsLocal
         ? "local"
-        : city
+        : city && offerCanDeliver(selectedOffer)
           ? "delivery"
-          : "network"
+          : city
+            ? "unavailable"
+            : "network"
       : city
         ? "unavailable"
-        : stockQuantity > 0
+        : stockQuantity > 0 && stockStatus !== "sold" && stockStatus !== "hidden"
           ? "network"
           : "unavailable",
   };
@@ -539,17 +563,23 @@ export async function getPublishedProducts(
   if (filters.brand) params.set("filter[brand][slug][_eq]", filters.brand);
   if (filters.category) params.set("filter[category][slug][_eq]", filters.category);
   if (filters.condition) params.set("filter[condition][_eq]", filters.condition);
-  if (filters.stock && !cityMode) params.set("filter[stock_status][_eq]", filters.stock);
+  if (filters.stock && filters.stock !== "delivery" && !cityMode) {
+    params.set("filter[stock_status][_eq]", filters.stock);
+  }
   if (filters.compatible) {
     params.set("filter[compatible_models][device_models_id][slug][_eq]", filters.compatible);
   }
 
   const response = await directusRequest<Row[]>(`/items/products?${params}`);
   if (response) {
-    let products = response.data.map((row) => mapProductCard(row, filters.city));
+    let products = response.data.map((row) => mapProductCard(row, filters.city, filters.cityName));
     if (cityMode) {
       if (filters.stock) {
-        products = products.filter((product) => product.stockStatus === filters.stock);
+        products = products.filter((product) => {
+          if (filters.stock === "delivery") return product.availabilityScope === "delivery";
+          if (filters.stock === "sold") return product.availabilityScope === "unavailable";
+          return product.availabilityScope === "local" && product.stockStatus === filters.stock;
+        });
       }
       products.sort((a, b) => {
         const rank = { local: 0, delivery: 1, network: 2, unavailable: 3 } as const;

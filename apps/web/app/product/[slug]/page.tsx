@@ -219,7 +219,7 @@ export default async function ProductPage({ params }: PageProps) {
       ? "Новый аксессуар"
       : product.condition === "new"
         ? "Новая техника"
-        : "Проверенная б/у техника";
+        : "С пробегом · Проверено";
 
   return (
     <SiteShell settings={chrome.settings} navigation={chrome.navigation}>
@@ -302,7 +302,7 @@ export default async function ProductPage({ params }: PageProps) {
 
               {usedDevice ? (
                 <p className="mt-5 rounded-card bg-surface p-4 text-sm text-muted">
-                  Для этой б/у техники опубликованы диагностика и Passport. Состояние можно
+                  Для этой техники с пробегом опубликованы диагностика и Passport. Состояние можно
                   перепроверить при просмотре.
                 </p>
               ) : (

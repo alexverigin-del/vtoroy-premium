@@ -9,6 +9,7 @@ import type { ReactNode } from "react";
 
 import { CatalogMobileFilterDrawer } from "./CatalogMobileFilterDrawer";
 import { ProductCard } from "./ProductCard";
+import { cityScopedLabel } from "../lib/city-copy";
 import { cn } from "../lib/cn";
 import { brandZoneEyebrowClass, primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
@@ -16,6 +17,10 @@ type CatalogCopy = {
   eyebrow: string;
   headline: string;
   body: string;
+  emptyTitle?: string;
+  emptyBody?: string;
+  emptyCtaLabel?: string;
+  emptyCtaUrl?: string;
 };
 
 type CatalogCategory = ProductCatalogFacets["categories"][number];
@@ -182,12 +187,13 @@ function activeFilterChips({
 
 function ConditionFilterValue({ value }: { value?: string }) {
   if (value === "new") return <>Новое</>;
-  if (value === "used") return <>Б/у</>;
+  if (value === "used") return <>С пробегом</>;
   return null;
 }
 
 function StockFilterValue({ value }: { value?: string }) {
   if (value === "available") return <>В наличии</>;
+  if (value === "delivery") return <>Доставка из другого города</>;
   if (value === "reserved") return <>Бронь</>;
   if (value === "sold") return <>Нет в наличии</>;
   return null;
@@ -200,13 +206,13 @@ function SortFilterValue({ value }: { value?: string }) {
   return null;
 }
 
-function FilterChipLabel({ name }: { name: string }) {
+function FilterChipLabel({ city, name }: { city?: string; name: string }) {
   if (name === "q") return <>Поиск</>;
   if (name === "category") return <>Категория</>;
   if (name === "brand") return <>Бренд</>;
   if (name === "condition") return <>Состояние</>;
   if (name === "compatible") return <>Совместимость</>;
-  if (name === "stock") return <>Наличие</>;
+  if (name === "stock") return <>{city ? `Получение · ${city}` : "Наличие"}</>;
   if (name === "sort") return <>Сортировка</>;
   return null;
 }
@@ -267,10 +273,12 @@ function CatalogCategoryRail({
 }
 
 function CatalogAdvancedFilterFields({
+  city,
   facets,
   filters,
   type,
 }: {
+  city?: string;
   facets: ProductCatalogFacets;
   filters: ProductCatalogFilters;
   type?: ProductType;
@@ -301,9 +309,9 @@ function CatalogAdvancedFilterFields({
             defaultValue={filters.condition || ""}
             className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
           >
-            <option value="">Новое и б/у</option>
+            <option value="">Новое и с пробегом</option>
             <option value="new">Новое</option>
-            <option value="used">Б/у</option>
+            <option value="used">С пробегом</option>
           </select>
         </label>
       ) : null}
@@ -327,23 +335,26 @@ function CatalogAdvancedFilterFields({
       ) : null}
 
       <label>
-        <span className="text-xs font-medium text-muted">Наличие</span>
+        <span className="text-xs font-medium text-muted">
+          {city ? `Получение · ${city}` : "Наличие"}
+        </span>
         <select
           name="stock"
           defaultValue={filters.stock || ""}
           className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
         >
-          <option value="">Все статусы</option>
-          <option value="available">В наличии</option>
-          <option value="reserved">Бронь</option>
-          <option value="sold">Нет в наличии</option>
+          <option value="">{city ? "Все варианты" : "Все статусы"}</option>
+          <option value="available">{cityScopedLabel(city, "В наличии")}</option>
+          {city ? <option value="delivery">Доставка из другого города</option> : null}
+          <option value="reserved">{cityScopedLabel(city, "Бронь")}</option>
+          <option value="sold">{cityScopedLabel(city, "Нет в наличии")}</option>
         </select>
       </label>
     </>
   );
 }
 
-function ActiveFilterChips({ chips }: { chips: FilterChip[] }) {
+function ActiveFilterChips({ chips, city }: { chips: FilterChip[]; city?: string }) {
   if (chips.length === 0) return null;
 
   return (
@@ -355,7 +366,7 @@ function ActiveFilterChips({ chips }: { chips: FilterChip[] }) {
           className="focus-ring inline-flex min-h-9 items-center gap-1 rounded-pill border border-hairline bg-white px-3 text-xs font-medium text-carbon transition hover:border-action-blue"
         >
           <span className="text-muted">
-            <FilterChipLabel name={chip.key} />:
+            <FilterChipLabel city={city} name={chip.key} />:
           </span>
           <span>{chip.value}</span>
           <span className="text-muted" aria-hidden="true">
@@ -390,11 +401,13 @@ function CatalogTypeTabs({ activeType, city }: { activeType?: ProductType; city?
 
 function CatalogFilters({
   categories,
+  city,
   facets,
   filters,
   type,
 }: {
   categories: CatalogCategory[];
+  city?: string;
   facets: ProductCatalogFacets;
   filters: ProductCatalogFilters;
   type?: ProductType;
@@ -471,7 +484,12 @@ function CatalogFilters({
                   <option value="price-desc">Цена: выше</option>
                 </select>
               </label>
-              <CatalogAdvancedFilterFields facets={facets} filters={filters} type={type} />
+              <CatalogAdvancedFilterFields
+                city={city}
+                facets={facets}
+                filters={filters}
+                type={type}
+              />
               <div className="grid grid-cols-2 gap-2">
                 <Link href={sectionHref(type, filters.city)} className={secondaryPillCtaClass}>
                   Сбросить
@@ -555,7 +573,12 @@ function CatalogFilters({
           </summary>
 
           <div className="mt-3 grid gap-3 border-t border-hairline pt-3 md:grid-cols-2 xl:grid-cols-4">
-            <CatalogAdvancedFilterFields facets={facets} filters={filters} type={type} />
+            <CatalogAdvancedFilterFields
+              city={city}
+              facets={facets}
+              filters={filters}
+              type={type}
+            />
             <div className="flex items-end gap-2 md:col-span-2 xl:col-span-1 xl:justify-end">
               <Link href={sectionHref(type, filters.city)} className={secondaryPillCtaClass}>
                 Сбросить
@@ -607,12 +630,14 @@ function Pagination({
 }
 
 export function ProductCatalogView({
+  city,
   copy,
   facets,
   filters,
   result,
   type,
 }: {
+  city?: string;
   copy: CatalogCopy;
   facets: ProductCatalogFacets;
   filters: ProductCatalogFilters;
@@ -626,7 +651,12 @@ export function ProductCatalogView({
     categories.filter((category) => category.slug !== filters.category),
   ).slice(0, 3);
   return (
-    <section className="bg-white py-14 md:py-20" data-component="ProductCatalogView">
+    <section
+      className="bg-white py-14 md:py-20"
+      data-city={city || undefined}
+      data-city-slug={filters.city || undefined}
+      data-component="ProductCatalogView"
+    >
       <div className="mx-auto max-w-shell px-5">
         <div className="max-w-copy-wide">
           <p className={brandZoneEyebrowClass}>{copy.eyebrow}</p>
@@ -637,14 +667,20 @@ export function ProductCatalogView({
         </div>
 
         <CatalogTypeTabs activeType={type} city={filters.city} />
-        <CatalogFilters categories={categories} facets={facets} filters={filters} type={type} />
+        <CatalogFilters
+          categories={categories}
+          city={city}
+          facets={facets}
+          filters={filters}
+          type={type}
+        />
 
         <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted">
               Найдено: <span className="font-medium tabular-nums text-carbon">{result.total}</span>
             </p>
-            <ActiveFilterChips chips={chips} />
+            <ActiveFilterChips chips={chips} city={city} />
           </div>
           <p className="hidden text-sm text-muted sm:block">24 товара на странице</p>
         </div>
@@ -659,17 +695,21 @@ export function ProductCatalogView({
           </ul>
         ) : (
           <div className="mt-8 rounded-card border border-hairline bg-frost px-6 py-12 text-center">
-            <h2 className="text-2xl font-semibold text-carbon">Подходящих товаров пока нет</h2>
+            <h2 className="text-2xl font-semibold text-carbon">
+              {copy.emptyTitle ||
+                (city ? `${city} · Подходящих товаров пока нет` : "Подходящих товаров пока нет")}
+            </h2>
             <p className="mx-auto mt-3 max-w-prose text-sm leading-relaxed text-muted">
-              Измените фильтры или оставьте заявку — проверим поступления и предложим варианты.
+              {copy.emptyBody ||
+                "Измените фильтры или оставьте заявку — проверим поступления и предложим варианты."}
             </p>
             <div className="mt-5">
               <div className="flex flex-col justify-center gap-2 sm:flex-row">
                 <Link href={basePath} className={secondaryPillCtaClass}>
                   Сбросить
                 </Link>
-                <Link href="/#final" className={primaryPillCtaClass}>
-                  Получить варианты
+                <Link href={copy.emptyCtaUrl || "/#final"} className={primaryPillCtaClass}>
+                  {copy.emptyCtaLabel || "Получить варианты"}
                 </Link>
               </div>
               {categorySuggestions.length > 0 ? (

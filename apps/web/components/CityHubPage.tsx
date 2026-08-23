@@ -52,11 +52,11 @@ export function CityHubPage({
                 <p className={brandZoneEyebrowClass}>{location.heroEyebrow}</p>
               ) : null}
               <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-carbon md:text-6xl">
-                {location.heroTitle || `Техника и аксессуары I СВОИ в городе ${location.city}.`}
+                {location.heroTitle || `${location.city} · Техника и аксессуары I СВОИ.`}
               </h1>
               <p className="mt-6 max-w-2xl text-copy leading-relaxed text-graphite">
                 {location.heroBody ||
-                  "Локальное наличие, проверенные б/у устройства и доставка товаров из других магазинов сети."}
+                  "Локальное наличие, проверенная техника с пробегом и доставка товаров из других магазинов сети."}
               </p>
               {location.heroPrimaryCtaLabel || location.heroSecondaryCtaLabel ? (
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">

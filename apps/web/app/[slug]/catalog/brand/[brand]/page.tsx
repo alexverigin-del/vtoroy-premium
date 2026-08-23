@@ -22,7 +22,7 @@ export async function generateMetadata({
     result.products[0] && result.products[0].availabilityScope !== "unavailable",
   );
   return {
-    title: `${brand} в городе ${location.city}`,
+    title: `${brand} · ${location.city}`,
     alternates: { canonical: `/${slug}/catalog/brand/${brand}` },
     robots: available ? undefined : { index: false, follow: true },
   };

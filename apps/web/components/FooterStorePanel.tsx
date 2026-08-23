@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { SiteSettings, StoreLocation } from "@vtoroy/shared";
 
+import { applyCityTemplate } from "../lib/city-copy";
 import { cn } from "../lib/cn";
 import { useCity } from "./CityContext";
 
@@ -27,8 +28,7 @@ function valueOrFallback(
 }
 
 function cityLabel(template: string, city: string): string {
-  return template
-    .replaceAll("{city}", city)
+  return applyCityTemplate(template, city)
     .replace(/\s*·\s*$/, "")
     .trim();
 }
@@ -119,7 +119,7 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
   return (
     <section
       className="border-b border-hairline pt-10 md:pt-12"
-      aria-label={city ? `Контакты магазина в городе ${city}` : "Контакты магазина"}
+      aria-label={city ? `Контакты магазина I СВОИ · ${city}` : "Контакты магазина"}
     >
       <div className="grid gap-8 pb-10 md:pb-12 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-6">

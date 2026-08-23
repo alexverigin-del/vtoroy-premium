@@ -26,8 +26,8 @@ VALUES (
   'catalog',
   'catalog',
   'published',
-  'Каталог проверенной б/у Apple‑техники — I СВОИ',
-  'Проверенная б/у Apple‑техника: реальные фото, состояние, батарея, известный ремонт, цена и наличие.'
+  'Каталог новой техники и техники с пробегом — I СВОИ',
+  'Новая техника и проверенная техника с пробегом: реальные фото, состояние, батарея, известный ремонт, цена и наличие.'
 )
 ON CONFLICT (slug) DO UPDATE SET
   template = EXCLUDED.template,
@@ -42,7 +42,7 @@ SET variant = 'catalog.grid',
     WHEN btrim(ps.eyebrow) IN ('Store', 'Каталог', 'Главная / Store', 'Главная / Каталог') THEN 'I СВОИ · Каталог'
     ELSE ps.eyebrow
   END,
-  headline = COALESCE(NULLIF(ps.headline, ''), 'Проверенная б/у Apple‑техника в наличии.'),
+  headline = COALESCE(NULLIF(ps.headline, ''), 'Новая техника и техника с пробегом в наличии.'),
   subheadline = COALESCE(NULLIF(ps.subheadline, ''), 'Фильтры каталога'),
   body = COALESCE(
     NULLIF(ps.body, ''),
@@ -50,8 +50,8 @@ SET variant = 'catalog.grid',
   ),
   primary_cta_label = COALESCE(NULLIF(ps.primary_cta_label, ''), 'Получить варианты'),
   primary_cta_url = COALESCE(NULLIF(ps.primary_cta_url, ''), '/#final'),
-  secondary_cta_label = COALESCE(NULLIF(ps.secondary_cta_label, ''), 'Магазин в Северодвинске'),
-  secondary_cta_url = COALESCE(NULLIF(ps.secondary_cta_url, ''), '/store'),
+  secondary_cta_label = COALESCE(NULLIF(ps.secondary_cta_label, ''), 'Магазины'),
+  secondary_cta_url = COALESCE(NULLIF(ps.secondary_cta_url, ''), '/stores'),
   sort_order = 1,
   is_active = true,
   content = ('{
@@ -66,7 +66,7 @@ SET variant = 'catalog.grid',
       { "label": "Все статусы", "value": "all" },
       { "label": "В наличии", "value": "available" },
       { "label": "Бронь", "value": "reserved" },
-      { "label": "Продано", "value": "sold" }
+      { "label": "Нет в наличии", "value": "sold" }
     ],
     "filterAriaLabel": "Фильтры каталога",
     "statusFilterLabel": "Статус устройства",
@@ -112,13 +112,13 @@ SELECT
   'catalog_page_live',
   'catalog.grid',
   'I СВОИ · Каталог',
-  'Проверенная б/у Apple‑техника в наличии.',
+  'Новая техника и техника с пробегом в наличии.',
   'Фильтры каталога',
   'Реальные фото, грейд, батарея, известный ремонт, цена и наличие. Подробности проверки — в карточке устройства.',
   'Получить варианты',
   '/#final',
-  'Магазин в Северодвинске',
-  '/store',
+  'Магазины',
+  '/stores',
   1,
   true,
   '{
@@ -133,7 +133,7 @@ SELECT
       { "label": "Все статусы", "value": "all" },
       { "label": "В наличии", "value": "available" },
       { "label": "Бронь", "value": "reserved" },
-      { "label": "Продано", "value": "sold" }
+      { "label": "Нет в наличии", "value": "sold" }
     ],
     "filterAriaLabel": "Фильтры каталога",
     "statusFilterLabel": "Статус устройства",

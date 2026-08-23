@@ -26,7 +26,7 @@ export function CityInfoPage({
               <h2 className="text-xl font-semibold">Самовывоз</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted">
                 {location.pickupEnabled
-                  ? `Доступен из магазина в городе ${location.city} после подтверждения резерва.`
+                  ? `Доступен в магазине I СВОИ · ${location.city} после подтверждения резерва.`
                   : "Самовывоз для этой точки пока недоступен."}
               </p>
             </article>
@@ -41,7 +41,7 @@ export function CityInfoPage({
           </div>
           <div className="mt-10">
             <Link href={`/${location.slug}/catalog`} className={primaryPillCtaClass}>
-              Смотреть каталог города
+              Каталог · {location.city}
             </Link>
           </div>
         </section>

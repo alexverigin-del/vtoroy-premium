@@ -218,7 +218,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   const assuranceItems =
     assurance.length > 0
       ? assurance
-      : ["В кругу своих", "С историей и проверкой", "Магазин в Белгороде"];
+      : ["В кругу своих", "С историей и проверкой", "Магазин I СВОИ"];
   const note = typeof section.content.note === "string" ? section.content.note : "";
   const showPassport = section.content.show_passport !== false;
 

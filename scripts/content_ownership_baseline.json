@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-23T20:07:22.037Z",
+  "updatedAt": "2026-08-23T20:29:45.924Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -14,8 +14,8 @@
       "file": "apps/web/app/[slug]/catalog/accessories/page.tsx",
       "kind": "string",
       "line": 25,
-      "text": "Аксессуары в городе ${location.city}",
-      "id": "a8a43275084086c6"
+      "text": "Аксессуары · ${location.city}",
+      "id": "b7e903cb1c1a8e87"
     },
     {
       "file": "apps/web/app/[slug]/catalog/accessories/page.tsx",
@@ -27,23 +27,9 @@
     {
       "file": "apps/web/app/[slug]/catalog/brand/[brand]/page.tsx",
       "kind": "string",
-      "line": 25,
-      "text": "${brand} в городе ${location.city}",
-      "id": "fcaa0f20b01555f1"
-    },
-    {
-      "file": "apps/web/app/[slug]/catalog/brand/[brand]/page.tsx",
-      "kind": "string",
       "line": 44,
       "text": "Бренд",
       "id": "ee611c3b47f34b1f"
-    },
-    {
-      "file": "apps/web/app/[slug]/catalog/category/[category]/page.tsx",
-      "kind": "string",
-      "line": 25,
-      "text": "Категория ${category} в городе ${location.city}",
-      "id": "d79f061a496ea417"
     },
     {
       "file": "apps/web/app/[slug]/catalog/category/[category]/page.tsx",
@@ -56,22 +42,22 @@
       "file": "apps/web/app/[slug]/catalog/page.tsx",
       "kind": "string",
       "line": 18,
-      "text": "Каталог I СВОИ в городе ${location.city}",
-      "id": "321d42a28f9de4a6"
+      "text": "Каталог I СВОИ · ${location.city}",
+      "id": "2a802c24ac6e7b63"
     },
     {
       "file": "apps/web/app/[slug]/catalog/page.tsx",
       "kind": "string",
       "line": 21,
-      "text": "Техника и аксессуары в городе ${location.city}, а также товары с доставкой из других магазинов сети.",
-      "id": "6cfc645e7a65d6a6"
+      "text": "Каталог для города «${location.city}»: техника и аксессуары в местном магазине, а также товары с доставкой из других городов.",
+      "id": "7c28936f4b9e3465"
     },
     {
       "file": "apps/web/app/[slug]/catalog/tech/page.tsx",
       "kind": "string",
       "line": 25,
-      "text": "Техника в городе ${location.city}",
-      "id": "3b1ca375adc4ecf6"
+      "text": "Техника · ${location.city}",
+      "id": "7a0ec6c2a6e51c70"
     },
     {
       "file": "apps/web/app/[slug]/catalog/tech/page.tsx",
@@ -84,8 +70,8 @@
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
       "line": 53,
-      "text": "Техника и аксессуары I СВОИ в городе ${location.city}: локальное наличие, самовывоз и доставка из других магазинов сети.",
-      "id": "35bb5caaef724fe8"
+      "text": "I СВОИ · ${location.city}: локальное наличие техники и аксессуаров, самовывоз и доставка из других магазинов сети.",
+      "id": "f526d2db8c1e4fe8"
     },
     {
       "file": "apps/web/app/[slug]/page.tsx",
@@ -427,8 +413,8 @@
       "file": "apps/web/app/catalog/brand/[slug]/page.tsx",
       "kind": "string",
       "line": 23,
-      "text": "${name}: новая и проверенная б/у техника, аксессуары, цены и наличие.",
-      "id": "07b2a8a283081474"
+      "text": "${name}: новая техника, проверенная техника с пробегом, аксессуары, цены и наличие.",
+      "id": "7a9cd1aed1c1a421"
     },
     {
       "file": "apps/web/app/catalog/brand/[slug]/page.tsx",
@@ -476,8 +462,8 @@
       "file": "apps/web/app/catalog/page.tsx",
       "kind": "string",
       "line": 11,
-      "text": "Новая и проверенная б/у техника разных производителей, новые аксессуары, точная совместимость, гарантия и актуальное наличие.",
-      "id": "b81bdc2d42e74e39"
+      "text": "Новая техника и проверенная техника с пробегом разных производителей, новые аксессуары, точная совместимость, гарантия и актуальное наличие.",
+      "id": "6da9695a9a343965"
     },
     {
       "file": "apps/web/app/catalog/page.tsx",
@@ -490,22 +476,22 @@
       "file": "apps/web/app/catalog/tech/page.tsx",
       "kind": "string",
       "line": 9,
-      "text": "Новая и б/у техника — I СВОИ",
-      "id": "b66752bdba000cd0"
+      "text": "Новая техника и техника с пробегом — I СВОИ",
+      "id": "4b511724400e572f"
     },
     {
       "file": "apps/web/app/catalog/tech/page.tsx",
       "kind": "string",
       "line": 11,
-      "text": "Техника разных производителей: новые товары и проверенные б/у устройства с Passport.",
-      "id": "97311788d8d7de42"
+      "text": "Техника разных производителей: новые товары и проверенные устройства с пробегом и Passport.",
+      "id": "8a03a267f8cb4c4d"
     },
     {
       "file": "apps/web/app/catalog/tech/page.tsx",
       "kind": "string",
       "line": 15,
-      "text": "Техника разных производителей: новая и проверенная б/у.",
-      "id": "c4a39025291f0b6a"
+      "text": "Техника разных производителей: новая и проверенная с пробегом.",
+      "id": "85d4f9dc2c9be7f4"
     },
     {
       "file": "apps/web/app/catalog/tech/page.tsx",
@@ -791,8 +777,8 @@
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
       "line": 222,
-      "text": "Проверенная б/у техника",
-      "id": "c61b58fdc0fa7f0d"
+      "text": "С пробегом · Проверено",
+      "id": "0a1d45b5e09db81b"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
@@ -833,8 +819,8 @@
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
       "line": 304,
-      "text": "Для этой б/у техники опубликованы диагностика и Passport. Состояние можно перепроверить при просмотре.",
-      "id": "0b350f2c0b5e4473"
+      "text": "Для этой техники с пробегом опубликованы диагностика и Passport. Состояние можно перепроверить при просмотре.",
+      "id": "655707fcc75913e5"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
@@ -896,8 +882,8 @@
       "file": "apps/web/app/site-metadata.ts",
       "kind": "string",
       "line": 4,
-      "text": "Новая и проверенная б/у техника разных брендов, новые аксессуары, точная совместимость, реальные фото и гарантия.",
-      "id": "dd3daab243da8477"
+      "text": "Новая техника и проверенная техника с пробегом разных брендов, новые аксессуары, точная совместимость, реальные фото и гарантия.",
+      "id": "250d39cdb91f5444"
     },
     {
       "file": "apps/web/app/stores/page.tsx",
@@ -1120,8 +1106,8 @@
       "file": "apps/web/components/CatalogGrid.tsx",
       "kind": "string",
       "line": 67,
-      "text": "Проверенная б/у Apple‑техника в наличии.",
-      "id": "0ea17221d7887549"
+      "text": "Техника Apple с пробегом и проверкой в наличии.",
+      "id": "6252516616460ee1"
     },
     {
       "file": "apps/web/components/CatalogGrid.tsx",
@@ -1246,15 +1232,15 @@
       "file": "apps/web/components/CityHubPage.tsx",
       "kind": "string",
       "line": 55,
-      "text": "Техника и аксессуары I СВОИ в городе ${location.city}.",
-      "id": "740bd67dc9b4788c"
+      "text": "${location.city} · Техника и аксессуары I СВОИ.",
+      "id": "481d6bcdf64a889d"
     },
     {
       "file": "apps/web/components/CityHubPage.tsx",
       "kind": "string",
       "line": 59,
-      "text": "Локальное наличие, проверенные б/у устройства и доставка товаров из других магазинов сети.",
-      "id": "fa758b90a79bc6b3"
+      "text": "Локальное наличие, проверенная техника с пробегом и доставка товаров из других магазинов сети.",
+      "id": "eeb789b276e08df1"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
@@ -1274,8 +1260,8 @@
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "string",
       "line": 29,
-      "text": "Доступен из магазина в городе ${location.city} после подтверждения резерва.",
-      "id": "a9f31c14fd52359d"
+      "text": "Доступен в магазине I СВОИ · ${location.city} после подтверждения резерва.",
+      "id": "70df668d3dd068b5"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
@@ -1304,13 +1290,6 @@
       "line": 38,
       "text": "Межгородская доставка для этой точки пока недоступна.",
       "id": "27bc058a35a9bddf"
-    },
-    {
-      "file": "apps/web/components/CityInfoPage.tsx",
-      "kind": "jsx-text",
-      "line": 43,
-      "text": "Смотреть каталог города",
-      "id": "cf1ddfade087b2ee"
     },
     {
       "file": "apps/web/components/ClubLandingSections.tsx",
@@ -2016,8 +1995,8 @@
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
       "line": 122,
-      "text": "Контакты магазина в городе ${city}",
-      "id": "c0197b762eb48bf0"
+      "text": "Контакты магазина I СВОИ · ${city}",
+      "id": "8abaa60e2e9c3a20"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
@@ -2226,8 +2205,8 @@
       "file": "apps/web/components/HomeSectionRenderer.tsx",
       "kind": "string",
       "line": 221,
-      "text": "Магазин в Белгороде",
-      "id": "bf581adcdfff9024"
+      "text": "Магазин I СВОИ",
+      "id": "681e617e6086ba2d"
     },
     {
       "file": "apps/web/components/HomeSectionRenderer.tsx",
@@ -2904,359 +2883,415 @@
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 64,
+      "line": 70,
       "text": "I СВОИ · Техника",
       "id": "854e2ab395e05b65"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 65,
-      "text": "Новая и проверенная б/у техника.",
-      "id": "abf1c0b0e23a5ff1"
-    },
-    {
-      "file": "apps/web/components/ProductCatalogRoute.tsx",
-      "kind": "string",
-      "line": 66,
-      "text": "Сравнивайте бренды, состояние, точные характеристики и наличие. Для б/у техники показываем Passport и результаты диагностики.",
-      "id": "db2deb88028d8677"
+      "line": 71,
+      "text": "Новая техника и техника с пробегом.",
+      "id": "b240eec4178c02b7"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
       "line": 72,
+      "text": "Сравнивайте бренды, состояние, точные характеристики и наличие. Для техники с пробегом показываем Passport и результаты диагностики.",
+      "id": "1c4bb27fd6b3759a"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogRoute.tsx",
+      "kind": "string",
+      "line": 78,
       "text": "I СВОИ · Аксессуары",
       "id": "3c901ccdc6118239"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 73,
+      "line": 79,
       "text": "Новые аксессуары с точной совместимостью.",
       "id": "ca0614aeea9e6ece"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 74,
+      "line": 80,
       "text": "Чехлы, зарядки, кабели и другие аксессуары можно выбрать отдельно или подобрать к конкретной модели устройства.",
       "id": "056732a1ddbbc03f"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 79,
+      "line": 85,
       "text": "I СВОИ · Каталог",
       "id": "2bc42c1f73c8150b"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 80,
+      "line": 86,
       "text": "Техника и аксессуары в наличии.",
       "id": "e376e6a930a2bc5e"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 83,
-      "text": "Новая и проверенная б/у техника разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.",
-      "id": "0b166932c30c342d"
+      "line": 89,
+      "text": "Новая техника и техника с пробегом разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.",
+      "id": "2ac77802504f6d18"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 89,
+      "line": 99,
       "text": "Каталог",
       "id": "67bdebcd41a55171"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 114,
+      "line": 125,
       "text": "I СВОИ · ${location.city}",
       "id": "abf7d7d95fcecfcf"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
-      "line": 115,
-      "text": "Техника и аксессуары для ${location.city}.",
-      "id": "ec5e98578bb0e8f7"
-    },
-    {
-      "file": "apps/web/components/ProductCatalogRoute.tsx",
-      "kind": "string",
-      "line": 116,
-      "text": "Сначала показываем товары в наличии в городе ${location.city}, затем — доступные с доставкой из других магазинов сети.",
-      "id": "7a25879e6d049c8f"
+      "line": 126,
+      "text": "${location.city} · Техника и аксессуары.",
+      "id": "4abdc2f4b26b5c67"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
       "kind": "string",
       "line": 129,
+      "text": "Сначала показываем товары в наличии в выбранном магазине, затем — доступные с доставкой из других городов.",
+      "id": "107151d2fb5c8af6"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogRoute.tsx",
+      "kind": "string",
+      "line": 145,
       "text": "Главная",
       "id": "4949f630b1a74e85"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "string",
-      "line": 58,
+      "line": 63,
       "text": "Техника",
       "id": "8a6894d44c157d23"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "string",
-      "line": 59,
+      "line": 64,
       "text": "Аксессуары",
       "id": "e2d26ba3d92cb065"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "string",
-      "line": 60,
+      "line": 65,
       "text": "Всё",
       "id": "180ef48f72bc3804"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 184,
+      "line": 189,
       "text": "Новое",
       "id": "4b864ae9e2b2ab82"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 185,
-      "text": "Б/у",
-      "id": "280fb4f2c53fb6ad"
+      "line": 190,
+      "text": "С пробегом",
+      "id": "7f059100f8faf6f7"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 190,
+      "line": 195,
       "text": "В наличии",
       "id": "7ddd396f3527b529"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 191,
+      "line": 196,
+      "text": "Доставка из другого города",
+      "id": "285595eb2bf95342"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "jsx-text",
+      "line": 197,
       "text": "Бронь",
       "id": "99751b726b67e8e9"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 192,
+      "line": 198,
       "text": "Нет в наличии",
       "id": "dae14d86b8328c19"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 197,
+      "line": 203,
       "text": "Сначала обновлённые",
       "id": "58edc19947aabcde"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 198,
+      "line": 204,
       "text": "Цена: ниже",
       "id": "8b9cad9aea227978"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 199,
+      "line": 205,
       "text": "Цена: выше",
       "id": "a9e8b42fd267b815"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 204,
+      "line": 210,
       "text": "Поиск",
       "id": "6275462ed079ea4d"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 205,
+      "line": 211,
       "text": "Категория",
       "id": "942bcfb5848f923a"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 206,
+      "line": 212,
       "text": "Бренд",
       "id": "271736a8cf04bd83"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 207,
+      "line": 213,
       "text": "Состояние",
       "id": "670394f17dc35695"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 208,
+      "line": 214,
       "text": "Совместимость",
       "id": "4ac11fe2bf1df901"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
-      "kind": "jsx-text",
-      "line": 209,
-      "text": "Наличие",
-      "id": "fd2010f17f947d36"
+      "kind": "string",
+      "line": 215,
+      "text": ") return <>{city ? `Получение · ${city}` :",
+      "id": "2e32f7fc1733b383"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 210,
+      "line": 216,
       "text": "Сортировка",
       "id": "c2a80a20d82baee9"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 241,
+      "line": 247,
       "text": "Все категории",
       "id": "df62d67c210375a9"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 287,
+      "line": 295,
       "text": "Все бренды",
       "id": "440c700b60deca1e"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 304,
-      "text": "Новое и б/у",
-      "id": "f34494c39f8c27a8"
+      "line": 312,
+      "text": "Новое и с пробегом",
+      "id": "26c3b50087beb442"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 319,
+      "line": 327,
       "text": "Любая модель",
       "id": "73892aefdf8fc33f"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
-      "kind": "jsx-text",
-      "line": 336,
-      "text": "Все статусы",
-      "id": "e9a5dcaaa06c8e75"
+      "kind": "string",
+      "line": 339,
+      "text": "Наличие",
+      "id": "6a0bfa1b10fed52c"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "string",
-      "line": 372,
+      "line": 339,
+      "text": "Получение · ${city}",
+      "id": "627f19466a5f7325"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 346,
+      "text": "Все варианты",
+      "id": "b4720f7ab35cef41"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 346,
+      "text": "Все статусы",
+      "id": "f17e5ed72f70b2c0"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 347,
+      "text": "В наличии",
+      "id": "4482210143b6286c"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 349,
+      "text": "Бронь",
+      "id": "1a88e763abe452f3"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 350,
+      "text": "Нет в наличии",
+      "id": "63ed4207c2b40fc2"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 383,
       "text": "Раздел каталога",
       "id": "c487ae07094e235a"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "string",
-      "line": 426,
+      "line": 439,
       "text": "Модель, бренд или аксессуар",
       "id": "57f8a617d8e9a7ff"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 430,
+      "line": 443,
       "text": "Показать",
       "id": "bc23509dd6b28bd6"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 437,
+      "line": 450,
       "text": "Расширенные фильтры",
       "id": "aa701127d14ecb13"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 468,
+      "line": 481,
       "text": "По рекомендации",
       "id": "83f9edb11abc6699"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 476,
+      "line": 494,
       "text": "Сбросить",
       "id": "8e160e3f8de7b739"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "string",
-      "line": 585,
+      "line": 608,
       "text": "Страницы каталога",
       "id": "d7497790bebdc816"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 590,
+      "line": 613,
       "text": "Назад",
       "id": "ea263a989d9c38c2"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 601,
+      "line": 624,
       "text": "Дальше",
       "id": "1ce7e11eb2dc2f76"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 644,
+      "line": 680,
       "text": "Найдено:",
       "id": "bad04f2260b94029"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
       "kind": "jsx-text",
-      "line": 649,
+      "line": 685,
       "text": "24 товара на странице",
       "id": "8dd3dd886c6b5f0d"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
-      "kind": "jsx-text",
-      "line": 662,
+      "kind": "string",
+      "line": 700,
+      "text": "${city} · Подходящих товаров пока нет",
+      "id": "1ea087724b065126"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 700,
       "text": "Подходящих товаров пока нет",
-      "id": "3ff75f899c8f7d3a"
+      "id": "13b502b8dfde4409"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
-      "kind": "jsx-text",
-      "line": 663,
+      "kind": "string",
+      "line": 704,
       "text": "Измените фильтры или оставьте заявку — проверим поступления и предложим варианты.",
-      "id": "0333b0fe5b505b2e"
+      "id": "b29058469b7016e6"
     },
     {
       "file": "apps/web/components/ProductCatalogView.tsx",
-      "kind": "jsx-text",
-      "line": 671,
+      "kind": "string",
+      "line": 712,
       "text": "Получить варианты",
-      "id": "fcf00b1c092f022f"
+      "id": "861416fa81bc7c71"
     },
     {
       "file": "apps/web/components/ProductLeadForm.tsx",
@@ -3478,56 +3513,77 @@
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "string",
-      "line": 37,
-      "text": "${offer.location.city} · В наличии",
-      "id": "2d2ddbede6c0da1c"
+      "line": 10,
+      "text": "Бронь",
+      "id": "84c893405f5399d6"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "string",
-      "line": 38,
-      "text": "Доставка из города ${offer.location.city}${offer.deliveryEstimate ?",
-      "id": "a16b78b1d62d22d0"
+      "line": 11,
+      "text": "Нет в наличии",
+      "id": "fe08978a811f344f"
+    },
+    {
+      "file": "apps/web/components/ProductOfferPanel.tsx",
+      "kind": "string",
+      "line": 12,
+      "text": "В наличии",
+      "id": "0e7f06c5e32ac7f1"
+    },
+    {
+      "file": "apps/web/components/ProductOfferPanel.tsx",
+      "kind": "string",
+      "line": 47,
+      "text": "${offer.location.city} · Доставка${offer.deliveryEstimate ?",
+      "id": "0004991b7198bc71"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "jsx-text",
-      "line": 44,
+      "line": 56,
       "text": "Город получения",
       "id": "0014d3b208d2080e"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "jsx-text",
-      "line": 50,
+      "line": 62,
       "text": "Вся сеть",
       "id": "73bf3eebcc8eb826"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "string",
-      "line": 63,
-      "text": "Можно забрать в магазине в городе ${offer.location.city} после подтверждения резерва.",
-      "id": "e4eeb38662bfc2eb"
+      "line": 75,
+      "text": "Самовывоз: I СВОИ · ${offer.location.city}. После подтверждения резерва.",
+      "id": "f8ebe69e66d60b32"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "string",
-      "line": 65,
-      "text": "Товар можно доставить из магазина в городе ${offer.location.city}. Срок подтвердим перед оплатой.",
-      "id": "071635d99dd0d0b8"
+      "line": 77,
+      "text": "Доставка из магазина I СВОИ · ${offer.location.city}. Срок подтвердим перед оплатой.",
+      "id": "ee254e26e972c8dd"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "string",
-      "line": 66,
+      "line": 79,
+      "text": "Товар доступен в магазине I СВОИ · ${offer.location.city}. Выберите город получения, чтобы уточнить способ и срок.",
+      "id": "3d2d4b76a06764b0"
+    },
+    {
+      "file": "apps/web/components/ProductOfferPanel.tsx",
+      "kind": "string",
+      "line": 80,
       "text": "Для этого предложения доступность получения нужно подтвердить.",
       "id": "90f04ffc8eea7aa7"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "jsx-text",
-      "line": 70,
+      "line": 84,
       "text": "Условия получения →",
       "id": "4bb0a13747b60a1d"
     },
@@ -5746,105 +5802,91 @@
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 286,
+      "line": 287,
       "text": "Бронь",
       "id": "bf20bf5000ef1799"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 287,
+      "line": 288,
       "text": "Нет в наличии",
       "id": "0a7060828b0c5293"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 288,
+      "line": 289,
       "text": "В наличии",
       "id": "ee12223b1db5c736"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 372,
+      "line": 380,
       "text": "Совместимость по модели",
       "id": "f410220b0089efb4"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 373,
+      "line": 381,
       "text": "Универсальный аксессуар",
       "id": "b754b2d0ab4f0236"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 380,
-      "text": "Б/у",
-      "id": "e9a97d04cb576ab0"
-    },
-    {
-      "file": "apps/web/lib/product-catalog.ts",
-      "kind": "string",
-      "line": 380,
+      "line": 388,
       "text": "Грейд ${device.grade}",
       "id": "47260cce2d821a7c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 386,
+      "line": 388,
+      "text": "С пробегом",
+      "id": "6e745dabe5684324"
+    },
+    {
+      "file": "apps/web/lib/product-catalog.ts",
+      "kind": "string",
+      "line": 394,
       "text": "Новое",
       "id": "d6d52553dfb8f98c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 412,
+      "line": 422,
       "text": "от ${selectedOffer.priceText}",
       "id": "c8d0ffd4c467aed5"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 432,
-      "text": "${selectedOffer.location.city} · В наличии",
-      "id": "6cb48812ed2e3274"
+      "line": 447,
+      "text": "${selectedOffer.location.city} · Доставка${selectedOffer.deliveryEstimate ?",
+      "id": "5b34ccdcd9feb3be"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 434,
-      "text": "Доставка из города ${selectedOffer.location.city}${selectedOffer.deliveryEstimate ?",
-      "id": "c228852b8d8ebbc4"
-    },
-    {
-      "file": "apps/web/lib/product-catalog.ts",
-      "kind": "string",
-      "line": 437,
-      "text": "${city} · Нет в наличии",
-      "id": "e3bc7abe563ea471"
-    },
-    {
-      "file": "apps/web/lib/product-catalog.ts",
-      "kind": "string",
-      "line": 446,
+      "line": 462,
       "text": "Узнать о поступлении",
       "id": "7d7c26a6200ffdbb"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 448,
+      "line": 464,
       "text": "Забронировать",
       "id": "4c7cb1d4b7028946"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 449,
+      "line": 465,
       "text": "Записаться на просмотр",
       "id": "8828cf903958ac01"
     },
@@ -6006,8 +6048,8 @@
       "file": "apps/web/lib/site-content.ts",
       "kind": "string",
       "line": 98,
-      "text": "Магазин в Белгороде",
-      "id": "562e86470dc2d3bd"
+      "text": "Магазины",
+      "id": "206594de794e851d"
     },
     {
       "file": "apps/web/lib/site-content.ts",
@@ -6215,28 +6257,28 @@
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 22,
+      "line": 23,
       "text": "I СВОИ Белгород",
       "id": "672108ebf0d7c81c"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 23,
+      "line": 24,
       "text": "Белгород",
       "id": "2fd6e7d1e1e55ff7"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 27,
-      "text": "Техника и аксессуары I СВОИ в Белгороде.",
-      "id": "3a89e12591306843"
+      "line": 28,
+      "text": "Белгород · Техника и аксессуары I СВОИ.",
+      "id": "a58d8b06a42f3341"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 29,
+      "line": 30,
       "text": "Смотрите локальное наличие, бронируйте товары и выбирайте доставку из других магазинов сети.",
       "id": "6ebd38ee74b0509c"
     },

@@ -101,7 +101,7 @@ export function CityProvider({
           aria-label="Предложение выбрать город"
         >
           <p className="text-sm font-semibold text-carbon">
-            Похоже, вы в городе {hint.city}. Показать местный ассортимент?
+            Похоже, ваш город — {hint.city}. Показать местный ассортимент?
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link

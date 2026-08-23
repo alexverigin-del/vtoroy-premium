@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: MarketingPageProps): Promise<
   if (location) {
     const description =
       location.metaDescription ||
-      `Техника и аксессуары I СВОИ в городе ${location.city}: локальное наличие, самовывоз и доставка из других магазинов сети.`;
+      `I СВОИ · ${location.city}: локальное наличие техники и аксессуаров, самовывоз и доставка из других магазинов сети.`;
     return {
       title: location.seoTitle || `${location.name} — техника и аксессуары`,
       description,

@@ -18,9 +18,11 @@ Start from `Страницы сайта` (`site_pages`), not from raw section ro
 troubleshooting, but the normal editor workflow is page-first.
 
 For `/catalog`, edit the page row `catalog` and the section
-`catalog_page_live`. This controls SEO, hero copy, filter/sort labels, empty
-state and CTA. Product cards are not edited here; they come from the catalog
-collections (`devices`, `device_images`, `device_passports`, `trade_options`).
+`catalog_page_live`. This controls SEO, hero copy, empty state and its CTA.
+Functional filter and sort labels are system terminology: the frontend keeps
+them consistent with Catalog V3 and the selected city. Product cards are not
+edited here; they come from `products`, `product_images`,
+`device_passports` and `trade_options`.
 
 ## Non-Product Images
 

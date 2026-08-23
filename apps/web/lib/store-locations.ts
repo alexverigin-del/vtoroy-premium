@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { StoreLocation } from "@vtoroy/shared";
 
 import { STORE_LOCATIONS_CACHE_TAG } from "./cache-tags";
+import { applyCityTemplate } from "./city-copy";
 import { directusAssetUrl } from "./directus";
 
 const DIRECTUS_URL = (
@@ -24,7 +25,7 @@ export const DEFAULT_LOCATION: StoreLocation = {
   pickupEnabled: true,
   localDeliveryEnabled: false,
   intercityDeliveryEnabled: true,
-  heroTitle: "Техника и аксессуары I СВОИ в Белгороде.",
+  heroTitle: "Белгород · Техника и аксессуары I СВОИ.",
   heroBody:
     "Смотрите локальное наличие, бронируйте товары и выбирайте доставку из других магазинов сети.",
   sort: 10,
@@ -41,7 +42,7 @@ function number(value: unknown): number | undefined {
 
 function cityCopy(value: unknown, city: string): string | undefined {
   const copy = text(value);
-  return copy ? copy.replaceAll("{city}", city) : undefined;
+  return copy ? applyCityTemplate(copy, city) : undefined;
 }
 
 function mapLocation(row: Row): StoreLocation {
@@ -66,15 +67,15 @@ function mapLocation(row: Row): StoreLocation {
     inn: text(row.inn) || undefined,
     ogrn: text(row.ogrn) || undefined,
     legalAddress: text(row.legal_address) || undefined,
-    footerEyebrow: text(row.footer_eyebrow) || undefined,
+    footerEyebrow: cityCopy(row.footer_eyebrow, city),
     pickupEnabled: row.pickup_enabled !== false,
     localDeliveryEnabled: row.local_delivery_enabled === true,
     intercityDeliveryEnabled: row.intercity_delivery_enabled === true,
-    seoTitle: text(row.seo_title) || undefined,
-    metaDescription: text(row.meta_description) || undefined,
+    seoTitle: cityCopy(row.seo_title, city),
+    metaDescription: cityCopy(row.meta_description, city),
     heroEyebrow: cityCopy(row.hero_eyebrow, city),
-    heroTitle: text(row.hero_title) || undefined,
-    heroBody: text(row.hero_body) || undefined,
+    heroTitle: cityCopy(row.hero_title, city),
+    heroBody: cityCopy(row.hero_body, city),
     heroImage: heroFile
       ? directusAssetUrl(heroFile, {
           width: 1600,
@@ -84,20 +85,20 @@ function mapLocation(row: Row): StoreLocation {
           withoutEnlargement: true,
         })
       : undefined,
-    heroPrimaryCtaLabel: text(row.hero_primary_cta_label) || undefined,
-    heroSecondaryCtaLabel: text(row.hero_secondary_cta_label) || undefined,
-    contactEyebrow: text(row.contact_eyebrow) || undefined,
-    contactAddressLabel: text(row.contact_address_label) || undefined,
-    contactAddressFallback: text(row.contact_address_fallback) || undefined,
-    contactHoursLabel: text(row.contact_hours_label) || undefined,
-    contactHoursFallback: text(row.contact_hours_fallback) || undefined,
-    contactPhoneLabel: text(row.contact_phone_label) || undefined,
-    contactTelegramLabel: text(row.contact_telegram_label) || undefined,
-    contactMapLabel: text(row.contact_map_label) || undefined,
+    heroPrimaryCtaLabel: cityCopy(row.hero_primary_cta_label, city),
+    heroSecondaryCtaLabel: cityCopy(row.hero_secondary_cta_label, city),
+    contactEyebrow: cityCopy(row.contact_eyebrow, city),
+    contactAddressLabel: cityCopy(row.contact_address_label, city),
+    contactAddressFallback: cityCopy(row.contact_address_fallback, city),
+    contactHoursLabel: cityCopy(row.contact_hours_label, city),
+    contactHoursFallback: cityCopy(row.contact_hours_fallback, city),
+    contactPhoneLabel: cityCopy(row.contact_phone_label, city),
+    contactTelegramLabel: cityCopy(row.contact_telegram_label, city),
+    contactMapLabel: cityCopy(row.contact_map_label, city),
     catalogEyebrow: cityCopy(row.catalog_eyebrow, city),
     catalogTitle: cityCopy(row.catalog_title, city),
     catalogBody: cityCopy(row.catalog_body, city),
-    catalogCtaLabel: text(row.catalog_cta_label) || undefined,
+    catalogCtaLabel: cityCopy(row.catalog_cta_label, city),
     catalogEmptyTitle: cityCopy(row.catalog_empty_title, city),
     catalogEmptyBody: cityCopy(row.catalog_empty_body, city),
     sort: number(row.sort) ?? 100,

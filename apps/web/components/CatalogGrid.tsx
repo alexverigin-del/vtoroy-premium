@@ -64,7 +64,7 @@ export function CatalogGrid({
   const sorts = sortOptions.length > 0 ? sortOptions : DEFAULT_SORT_OPTIONS;
   const empty = catalogEmptyState(section);
   const eyebrow = catalogEyebrow(section?.eyebrow);
-  const headline = text(section?.headline, "Проверенная б/у Apple‑техника в наличии.");
+  const headline = text(section?.headline, "Техника Apple с пробегом и проверкой в наличии.");
   const body = text(
     section?.body,
     directusEnabled

@@ -15,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const location = await getStoreLocation(slug);
   if (!location) return {};
-  const title = `Каталог I СВОИ в городе ${location.city}`;
+  const title = `Каталог I СВОИ · ${location.city}`;
   return {
     title,
-    description: `Техника и аксессуары в городе ${location.city}, а также товары с доставкой из других магазинов сети.`,
+    description: `Каталог для города «${location.city}»: техника и аксессуары в местном магазине, а также товары с доставкой из других городов.`,
     alternates: { canonical: `/${slug}/catalog` },
     openGraph: { title, url: `/${slug}/catalog` },
   };

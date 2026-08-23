@@ -199,11 +199,12 @@ export type ProductCatalogFilters = {
   category?: string;
   condition?: ProductCondition;
   compatible?: string;
-  stock?: "available" | "reserved" | "sold";
+  stock?: "available" | "reserved" | "sold" | "delivery";
   sort?: "default" | "updated-desc" | "price-asc" | "price-desc";
   page?: number;
   pageSize?: number;
   city?: string;
+  cityName?: string;
 };
 
 export interface ProductCatalogResult {

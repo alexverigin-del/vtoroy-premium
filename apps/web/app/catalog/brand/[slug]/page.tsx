@@ -20,7 +20,7 @@ export async function generateMetadata({
   const name = brand?.name || "Бренд";
   return {
     title: `${name} — каталог I СВОИ`,
-    description: `${name}: новая и проверенная б/у техника, аксессуары, цены и наличие.`,
+    description: `${name}: новая техника, проверенная техника с пробегом, аксессуары, цены и наличие.`,
     alternates: { canonical: `/catalog/brand/${slug}` },
     robots: products.total > 0 ? undefined : { index: false, follow: true },
     openGraph: {

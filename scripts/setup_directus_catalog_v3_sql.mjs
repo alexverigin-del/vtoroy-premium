@@ -438,9 +438,9 @@ INSERT INTO products (
   short_description, headline, sort, source_system, source_id, admin_note
 )
 SELECT 'qa-used-samsung-s24', 'QA-DEVICE-USED-001', 'draft', 'review', 'device', 'used', 'reservation',
-  b.id, c.id, m.id, 'Samsung Galaxy S24 256 ГБ · б/у', 'Galaxy S24', 'Серый', 49990, '49 990 ₽',
+  b.id, c.id, m.id, 'Samsung Galaxy S24 256 ГБ · с пробегом', 'Galaxy S24', 'Серый', 49990, '49 990 ₽',
   1, 'available', '90 дней', 'Письменная гарантия 90 дней', 'Смартфон и кабель',
-  'Тестовая карточка б/у техники другого бренда. Не публиковать.', 'Проверенная б/у техника', 920,
+  'Тестовая карточка техники с пробегом другого бренда. Не публиковать.', 'Проверенная техника с пробегом', 920,
   'catalog_v3_qa', 'qa-used-samsung-s24', 'QA: тест адаптированной диагностики без Apple-специфичных обещаний.'
 FROM product_brands b, product_categories c, device_models m
 WHERE b.slug='samsung' AND c.slug='smartphones' AND m.slug='samsung-galaxy-s24'
@@ -513,7 +513,7 @@ VALUES
   ('device_models','devices_other','Точные модели производителей для совместимости аксессуаров.','{{brand.name}} {{name}}','is_active','false','true','all',22,'#2563eb'),
   ('products','inventory_2','Единый каталог техники и аксессуаров. Публикация блокируется, пока обязательные данные не заполнены.','{{title}} · {{sku}} · {{stock_status}}','status','archived','draft','all',23,'#0f172a'),
   ('product_images','photo_library','Общая галерея товаров. Используйте файлы Directus и обязательный alt.','{{product.title}} · {{role}}','status','archived','draft','all',24,'#0891b2'),
-  ('device_details','memory','Характеристики техники. Диагностика обязательна только для опубликованной б/у техники.','{{product.title}}',NULL,NULL,NULL,'all',25,'#7c3aed'),
+  ('device_details','memory','Характеристики техники. Диагностика обязательна только для опубликованной техники с пробегом.','{{product.title}}',NULL,NULL,NULL,'all',25,'#7c3aed'),
   ('accessory_details','cable','Характеристики аксессуаров. Фильтруемые параметры хранятся отдельными полями, JSON — только для показа.','{{product.title}}',NULL,NULL,NULL,'all',26,'#ea580c'),
   ('product_compatible_models','link','Связи модельных аксессуаров с точными моделями.','{{product.title}} · {{device_models_id.name}}',NULL,NULL,NULL,'all',27,'#16a34a')
 ON CONFLICT (collection) DO UPDATE SET
@@ -554,7 +554,7 @@ SELECT isvoi_catalog_field('products','sku','input',NULL,NULL,'half',3,'Уник
 SELECT isvoi_catalog_field('products','status','select-dropdown','labels','{"choices":[{"text":"Черновик","value":"draft"},{"text":"Опубликовано","value":"published"},{"text":"Архив","value":"archived"}]}','half',4,'Публичная видимость. Published проходит серверную проверку.',NULL,'group_identity',true);
 SELECT isvoi_catalog_field('products','content_status','select-dropdown','labels','{"choices":[{"text":"Нужны данные","value":"needs_content"},{"text":"Нужно фото","value":"needs_photo"},{"text":"На проверке","value":"review"},{"text":"Готово","value":"ready"}]}','half',5,'Редакционная готовность.',NULL,'group_identity',true);
 SELECT isvoi_catalog_field('products','product_type','select-dropdown','labels','{"choices":[{"text":"Техника","value":"device"},{"text":"Аксессуар","value":"accessory"}]}','half',6,'Корневой тип товара.',NULL,'group_identity',true);
-SELECT isvoi_catalog_field('products','condition','select-dropdown','labels','{"choices":[{"text":"Новое","value":"new"},{"text":"Б/у","value":"used"}]}','half',7,'Аксессуар может быть только новым.',NULL,'group_identity',true);
+SELECT isvoi_catalog_field('products','condition','select-dropdown','labels','{"choices":[{"text":"Новое","value":"new"},{"text":"С пробегом","value":"used"}]}','half',7,'Аксессуар может быть только новым.',NULL,'group_identity',true);
 SELECT isvoi_catalog_field('products','brand','select-dropdown-m2o','related-values','{"template":"{{name}}"}','half',8,'Бренд из справочника.','m2o','group_identity',true);
 SELECT isvoi_catalog_field('products','category','select-dropdown-m2o','related-values','{"template":"{{name}} · {{catalog_section}}"}','half',9,'Категория должна соответствовать типу товара.','m2o','group_identity',true);
 SELECT isvoi_catalog_field('products','device_model','select-dropdown-m2o','related-values','{"template":"{{brand.name}} {{name}}"}','full',10,'Точная модель техники для рекомендаций совместимых аксессуаров.','m2o','group_identity');
@@ -580,7 +580,7 @@ SELECT isvoi_catalog_field('products','images','list-o2m',NULL,'{"layout":"table
 SELECT isvoi_catalog_field('products','device_details','list-o2m',NULL,'{"layout":"table","enableCreate":true}','full',91,'Одна строка характеристик техники.','o2m','group_details');
 SELECT isvoi_catalog_field('products','accessory_details','list-o2m',NULL,'{"layout":"table","enableCreate":true}','full',92,'Одна строка характеристик аксессуара.','o2m','group_details');
 SELECT isvoi_catalog_field('products','compatible_models','list-o2m',NULL,'{"layout":"table","enableCreate":true,"fields":["device_models_id"]}','full',93,'Точные совместимые модели для модельного аксессуара.','o2m','group_details');
-SELECT isvoi_catalog_field('products','passport','list-o2m',NULL,'{"layout":"table","enableCreate":true}','full',94,'Passport только для проверенной б/у техники.','o2m','group_details');
+SELECT isvoi_catalog_field('products','passport','list-o2m',NULL,'{"layout":"table","enableCreate":true}','full',94,'Passport только для проверенной техники с пробегом.','o2m','group_details');
 SELECT isvoi_catalog_field('products','trade_options_v3','list-o2m',NULL,'{"layout":"table","enableCreate":true}','full',95,'Варианты Trade, связанные с универсальным товаром.','o2m','group_details');
 SELECT isvoi_catalog_field('products','leads','list-o2m',NULL,'{"layout":"table","enableCreate":false}','full',96,'Заявки по товару.','o2m','group_system',false,true);
 
@@ -740,7 +740,7 @@ $$;
 SELECT isvoi_catalog_preset('Техника','{"product_type":{"_eq":"device"}}','["title","sku","condition","brand","price","stock_quantity","status","content_status"]');
 SELECT isvoi_catalog_preset('Аксессуары','{"product_type":{"_eq":"accessory"}}','["title","sku","brand","category","price","stock_quantity","status","content_status"]');
 SELECT isvoi_catalog_preset('Новые','{"condition":{"_eq":"new"}}','["title","sku","product_type","brand","price","stock_quantity","status"]');
-SELECT isvoi_catalog_preset('Б/у','{"condition":{"_eq":"used"}}','["title","sku","brand","device_model","price","status","content_status"]');
+SELECT isvoi_catalog_preset('С пробегом','{"condition":{"_eq":"used"}}','["title","sku","brand","device_model","price","status","content_status"]');
 SELECT isvoi_catalog_preset('Требует совместимости','{"_and":[{"product_type":{"_eq":"accessory"}},{"accessory_details":{"compatibility_mode":{"_eq":"model_specific"}}}]}','["title","sku","brand","category","status","content_status"]');
 SELECT isvoi_catalog_preset('Не готово к публикации','{"content_status":{"_neq":"ready"}}','["title","sku","product_type","content_status","status","admin_note"]');
 
@@ -750,7 +750,7 @@ DROP FUNCTION isvoi_catalog_preset(varchar,json,json);
 UPDATE site_settings
 SET header_cta_label = 'Смотреть каталог',
     header_cta_url = '/catalog',
-    footer_note = 'I СВОИ — новая и проверенная б/у техника разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.',
+    footer_note = 'I СВОИ — новая техника и проверенная техника с пробегом разных брендов, а также новые аксессуары с понятной совместимостью и гарантией.',
     footer_brand_text = 'Техника и аксессуары, о которых всё известно до покупки. Хорошие вещи проходят через своих. Северодвинск.';
 
 UPDATE navigation_items
@@ -777,12 +777,12 @@ WHERE NOT EXISTS (
 
 UPDATE site_pages
 SET title='I СВОИ — техника и аксессуары с понятной историей',
-    meta_description='Новая и проверенная б/у техника разных брендов, новые аксессуары, точная совместимость, реальные фото и гарантия.'
+    meta_description='Новая техника и проверенная техника с пробегом разных брендов, новые аксессуары, точная совместимость, реальные фото и гарантия.'
 WHERE slug='home';
 
 UPDATE site_pages
 SET title='Каталог техники и аксессуаров — I СВОИ',
-    meta_description='Новая и проверенная б/у техника разных брендов и новые аксессуары с точной совместимостью и гарантией.'
+    meta_description='Новая техника и проверенная техника с пробегом разных брендов и новые аксессуары с точной совместимостью и гарантией.'
 WHERE slug='catalog';
 
 UPDATE site_pages
@@ -791,21 +791,21 @@ SET title='Магазин техники и аксессуаров в Север
 WHERE slug='store';
 
 UPDATE site_pages
-SET title='Passport — как мы проверяем б/у технику',
-    meta_description='Методика диагностики, грейды и Passport для проверенной б/у техники I СВОИ.'
+SET title='Passport — как мы проверяем технику с пробегом',
+    meta_description='Методика диагностики, грейды и Passport для проверенной техники с пробегом I СВОИ.'
 WHERE slug='passport';
 
 UPDATE page_sections ps
 SET headline='Техника и аксессуары, о которых всё известно до покупки.',
     primary_cta_label='Смотреть каталог',
     primary_cta_url='/catalog',
-    body='Новая и проверенная б/у техника разных брендов, а также новые аксессуары. Показываем реальные фото, характеристики, совместимость, комплектность и гарантию; для б/у техники — диагностику и Passport.'
+    body='Новая техника и проверенная техника с пробегом разных брендов, а также новые аксессуары. Показываем реальные фото, характеристики, совместимость, комплектность и гарантию; для техники с пробегом — диагностику и Passport.'
 FROM site_pages sp
 WHERE ps.page=sp.id AND sp.slug='home' AND ps.section_key='hero';
 
 UPDATE page_sections ps
 SET headline='Техника и аксессуары в наличии.',
-    body='Новая и проверенная б/у техника разных производителей, а также новые аксессуары с понятной совместимостью.',
+    body='Новая техника и проверенная техника с пробегом разных производителей, а также новые аксессуары с понятной совместимостью.',
     primary_cta_label='Смотреть весь каталог',
     primary_cta_url='/catalog'
 FROM site_pages sp
@@ -822,12 +822,12 @@ WHERE ps.page=sp.id AND sp.slug='catalog'
 
 UPDATE page_sections ps
 SET headline='Посмотрите технику и аксессуары в магазине.',
-    body='Сверьте характеристики и комплект, проверьте совместимость аксессуара. Для б/у техники покажем диагностику и Passport до решения.'
+    body='Сверьте характеристики и комплект, проверьте совместимость аксессуара. Для техники с пробегом покажем диагностику и Passport до решения.'
 FROM site_pages sp
 WHERE ps.page=sp.id AND sp.slug='store' AND ps.section_key IN ('store_hero','store_curated_catalog');
 
 UPDATE page_sections ps
-SET headline='Passport — доказательства для проверенной б/у техники.',
+SET headline='Passport — доказательства для проверенной техники с пробегом.',
     body='Новая техника и аксессуары не требуют Passport: для них показываем точные характеристики, совместимость, комплектность и гарантию.'
 FROM site_pages sp
 WHERE ps.page=sp.id AND sp.slug='passport' AND ps.section_key='passport_hero';
@@ -861,7 +861,7 @@ BEGIN
     SELECT 1 FROM device_details dd JOIN device_passports dp ON dp.product=NEW.id
     WHERE dd.product=NEW.id AND dd.diagnostic_date IS NOT NULL AND NULLIF(dd.grade,'') IS NOT NULL
   ) THEN
-    RAISE EXCEPTION 'Для публикации б/у техники нужны Passport, дата диагностики и грейд';
+    RAISE EXCEPTION 'Для публикации техники с пробегом нужны Passport, дата диагностики и грейд';
   END IF;
   IF NEW.product_type='accessory' THEN
     SELECT compatibility_mode INTO v_mode FROM accessory_details WHERE product=NEW.id;
@@ -888,7 +888,7 @@ UNION ALL SELECT 'catalog_v3.collections', count(*)::text FROM directus_collecti
   'products','product_brands','product_categories','device_models','product_images','device_details','accessory_details','product_compatible_models'
 )
 UNION ALL SELECT 'catalog_v3.presets', count(*)::text FROM directus_presets WHERE collection='products' AND bookmark IN (
-  'Техника','Аксессуары','Новые','Б/у','Требует совместимости','Не готово к публикации'
+  'Техника','Аксессуары','Новые','С пробегом','Требует совместимости','Не готово к публикации'
 );
 
 COMMIT;

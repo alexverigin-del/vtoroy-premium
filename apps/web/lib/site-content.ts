@@ -95,8 +95,8 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "header-store",
-    label: "Магазин в Белгороде",
-    url: "/belgorod",
+    label: "Магазины",
+    url: "/stores",
     location: "header",
     sort: 2,
     isActive: true,
@@ -205,8 +205,8 @@ const defaultNavigationItems: NavigationItem[] = [
   },
   {
     id: "footer-isvoi-store",
-    label: "Магазин в Белгороде",
-    url: "/belgorod",
+    label: "Магазины",
+    url: "/stores",
     location: "footer",
     parent: "footer-isvoi",
     sort: 1,

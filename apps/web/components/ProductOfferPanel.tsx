@@ -3,7 +3,14 @@
 import Link from "next/link";
 import type { ProductOffer } from "@vtoroy/shared";
 
+import { cityScopedLabel } from "../lib/city-copy";
 import { useCity } from "./CityContext";
+
+function offerStatusLabel(offer: ProductOffer): string {
+  if (offer.stockStatus === "reserved") return "Бронь";
+  if (offer.stockStatus === "sold" || offer.stockQuantity <= 0) return "Нет в наличии";
+  return "В наличии";
+}
 
 export function ProductOfferPanel({
   fallbackPrice,
@@ -15,13 +22,14 @@ export function ProductOfferPanel({
   offers: ProductOffer[];
 }) {
   const { locations, selected, selectCity } = useCity();
-  const available = offers.filter(
-    (offer) => offer.stockStatus !== "hidden" && offer.stockQuantity > 0,
+  const stocked = offers.filter(
+    (offer) =>
+      offer.stockStatus !== "hidden" && offer.stockStatus !== "sold" && offer.stockQuantity > 0,
   );
   const offer = selected
-    ? (available.find((item) => item.location.slug === selected.slug) ??
-      available.find((item) => item.intercityDeliveryEnabled))
-    : available.sort((a, b) => a.price - b.price)[0];
+    ? (stocked.find((item) => item.location.slug === selected.slug) ??
+      stocked.find((item) => item.stockStatus === "available" && item.intercityDeliveryEnabled))
+    : stocked.sort((a, b) => a.price - b.price)[0];
   const local = Boolean(offer && selected && offer.location.slug === selected.slug);
 
   return (
@@ -33,10 +41,14 @@ export function ProductOfferPanel({
       </div>
       <p className="mt-3 text-sm font-medium">
         {offer
-          ? local
-            ? `${offer.location.city} · В наличии`
-            : `Доставка из города ${offer.location.city}${offer.deliveryEstimate ? ` · ${offer.deliveryEstimate}` : ""}`
-          : fallbackStatus}
+          ? selected
+            ? local
+              ? cityScopedLabel(offer.location.city, offerStatusLabel(offer))
+              : `${offer.location.city} · Доставка${offer.deliveryEstimate ? ` · ${offer.deliveryEstimate}` : ""}`
+            : cityScopedLabel(offer.location.city, offerStatusLabel(offer))
+          : selected
+            ? cityScopedLabel(selected.city, "Нет в наличии")
+            : fallbackStatus}
       </p>
 
       {locations.length > 0 ? (
@@ -60,10 +72,12 @@ export function ProductOfferPanel({
       {offer ? (
         <div className="mt-4 rounded-card bg-surface p-4 text-sm leading-relaxed text-muted">
           {local && offer.pickupEnabled
-            ? `Можно забрать в магазине в городе ${offer.location.city} после подтверждения резерва.`
-            : offer.intercityDeliveryEnabled
-              ? `Товар можно доставить из магазина в городе ${offer.location.city}. Срок подтвердим перед оплатой.`
-              : "Для этого предложения доступность получения нужно подтвердить."}
+            ? `Самовывоз: I СВОИ · ${offer.location.city}. После подтверждения резерва.`
+            : selected && offer.intercityDeliveryEnabled
+              ? `Доставка из магазина I СВОИ · ${offer.location.city}. Срок подтвердим перед оплатой.`
+              : !selected
+                ? `Товар доступен в магазине I СВОИ · ${offer.location.city}. Выберите город получения, чтобы уточнить способ и срок.`
+                : "Для этого предложения доступность получения нужно подтвердить."}
           <Link
             href={`/${offer.location.slug}/delivery`}
             className="mt-2 block font-medium text-accent"

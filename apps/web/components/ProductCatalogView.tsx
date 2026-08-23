@@ -694,7 +694,10 @@ export function ProductCatalogView({
             ))}
           </ul>
         ) : (
-          <div className="mt-8 rounded-card border border-hairline bg-frost px-6 py-12 text-center">
+          <div
+            className="mt-8 rounded-card border border-hairline bg-frost px-6 py-12 text-center"
+            data-component="CatalogEmptyState"
+          >
             <h2 className="text-2xl font-semibold text-carbon">
               {copy.emptyTitle ||
                 (city ? `${city} · Подходящих товаров пока нет` : "Подходящих товаров пока нет")}

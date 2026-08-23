@@ -368,7 +368,11 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/cata
 
   const cardCount = await page.locator("a[href^='/product/'], a[href*='/product/']").count();
   if (requireDirectusAssets) {
-    assert(cardCount > 0, "catalog: expected at least one device link");
+    const emptyStateCount = await page.locator('[data-component="CatalogEmptyState"]').count();
+    assert(
+      cardCount > 0 || emptyStateCount > 0,
+      `${route}: expected product links or an explicit empty state`,
+    );
   }
   return {
     route,

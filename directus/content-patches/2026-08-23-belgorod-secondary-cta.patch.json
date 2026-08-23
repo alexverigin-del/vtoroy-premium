@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "2026-08-23-belgorod-secondary-cta",
+  "description": "Заполнить обязательную вторичную кнопку первого экрана городского хаба Белгорода",
+  "collection": "store_locations",
+  "selector": {
+    "slug": "belgorod"
+  },
+  "changes": {
+    "hero_secondary_cta_label": "Адрес и контакты"
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "af66134e6e1a1cd4b36a866ab7ba1bcc7ff49cd09743f177abbe10ce5b376927",
+    "versionField": "updated_at",
+    "versionValue": "2026-08-23T20:01:14.644+00:00"
+  }
+}

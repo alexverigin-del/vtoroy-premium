@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-22T19:19:28.199Z",
+  "updatedAt": "2026-08-23T20:07:22.037Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -83,21 +83,21 @@
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 54,
+      "line": 53,
       "text": "Техника и аксессуары I СВОИ в городе ${location.city}: локальное наличие, самовывоз и доставка из других магазинов сети.",
       "id": "35bb5caaef724fe8"
     },
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 56,
+      "line": 55,
       "text": "${location.name} — техника и аксессуары",
       "id": "667084361bef8b34"
     },
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 138,
+      "line": 137,
       "text": "Главная",
       "id": "36a04f938a572876"
     },
@@ -1238,121 +1238,23 @@
     {
       "file": "apps/web/components/CityHubPage.tsx",
       "kind": "string",
-      "line": 40,
+      "line": 41,
       "text": "Главная",
       "id": "062f2929d89f0576"
     },
     {
       "file": "apps/web/components/CityHubPage.tsx",
       "kind": "string",
-      "line": 52,
+      "line": 55,
       "text": "Техника и аксессуары I СВОИ в городе ${location.city}.",
       "id": "740bd67dc9b4788c"
     },
     {
       "file": "apps/web/components/CityHubPage.tsx",
       "kind": "string",
-      "line": 56,
+      "line": 59,
       "text": "Локальное наличие, проверенные б/у устройства и доставка товаров из других магазинов сети.",
       "id": "fa758b90a79bc6b3"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 59,
-      "text": "Смотреть каталог города",
-      "id": "aca17682e566c6cb"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 62,
-      "text": "Контакты и часы",
-      "id": "73d44e75ab1dd479"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 69,
-      "text": "Магазин",
-      "id": "864178b584cfb1d5"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 73,
-      "text": "Адрес",
-      "id": "712addef6908c6fa"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "string",
-      "line": 75,
-      "text": "Точный адрес уточняется перед визитом",
-      "id": "eae2d21e05a0516d"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 79,
-      "text": "Часы работы",
-      "id": "9f85951ba2f0276b"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "string",
-      "line": 81,
-      "text": "Уточняются перед визитом",
-      "id": "e284afb7c60886a0"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 86,
-      "text": "Позвонить",
-      "id": "70274890a77c9dc1"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 88,
-      "text": "Открыть карту",
-      "id": "ee95c74d3a5acba4"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 97,
-      "text": "Локальное наличие",
-      "id": "3a0dac78cab21b9d"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 101,
-      "text": "Остальные позиции показываем отдельно, если их можно доставить из другой точки.",
-      "id": "05632ae317474419"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 105,
-      "text": "Открыть весь каталог",
-      "id": "2f37e8ba7087e99d"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 120,
-      "text": "Локальный каталог обновляется",
-      "id": "01660311b8c3e0fb"
-    },
-    {
-      "file": "apps/web/components/CityHubPage.tsx",
-      "kind": "jsx-text",
-      "line": 121,
-      "text": "Товары появятся после подтверждения цены и остатка для этой точки.",
-      "id": "8e00955db26dd075"
     },
     {
       "file": "apps/web/components/CityInfoPage.tsx",
@@ -2120,56 +2022,56 @@
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 141,
+      "line": 138,
       "text": "Открыть на карте ↗",
       "id": "451d6413b24c6606"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 149,
+      "line": 146,
       "text": "Магазин в {city}",
       "id": "e84e09fbcaa9c981"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 158,
+      "line": 155,
       "text": "Связаться",
       "id": "f12034330c101ccf"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 183,
+      "line": 180,
       "text": "Контакты уточняются",
       "id": "cafbb258ccb0a87c"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 190,
+      "line": 187,
       "text": "Часы работы",
       "id": "a0915ad6641229bc"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 193,
+      "line": 190,
       "text": "Уточняются перед визитом",
       "id": "4f3091a0c25f9f96"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 203,
+      "line": 200,
       "text": "Продавец",
       "id": "5c1ea6b0c9e35e2b"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
       "kind": "string",
-      "line": 210,
+      "line": 207,
       "text": "Юридический адрес",
       "id": "cf49428436dbc406"
     },
@@ -2989,15 +2891,15 @@
       "file": "apps/web/components/ProductCard.tsx",
       "kind": "string",
       "line": 8,
-      "text": "Б/у · проверено",
-      "id": "141f76024637761d"
+      "text": "Новая техника",
+      "id": "734d7a123c7e74cb"
     },
     {
       "file": "apps/web/components/ProductCard.tsx",
       "kind": "string",
       "line": 8,
-      "text": "Новая техника",
-      "id": "734d7a123c7e74cb"
+      "text": "С пробегом · Проверено",
+      "id": "fed978708f0fb8a7"
     },
     {
       "file": "apps/web/components/ProductCatalogRoute.tsx",
@@ -3577,8 +3479,8 @@
       "file": "apps/web/components/ProductOfferPanel.tsx",
       "kind": "string",
       "line": 37,
-      "text": "В наличии в городе ${offer.location.city}",
-      "id": "3b6dc291973cdb5a"
+      "text": "${offer.location.city} · В наличии",
+      "id": "2d2ddbede6c0da1c"
     },
     {
       "file": "apps/web/components/ProductOfferPanel.tsx",
@@ -5908,8 +5810,8 @@
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
       "line": 432,
-      "text": "В наличии в городе ${selectedOffer.location.city}",
-      "id": "b7964a944b5e4f0c"
+      "text": "${selectedOffer.location.city} · В наличии",
+      "id": "6cb48812ed2e3274"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
@@ -5922,8 +5824,8 @@
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
       "line": 437,
-      "text": "Нет в наличии в городе ${city}",
-      "id": "c6650196ac014978"
+      "text": "${city} · Нет в наличии",
+      "id": "e3bc7abe563ea471"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
@@ -6313,28 +6215,28 @@
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 21,
+      "line": 22,
       "text": "I СВОИ Белгород",
       "id": "672108ebf0d7c81c"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 22,
+      "line": 23,
       "text": "Белгород",
       "id": "2fd6e7d1e1e55ff7"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 26,
+      "line": 27,
       "text": "Техника и аксессуары I СВОИ в Белгороде.",
       "id": "3a89e12591306843"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 28,
+      "line": 29,
       "text": "Смотрите локальное наличие, бронируйте товары и выбирайте доставку из других магазинов сети.",
       "id": "6ebd38ee74b0509c"
     },

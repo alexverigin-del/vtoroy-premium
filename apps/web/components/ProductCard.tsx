@@ -5,7 +5,7 @@ import { ProductImage, productImageSrc } from "./ProductImage";
 
 function conditionLabel(product: ProductCardData): string {
   if (product.productType === "accessory") return "Новый аксессуар";
-  return product.condition === "new" ? "Новая техника" : "Б/у · проверено";
+  return product.condition === "new" ? "Новая техника" : "С пробегом · Проверено";
 }
 
 export function ProductCard({

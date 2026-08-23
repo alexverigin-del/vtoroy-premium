@@ -34,7 +34,7 @@ export function ProductOfferPanel({
       <p className="mt-3 text-sm font-medium">
         {offer
           ? local
-            ? `В наличии в городе ${offer.location.city}`
+            ? `${offer.location.city} · В наличии`
             : `Доставка из города ${offer.location.city}${offer.deliveryEstimate ? ` · ${offer.deliveryEstimate}` : ""}`
           : fallbackStatus}
       </p>

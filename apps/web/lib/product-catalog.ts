@@ -429,12 +429,12 @@ function mapProductCard(row: Row, city?: string): ProductCardData {
     stockStatus,
     stockStatusLabel: selectedOffer
       ? selectedOffer.location.slug === city
-        ? `В наличии в городе ${selectedOffer.location.city}`
+        ? `${selectedOffer.location.city} · В наличии`
         : selectedOffer.intercityDeliveryEnabled
           ? `Доставка из города ${selectedOffer.location.city}${selectedOffer.deliveryEstimate ? ` · ${selectedOffer.deliveryEstimate}` : ""}`
           : stockLabel(stockStatus, stockQuantity)
       : city
-        ? `Нет в наличии в городе ${city}`
+        ? `${city} · Нет в наличии`
         : stockLabel(stockStatus, stockQuantity),
     warrantyText: text(row.warranty_text, text(row.warranty)),
     listingImage: assetUrl(row.listing_file, 720, 540),

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "2026-08-23-belgorod-store-photo",
+  "description": "Назначить Белгороду существующий управляемый Directus File фотографии магазина",
+  "collection": "store_locations",
+  "selector": {
+    "slug": "belgorod"
+  },
+  "changes": {
+    "hero_file": "95cbc9d4-532d-4c5c-9bba-e9492416c75f"
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "abf042e755912941f95b6f50201065bc957f4efa02a9e84646c5ec091ceb48a9",
+    "versionField": "updated_at",
+    "versionValue": "2026-08-22T19:38:25.658+00:00"
+  }
+}

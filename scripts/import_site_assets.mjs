@@ -4,7 +4,7 @@
  *
  * Product/catalog photos are handled by import_device_media.mjs and
  * import_devices_from_excel.py. This script owns editorial/site imagery:
- * hero, store, diagnostics, and legacy static-page supporting images.
+ * hero, diagnostics, and legacy static-page supporting images.
  *
  * Usage:
  *   DIRECTUS_URL=https://api.isvoi.ru DIRECTUS_TOKEN=... \
@@ -40,18 +40,14 @@ const SECTION_ASSETS = [
     section: "hero",
   },
   {
-    file: "store-real-premium-hero.webp",
-    title: "isvoi:site:home:store-preview",
-    page: "home",
-    section: "store_preview",
-  },
-  {
     file: "generated-diagnostics.webp",
     title: "isvoi:site:home:diagnostics",
     page: "home",
     section: "diagnostics_compare",
   },
 ];
+
+// Store photography belongs to store_locations and is managed in Directus Studio.
 
 const ROOT_SITE_ASSETS = [
   {

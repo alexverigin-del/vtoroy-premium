@@ -2576,3 +2576,24 @@ Next content-editing priorities:
   policy, поэтому отдельные дублирующие строки permissions не создаются. Audit
   проверяет реальные строки Public Read + Editor read/update и сохраняет
   `non-admin wildcards = 0`.
+
+### Фотография магазина в Белгороде (2026-08-23)
+
+- Перед media mutation создан и проверен backup
+  `/opt/isvoi/backups/directus/20260823T183124Z` с PostgreSQL и uploads.
+- Предоставленный оригинал `Фото Белгород.png` преобразован в WebP без изменения
+  композиции: `1679×937`, 304526 bytes. Production Directus File:
+  `e842d842-e512-43c6-8bde-7190b5e3094f`, title
+  `isvoi:site:belgorod:store-hero:2026-08-23`, папка `ISVOI Site Assets`.
+- Новый file ID назначен `store_locations.hero_file` для `belgorod`, а также
+  секциям `home.store_preview` и `store.store_location`. Focal point установлен
+  в центр кадра `840×469`.
+- Старый файл `95cbc9d4-532d-4c5c-9bba-e9492416c75f` после проверки нулевых
+  ссылок удалён из `directus_files` и uploads; исходная версия остаётся в backup.
+- Использован новый UUID, потому что Directus `format=auto` и Next Image держат
+  трансформы по URL до 30 дней. Это исключает показ старого кадра без глобальной
+  очистки кэшей.
+- `import_site_assets.mjs` больше не управляет фотографией магазина из
+  локального frontend asset. Каноническая точка редактирования:
+  `Магазины, адреса и наличие` → `Магазины и города` → `Белгород` →
+  `Страница города и SEO` → `Главная фотография`.

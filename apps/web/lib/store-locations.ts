@@ -39,14 +39,20 @@ function number(value: unknown): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function cityCopy(value: unknown, city: string): string | undefined {
+  const copy = text(value);
+  return copy ? copy.replaceAll("{city}", city) : undefined;
+}
+
 function mapLocation(row: Row): StoreLocation {
   const heroFile = text(row.hero_file);
+  const city = text(row.city);
   return {
     id: text(row.id) || text(row.slug),
     slug: text(row.slug),
     status: text(row.status) || "draft",
     name: text(row.name),
-    city: text(row.city),
+    city,
     region: text(row.region) || undefined,
     address: text(row.address) || undefined,
     latitude: number(row.latitude),
@@ -66,6 +72,7 @@ function mapLocation(row: Row): StoreLocation {
     intercityDeliveryEnabled: row.intercity_delivery_enabled === true,
     seoTitle: text(row.seo_title) || undefined,
     metaDescription: text(row.meta_description) || undefined,
+    heroEyebrow: cityCopy(row.hero_eyebrow, city),
     heroTitle: text(row.hero_title) || undefined,
     heroBody: text(row.hero_body) || undefined,
     heroImage: heroFile
@@ -77,6 +84,22 @@ function mapLocation(row: Row): StoreLocation {
           withoutEnlargement: true,
         })
       : undefined,
+    heroPrimaryCtaLabel: text(row.hero_primary_cta_label) || undefined,
+    heroSecondaryCtaLabel: text(row.hero_secondary_cta_label) || undefined,
+    contactEyebrow: text(row.contact_eyebrow) || undefined,
+    contactAddressLabel: text(row.contact_address_label) || undefined,
+    contactAddressFallback: text(row.contact_address_fallback) || undefined,
+    contactHoursLabel: text(row.contact_hours_label) || undefined,
+    contactHoursFallback: text(row.contact_hours_fallback) || undefined,
+    contactPhoneLabel: text(row.contact_phone_label) || undefined,
+    contactTelegramLabel: text(row.contact_telegram_label) || undefined,
+    contactMapLabel: text(row.contact_map_label) || undefined,
+    catalogEyebrow: cityCopy(row.catalog_eyebrow, city),
+    catalogTitle: cityCopy(row.catalog_title, city),
+    catalogBody: cityCopy(row.catalog_body, city),
+    catalogCtaLabel: text(row.catalog_cta_label) || undefined,
+    catalogEmptyTitle: cityCopy(row.catalog_empty_title, city),
+    catalogEmptyBody: cityCopy(row.catalog_empty_body, city),
     sort: number(row.sort) ?? 100,
   };
 }
@@ -89,7 +112,7 @@ async function requestLocations(): Promise<StoreLocation[]> {
     const params = new URLSearchParams({
       "filter[status][_eq]": "published",
       fields:
-        "id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,footer_eyebrow,hero_file,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort",
+        "id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,footer_eyebrow,hero_file,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_eyebrow,hero_title,hero_body,hero_primary_cta_label,hero_secondary_cta_label,contact_eyebrow,contact_address_label,contact_address_fallback,contact_hours_label,contact_hours_fallback,contact_phone_label,contact_telegram_label,contact_map_label,catalog_eyebrow,catalog_title,catalog_body,catalog_cta_label,catalog_empty_title,catalog_empty_body,sort",
       sort: "sort,city",
       limit: "100",
     });

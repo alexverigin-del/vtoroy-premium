@@ -48,7 +48,9 @@ export function CityHubPage({
         <section className="border-b border-hairline bg-frost py-16 md:py-24">
           <div className="mx-auto grid max-w-shell gap-10 px-5 lg:grid-cols-5 lg:items-end">
             <div className="lg:col-span-3">
-              <p className={brandZoneEyebrowClass}>I СВОИ · {location.city}</p>
+              {location.heroEyebrow ? (
+                <p className={brandZoneEyebrowClass}>{location.heroEyebrow}</p>
+              ) : null}
               <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-carbon md:text-6xl">
                 {location.heroTitle || `Техника и аксессуары I СВОИ в городе ${location.city}.`}
               </h1>
@@ -56,37 +58,66 @@ export function CityHubPage({
                 {location.heroBody ||
                   "Локальное наличие, проверенные б/у устройства и доставка товаров из других магазинов сети."}
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href={`/${location.slug}/catalog`} className={primaryPillCtaClass}>
-                  Смотреть каталог города
-                </Link>
-                <Link href={`/${location.slug}/contacts`} className={secondaryPillCtaClass}>
-                  Контакты и часы
-                </Link>
-              </div>
+              {location.heroPrimaryCtaLabel || location.heroSecondaryCtaLabel ? (
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  {location.heroPrimaryCtaLabel ? (
+                    <Link href={`/${location.slug}/catalog`} className={primaryPillCtaClass}>
+                      {location.heroPrimaryCtaLabel}
+                    </Link>
+                  ) : null}
+                  {location.heroSecondaryCtaLabel ? (
+                    <Link href="#store-contacts" className={secondaryPillCtaClass}>
+                      {location.heroSecondaryCtaLabel}
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
-            <aside className="rounded-card border border-hairline bg-white p-6 shadow-soft lg:col-span-2">
-              <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">Магазин</p>
+            <aside
+              id="store-contacts"
+              className="scroll-mt-24 rounded-card border border-hairline bg-white p-6 shadow-soft lg:col-span-2"
+            >
+              {location.contactEyebrow ? (
+                <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
+                  {location.contactEyebrow}
+                </p>
+              ) : null}
               <h2 className="mt-3 text-2xl font-semibold text-carbon">{location.name}</h2>
               <dl className="mt-5 grid gap-4 text-sm">
-                <div>
-                  <dt className="text-muted">Адрес</dt>
-                  <dd className="mt-1 font-medium text-carbon">
-                    {location.address || "Точный адрес уточняется перед визитом"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-muted">Часы работы</dt>
-                  <dd className="mt-1 font-medium text-carbon">
-                    {location.businessHours || "Уточняются перед визитом"}
-                  </dd>
-                </div>
+                {location.address || location.contactAddressFallback ? (
+                  <div>
+                    {location.contactAddressLabel ? (
+                      <dt className="text-muted">{location.contactAddressLabel}</dt>
+                    ) : null}
+                    <dd className="mt-1 font-medium text-carbon">
+                      {location.address || location.contactAddressFallback}
+                    </dd>
+                  </div>
+                ) : null}
+                {location.businessHours || location.contactHoursFallback ? (
+                  <div>
+                    {location.contactHoursLabel ? (
+                      <dt className="text-muted">{location.contactHoursLabel}</dt>
+                    ) : null}
+                    <dd className="mt-1 font-medium text-carbon">
+                      {location.businessHours || location.contactHoursFallback}
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
               <div className="mt-5 flex flex-wrap gap-3 text-sm font-medium text-accent">
-                {location.phone ? <a href={`tel:${location.phone}`}>Позвонить</a> : null}
-                {telegramHref ? <a href={telegramHref}>Telegram</a> : null}
-                {location.mapUrl ? <a href={location.mapUrl}>Открыть карту</a> : null}
+                {location.phone ? (
+                  <a href={`tel:${location.phone}`}>
+                    {location.contactPhoneLabel || location.phone}
+                  </a>
+                ) : null}
+                {telegramHref ? (
+                  <a href={telegramHref}>{location.contactTelegramLabel || location.telegram}</a>
+                ) : null}
+                {location.mapUrl && location.contactMapLabel ? (
+                  <a href={location.mapUrl}>{location.contactMapLabel}</a>
+                ) : null}
               </div>
             </aside>
           </div>
@@ -114,17 +145,23 @@ export function CityHubPage({
         <section className="mx-auto max-w-shell px-5 py-16 md:py-20">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className={brandZoneEyebrowClass}>Локальное наличие</p>
+              {location.catalogEyebrow ? (
+                <p className={brandZoneEyebrowClass}>{location.catalogEyebrow}</p>
+              ) : null}
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-carbon md:text-4xl">
-                Сначала — товары в городе {location.city}.
+                {location.catalogTitle || location.city}
               </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-                Остальные позиции показываем отдельно, если их можно доставить из другой точки.
-              </p>
+              {location.catalogBody ? (
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
+                  {location.catalogBody}
+                </p>
+              ) : null}
             </div>
-            <Link href={`/${location.slug}/catalog`} className={secondaryPillCtaClass}>
-              Открыть весь каталог
-            </Link>
+            {location.catalogCtaLabel ? (
+              <Link href={`/${location.slug}/catalog`} className={secondaryPillCtaClass}>
+                {location.catalogCtaLabel}
+              </Link>
+            ) : null}
           </div>
 
           {products.length > 0 ? (
@@ -137,10 +174,14 @@ export function CityHubPage({
             </ul>
           ) : (
             <div className="mt-8 rounded-card border border-hairline bg-frost p-8">
-              <h3 className="text-xl font-semibold text-carbon">Локальный каталог обновляется</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Товары появятся после подтверждения цены и остатка для этой точки.
-              </p>
+              {location.catalogEmptyTitle ? (
+                <h3 className="text-xl font-semibold text-carbon">{location.catalogEmptyTitle}</h3>
+              ) : null}
+              {location.catalogEmptyBody ? (
+                <p className="mt-2 text-sm leading-relaxed text-muted">
+                  {location.catalogEmptyBody}
+                </p>
+              ) : null}
             </div>
           )}
         </section>

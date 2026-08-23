@@ -22,6 +22,17 @@ WHERE table_schema='public' AND table_name='site_settings'
     'footer_all_stores_label'
   )
 UNION ALL
+SELECT 'multicity.schema.city_page_copy_fields_missing',(17-count(*))::text
+FROM information_schema.columns
+WHERE table_schema='public' AND table_name='store_locations'
+  AND column_name IN (
+    'hero_eyebrow','hero_primary_cta_label','hero_secondary_cta_label',
+    'contact_eyebrow','contact_address_label','contact_address_fallback',
+    'contact_hours_label','contact_hours_fallback','contact_phone_label',
+    'contact_telegram_label','contact_map_label','catalog_eyebrow','catalog_title',
+    'catalog_body','catalog_cta_label','catalog_empty_title','catalog_empty_body'
+  )
+UNION ALL
 SELECT 'multicity.schema.relations_missing',(5-count(*))::text
 FROM directus_relations
 WHERE (many_collection,many_field) IN (
@@ -55,6 +66,28 @@ UNION ALL
 SELECT 'multicity.content.published_hero_missing',count(*)::text
 FROM store_locations
 WHERE status='published' AND hero_file IS NULL
+UNION ALL
+SELECT 'multicity.content.published_city_page_copy_incomplete',count(*)::text
+FROM store_locations location
+WHERE status='published' AND (
+  NULLIF(to_jsonb(location)->>'hero_eyebrow','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'hero_primary_cta_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'hero_secondary_cta_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_eyebrow','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_address_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_address_fallback','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_hours_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_hours_fallback','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_phone_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_telegram_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'contact_map_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'catalog_eyebrow','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'catalog_title','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'catalog_body','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'catalog_cta_label','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'catalog_empty_title','') IS NULL
+  OR NULLIF(to_jsonb(location)->>'catalog_empty_body','') IS NULL
+)
 UNION ALL
 SELECT 'multicity.content.invalid_map_url',count(*)::text
 FROM store_locations
@@ -146,6 +179,45 @@ WHERE NOT EXISTS (
     AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_network_body,%'
     AND (','||coalesce(permission.fields,'')||',') LIKE '%,footer_all_stores_label,%'
 )
+UNION ALL
+SELECT 'multicity.permissions.city_page_copy_fields_missing',count(*)::text
+FROM (VALUES
+  ('ISVOI Public Read','read'),
+  ('ISVOI Editor','read'),('ISVOI Editor','create'),('ISVOI Editor','update'),
+  ('ISVOI Advanced Editor','read'),('ISVOI Advanced Editor','create'),
+  ('ISVOI Advanced Editor','update')
+) expected(policy_name,action_name)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name=expected.policy_name
+    AND permission.collection='store_locations'
+    AND permission.action=expected.action_name
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,hero_eyebrow,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,hero_primary_cta_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,hero_secondary_cta_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_eyebrow,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_address_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_address_fallback,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_hours_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_hours_fallback,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_phone_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_telegram_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,contact_map_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,catalog_eyebrow,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,catalog_title,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,catalog_body,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,catalog_cta_label,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,catalog_empty_title,%'
+    AND (','||coalesce(permission.fields,'')||',') LIKE '%,catalog_empty_body,%'
+)
+UNION ALL
+SELECT 'multicity.studio.city_page_groups_missing',(4-count(*))::text
+FROM directus_fields
+WHERE collection='store_locations'
+  AND field IN ('group_city_hero','group_city_contact_card','group_city_catalog','group_city_seo')
+  AND "group"='group_content' AND interface='group-detail'
 UNION ALL
 SELECT 'multicity.permissions.editor_actions_missing',(18-count(*))::text
 FROM directus_permissions permission JOIN directus_policies policy ON policy.id=permission.policy

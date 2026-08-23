@@ -96,6 +96,7 @@
     "directus:setup:catalog-structured-data": "node scripts/setup_directus_catalog_structured_data_sql.mjs",
     "directus:setup:catalog-v3": "node scripts/setup_directus_catalog_v3_sql.mjs",
     "directus:setup:multicity": "node scripts/setup_directus_multicity_sql.mjs",
+    "directus:setup:city-page-copy": "node scripts/setup_directus_city_page_copy_sql.mjs",
     "directus:setup:location-footer": "node scripts/setup_directus_location_footer_sql.mjs",
     "directus:setup:faq-editor": "node scripts/setup_directus_faq_editor_sql.mjs",
     "directus:setup:technical-permissions": "node scripts/setup_directus_technical_permissions_sql.mjs",

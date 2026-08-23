@@ -130,6 +130,13 @@ SELECT pg_temp.isvoi_ux_group('store_locations','group_fulfillment','Получ�
 SELECT pg_temp.isvoi_ux_group('store_locations','group_content','Страница города и SEO','web_asset',60,'closed',false,NULL,'Первый экран, фотография и поисковые метаданные.');
 SELECT pg_temp.isvoi_ux_group('store_locations','group_relations','Фотографии и предложения','photo_library',80,'closed',false,NULL,'Связанные фотографии магазина и товарные предложения.');
 SELECT pg_temp.isvoi_ux_group('store_locations','group_system','Системные данные','settings',100,'closed',false,NULL,'Автоматические даты.');
+SELECT pg_temp.isvoi_ux_group('store_locations','group_city_hero','Первый экран','web_asset',1,'open',false,NULL,'Заголовок, изображение и подписи переходов городской страницы.');
+SELECT pg_temp.isvoi_ux_group('store_locations','group_city_contact_card','Карточка контактов','contact_phone',2,'closed',false,NULL,'Публичные подписи карточки магазина.');
+SELECT pg_temp.isvoi_ux_group('store_locations','group_city_catalog','Каталог города','storefront',3,'open',false,NULL,'Eyebrow, тексты, кнопка и пустое состояние локального каталога.');
+SELECT pg_temp.isvoi_ux_group('store_locations','group_city_seo','SEO','search',4,'closed',false,NULL,'Поисковые метаданные городской страницы.');
+UPDATE directus_fields SET "group"='group_content'
+WHERE collection='store_locations'
+  AND field IN ('group_city_hero','group_city_contact_card','group_city_catalog','group_city_seo');
 
 SELECT pg_temp.isvoi_ux_field('store_locations','status','group_publication',1,'half');
 SELECT pg_temp.isvoi_ux_field('store_locations','slug','group_publication',2,'half');
@@ -153,11 +160,28 @@ SELECT pg_temp.isvoi_ux_field('store_locations','legal_address','group_legal',4,
 SELECT pg_temp.isvoi_ux_field('store_locations','pickup_enabled','group_fulfillment',1,'half');
 SELECT pg_temp.isvoi_ux_field('store_locations','local_delivery_enabled','group_fulfillment',2,'half');
 SELECT pg_temp.isvoi_ux_field('store_locations','intercity_delivery_enabled','group_fulfillment',3,'half');
-SELECT pg_temp.isvoi_ux_field('store_locations','hero_file','group_content',1,'half');
-SELECT pg_temp.isvoi_ux_field('store_locations','hero_title','group_content',2,'full');
-SELECT pg_temp.isvoi_ux_field('store_locations','hero_body','group_content',3,'full');
-SELECT pg_temp.isvoi_ux_field('store_locations','seo_title','group_content',4,'full');
-SELECT pg_temp.isvoi_ux_field('store_locations','meta_description','group_content',5,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','hero_file','group_city_hero',1,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','hero_eyebrow','group_city_hero',2,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','hero_title','group_city_hero',3,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','hero_body','group_city_hero',4,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','hero_primary_cta_label','group_city_hero',5,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','hero_secondary_cta_label','group_city_hero',6,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_eyebrow','group_city_contact_card',1,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_address_label','group_city_contact_card',2,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_hours_label','group_city_contact_card',3,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_address_fallback','group_city_contact_card',4,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_hours_fallback','group_city_contact_card',5,'half');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_phone_label','group_city_contact_card',6,'third');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_telegram_label','group_city_contact_card',7,'third');
+SELECT pg_temp.isvoi_ux_field('store_locations','contact_map_label','group_city_contact_card',8,'third');
+SELECT pg_temp.isvoi_ux_field('store_locations','catalog_eyebrow','group_city_catalog',1,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','catalog_title','group_city_catalog',2,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','catalog_body','group_city_catalog',3,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','catalog_cta_label','group_city_catalog',4,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','catalog_empty_title','group_city_catalog',5,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','catalog_empty_body','group_city_catalog',6,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','seo_title','group_city_seo',1,'full');
+SELECT pg_temp.isvoi_ux_field('store_locations','meta_description','group_city_seo',2,'full');
 SELECT pg_temp.isvoi_ux_field('store_locations','images','group_relations',1,'full');
 SELECT pg_temp.isvoi_ux_field('store_locations','offers','group_relations',2,'full');
 SELECT pg_temp.isvoi_ux_field('store_locations','created_at','group_system',1,'half');
@@ -250,7 +274,9 @@ SELECT pg_temp.isvoi_ux_field('club_page_settings','final_body','group_final',3,
 DO $$ DECLARE policy_name text; BEGIN
   FOREACH policy_name IN ARRAY ARRAY['ISVOI Editor','ISVOI Advanced Editor'] LOOP
     PERFORM pg_temp.isvoi_append_permission_fields(policy_name,'store_locations','read',ARRAY[
-      'group_publication','group_contacts','group_legal','group_fulfillment','group_content','group_relations','group_system'
+      'group_publication','group_contacts','group_legal','group_fulfillment','group_content',
+      'group_city_hero','group_city_contact_card','group_city_catalog','group_city_seo',
+      'group_relations','group_system'
     ]);
     PERFORM pg_temp.isvoi_append_permission_fields(policy_name,'product_offers','read',ARRAY[
       'group_identity','group_stock','group_fulfillment','group_payment','group_source','group_system'

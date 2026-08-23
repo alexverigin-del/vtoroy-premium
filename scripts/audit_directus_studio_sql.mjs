@@ -623,6 +623,8 @@ FROM (VALUES
   ('store_locations','group_publication'),('store_locations','group_contacts'),
   ('store_locations','group_legal'),
   ('store_locations','group_fulfillment'),('store_locations','group_content'),
+  ('store_locations','group_city_hero'),('store_locations','group_city_contact_card'),
+  ('store_locations','group_city_catalog'),('store_locations','group_city_seo'),
   ('store_locations','group_relations'),('store_locations','group_system'),
   ('product_offers','group_identity'),('product_offers','group_stock'),
   ('product_offers','group_fulfillment'),('product_offers','group_payment'),

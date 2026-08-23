@@ -32,9 +32,26 @@ export interface StoreLocation {
   intercityDeliveryEnabled: boolean;
   seoTitle?: string;
   metaDescription?: string;
+  heroEyebrow?: string;
   heroTitle?: string;
   heroBody?: string;
   heroImage?: string;
+  heroPrimaryCtaLabel?: string;
+  heroSecondaryCtaLabel?: string;
+  contactEyebrow?: string;
+  contactAddressLabel?: string;
+  contactAddressFallback?: string;
+  contactHoursLabel?: string;
+  contactHoursFallback?: string;
+  contactPhoneLabel?: string;
+  contactTelegramLabel?: string;
+  contactMapLabel?: string;
+  catalogEyebrow?: string;
+  catalogTitle?: string;
+  catalogBody?: string;
+  catalogCtaLabel?: string;
+  catalogEmptyTitle?: string;
+  catalogEmptyBody?: string;
   sort: number;
 }
 

@@ -2701,6 +2701,12 @@ Next content-editing priorities:
   backup: `/opt/isvoi/backups/directus/20260823T204744Z`. Оба patch прошли
   optimistic lock, rehearsal с `ROLLBACK`, post-apply verification и protected
   revalidation; другие ручные тексты не менялись.
+- Финальный multicity audit обнаружил одно ранее незаполненное обязательное
+  поле `hero_secondary_cta_label`. Оно добавлено отдельным guarded patch
+  `2026-08-23-belgorod-secondary-cta` со значением `Адрес и контакты`; backup:
+  `/opt/isvoi/backups/directus/20260823T205340Z`, commit `0e957b0`. После apply
+  `directus:audit-multicity` полностью зелёный, включая полноту city-page copy,
+  права, offers, revalidation и отсутствие старого города.
 - Код выложен коммитами `adaac87`, `df9aa41`, `cfa477e`; guarded content
   patches — `c1e60a6`. Production checkout синхронизирован с `c1e60a6`, PM2
   online. Functional smoke прошёл для сетевого каталога, городских tech и

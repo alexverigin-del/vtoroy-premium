@@ -2597,3 +2597,38 @@ Next content-editing priorities:
   локального frontend asset. Каноническая точка редактирования:
   `Магазины, адреса и наличие` → `Магазины и города` → `Белгород` →
   `Страница города и SEO` → `Главная фотография`.
+
+### Каноническая страница магазина и фото на `/belgorod` (2026-08-23)
+
+- Публичным магазином является городской хаб `/belgorod`. Меню header/footer
+  использует короткую подпись `Магазин` и управляемый custom URL `/belgorod`;
+  воспроизводимые navigation setup/audit синхронизированы с этим решением.
+- Legacy `site_pages.slug=store` переведён из `published` в `draft` безопасным
+  content patch `2026-08-23-unpublish-legacy-store-page`. Перед применением
+  создан backup `/opt/isvoi/backups/directus/20260823T192148Z`; optimistic lock
+  и SQL rehearsal с `ROLLBACK` прошли. Все восемь секций сохранены без изменения
+  текста.
+- После отдельного rehearsal восемь legacy store-секций переведены в
+  `is_active=false`. Перед этой мутацией создан и проверен backup
+  `/opt/isvoi/backups/directus/20260823T192823Z`. Скрипт
+  `directus:update:retire-legacy-store` проверяет draft-статус, точное число и
+  фиксированные ID секций; production apply требует два явных флага.
+- Middleware сохраняет постоянный redirect `/store` → `/belgorod`, а `store`
+  удалён из статически генерируемых marketing params. Содержимое черновика
+  можно переиспользовать позже, но для этого редактор должен осознанно включить
+  только нужные секции и утвердить отдельный сценарий страницы.
+- `store_locations.hero_file` теперь читается frontend вместе с остальными
+  данными города и доставляется через Directus transform `width=1600`,
+  `quality=84`, `format=auto`. На `/belgorod` фотография выводится отдельным
+  адаптивным блоком перед локальным каталогом; локальный asset не используется.
+- Каноническая точка редактирования `/belgorod`: `Магазины, адреса и наличие` →
+  `Магазины и города` → `Белгород`. В группе `Страница города и SEO` доступны
+  главная фотография, H1, описание, SEO title и meta description; поле фото
+  видимо, не readonly и доступно Editor/Advanced Editor. Адрес, контакты,
+  часы, карта и реквизиты остаются в соседних группах этой же записи.
+- Release-код выложен коммитами `e79bb83` и `07be70c`. Production Next build и
+  PM2 restart прошли; protected revalidation затронула store locations и
+  product offers. Полный `directus:audit:prod`, copy smoke, functional smoke и
+  desktop/mobile visual smoke прошли. Smoke подтверждает 301, один
+  `CityStorePhoto`, восемь загруженных Directus images и порядок фото перед
+  каталогом.

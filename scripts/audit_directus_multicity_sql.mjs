@@ -39,6 +39,10 @@ SELECT 'multicity.content.belgorod_missing',CASE WHEN EXISTS (
   SELECT 1 FROM store_locations WHERE slug='belgorod' AND status='published' AND city='Белгород'
 ) THEN '0' ELSE '1' END
 UNION ALL
+SELECT 'multicity.content.legacy_store_published',count(*)::text
+FROM site_pages
+WHERE slug='store' AND status='published'
+UNION ALL
 SELECT 'multicity.content.published_footer_incomplete',count(*)::text
 FROM store_locations
 WHERE status='published' AND (
@@ -47,6 +51,10 @@ WHERE status='published' AND (
   OR NULLIF(legal_name,'') IS NULL OR NULLIF(inn,'') IS NULL
   OR NULLIF(ogrn,'') IS NULL
 )
+UNION ALL
+SELECT 'multicity.content.published_hero_missing',count(*)::text
+FROM store_locations
+WHERE status='published' AND hero_file IS NULL
 UNION ALL
 SELECT 'multicity.content.invalid_map_url',count(*)::text
 FROM store_locations

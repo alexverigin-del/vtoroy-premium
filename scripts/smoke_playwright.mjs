@@ -341,6 +341,10 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets) {
 async function smokeStore(page, baseUrl, requireDirectusAssets) {
   const url = joinUrl(baseUrl, "/store");
   await gotoOk(page, url);
+  assert(
+    new URL(page.url()).pathname === "/belgorod",
+    `store: expected permanent redirect to /belgorod, got ${page.url()}`,
+  );
   const seo = await assertSeoAndStructuredData(page, "store", [
     "Organization",
     "WebSite",
@@ -352,10 +356,13 @@ async function smokeStore(page, baseUrl, requireDirectusAssets) {
     await waitForLoadedImages(page, 1);
   }
   await assertImages(page, "store", 1, requireDirectusAssets);
+  const storePhoto = page.locator('[data-component="CityStorePhoto"] img');
+  assert((await storePhoto.count()) === 1, "store: expected one managed city store photo");
 
   return {
     route: "/store",
     directusImages: await countLoadedDirectusImages(page),
+    cityStorePhotos: await storePhoto.count(),
     jsonLdTypes: seo.jsonLdTypes.length,
   };
 }

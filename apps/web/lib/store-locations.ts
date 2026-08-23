@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { StoreLocation } from "@vtoroy/shared";
 
 import { STORE_LOCATIONS_CACHE_TAG } from "./cache-tags";
+import { directusAssetUrl } from "./directus";
 
 const DIRECTUS_URL = (
   process.env.DIRECTUS_URL ??
@@ -39,6 +40,7 @@ function number(value: unknown): number | undefined {
 }
 
 function mapLocation(row: Row): StoreLocation {
+  const heroFile = text(row.hero_file);
   return {
     id: text(row.id) || text(row.slug),
     slug: text(row.slug),
@@ -66,6 +68,15 @@ function mapLocation(row: Row): StoreLocation {
     metaDescription: text(row.meta_description) || undefined,
     heroTitle: text(row.hero_title) || undefined,
     heroBody: text(row.hero_body) || undefined,
+    heroImage: heroFile
+      ? directusAssetUrl(heroFile, {
+          width: 1600,
+          quality: 84,
+          fit: "cover",
+          format: "auto",
+          withoutEnlargement: true,
+        })
+      : undefined,
     sort: number(row.sort) ?? 100,
   };
 }
@@ -78,7 +89,7 @@ async function requestLocations(): Promise<StoreLocation[]> {
     const params = new URLSearchParams({
       "filter[status][_eq]": "published",
       fields:
-        "id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,footer_eyebrow,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort",
+        "id,slug,status,name,city,region,address,latitude,longitude,phone,telegram,email,business_hours,map_url,legal_name,inn,ogrn,legal_address,footer_eyebrow,hero_file,pickup_enabled,local_delivery_enabled,intercity_delivery_enabled,seo_title,meta_description,hero_title,hero_body,sort",
       sort: "sort,city",
       limit: "100",
     });

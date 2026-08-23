@@ -32,7 +32,6 @@ type MarketingPageProps = {
 
 export function generateStaticParams() {
   return [
-    { slug: "store" },
     { slug: "trade" },
     { slug: "passport" },
     { slug: "about" },

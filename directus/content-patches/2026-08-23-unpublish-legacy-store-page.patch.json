@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "2026-08-23-unpublish-legacy-store-page",
+  "description": "Снять legacy-страницу store с публикации, сохранив её секции для возможной будущей подачи",
+  "collection": "site_pages",
+  "selector": {
+    "slug": "store"
+  },
+  "changes": {
+    "status": "draft"
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "c2a2bd6cbdc7dee451c591891f22b45f7bba0e3a4daaa08bf6fccfa032ddbf08"
+  }
+}

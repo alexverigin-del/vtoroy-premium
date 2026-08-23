@@ -34,6 +34,7 @@ export interface StoreLocation {
   metaDescription?: string;
   heroTitle?: string;
   heroBody?: string;
+  heroImage?: string;
   sort: number;
 }
 

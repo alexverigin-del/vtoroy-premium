@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { NavigationItem, ProductCardData, SiteSettings, StoreLocation } from "@vtoroy/shared";
 
@@ -90,6 +91,25 @@ export function CityHubPage({
             </aside>
           </div>
         </section>
+
+        {location.heroImage ? (
+          <section
+            className="border-b border-hairline bg-white py-10 md:py-14"
+            data-component="CityStorePhoto"
+          >
+            <div className="mx-auto max-w-shell px-5">
+              <figure className="relative aspect-video overflow-hidden rounded-card bg-frost">
+                <Image
+                  src={location.heroImage}
+                  alt={location.heroTitle || location.name}
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1180px) 1180px, 92vw"
+                />
+              </figure>
+            </div>
+          </section>
+        ) : null}
 
         <section className="mx-auto max-w-shell px-5 py-16 md:py-20">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-23T20:29:45.924Z",
+  "updatedAt": "2026-08-23T20:36:05.728Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -20,35 +20,56 @@
     {
       "file": "apps/web/app/[slug]/catalog/accessories/page.tsx",
       "kind": "string",
-      "line": 44,
+      "line": 26,
+      "text": "Новые аксессуары в магазине I СВОИ · ${location.city}, точная совместимость и варианты с доставкой.",
+      "id": "16dea949740b7b92"
+    },
+    {
+      "file": "apps/web/app/[slug]/catalog/accessories/page.tsx",
+      "kind": "string",
+      "line": 54,
       "text": "Аксессуары",
       "id": "537977ef837affe1"
     },
     {
       "file": "apps/web/app/[slug]/catalog/brand/[brand]/page.tsx",
       "kind": "string",
-      "line": 44,
+      "line": 26,
+      "text": "${brand} в каталоге I СВОИ · ${location.city}: локальное наличие и варианты с доставкой.",
+      "id": "666d671c1e2278fc"
+    },
+    {
+      "file": "apps/web/app/[slug]/catalog/brand/[brand]/page.tsx",
+      "kind": "string",
+      "line": 54,
       "text": "Бренд",
       "id": "ee611c3b47f34b1f"
     },
     {
       "file": "apps/web/app/[slug]/catalog/category/[category]/page.tsx",
       "kind": "string",
-      "line": 44,
+      "line": 26,
+      "text": "${category} в каталоге I СВОИ · ${location.city}: локальное наличие и варианты с доставкой.",
+      "id": "9aaf0592b3ea3d18"
+    },
+    {
+      "file": "apps/web/app/[slug]/catalog/category/[category]/page.tsx",
+      "kind": "string",
+      "line": 54,
       "text": "Категория",
       "id": "44732063d1b64199"
     },
     {
       "file": "apps/web/app/[slug]/catalog/page.tsx",
       "kind": "string",
-      "line": 18,
+      "line": 19,
       "text": "Каталог I СВОИ · ${location.city}",
       "id": "2a802c24ac6e7b63"
     },
     {
       "file": "apps/web/app/[slug]/catalog/page.tsx",
       "kind": "string",
-      "line": 21,
+      "line": 20,
       "text": "Каталог для города «${location.city}»: техника и аксессуары в местном магазине, а также товары с доставкой из других городов.",
       "id": "7c28936f4b9e3465"
     },
@@ -62,7 +83,14 @@
     {
       "file": "apps/web/app/[slug]/catalog/tech/page.tsx",
       "kind": "string",
-      "line": 44,
+      "line": 26,
+      "text": "Новая техника и проверенная техника с пробегом в магазине I СВОИ · ${location.city}, а также варианты с доставкой.",
+      "id": "64975a172c00fbaa"
+    },
+    {
+      "file": "apps/web/app/[slug]/catalog/tech/page.tsx",
+      "kind": "string",
+      "line": 54,
       "text": "Техника",
       "id": "bf5722b228be264b"
     },
@@ -5823,70 +5851,70 @@
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 380,
+      "line": 386,
       "text": "Совместимость по модели",
       "id": "f410220b0089efb4"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 381,
+      "line": 387,
       "text": "Универсальный аксессуар",
       "id": "b754b2d0ab4f0236"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 388,
+      "line": 394,
       "text": "Грейд ${device.grade}",
       "id": "47260cce2d821a7c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 388,
+      "line": 394,
       "text": "С пробегом",
       "id": "6e745dabe5684324"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 394,
+      "line": 400,
       "text": "Новое",
       "id": "d6d52553dfb8f98c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 422,
+      "line": 428,
       "text": "от ${selectedOffer.priceText}",
       "id": "c8d0ffd4c467aed5"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 447,
+      "line": 453,
       "text": "${selectedOffer.location.city} · Доставка${selectedOffer.deliveryEstimate ?",
       "id": "5b34ccdcd9feb3be"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 462,
+      "line": 468,
       "text": "Узнать о поступлении",
       "id": "7d7c26a6200ffdbb"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 464,
+      "line": 470,
       "text": "Забронировать",
       "id": "4c7cb1d4b7028946"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 465,
+      "line": 471,
       "text": "Записаться на просмотр",
       "id": "8828cf903958ac01"
     },

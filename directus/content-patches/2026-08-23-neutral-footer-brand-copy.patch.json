@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "2026-08-23-neutral-footer-brand-copy",
+  "description": "Убрать устаревшее б/у и жёсткую привязку глобального брендового текста футера к Белгороду",
+  "collection": "site_settings",
+  "selector": {
+    "id": 1
+  },
+  "changes": {
+    "footer_brand_text": "Проверенная техника для своих.\nНовая техника Apple, Samsung, Xiaomi и других брендов, аксессуары и проверенная техника с пробегом. Реальные фото, диагностика, Passport, гарантия и проверка перед покупкой."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "288a30dd33fdd8d05f2b6a5f50d07efdb614bcd4e6512b3f129b5770d7f2e199"
+  }
+}

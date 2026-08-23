@@ -78,7 +78,7 @@ SELECT pg_temp.isvoi_navigation_item(
   '3eaf7a0d-13a5-4a0e-a729-518f4c6db201',3,'custom',NULL
 );
 SELECT pg_temp.isvoi_navigation_item(
-  '64cf08a2-06fe-4a34-a6f2-7f264562d543','Магазин в Белгороде','/belgorod','header',NULL,2,'custom',NULL
+  '64cf08a2-06fe-4a34-a6f2-7f264562d543','Магазин','/belgorod','header',NULL,2,'custom',NULL
 );
 SELECT pg_temp.isvoi_navigation_item(
   '39c1e80f-c497-48ef-8665-1ac2f53ddb85','Как мы проверяем','/passport','header',NULL,3,'page','passport'
@@ -125,7 +125,7 @@ SELECT pg_temp.isvoi_navigation_item(
   'dd29ad40-2d90-4a92-8143-b8a9d22136ce',3,'page','club'
 );
 SELECT pg_temp.isvoi_navigation_item(
-  '5a2a6b8d-73e6-4b15-9dfc-1b91c7f16001','Магазин в Белгороде','/belgorod','footer',
+  '5a2a6b8d-73e6-4b15-9dfc-1b91c7f16001','Магазин','/belgorod','footer',
   '0c0ea292-7eb0-4983-af42-cd78f24d0a4b',1,'custom',NULL
 );
 SELECT pg_temp.isvoi_navigation_item(

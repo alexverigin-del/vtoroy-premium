@@ -2632,3 +2632,30 @@ Next content-editing priorities:
   desktop/mobile visual smoke прошли. Smoke подтверждает 301, один
   `CityStorePhoto`, восемь загруженных Directus images и порядок фото перед
   каталогом.
+
+### Редактирование городской страницы в Directus (2026-08-23)
+
+- Страница `/belgorod` остаётся привязана к записи `store_locations.slug=belgorod`.
+  Канонический путь в Studio: `Магазины, адреса и наличие` → `Магазины и города`
+  → `Белгород` → `Страница города и SEO`.
+- Внутри `Страница города и SEO` добавлены четыре вложенные группы: `Первый
+  экран`, `Карточка контактов`, `Каталог города` и `SEO`. Редактор управляет
+  eyebrow, текстами, подписями кнопок и пустым состоянием каталога; все новые
+  поля имеют русские названия и подсказки, видимы и не readonly.
+- URL кнопок намеренно не являются свободными текстовыми полями: каталог
+  строится как `/{slug}/catalog`, карточка контактов использует якорь на этой же
+  странице, а телефон, Telegram и карта берутся из структурированных контактов
+  магазина. Это исключает битые и межгородские ссылки. В текстах разрешён токен
+  `{city}`, который заменяется названием города текущей записи.
+- Идемпотентный setup: `npm run directus:setup:city-page-copy`; production apply
+  дополнительно требует `--apply --confirm-city-page-copy`. Audit `multicity`
+  проверяет 17 полей, четыре Studio-группы, полноту опубликованных городов и
+  точечные права Public Read, Editor и Advanced Editor.
+- Release `3c54bd8` отправлен в `master` и применён на production. Перед SQL
+  создан и проверен backup `/opt/isvoi/backups/directus/20260823T194619Z`;
+  rehearsal прошёл с `ROLLBACK`, затем migration завершилась `COMMIT`.
+  Точечно удалены 135 Redis-ключей `permissions:*`, Directus вернулся в
+  `health=ok`, выполнена protected revalidation.
+- Production Next build и PM2 restart прошли. Полный `directus:audit:prod`,
+  functional smoke и copy smoke для `/store,/belgorod` зелёные; `/store`
+  сохраняет постоянный redirect на канонический `/belgorod`.

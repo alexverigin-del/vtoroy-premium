@@ -71,6 +71,9 @@ function catalogCategories(
   products: ProductCatalogResult["products"] = [],
 ): CatalogCategory[] {
   const bySlug = new Map<string, CatalogCategory>();
+  const hasFacetCounts = facets.categories.some(
+    (category) => category.visibleProductCount !== undefined,
+  );
   for (const category of facets.categories) {
     const hasVisibleProducts =
       category.visibleProductCount === undefined || category.visibleProductCount > 0;
@@ -78,9 +81,11 @@ function catalogCategories(
       bySlug.set(category.slug, category);
     }
   }
-  for (const product of products) {
-    if (!type || product.category.catalogSection === type) {
-      bySlug.set(product.category.slug, product.category);
+  if (!hasFacetCounts) {
+    for (const product of products) {
+      if (!type || product.category.catalogSection === type) {
+        bySlug.set(product.category.slug, product.category);
+      }
     }
   }
   return [...bySlug.values()];
@@ -233,7 +238,7 @@ function CatalogCategoryRail({
   return (
     <nav
       className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6"
-      aria-label="category"
+      aria-label="Категории товаров"
     >
       <Link
         href={`${basePath}${queryString(filters, { category: undefined, page: undefined })}`}
@@ -245,7 +250,6 @@ function CatalogCategoryRail({
         }
       >
         <span>Все категории</span>
-        <span aria-hidden="true">→</span>
       </Link>
       {tiles.map((category) => {
         const isActive = filters.category === category.slug;
@@ -264,7 +268,14 @@ function CatalogCategoryRail({
             }
           >
             <span>{category.name}</span>
-            <span aria-hidden="true">→</span>
+            {category.visibleProductCount !== undefined ? (
+              <span
+                className={isActive ? "tabular-nums text-white/80" : "tabular-nums text-muted"}
+                aria-label={`${category.visibleProductCount} товаров`}
+              >
+                {category.visibleProductCount}
+              </span>
+            ) : null}
           </Link>
         );
       })}
@@ -283,6 +294,12 @@ function CatalogAdvancedFilterFields({
   filters: ProductCatalogFilters;
   type?: ProductType;
 }) {
+  const brands = facets.brands.filter(
+    (brand) =>
+      brand.visibleProductCount === undefined ||
+      brand.visibleProductCount > 0 ||
+      brand.slug === filters.brand,
+  );
   return (
     <>
       <label>
@@ -293,7 +310,7 @@ function CatalogAdvancedFilterFields({
           className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
         >
           <option value="">Все бренды</option>
-          {facets.brands.map((brand) => (
+          {brands.map((brand) => (
             <option key={brand.id} value={brand.slug}>
               {brand.name}
             </option>
@@ -378,10 +395,25 @@ function ActiveFilterChips({ chips, city }: { chips: FilterChip[]; city?: string
   );
 }
 
-function CatalogTypeTabs({ activeType, city }: { activeType?: ProductType; city?: string }) {
+function CatalogTypeTabs({
+  activeType,
+  city,
+  facets,
+}: {
+  activeType?: ProductType;
+  city?: string;
+  facets: ProductCatalogFacets;
+}) {
+  const typeCounts = facets.visibleProductCounts;
+  const availableTypes = (["device", "accessory"] as const).filter(
+    (type) => typeCounts === undefined || (typeCounts[type] ?? 0) > 0 || activeType === type,
+  );
+  if (!activeType && typeCounts !== undefined && availableTypes.length < 2) return null;
+  const visibleTypes: Array<ProductType | undefined> = [undefined, ...availableTypes];
+
   return (
     <nav className="mt-8 flex gap-2 overflow-x-auto pb-1" aria-label="Раздел каталога">
-      {([undefined, "device", "accessory"] as const).map((type) => (
+      {visibleTypes.map((type) => (
         <Link
           key={type || "all"}
           href={sectionHref(type, city)}
@@ -508,8 +540,9 @@ function CatalogFilters({
         className="mt-5 hidden rounded-card border border-hairline bg-frost p-4 md:block"
         data-component="CatalogFilters"
       >
+        {filters.category ? <input type="hidden" name="category" value={filters.category} /> : null}
         <div className="grid gap-3 lg:grid-cols-12">
-          <label className="lg:col-span-4">
+          <label className="lg:col-span-7">
             <span className="text-xs font-medium text-muted">Поиск</span>
             <input
               type="search"
@@ -518,22 +551,6 @@ function CatalogFilters({
               placeholder="Модель, бренд или аксессуар"
               className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
             />
-          </label>
-
-          <label className="lg:col-span-3">
-            <span className="text-xs font-medium text-muted">Категория</span>
-            <select
-              name="category"
-              defaultValue={filters.category || ""}
-              className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-            >
-              <option value="">Все категории</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.slug}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
           </label>
 
           <label className="lg:col-span-3">
@@ -666,7 +683,7 @@ export function ProductCatalogView({
           <p className="mt-5 max-w-prose text-copy leading-relaxed text-graphite">{copy.body}</p>
         </div>
 
-        <CatalogTypeTabs activeType={type} city={filters.city} />
+        <CatalogTypeTabs activeType={type} city={filters.city} facets={facets} />
         <CatalogFilters
           categories={categories}
           city={city}
@@ -682,7 +699,12 @@ export function ProductCatalogView({
             </p>
             <ActiveFilterChips chips={chips} city={city} />
           </div>
-          <p className="hidden text-sm text-muted sm:block">24 товара на странице</p>
+          {result.pageCount > 1 ? (
+            <p className="hidden text-sm tabular-nums text-muted sm:block">
+              Показано {(result.page - 1) * result.pageSize + 1}–
+              {Math.min(result.page * result.pageSize, result.total)} из {result.total}
+            </p>
+          ) : null}
         </div>
 
         {result.products.length > 0 ? (

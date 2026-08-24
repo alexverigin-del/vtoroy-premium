@@ -497,7 +497,9 @@ FROM (VALUES
   ('leads','isvoi_sales'),('blog_posts','isvoi_blog'),
   ('catalog_import_batches','isvoi_imports'),
   ('inventory_import_batches','isvoi_inventory'),('inventory_items','isvoi_inventory'),
-  ('inventory_import_issues','isvoi_inventory'),('product_channel_listings','isvoi_inventory')
+  ('inventory_import_issues','isvoi_inventory'),('inventory_receipt_lines','isvoi_inventory'),
+  ('product_channel_listings','isvoi_channels'),('channel_category_mappings','isvoi_channels'),
+  ('channel_cost_profiles','isvoi_channels'),('product_unit_economics','isvoi_channels')
 ) expected(collection,group_name)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_collections collection

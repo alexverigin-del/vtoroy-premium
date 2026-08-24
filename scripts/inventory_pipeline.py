@@ -92,7 +92,10 @@ def relaxed_name(value: Any) -> str:
 
 def serialized_identity(value: Any) -> str:
     generic_tokens = {"мобильный", "телефон", "смартфон", "5g"}
-    return " ".join(token for token in normalize(value).split() if token not in generic_tokens)
+    tokens = [token for token in normalize(value).split() if token not in generic_tokens]
+    if "silver" in tokens or "серебристый" in tokens:
+        tokens = [token for token in tokens if token not in {"white", "белый"}]
+    return " ".join(tokens)
 
 
 def extract_serial(value: Any) -> str:
@@ -379,6 +382,40 @@ def decimal_json(value: Decimal) -> float:
     return float(value.quantize(Decimal("0.01")))
 
 
+AUTO_BLOCK_CODES = {"serialized_identity_conflict", "replica_or_mimic", "authenticity_review"}
+
+
+def review_state(existing: dict[str, Any] | None, item: dict[str, Any]) -> tuple[str, str]:
+    hard_identity = item["identity_status"] == "conflict"
+    hard_risk = any(
+        code in {"replica_or_mimic", "authenticity_review"}
+        for code in item.get("risk_codes", [])
+    )
+    override = bool(existing and existing.get("review_override") and text(existing.get("review_note")))
+    authenticity = text(existing.get("authenticity_status")) if existing else "pending"
+    eligibility = text(existing.get("eligibility_status")) if existing else "pending"
+
+    if hard_identity:
+        eligibility = "blocked"
+    elif hard_risk and not override:
+        authenticity = "blocked"
+        eligibility = "blocked"
+    elif override and authenticity in {"verified", "not_required"}:
+        eligibility = "eligible"
+    elif existing and eligibility == "blocked":
+        previous_codes = {
+            code.strip()
+            for code in text(existing.get("block_reason")).split(",")
+            if code.strip()
+        }
+        if previous_codes & AUTO_BLOCK_CODES:
+            eligibility = "pending"
+            if authenticity == "blocked":
+                authenticity = "pending"
+
+    return authenticity or "pending", eligibility or "pending"
+
+
 def summarize(inventory: list[dict[str, Any]], receipts: list[dict[str, Any]], issues: list[Issue]) -> dict[str, Any]:
     inventory_cost = sum((row["purchase_price"] * row["quantity"] for row in inventory), Decimal("0"))
     inventory_retail = sum((row["retail_price"] * row["quantity"] for row in inventory), Decimal("0"))
@@ -545,7 +582,7 @@ def product_mapping(item: dict[str, Any]) -> tuple[str, str, str]:
 
 def sync_eligible_product(client: Directus, item: dict[str, Any], stored: dict[str, Any], batch_name: str) -> str | None:
     if stored.get("eligibility_status") != "eligible" or not stored.get("review_override"):
-        return stored.get("product") if isinstance(stored.get("product"), str) else None
+        return None
     product_type, category_slug, brand_slug = product_mapping(item)
     category = client.first("product_categories", {"slug": category_slug}, "id")
     brand = client.first("product_brands", {"slug": brand_slug}, "id")
@@ -576,20 +613,86 @@ def sync_eligible_product(client: Directus, item: dict[str, Any], stored: dict[s
         "admin_note": "Создано из приватного inventory snapshot. Публикация только после фото и контентного QA.",
     }
     if existing_product:
-        payload.pop("id")
-        product = client.request("PATCH", f"/items/products/{quote(product_id, safe='')}", payload)
+        inventory_payload = {
+            key: payload[key]
+            for key in (
+                "sku",
+                "price",
+                "stock_quantity",
+                "stock_status",
+                "source_system",
+                "source_id",
+                "import_batch",
+                "imported_at",
+            )
+        }
+        product = client.request("PATCH", f"/items/products/{quote(product_id, safe='')}", inventory_payload)
     else:
         product = client.request("POST", "/items/products", payload)
     if product_type == "device":
         client.upsert("device_details", {"product": product_id}, {"product": product_id, "serial": masked(item["serial_full"])})
     else:
-        client.upsert("accessory_details", {"product": product_id}, {"product": product_id, "compatibility_mode": "universal", "specifications": {}})
-    client.upsert(
-        "product_channel_listings",
-        {"product": product_id, "channel": "avito"},
-        {"product": product_id, "channel": "avito", "status": "draft", "external_id": f"isvoi-{item['source_id']}"},
+        existing_details = client.first("accessory_details", {"product": product_id}, "id")
+        if not existing_details:
+            client.upsert(
+                "accessory_details",
+                {"product": product_id},
+                {"product": product_id, "compatibility_mode": "universal", "specifications": {}},
+            )
+    existing_listing = client.first(
+        "product_channel_listings", {"product": product_id, "channel": "avito"}, "*"
     )
+    listing_payload = {"external_id": f"isvoi-{item['source_id']}"}
+    if existing_listing:
+        client.request(
+            "PATCH",
+            f"/items/product_channel_listings/{quote(str(existing_listing['id']), safe='')}",
+            listing_payload,
+        )
+    else:
+        client.request(
+            "POST",
+            "/items/product_channel_listings",
+            {"product": product_id, "channel": "avito", "status": "draft", **listing_payload},
+        )
     return str(product.get("id", product_id))
+
+
+def archive_previous_inventory_batches(
+    client: Directus, batch_id: str, batch_name: str, source_system: str
+) -> int:
+    archived = 0
+    completed_statuses = {"checked", "applied", "applied_with_blocks", "failed"}
+    batches = client.all(
+        "inventory_import_batches",
+        {"source_system": source_system},
+        "id,status",
+    )
+    for batch in batches:
+        previous_id = str(batch.get("id") or "")
+        if previous_id == batch_id or batch.get("status") not in completed_statuses:
+            continue
+        client.request(
+            "PATCH",
+            f"/items/inventory_import_batches/{quote(previous_id, safe='')}",
+            {"status": "archived"},
+        )
+        open_issues = client.all(
+            "inventory_import_issues",
+            {"batch": previous_id, "resolved": False},
+            "id",
+        )
+        for issue in open_issues:
+            client.request(
+                "PATCH",
+                f"/items/inventory_import_issues/{quote(str(issue['id']), safe='')}",
+                {
+                    "resolved": True,
+                    "resolution_note": f"Архивировано после применения партии {batch_name}.",
+                },
+            )
+        archived += 1
+    return archived
 
 
 def apply_snapshot(
@@ -614,18 +717,7 @@ def apply_snapshot(
     for item in inventory:
         item["source_system"] = source_system
         existing = client.first("inventory_items", {"source_system": source_system, "source_id": item["source_id"]}, "*")
-        hard_identity = item["identity_status"] == "conflict"
-        hard_risk = any(code in {"replica_or_mimic", "authenticity_review"} for code in item.get("risk_codes", []))
-        override = bool(existing and existing.get("review_override") and text(existing.get("review_note")))
-        authenticity = text(existing.get("authenticity_status")) if existing else "pending"
-        eligibility = text(existing.get("eligibility_status")) if existing else "pending"
-        if hard_identity:
-            eligibility = "blocked"
-        elif hard_risk and not override:
-            authenticity = "blocked"
-            eligibility = "blocked"
-        elif override and authenticity in {"verified", "not_required"}:
-            eligibility = "eligible"
+        authenticity, eligibility = review_state(existing, item)
         payload = {
             key: (decimal_json(value) if isinstance(value, Decimal) else value)
             for key, value in item.items()
@@ -708,6 +800,9 @@ def apply_snapshot(
     client.delete_where("inventory_import_issues", "batch", batch_id)
     for issue in issues:
         client.request("POST", "/items/inventory_import_issues", {"batch": batch_id, **asdict(issue)})
+    batches_archived = archive_previous_inventory_batches(
+        client, batch_id, batch_name, source_system
+    )
     return {
         "inventory_items": len(inventory),
         "receipt_lines": len(receipts),
@@ -715,6 +810,7 @@ def apply_snapshot(
         "products_synced": products_synced,
         "missing_items": len(missing_items),
         "items_deactivated": deactivated,
+        "batches_archived": batches_archived,
     }
 
 

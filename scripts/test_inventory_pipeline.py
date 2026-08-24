@@ -11,12 +11,15 @@ from pathlib import Path
 from openpyxl import Workbook
 
 from inventory_pipeline import (
+    archive_previous_inventory_batches,
     find_missing_items,
     parse_inventory,
     parse_receipts,
     product_mapping,
     reconcile,
+    review_state,
     risk_codes,
+    sync_eligible_product,
     summarize,
 )
 
@@ -63,6 +66,63 @@ class FakeDirectus:
         return self.rows
 
 
+class FakeProductSyncDirectus:
+    def __init__(
+        self,
+        existing_product: dict[str, object] | None,
+        existing_listing: dict[str, object] | None,
+        existing_accessory_details: dict[str, object] | None = None,
+    ) -> None:
+        self.existing_product = existing_product
+        self.existing_listing = existing_listing
+        self.existing_accessory_details = existing_accessory_details
+        self.requests: list[tuple[str, str, dict[str, object]]] = []
+
+    def first(self, collection: str, filters: dict[str, object], fields: str = "*") -> dict[str, object] | None:
+        if collection == "product_categories":
+            return {"id": "category-id"}
+        if collection == "product_brands":
+            return {"id": "brand-id"}
+        if collection == "products":
+            return self.existing_product
+        if collection == "product_channel_listings":
+            return self.existing_listing
+        if collection == "accessory_details":
+            return self.existing_accessory_details
+        return None
+
+    def request(self, method: str, path: str, payload: dict[str, object] | None = None) -> dict[str, object]:
+        body = payload or {}
+        self.requests.append((method, path, body))
+        item_id = path.rsplit("/", 1)[-1] if method == "PATCH" else body.get("id", "product-id")
+        return {"id": item_id, **body}
+
+    def upsert(self, collection: str, filters: dict[str, object], payload: dict[str, object]) -> dict[str, object]:
+        self.requests.append(("UPSERT", collection, payload))
+        return {"id": "detail-id", **payload}
+
+
+class FakeBatchArchiveDirectus:
+    def __init__(self) -> None:
+        self.requests: list[tuple[str, str, dict[str, object]]] = []
+
+    def all(self, collection: str, filters: dict[str, object], fields: str) -> list[dict[str, object]]:
+        if collection == "inventory_import_batches":
+            return [
+                {"id": "current", "status": "running"},
+                {"id": "previous", "status": "applied_with_blocks"},
+                {"id": "draft", "status": "draft"},
+            ]
+        if collection == "inventory_import_issues" and filters.get("batch") == "previous":
+            return [{"id": "issue-1"}, {"id": "issue-2"}]
+        return []
+
+    def request(self, method: str, path: str, payload: dict[str, object] | None = None) -> dict[str, object]:
+        body = payload or {}
+        self.requests.append((method, path, body))
+        return {"id": path.rsplit("/", 1)[-1], **body}
+
+
 class InventoryPipelineTest(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
@@ -79,6 +139,22 @@ class InventoryPipelineTest(unittest.TestCase):
             f"Серийный номер: {serial}" if serial else None, f"barcode-{code}", "Товары", "OWN",
             "01-08-2026, 10:00:00", "02-08-2026, 10:00:00",
         ]
+
+    def sync_item(self) -> dict[str, object]:
+        return {
+            "source_system": "evotor",
+            "source_id": "source-1",
+            "source_sku": "sku-1",
+            "source_title": "Apple iPhone 14 128 GB",
+            "retail_price": Decimal("64900"),
+            "quantity": 2,
+            "for_sale": True,
+            "condition": "used",
+            "serial_full": "SERIAL-1",
+            "risk_codes": [],
+            "source_group": "Телефоны",
+            "source_group_path": "Техника / Смартфоны / Apple",
+        }
 
     def receipt_row(
         self, number: int, title: str, serial: str = "", quantity: int = 1, comment: str = ""
@@ -167,6 +243,158 @@ class InventoryPipelineTest(unittest.TestCase):
 
         self.assertNotIn("serialized_identity_conflict", [issue.code for issue in issues])
         self.assertEqual(receipts[0]["match_status"], "matched")
+
+    def test_serialized_identity_treats_silver_white_as_silver(self) -> None:
+        inventory_path = self.root / "inventory.xlsx"
+        receipt_path = self.root / "receipts.xlsx"
+        save_inventory(
+            inventory_path,
+            [
+                self.inventory_row(
+                    "source-1",
+                    "Apple iPhone 14 Pro Max, 256 GB, серебристый (Silver)",
+                    "sku-1",
+                    "SERIAL-1",
+                )
+            ],
+        )
+        save_receipts(
+            receipt_path,
+            [
+                self.receipt_row(
+                    1,
+                    "Мобильный телефон Apple iPhone 14 Pro Max, 256 GB, серебристый белый (Silver)",
+                    "SERIAL-1",
+                )
+            ],
+        )
+
+        inventory = parse_inventory(inventory_path)
+        receipts = parse_receipts(receipt_path)
+        issues, _ = reconcile(inventory, receipts)
+
+        self.assertNotIn("serialized_identity_conflict", [issue.code for issue in issues])
+        self.assertEqual(receipts[0]["match_status"], "matched")
+
+    def test_resolved_automatic_block_returns_to_pending(self) -> None:
+        existing = {
+            "authenticity_status": "pending",
+            "eligibility_status": "blocked",
+            "block_reason": "serialized_identity_conflict",
+            "review_override": False,
+            "review_note": None,
+        }
+        item = {"identity_status": "matched", "risk_codes": []}
+
+        self.assertEqual(review_state(existing, item), ("pending", "pending"))
+
+    def test_active_authenticity_risk_stays_blocked(self) -> None:
+        existing = {
+            "authenticity_status": "blocked",
+            "eligibility_status": "blocked",
+            "block_reason": "authenticity_review",
+            "review_override": False,
+            "review_note": None,
+        }
+        item = {"identity_status": "not_applicable", "risk_codes": ["authenticity_review"]}
+
+        self.assertEqual(review_state(existing, item), ("blocked", "blocked"))
+
+    def test_existing_product_sync_preserves_editorial_fields_and_listing_status(self) -> None:
+        client = FakeProductSyncDirectus(
+            {"id": "existing-product", "status": "published", "content_status": "ready"},
+            {"id": "existing-listing", "status": "active"},
+        )
+        stored = {"eligibility_status": "eligible", "review_override": True}
+
+        product_id = sync_eligible_product(client, self.sync_item(), stored, "batch-2")
+
+        self.assertEqual(product_id, "existing-product")
+        product_patch = next(
+            body for method, path, body in client.requests
+            if method == "PATCH" and path == "/items/products/existing-product"
+        )
+        self.assertEqual(product_patch["price"], 64900)
+        self.assertEqual(product_patch["stock_quantity"], 2)
+        self.assertNotIn("status", product_patch)
+        self.assertNotIn("content_status", product_patch)
+        self.assertNotIn("title", product_patch)
+        listing_patch = next(
+            body for method, path, body in client.requests
+            if method == "PATCH" and path == "/items/product_channel_listings/existing-listing"
+        )
+        self.assertEqual(listing_patch, {"external_id": "isvoi-source-1"})
+
+    def test_new_product_sync_creates_draft_and_avito_draft(self) -> None:
+        client = FakeProductSyncDirectus(None, None)
+        stored = {"eligibility_status": "eligible", "review_override": True}
+
+        sync_eligible_product(client, self.sync_item(), stored, "batch-1")
+
+        product_create = next(
+            body for method, path, body in client.requests
+            if method == "POST" and path == "/items/products"
+        )
+        self.assertEqual(product_create["status"], "draft")
+        self.assertEqual(product_create["content_status"], "needs_photo")
+        listing_create = next(
+            body for method, path, body in client.requests
+            if method == "POST" and path == "/items/product_channel_listings"
+        )
+        self.assertEqual(listing_create["status"], "draft")
+
+    def test_existing_accessory_sync_preserves_editorial_compatibility(self) -> None:
+        client = FakeProductSyncDirectus(
+            {"id": "existing-accessory", "status": "published", "content_status": "ready"},
+            {"id": "existing-listing", "status": "ready"},
+            {"id": "accessory-details"},
+        )
+        item = self.sync_item()
+        item.update(
+            {
+                "source_title": "Чехол Apple iPhone 14 прозрачный",
+                "condition": "new",
+                "serial_full": "",
+                "source_group": "Чехлы",
+                "source_group_path": "Аксессуары / Чехлы для смартфонов",
+            }
+        )
+
+        sync_eligible_product(
+            client,
+            item,
+            {"eligibility_status": "eligible", "review_override": True},
+            "batch-2",
+        )
+
+        accessory_writes = [
+            request for request in client.requests
+            if request[0] == "UPSERT" and request[1] == "accessory_details"
+        ]
+        self.assertEqual(accessory_writes, [])
+
+    def test_previous_completed_batches_are_archived_without_deleting_history(self) -> None:
+        client = FakeBatchArchiveDirectus()
+
+        archived = archive_previous_inventory_batches(
+            client, "current", "store-snapshot-2", "store_inventory"
+        )
+
+        self.assertEqual(archived, 1)
+        batch_patches = [
+            (path, body) for method, path, body in client.requests
+            if method == "PATCH" and "/inventory_import_batches/" in path
+        ]
+        self.assertEqual(
+            batch_patches,
+            [("/items/inventory_import_batches/previous", {"status": "archived"})],
+        )
+        issue_patches = [
+            body for method, path, body in client.requests
+            if method == "PATCH" and "/inventory_import_issues/" in path
+        ]
+        self.assertEqual(len(issue_patches), 2)
+        self.assertTrue(all(body["resolved"] for body in issue_patches))
 
     def test_duplicate_source_id_is_rejected(self) -> None:
         path = self.root / "duplicate.xlsx"

@@ -320,6 +320,10 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/cata
   await gotoOk(page, url);
   const visibleText = await page.locator("body").innerText();
   assert(!/б\/у/iu.test(visibleText), `${route}: legacy public condition terminology is visible`);
+  assert(
+    !visibleText.includes("24 товара на странице"),
+    `${route}: static page-size label is presented as a product count`,
+  );
   const seo = await assertSeoAndStructuredData(page, route, [
     "Organization",
     "WebSite",
@@ -343,6 +347,15 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/cata
   }
 
   const catalog = page.locator('[data-component="ProductCatalogView"]');
+  const foundMatch = visibleText.match(/Найдено:\s*(\d+)/u);
+  const visibleCardCount = await catalog.locator('[data-component="ProductCard"]').count();
+  if (foundMatch) {
+    const total = Number(foundMatch[1]);
+    assert(
+      visibleCardCount === Math.min(total, 24),
+      `${route}: found count ${total} does not match ${visibleCardCount} visible cards`,
+    );
+  }
   const city = await catalog.getAttribute("data-city");
   const citySlug = await catalog.getAttribute("data-city-slug");
   if (city) {

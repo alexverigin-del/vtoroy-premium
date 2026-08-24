@@ -80,6 +80,7 @@ export interface ProductBrand {
   id: string;
   slug: string;
   name: string;
+  visibleProductCount?: number;
 }
 
 export interface ProductCategory {
@@ -219,6 +220,7 @@ export interface ProductCatalogFacets {
   brands: ProductBrand[];
   categories: ProductCategory[];
   models: DeviceModel[];
+  visibleProductCounts?: Partial<Record<ProductType, number>>;
 }
 
 export type ClubPlanStatus = "draft" | "published" | "archived";

@@ -27,18 +27,19 @@ const assertUnique = (items, key, label) => {
 
 const collectionLabels = [
   ["isvoi_site_content", "Сайт и контент", "web"],
-  ["isvoi_catalog", "Каталог", "inventory_2"],
+  ["isvoi_catalog", "Карточки сайта", "inventory_2"],
   ["isvoi_sales", "Продажи", "support_agent"],
   ["isvoi_blog", "Блог", "article"],
   ["isvoi_imports", "Импорт каталога", "upload_file"],
-  ["isvoi_inventory", "Склад и каналы", "warehouse"],
+  ["isvoi_inventory", "Склад и сверка", "warehouse"],
+  ["isvoi_channels", "Avito и экономика", "campaign"],
   ["site_pages", "Страницы", "web_asset"],
   ["page_sections", "Секции страниц", "view_agenda"],
   ["site_settings", "Настройки сайта", "tune"],
   ["navigation_items", "Навигация", "menu_open"],
   ["faq_items", "FAQ", "quiz"],
   ["device_page_settings", "Шаблон товарной страницы", "view_carousel"],
-  ["products", "Товары", "inventory_2"],
+  ["products", "Карточки товаров", "inventory_2"],
   ["product_brands", "Бренды", "sell"],
   ["product_categories", "Категории", "category"],
   ["device_models", "Модели устройств", "devices_other"],
@@ -65,12 +66,12 @@ const collectionLabels = [
   ["club_process_items", "Шаги Club", "route"],
   ["club_legal_documents", "Документы Club", "gavel"],
   ["inventory_import_batches", "Товарные snapshot", "upload_file"],
-  ["inventory_items", "Складские позиции", "warehouse"],
+  ["inventory_items", "Остатки из учётной системы", "warehouse"],
   ["inventory_receipt_lines", "Строки поступлений", "receipt_long"],
-  ["inventory_import_issues", "Проблемы импорта", "report_problem"],
-  ["channel_cost_profiles", "Расходы каналов", "calculate"],
-  ["channel_category_mappings", "Категории каналов", "account_tree"],
-  ["product_channel_listings", "Канальные объявления", "campaign"],
+  ["inventory_import_issues", "Проблемы сверки", "report_problem"],
+  ["channel_cost_profiles", "Расходы Avito", "calculate"],
+  ["channel_category_mappings", "Категории Avito", "account_tree"],
+  ["product_channel_listings", "Объявления Avito", "campaign"],
   ["product_unit_economics", "Экономика товара", "monitoring"],
 ];
 
@@ -434,7 +435,8 @@ SELECT collection,icon,'Рабочий раздел Directus Studio ISVOI.',fals
   'open'
 FROM isvoi_studio_collection_labels
 WHERE collection IN (
-  'isvoi_site_content','isvoi_catalog','isvoi_sales','isvoi_blog','isvoi_imports','isvoi_inventory'
+  'isvoi_site_content','isvoi_catalog','isvoi_sales','isvoi_blog','isvoi_imports','isvoi_inventory',
+  'isvoi_channels'
 )
 ON CONFLICT (collection) DO UPDATE SET
   icon=EXCLUDED.icon,note=EXCLUDED.note,hidden=false,singleton=false,
@@ -466,9 +468,10 @@ FROM (VALUES
   ('catalog_import_batches','isvoi_imports',10),
   ('inventory_import_batches','isvoi_inventory',10),
   ('inventory_import_issues','isvoi_inventory',20),('inventory_items','isvoi_inventory',30),
-  ('inventory_receipt_lines','isvoi_inventory',40),('channel_cost_profiles','isvoi_inventory',50),
-  ('channel_category_mappings','isvoi_inventory',60),
-  ('product_channel_listings','isvoi_inventory',70),('product_unit_economics','isvoi_inventory',80)
+  ('inventory_receipt_lines','isvoi_inventory',40),
+  ('product_channel_listings','isvoi_channels',10),
+  ('channel_category_mappings','isvoi_channels',20),('channel_cost_profiles','isvoi_channels',30),
+  ('product_unit_economics','isvoi_channels',40)
 ) membership(collection,group_key,sort_order)
 WHERE collection.collection=membership.collection;
 
@@ -878,23 +881,26 @@ BEGIN
   END LOOP;
 END $$;
 
-SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_import_issues','Открытые блокеры','report_problem','#dc2626',
-  '{"_and":[{"severity":{"_eq":"blocker"}},{"resolved":{"_eq":false}}]}',
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_import_issues','1 · Открытые блокеры','report_problem','#dc2626',
+  '{"_and":[{"severity":{"_eq":"blocker"}},{"resolved":{"_eq":false}},{"batch":{"status":{"_neq":"archived"}}}]}',
   '["batch","severity","code","message","resolved","resolution_note"]','["-created_at"]');
-SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_import_issues','Открытые предупреждения','warning','#d97706',
-  '{"_and":[{"severity":{"_eq":"warning"}},{"resolved":{"_eq":false}}]}',
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_import_issues','2 · Открытые предупреждения','warning','#d97706',
+  '{"_and":[{"severity":{"_eq":"warning"}},{"resolved":{"_eq":false}},{"batch":{"status":{"_neq":"archived"}}}]}',
   '["batch","severity","code","message","resolved","resolution_note"]','["-created_at"]');
-SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_import_issues','Проблемы последних партий','history','#2563eb',
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_import_issues','3 · Проблемы активной партии','history','#2563eb',
   '{"_and":[{"resolved":{"_eq":false}},{"batch":{"status":{"_neq":"archived"}}}]}',
   '["batch","severity","code","message","resolved"]','["-created_at"]');
-SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_items','Требует проверки происхождения','policy','#dc2626',
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_items','1 · Проверить происхождение','policy','#dc2626',
   '{"authenticity_status":{"_in":["pending","review","blocked"]}}',
   '["source_title","source_sku","quantity","authenticity_status","eligibility_status","block_reason"]','["source_title"]');
-SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_items','Конфликт идентичности','fingerprint','#dc2626',
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_items','2 · Исправить идентичность','fingerprint','#dc2626',
   '{"identity_status":{"_eq":"conflict"}}',
   '["source_title","source_sku","quantity","identity_status","authenticity_status","block_reason"]','["source_title"]');
-SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_items','Можно передать в каталог','publish','#059669',
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_items','3 · Готово к передаче','publish','#059669',
   '{"eligibility_status":{"_eq":"eligible"}}',
+  '["source_title","source_sku","quantity","retail_price","product","review_note"]','["source_title"]');
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_items','4 · Передано в карточки сайта','check_circle','#2563eb',
+  '{"_and":[{"eligibility_status":{"_eq":"eligible"}},{"product":{"_nnull":true}}]}',
   '["source_title","source_sku","quantity","retail_price","product","review_note"]','["source_title"]');
 SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_receipt_lines','Требует сверки места','warehouse','#dc2626',
   '{"movement_status":{"_eq":"central_office_inventory_conflict"}}',
@@ -902,7 +908,7 @@ SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','inventory_receipt_lines',
 SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','channel_category_mappings','Avito: нет подтверждённой категории','rule','#d97706',
   '{"_and":[{"channel":{"_eq":"avito"}},{"is_confirmed":{"_eq":false}}]}',
   '["mapping_key","product_category","external_category","template_version","is_active","is_confirmed"]','["product_category","mapping_key"]');
-SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','product_channel_listings','Avito: готово к QA','fact_check','#2563eb',
+SELECT pg_temp.isvoi_preset('ISVOI Inventory Manager','product_channel_listings','2 · Avito: готово к QA','fact_check','#2563eb',
   '{"_and":[{"channel":{"_eq":"avito"}},{"status":{"_eq":"ready"}}]}',
   '["external_id","product","status","category_mapping","price_override","sync_status"]','["external_id"]');
 
@@ -919,13 +925,25 @@ WHERE preset.role=role.id
 
 DELETE FROM directus_presets preset USING directus_roles role
 WHERE preset.role=role.id AND role.name='ISVOI Inventory Manager' AND preset."user" IS NULL
-  AND ((preset.collection='inventory_items' AND preset.bookmark IN ('Конфликты','Можно в каталог')));
+  AND (
+    (preset.collection='inventory_items' AND preset.bookmark IN (
+      'Конфликты','На проверке','Можно в каталог','Требует проверки происхождения',
+      'Конфликт идентичности','Можно передать в каталог'
+    ))
+    OR (preset.collection='inventory_import_issues' AND preset.bookmark IN (
+      'Открытые блокеры','Открытые предупреждения','Проблемы последних партий'
+    ))
+    OR (preset.collection='product_channel_listings' AND preset.bookmark IN (
+      'Avito: черновики','Avito: готово к QA','Avito: активные'
+    ))
+  );
 
 ${rollback ? "" : "COMMIT;"}
 
 SELECT 'studio_ux.groups' AS check_name,count(*)::text AS value
 FROM directus_collections WHERE collection IN (
-  'isvoi_site_content','isvoi_catalog','isvoi_sales','isvoi_blog','isvoi_imports','isvoi_inventory'
+  'isvoi_site_content','isvoi_catalog','isvoi_sales','isvoi_blog','isvoi_imports','isvoi_inventory',
+  'isvoi_channels'
 )
 UNION ALL
 SELECT 'studio_ux.blog_product_links',count(*)::text FROM blog_posts_devices WHERE products_id IS NOT NULL

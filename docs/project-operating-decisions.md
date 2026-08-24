@@ -2816,3 +2816,39 @@ Next content-editing priorities:
   rollout прошли `directus:audit-trade-page`, `directus:audit-studio`,
   `directus:audit-page-sections`, API policy, ops audit, functional smoke и
   desktop/mobile visual smoke `/trade`.
+
+### Inventory, Catalog UX и staged Catalog V3 (2026-08-24)
+
+- Перед изменениями Directus создан и проверен локальный VPS backup
+  `/opt/isvoi/backups/directus/20260824T165555Z`: checksum для
+  `postgres.sql.gz` и `uploads.tar.gz` совпадает. Offsite upload по-прежнему
+  отложен и в этом rollout не выполнялся.
+- Studio UX v4 разделяет рабочий контур на `Склад и сверка`, `Карточки сайта`
+  и `Avito и экономика`. Миграция меняет только группировку и inventory/Avito
+  presets, сохраняя product presets Studio UX v3. Rehearsal с `ROLLBACK`, apply
+  и `directus:audit-studio` прошли.
+- Последний snapshot `store-snapshot-2026-08-18` повторно обработан: 82 строки,
+  358 единиц, 14 blocker и 20 warning. Apply обновил 82 inventory items и 95
+  строк текущего поступления; исчезнувших или деактивированных позиций нет.
+  Старые партии архивированы, их открытые issues закрыты как исторические.
+- `products_synced = 0` намеренно: ни одна складская строка ещё не получила
+  ручной статус eligible. Открыты 14 blocker, 13 неподтверждённых Avito category
+  mappings и 2 неподтверждённых cost profiles. Эти gates нельзя обходить
+  автоматической публикацией.
+- Публичный каталог больше не показывает фиксированную подпись `24 товара на
+  странице`. Счётчик строится по фактической выдаче; категории, бренды и типы с
+  нулевым публичным остатком скрываются. Категории legacy-карточек нормализуются
+  к таксономии Directus: `Смартфоны`, `Планшеты`, `Ноутбуки`.
+- Catalog V3 считается запущенным только после появления хотя бы одного
+  `published + ready` товара с положительным видимым остатком. До этого сайт
+  сохраняет проверенный legacy fallback: production `/catalog` показывает 4
+  карточки и `Найдено: 4`, а не пустой V3-result. После Studio QA и публикации
+  первой согласованной V3-партии fallback отключится автоматически.
+- Для скрытого Club-пилота синхронизирован жизненный цикл: footer-link зависит
+  от published-статуса страницы, 5 секций draft-страницы неактивны, 4 оффера с
+  draft-товарами переведены в `paused`. Контент и связи сохранены.
+- Полный `directus:audit:prod`, functional/image/visual/performance/copy smoke
+  прошли. Каталог проверен на desktop/mobile: 4 карточки, категории 2/1/1;
+  LCP `/catalog` — 268 мс desktop и 328 мс mobile. После фактического запуска
+  V3 release gates дополнительно включаются через
+  `SMOKE_REQUIRE_BLOG_RELATED_DEVICE=1` и `SMOKE_REQUIRE_PRODUCT_OFFERS=1`.

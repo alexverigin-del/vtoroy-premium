@@ -492,40 +492,68 @@ function mapProductCard(row: Row, city?: string, cityName?: string): ProductCard
 
 function mapLegacyCards(
   cards: Awaited<ReturnType<typeof getPublishedDeviceCards>>,
+  categories: ProductCategory[] = [],
 ): ProductCardData[] {
-  return cards.map((card) => ({
-    id: card.id,
-    sku: card.id,
-    productType: "device",
-    condition: "used",
-    brand: { id: "apple", slug: "apple", name: "Apple" },
-    category: {
-      id: card.category,
-      slug: card.category,
+  const categorySlugs: Record<string, string> = {
+    iphone: "smartphones",
+    ipad: "tablets",
+    macbook: "laptops",
+    watch: "watches",
+    airpods: "headphones",
+  };
+  return cards.map((card) => {
+    const categorySlug = categorySlugs[card.category] ?? card.category;
+    const category = categories.find((item) => item.slug === categorySlug) ?? {
+      id: categorySlug,
+      slug: categorySlug,
       name: card.category,
-      catalogSection: "device",
-    },
-    title: card.title,
-    model: card.model,
-    deviceModelSlug: undefined,
-    color: card.color,
-    price: card.price,
-    priceText: card.priceText,
-    stockQuantity: card.stockStatus === "sold" ? 0 : 1,
-    stockStatus: card.stockStatus || "available",
-    stockStatusLabel: card.stockStatusLabel || "В наличии",
-    warrantyText: card.warrantyText,
-    listingImage: card.listingImage,
-    listingAlt: card.listingAlt,
-    updatedAt: card.updatedAt,
-    sort: card.sort,
-    ctaLabel: "Записаться на просмотр",
-    detailHref: `/product/${card.id}`,
-    trustFacts: card.trustFacts ?? [],
-    offers: [],
-    availabilityScope: "network",
-  }));
+      catalogSection: "device" as const,
+    };
+    return {
+      id: card.id,
+      sku: card.id,
+      productType: "device",
+      condition: "used",
+      brand: { id: "apple", slug: "apple", name: "Apple" },
+      category,
+      title: card.title,
+      model: card.model,
+      deviceModelSlug: undefined,
+      color: card.color,
+      price: card.price,
+      priceText: card.priceText,
+      stockQuantity: card.stockStatus === "sold" ? 0 : 1,
+      stockStatus: card.stockStatus || "available",
+      stockStatusLabel: card.stockStatusLabel || "В наличии",
+      warrantyText: card.warrantyText,
+      listingImage: card.listingImage,
+      listingAlt: card.listingAlt,
+      updatedAt: card.updatedAt,
+      sort: card.sort,
+      ctaLabel: "Записаться на просмотр",
+      detailHref: `/product/${card.id}`,
+      trustFacts: card.trustFacts ?? [],
+      offers: [],
+      availabilityScope: "network",
+    };
+  });
 }
+
+const getActiveCatalogCategories = cache(async function getActiveCatalogCategories(): Promise<
+  ProductCategory[]
+> {
+  const response = await directusRequest<Row[]>(
+    "/items/product_categories?filter[is_active][_eq]=true&fields=id,slug,name,catalog_section,parent.slug&sort=sort,name&limit=500",
+  );
+  return response?.data.map((row) => mapCategory(row)).filter((item) => item.name) ?? [];
+});
+
+const hasVisibleV3Products = cache(async function hasVisibleV3Products(): Promise<boolean> {
+  const response = await directusRequest<Row[]>(
+    "/items/products?filter[status][_eq]=published&filter[content_status][_eq]=ready&filter[stock_status][_neq]=hidden&filter[stock_quantity][_gt]=0&fields=id&limit=1",
+  );
+  return Boolean(response?.data.length);
+});
 
 function productSort(sort = "default"): string {
   if (sort === "price-asc") return "price,sort";
@@ -553,6 +581,7 @@ export async function getPublishedProducts(
     "filter[status][_eq]": "published",
     "filter[content_status][_eq]": "ready",
     "filter[stock_status][_neq]": "hidden",
+    "filter[stock_quantity][_gt]": "0",
     fields: PRODUCT_CARD_FIELDS,
     limit: cityMode ? "500" : String(pageSize),
     offset: cityMode ? "0" : String((page - 1) * pageSize),
@@ -575,39 +604,47 @@ export async function getPublishedProducts(
   const response = await directusRequest<Row[]>(`/items/products?${params}`);
   if (response) {
     let products = response.data.map((row) => mapProductCard(row, filters.city, filters.cityName));
-    if (cityMode) {
-      if (filters.stock) {
-        products = products.filter((product) => {
-          if (filters.stock === "delivery") return product.availabilityScope === "delivery";
-          if (filters.stock === "sold") return product.availabilityScope === "unavailable";
-          return product.availabilityScope === "local" && product.stockStatus === filters.stock;
+    const v3CatalogIsLive = products.length > 0 || (await hasVisibleV3Products());
+    if (!v3CatalogIsLive) {
+      products = [];
+    } else {
+      if (cityMode) {
+        if (filters.stock) {
+          products = products.filter((product) => {
+            if (filters.stock === "delivery") return product.availabilityScope === "delivery";
+            if (filters.stock === "sold") return product.availabilityScope === "unavailable";
+            return product.availabilityScope === "local" && product.stockStatus === filters.stock;
+          });
+        }
+        products.sort((a, b) => {
+          const rank = { local: 0, delivery: 1, network: 2, unavailable: 3 } as const;
+          return rank[a.availabilityScope ?? "network"] - rank[b.availabilityScope ?? "network"];
         });
+        const total = products.length;
+        const start = (page - 1) * pageSize;
+        return {
+          products: products.slice(start, start + pageSize),
+          total,
+          page,
+          pageSize,
+          pageCount: Math.max(1, Math.ceil(total / pageSize)),
+        };
       }
-      products.sort((a, b) => {
-        const rank = { local: 0, delivery: 1, network: 2, unavailable: 3 } as const;
-        return rank[a.availabilityScope ?? "network"] - rank[b.availabilityScope ?? "network"];
-      });
-      const total = products.length;
-      const start = (page - 1) * pageSize;
+      const total = number(response.meta?.filter_count, products.length);
       return {
-        products: products.slice(start, start + pageSize),
+        products,
         total,
         page,
         pageSize,
         pageCount: Math.max(1, Math.ceil(total / pageSize)),
       };
     }
-    const total = number(response.meta?.filter_count, products.length);
-    return {
-      products,
-      total,
-      page,
-      pageSize,
-      pageCount: Math.max(1, Math.ceil(total / pageSize)),
-    };
   }
 
-  const legacy = mapLegacyCards(await getPublishedDeviceCards()).filter((product) => {
+  const legacy = mapLegacyCards(
+    await getPublishedDeviceCards(),
+    await getActiveCatalogCategories(),
+  ).filter((product) => {
     if (filters.type && filters.type !== "device") return false;
     if (filters.brand && filters.brand !== product.brand.slug) return false;
     if (filters.category && filters.category !== product.category.slug) return false;
@@ -648,9 +685,7 @@ export const getProductCatalogFacets = cache(
       directusRequest<Row[]>(
         "/items/product_brands?filter[is_active][_eq]=true&fields=id,slug,name&sort=sort,name&limit=500",
       ),
-      directusRequest<Row[]>(
-        "/items/product_categories?filter[is_active][_eq]=true&fields=id,slug,name,catalog_section,parent.slug&sort=sort,name&limit=500",
-      ),
+      getActiveCatalogCategories(),
       directusRequest<Row[]>(
         "/items/device_models?filter[is_active][_eq]=true&fields=id,slug,name,family,year,brand.id,brand.slug,brand.name&sort=brand.name,name&limit=1000",
       ),
@@ -659,28 +694,46 @@ export const getProductCatalogFacets = cache(
       ),
     ]);
 
+    const legacyProducts =
+      visibleProducts && visibleProducts.data.length === 0
+        ? mapLegacyCards(await getPublishedDeviceCards(), categories)
+        : [];
+    const visibleRows = visibleProducts?.data ?? [];
+
     const brandCounts = visibleProducts
-      ? visibleProducts.data.reduce((counts, row) => {
-          const slug = text(relation(row.brand).slug);
-          if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1);
-          return counts;
-        }, new Map<string, number>())
+      ? legacyProducts.length > 0
+        ? legacyProducts.reduce((counts, product) => {
+            counts.set(product.brand.slug, (counts.get(product.brand.slug) ?? 0) + 1);
+            return counts;
+          }, new Map<string, number>())
+        : visibleRows.reduce((counts, row) => {
+            const slug = text(relation(row.brand).slug);
+            if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1);
+            return counts;
+          }, new Map<string, number>())
       : null;
     const categoryCounts = visibleProducts
-      ? visibleProducts.data.reduce((counts, row) => {
-          const slug = text(relation(row.category).slug);
-          if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1);
-          return counts;
-        }, new Map<string, number>())
+      ? legacyProducts.length > 0
+        ? legacyProducts.reduce((counts, product) => {
+            counts.set(product.category.slug, (counts.get(product.category.slug) ?? 0) + 1);
+            return counts;
+          }, new Map<string, number>())
+        : visibleRows.reduce((counts, row) => {
+            const slug = text(relation(row.category).slug);
+            if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1);
+            return counts;
+          }, new Map<string, number>())
       : null;
     const visibleProductCounts = visibleProducts
-      ? visibleProducts.data.reduce<Partial<Record<ProductType, number>>>((counts, row) => {
-          const productType = text(row.product_type);
-          if (productType === "device" || productType === "accessory") {
-            counts[productType] = (counts[productType] ?? 0) + 1;
-          }
-          return counts;
-        }, {})
+      ? legacyProducts.length > 0
+        ? ({ device: legacyProducts.length } satisfies Partial<Record<ProductType, number>>)
+        : visibleRows.reduce<Partial<Record<ProductType, number>>>((counts, row) => {
+            const productType = text(row.product_type);
+            if (productType === "device" || productType === "accessory") {
+              counts[productType] = (counts[productType] ?? 0) + 1;
+            }
+            return counts;
+          }, {})
       : undefined;
 
     return {
@@ -691,16 +744,10 @@ export const getProductCatalogFacets = cache(
           ...brand,
           visibleProductCount: brandCounts ? (brandCounts.get(brand.slug) ?? 0) : undefined,
         })) ?? [{ id: "apple", slug: "apple", name: "Apple" }],
-      categories:
-        categories?.data
-          .map((row) => mapCategory(row))
-          .filter((item) => item.name)
-          .map((category) => ({
-            ...category,
-            visibleProductCount: categoryCounts
-              ? (categoryCounts.get(category.slug) ?? 0)
-              : undefined,
-          })) ?? [],
+      categories: categories.map((category) => ({
+        ...category,
+        visibleProductCount: categoryCounts ? (categoryCounts.get(category.slug) ?? 0) : undefined,
+      })),
       models:
         models?.data.flatMap((row) => {
           const model = mapModel(row);

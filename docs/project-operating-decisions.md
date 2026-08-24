@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-08-22.
+Last updated: 2026-08-24.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -2805,4 +2805,14 @@ Next content-editing priorities:
 - Локальный QA выполнялся с временной подстановкой fallback и реальными
   chrome-данными; временный переключатель удалён. Desktop/mobile visual smoke,
   Next build, typecheck, ESLint, Tailwind/content ownership audits и bundle
-  budget прошли. Production на этом этапе ещё не изменён.
+  budget прошли. До отдельного rollout production-контент не изменялся.
+- Production rollout выполнен из `867dce9`. Семь guarded patches применились
+  без snapshot-конфликтов; для каждой записи создан и проверен отдельный backup
+  от `/opt/isvoi/backups/directus/20260824T151433Z` до
+  `/opt/isvoi/backups/directus/20260824T152142Z`. Ни одна сторонняя Studio-правка
+  не была перезаписана.
+- Общий page-sections contract дополнен редакторским ключом `disclaimer`,
+  используемым для явного предупреждения о предварительной Trade-оценке. После
+  rollout прошли `directus:audit-trade-page`, `directus:audit-studio`,
+  `directus:audit-page-sections`, API policy, ops audit, functional smoke и
+  desktop/mobile visual smoke `/trade`.

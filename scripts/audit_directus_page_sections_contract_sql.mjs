@@ -107,6 +107,7 @@ allowed_keys(key) AS (
     ('device_label'),
     ('device_placeholder'),
     ('diagnostics'),
+    ('disclaimer'),
     ('emptyState'),
     ('errorNote'),
     ('error_note'),

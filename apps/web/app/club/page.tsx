@@ -14,6 +14,7 @@ import {
 } from "@/components/ClubLandingSections";
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 import { getClubPageData, isClubIndexingEnabled } from "@/lib/club";
+import { getAllPublishedV3ProductCards } from "@/lib/product-catalog";
 import { clubChrome, getFallbackMarketingPage, marketingSectionsForPage } from "@/lib/site-content";
 import { jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
@@ -83,16 +84,20 @@ export default async function ClubPage({
 }: {
   searchParams?: Promise<{ club_offer?: string | string[] }>;
 }) {
-  const [page, settings, navigation, clubData] = await Promise.all([
+  const [page, settings, navigation, clubData, products] = await Promise.all([
     getSitePage("club"),
     getSiteSettings(),
     getNavigationItems(),
     getClubPageData(),
+    getAllPublishedV3ProductCards(),
   ]);
   const currentPage = page ?? getFallbackMarketingPage("club");
   const sections = marketingSectionsForPage("club", currentPage.sections);
   const faqSection = sections.find(
     (section) => section.sectionKey === "faq" || section.variant === "faq",
+  );
+  const liveExampleSection = sections.find(
+    (section) => section.sectionKey === "club_live_example" || section.variant === "live.example",
   );
   const chrome = clubChrome(settings, navigation);
   const resolvedSearchParams = searchParams ? await searchParams : {};
@@ -113,6 +118,9 @@ export default async function ClubPage({
         <ClubOfferSection offers={clubData.offers} settings={clubData.settings} />
         <ClubCycleSection settings={clubData.settings} items={clubData.processes} />
         <ClubPassportCycleSection settings={clubData.settings} items={clubData.processes} />
+        {liveExampleSection ? (
+          <MarketingSectionRenderer section={liveExampleSection} slug="club" products={products} />
+        ) : null}
         <ClubPlansSection plans={clubData.plans} settings={clubData.settings} />
         <ClubRulesSection rules={clubData.rules} settings={clubData.settings} />
         <ClubParticipationSection settings={clubData.settings} items={clubData.processes} />

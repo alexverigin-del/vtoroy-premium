@@ -3,12 +3,7 @@ import { notFound } from "next/navigation";
 import { MarketingSectionRenderer } from "@/components/MarketingSectionRenderer";
 import { InfoPageSectionRenderer } from "@/components/InfoPageSectionRenderer";
 import { SiteShell } from "@/components/SiteShell";
-import {
-  getNavigationItems,
-  getPublishedDeviceCards,
-  getSitePage,
-  getSiteSettings,
-} from "@/lib/directus";
+import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
 import {
   getFallbackMarketingPage,
   isInfoSlug,
@@ -19,7 +14,7 @@ import {
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
 import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 import { getStoreLocation } from "@/lib/store-locations";
-import { getPublishedProducts } from "@/lib/product-catalog";
+import { getAllPublishedV3ProductCards, getPublishedProducts } from "@/lib/product-catalog";
 import { CityHubPage } from "@/components/CityHubPage";
 
 export const revalidate = 300;
@@ -111,11 +106,11 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
   }
   if (!isMarketingSlug(slug) && !isInfoSlug(slug)) notFound();
 
-  const [page, settings, navigation, devices] = await Promise.all([
+  const [page, settings, navigation, products] = await Promise.all([
     getSitePage(slug),
     getSiteSettings(),
     getNavigationItems(),
-    getPublishedDeviceCards(),
+    isMarketingSlug(slug) ? getAllPublishedV3ProductCards() : Promise.resolve([]),
   ]);
   if (isInfoSlug(slug) && !page) notFound();
   const chrome = siteChrome(settings, navigation);
@@ -146,7 +141,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
               key={section.id || section.sectionKey}
               section={section}
               slug={slug}
-              devices={devices}
+              products={products}
               priorityVisual={section === firstVisualBandSection}
             />
           ) : (

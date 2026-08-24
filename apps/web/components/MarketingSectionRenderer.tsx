@@ -1,9 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { PageSection } from "@vtoroy/shared";
-import type { DeviceCardData } from "@/lib/device-card-data";
+import type { PageSection, ProductCardData } from "@vtoroy/shared";
 import type { MarketingSlug } from "@/lib/site-content";
-import { DeviceCard } from "./DeviceCard";
+import {
+  marketingExampleDevice,
+  marketingProductCandidates,
+  marketingProductDescriptor,
+  marketingProductFacts,
+} from "@/lib/marketing-products";
+import { ProductCard } from "./ProductCard";
 import { FinalCtaSection } from "./FinalCtaSection";
 import { RichText } from "./RichText";
 import { cn } from "../lib/cn";
@@ -21,7 +26,7 @@ import {
 type MarketingSectionRendererProps = {
   section: PageSection;
   slug: MarketingSlug;
-  devices?: DeviceCardData[];
+  products?: ProductCardData[];
   priorityVisual?: boolean;
 };
 
@@ -279,33 +284,6 @@ function stringList(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
     : [];
-}
-
-function normalizedStockStatus(device: DeviceCardData): string {
-  const raw = (device.stockStatus || "available").trim().toLowerCase();
-  if (!raw || raw === "in_stock") return "available";
-  if (raw === "service") return "hidden";
-  return raw;
-}
-
-function marketingDeviceCandidates(devices: DeviceCardData[]): DeviceCardData[] {
-  return [...devices]
-    .filter((device) => normalizedStockStatus(device) !== "hidden")
-    .sort((a, b) => {
-      const aStatus = normalizedStockStatus(a);
-      const bStatus = normalizedStockStatus(b);
-      const aAvailable = aStatus === "available" ? 0 : 1;
-      const bAvailable = bStatus === "available" ? 0 : 1;
-      return aAvailable - bAvailable || Number(a.sort ?? 0) - Number(b.sort ?? 0);
-    });
-}
-
-function marketingExampleDevice(devices: DeviceCardData[]): DeviceCardData | null {
-  return marketingDeviceCandidates(devices)[0] ?? null;
-}
-
-function curatedMarketingDevices(devices: DeviceCardData[], limit: number): DeviceCardData[] {
-  return marketingDeviceCandidates(devices).slice(0, limit);
 }
 
 function visualContent(value: unknown): VisualContent {
@@ -787,34 +765,20 @@ function MarketingPageCtaSection({ section }: { section: PageSection }) {
   );
 }
 
-function deviceFactList(device: DeviceCardData): string[] {
-  const seen = new Set<string>();
-  return [device.batteryText, device.warrantyText, device.exitText, ...(device.trustFacts ?? [])]
-    .map((value) => value.trim())
-    .filter((value) => {
-      if (!value) return false;
-      const key = value.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .slice(0, 4);
-}
-
 function MarketingLiveExampleSection({
   section,
   slug,
-  devices,
+  products,
 }: {
   section: PageSection;
   slug: MarketingSlug;
-  devices: DeviceCardData[];
+  products: ProductCardData[];
 }) {
-  const device = marketingExampleDevice(devices);
+  const device = marketingExampleDevice(products);
   if (!device) return null;
 
   const mode = strField(section.content, "mode", slug);
-  const facts = deviceFactList(device);
+  const facts = marketingProductFacts(device);
   const primaryLabel =
     section.primaryCtaLabel ||
     (mode === "trade"
@@ -854,30 +818,19 @@ function MarketingLiveExampleSection({
               {device.title}
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-graphite">
-              {device.specs} · {device.color} · грейд {device.grade}
+              {marketingProductDescriptor(device)}
             </p>
             <p className="mt-5 text-3xl font-semibold tracking-tight text-carbon">
               {device.priceText}
             </p>
-            {device.exitText ? (
-              <p className="mt-2 text-sm leading-relaxed text-ash">{device.exitText}</p>
-            ) : null}
             <p className="mt-5 text-sm leading-relaxed text-graphite">{modeText}</p>
           </div>
           <div className="grid gap-4">
             {facts.length > 0 ? (
               <dl className="grid gap-3 sm:grid-cols-2">
-                {facts.map((fact, index) => (
+                {facts.map((fact) => (
                   <div key={fact} className="rounded-card border border-hairline bg-ice p-4">
-                    <dt className="text-xs font-medium text-ash">
-                      {index === 0
-                        ? "Состояние"
-                        : index === 1
-                          ? "Гарантия"
-                          : index === 2
-                            ? "Выход"
-                            : "Проверка"}
-                    </dt>
+                    <dt className="text-xs font-medium text-ash">{modeLabel}</dt>
                     <dd className="mt-1 text-sm font-semibold leading-relaxed text-carbon">
                       {fact}
                     </dd>
@@ -1214,16 +1167,16 @@ function MarketingDecisionGuideSection({ section }: { section: PageSection }) {
 
 function MarketingCuratedCatalogSection({
   section,
-  devices,
+  products,
 }: {
   section: PageSection;
-  devices: DeviceCardData[];
+  products: ProductCardData[];
 }) {
   const limit = Math.max(1, numField(section.content, "limit", 3));
-  const visibleDevices = curatedMarketingDevices(devices, limit);
+  const visibleProducts = marketingProductCandidates(products).slice(0, limit);
   const cues = stringList(section.content.cues);
 
-  if (visibleDevices.length === 0) return null;
+  if (visibleProducts.length === 0) return null;
 
   return (
     <section className="bg-white py-14 md:py-20" id="store-selection">
@@ -1242,9 +1195,9 @@ function MarketingCuratedCatalogSection({
           </ul>
         ) : null}
         <ul className="mx-auto mt-8 grid max-w-content gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleDevices.map((device) => (
-            <li key={device.id}>
-              <DeviceCard device={device} />
+          {visibleProducts.map((product) => (
+            <li key={product.id}>
+              <ProductCard product={product} />
             </li>
           ))}
         </ul>
@@ -1426,7 +1379,7 @@ function isPageCtaSection(section: PageSection): boolean {
 export function MarketingSectionRenderer({
   section,
   slug,
-  devices = [],
+  products = [],
   priorityVisual = false,
 }: MarketingSectionRendererProps) {
   const renderedSection = isHeroSection(section) ? (
@@ -1434,7 +1387,7 @@ export function MarketingSectionRenderer({
   ) : slug === "passport" && isPassportManagedSection(section) ? (
     <PassportPageSection section={section} />
   ) : slug === "trade" && isTradeManagedSection(section) ? (
-    <TradePageSection section={section} devices={devices} />
+    <TradePageSection section={section} products={products} />
   ) : isVisualBandSection(section) ? (
     <MarketingVisualBandSection section={section} priority={priorityVisual} />
   ) : isCompareSection(section) ? (
@@ -1444,9 +1397,9 @@ export function MarketingSectionRenderer({
   ) : isDecisionGuideSection(section) ? (
     <MarketingDecisionGuideSection section={section} />
   ) : isCuratedCatalogSection(section) ? (
-    <MarketingCuratedCatalogSection section={section} devices={devices} />
+    <MarketingCuratedCatalogSection section={section} products={products} />
   ) : isLiveExampleSection(section) ? (
-    <MarketingLiveExampleSection section={section} slug={slug} devices={devices} />
+    <MarketingLiveExampleSection section={section} slug={slug} products={products} />
   ) : isPassportModulesSection(section) ? (
     <MarketingPassportModulesSection section={section} />
   ) : isClubReputationSection(section) ? (

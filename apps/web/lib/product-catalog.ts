@@ -684,6 +684,32 @@ export async function getAllPublishedProductCards(): Promise<ProductCardData[]> 
   return products;
 }
 
+export async function getAllPublishedV3ProductCards(): Promise<ProductCardData[]> {
+  const products: ProductCardData[] = [];
+  const pageSize = 48;
+
+  for (let page = 1; page <= 12; page += 1) {
+    const params = new URLSearchParams({
+      "filter[status][_eq]": "published",
+      "filter[content_status][_eq]": "ready",
+      "filter[stock_status][_neq]": "hidden",
+      "filter[stock_quantity][_gt]": "0",
+      fields: PRODUCT_CARD_FIELDS,
+      limit: String(pageSize),
+      offset: String((page - 1) * pageSize),
+      sort: productSort(),
+    });
+    const response = await directusRequest<Row[]>(`/items/products?${params}`);
+    if (!response) return [];
+
+    const pageProducts = response.data.map((row) => mapProductCard(row));
+    products.push(...pageProducts);
+    if (pageProducts.length < pageSize) break;
+  }
+
+  return products;
+}
+
 export const getProductCatalogFacets = cache(
   async function getProductCatalogFacets(): Promise<ProductCatalogFacets> {
     const source = getCatalogSource();

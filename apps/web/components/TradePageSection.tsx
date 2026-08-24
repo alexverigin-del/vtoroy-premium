@@ -1,8 +1,11 @@
 import Link from "next/link";
-import type { PageSection } from "@vtoroy/shared";
-
-import type { DeviceCardData } from "@/lib/device-card-data";
+import type { PageSection, ProductCardData } from "@vtoroy/shared";
 import { cn } from "@/lib/cn";
+import {
+  marketingExampleDevice,
+  marketingProductDescriptor,
+  marketingProductFacts,
+} from "@/lib/marketing-products";
 import { ProductImage, productImageSrc } from "./ProductImage";
 import { RichText } from "./RichText";
 import { normalizeSiteUrl } from "./site-chrome-utils";
@@ -184,73 +187,23 @@ function TradePathsSection({ section }: { section: PageSection }) {
   );
 }
 
-function normalizedStockStatus(device: DeviceCardData): string {
-  const status = (device.stockStatus || "available").trim().toLowerCase();
-  return status === "in_stock" || !status ? "available" : status;
-}
-
-function exampleDevice(devices: DeviceCardData[]): DeviceCardData | null {
-  const visible = devices.filter((device) => normalizedStockStatus(device) !== "hidden");
-  return (
-    visible.find((device) => normalizedStockStatus(device) === "available") ?? visible[0] ?? null
-  );
-}
-
-function deviceFacts(device: DeviceCardData): string[] {
-  return [device.batteryText, device.warrantyText, ...(device.trustFacts ?? [])]
-    .map((value) => value.trim())
-    .filter((value, index, facts) => value && facts.indexOf(value) === index)
-    .slice(0, 3);
-}
-
 function TradeLiveExampleSection({
   section,
-  devices,
+  products,
 }: {
   section: PageSection;
-  devices: DeviceCardData[];
+  products: ProductCardData[];
 }) {
-  const device = exampleDevice(devices);
-  if (!device) {
-    const emptyState = contentRecord(section.content.emptyState);
-    const emptyHeadline = stringField(emptyState, "headline");
-    const emptyBody = stringField(emptyState, "body");
-    const emptyCtaLabel = stringField(emptyState, "ctaLabel");
-    const emptyCtaUrl = stringField(emptyState, "ctaUrl");
-
-    return (
-      <section className="bg-frost py-14 md:py-20">
-        <div className="mx-auto max-w-page px-4 md:px-6">
-          <TradeSectionHeader section={section} />
-          <div className="mx-auto mt-10 max-w-copy rounded-card border border-hairline bg-white p-6 text-center md:p-10">
-            {emptyHeadline ? (
-              <h3 className="text-2xl font-semibold leading-tight text-carbon">{emptyHeadline}</h3>
-            ) : null}
-            {emptyBody ? (
-              <p className="mt-3 text-copy leading-relaxed text-graphite">{emptyBody}</p>
-            ) : null}
-            {emptyCtaLabel && emptyCtaUrl ? (
-              <Link
-                href={normalizeSiteUrl(emptyCtaUrl)}
-                className={cn(primaryPillCtaClass, "mt-7")}
-              >
-                {emptyCtaLabel}
-              </Link>
-            ) : null}
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const device = marketingExampleDevice(products);
+  if (!device) return null;
 
   const valuation = contentRecord(section.content.valuation);
   const valuationHeading = stringField(valuation, "heading");
   const valuationAmount = stringField(valuation, "amount");
   const valuationNote = stringField(valuation, "from_note");
-  const gradeLabel = String(section.content.grade_label || "").trim();
   const disclaimerLabel = String(section.content.note_label || "").trim();
-  const deviceHref = device.detailHref || `/device/${device.id}`;
-  const facts = deviceFacts(device);
+  const deviceHref = device.detailHref;
+  const facts = marketingProductFacts(device, 3);
   const image = productImageSrc(device.listingImage);
 
   return (
@@ -280,13 +233,7 @@ function TradeLiveExampleSection({
                     {device.title}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-graphite">
-                    {[
-                      device.specs,
-                      device.color,
-                      device.grade ? [gradeLabel, device.grade].filter(Boolean).join(" ") : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {marketingProductDescriptor(device)}
                   </p>
                   <p className="mt-5 text-3xl font-semibold leading-none text-carbon">
                     {device.priceText}
@@ -451,14 +398,14 @@ export function isTradeManagedSection(section: PageSection): boolean {
 
 export function TradePageSection({
   section,
-  devices,
+  products,
 }: {
   section: PageSection;
-  devices: DeviceCardData[];
+  products: ProductCardData[];
 }) {
   if (section.sectionKey === "trade_paths") return <TradePathsSection section={section} />;
   if (section.sectionKey === "trade_live_example") {
-    return <TradeLiveExampleSection section={section} devices={devices} />;
+    return <TradeLiveExampleSection section={section} products={products} />;
   }
   if (section.sectionKey === "trade_steps") return <TradeStepsSection section={section} />;
   if (section.sectionKey === "trade_compare") return <TradeCompareSection section={section} />;

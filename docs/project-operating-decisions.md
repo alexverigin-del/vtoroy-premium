@@ -2967,3 +2967,28 @@ Next content-editing priorities:
   `web:verify`, полный `directus:audit:prod`, PM2 restart, Directus health и
   Playwright smoke с `SMOKE_EXPECT_CATALOG_SOURCE=v3` и
   `SMOKE_EXPECT_EMPTY_CATALOG=1` прошли.
+
+### Administrator: права и общие представления Studio (2026-08-24)
+
+- Роль и policy `Administrator` сохраняют `app_access=true`,
+  `admin_access=true` и обязательную TFA. Отдельные CRUD permissions для
+  бизнес-коллекций администратору не создаются: полный доступ предоставляет
+  admin policy, а audit проверяет её связь с ролью.
+- Administrator получает общие role presets из `ISVOI Editor`,
+  `ISVOI Advanced Editor`, `ISVOI Importer` и `ISVOI Inventory Manager`.
+  Миграция зеркалирует 93 уникальных представления по ключу
+  `collection + bookmark`, разрешает совпадения приоритетом более сильной
+  операторской роли и не изменяет персональные bookmarks пользователей.
+- В частности, в `Склад и сверка -> Проблемы сверки` администратору доступно
+  представление `4 · Решённые проблемы`. Studio и inventory audits теперь
+  блокируют потерю admin policy, пропуск общего представления и дублирование
+  admin bookmarks.
+- Перед apply создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260824T193136Z`; checksum PostgreSQL и uploads
+  прошёл. Offsite copy пропущена, поскольку `OFFSITE_BACKUP_DEST` не задан.
+  SQL rehearsal с `ROLLBACK` и production apply прошли без ошибок.
+- Release `659cdc9` применён в `/opt/isvoi`. После перезапуска Directus полный
+  `directus:audit:prod` прошёл: `studio.admin.access_missing=0`,
+  `studio.admin.bookmarks_missing=0`,
+  `studio.admin.bookmarks_duplicates=0` и
+  `inventory.studio.resolved_preset_missing=0`; Directus health — `ok`.

@@ -58,6 +58,26 @@ WHERE field.collection IN ('inventory_items','inventory_import_issues')
   AND coalesce(field.special,'') LIKE '%group%'
   AND coalesce(field.readonly,false)=true
 UNION ALL
+SELECT 'inventory.studio.resolved_preset_missing', count(*)::text
+FROM (VALUES (1)) marker(value)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_presets preset
+  JOIN directus_roles role ON role.id=preset.role
+  WHERE role.name='ISVOI Inventory Manager'
+    AND preset.collection='inventory_import_issues'
+    AND preset.bookmark='4 · Решённые проблемы'
+    AND preset.filter::jsonb @> '{"resolved":{"_eq":true}}'::jsonb
+)
+UNION ALL
+SELECT 'inventory.studio.resolution_note_condition_missing', count(*)::text
+FROM (VALUES (1)) marker(value)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields field
+  WHERE field.collection='inventory_import_issues'
+    AND field.field='resolution_note'
+    AND field.conditions::jsonb @> '[{"rule":{"resolved":{"_eq":true}},"required":true}]'::jsonb
+)
+UNION ALL
 SELECT 'inventory.schema.relations_missing', count(*)::text
 FROM (VALUES
   ('inventory_import_batches','inventory_workbook'),
@@ -172,11 +192,23 @@ WHERE NOT EXISTS (
   WHERE flow.name=expected.name AND flow.status='active' AND flow.trigger='manual'
 )
 UNION ALL
+SELECT 'inventory.guards.issue_resolution_missing', count(*)::text
+FROM (VALUES (1)) marker(value)
+WHERE NOT EXISTS (
+  SELECT 1 FROM pg_trigger trigger
+  WHERE trigger.tgname='inventory_issue_resolution_guard'
+    AND trigger.tgisinternal=false
+)
+UNION ALL
 SELECT 'inventory.data.invalid_item_values', count(*)::text
 FROM inventory_items
 WHERE quantity < 0 OR purchase_price < 0 OR retail_price < 0
   OR eligibility_status NOT IN ('pending','eligible','blocked')
   OR identity_status NOT IN ('not_applicable','matched','unmatched','conflict')
+UNION ALL
+SELECT 'inventory.data.resolved_without_note', count(*)::text
+FROM inventory_import_issues
+WHERE resolved=true AND NULLIF(trim(resolution_note),'') IS NULL
 UNION ALL
 SELECT 'inventory.data.eligible_without_review', count(*)::text
 FROM inventory_items

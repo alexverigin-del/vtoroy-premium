@@ -121,6 +121,26 @@ SELECT pg_temp.isvoi_inventory_workflow_field('inventory_import_issues','source_
 SELECT pg_temp.isvoi_inventory_workflow_field('inventory_import_issues','resolved','boolean','boolean',NULL,'half',1,'Отметьте после исправления источника или зафиксированного решения.',NULL,false,false,false,'group_resolution','Решено');
 SELECT pg_temp.isvoi_inventory_workflow_field('inventory_import_issues','resolution_note','input-multiline',NULL,NULL,'full',2,'Что проверено и какое решение принято.',NULL,false,false,false,'group_resolution','Как решено');
 
+UPDATE inventory_import_issues SET resolved=false
+WHERE resolved=true AND NULLIF(trim(resolution_note),'') IS NULL;
+UPDATE directus_fields SET
+  note='Обязательно опишите, что проверено и какое решение принято перед закрытием.',
+  conditions='[{"name":"Закрытие проблемы","rule":{"resolved":{"_eq":true}},"hidden":false,"readonly":false,"required":true,"options":{}}]'::json
+WHERE collection='inventory_import_issues' AND field='resolution_note';
+
+CREATE OR REPLACE FUNCTION isvoi_validate_inventory_issue_resolution()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.resolved=true AND NULLIF(trim(NEW.resolution_note),'') IS NULL THEN
+    RAISE EXCEPTION 'Перед закрытием проблемы заполните «Как решено»';
+  END IF;
+  RETURN NEW;
+END $$;
+DROP TRIGGER IF EXISTS inventory_issue_resolution_guard ON inventory_import_issues;
+CREATE TRIGGER inventory_issue_resolution_guard
+BEFORE INSERT OR UPDATE OF resolved,resolution_note ON inventory_import_issues
+FOR EACH ROW EXECUTE FUNCTION isvoi_validate_inventory_issue_resolution();
+
 UPDATE directus_fields SET readonly=false
 WHERE collection IN ('inventory_items','inventory_import_issues','inventory_receipt_lines','inventory_import_batches')
   AND coalesce(special,'') LIKE '%group%';

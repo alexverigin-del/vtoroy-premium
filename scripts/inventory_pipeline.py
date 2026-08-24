@@ -695,6 +695,68 @@ def archive_previous_inventory_batches(
     return archived
 
 
+def issue_identity(issue: Issue | dict[str, Any]) -> tuple[str, str, str, int | None]:
+    if isinstance(issue, Issue):
+        return (
+            issue.source_kind,
+            issue.code,
+            issue.source_id or "",
+            issue.row_number,
+        )
+    return (
+        text(issue.get("source_kind")),
+        text(issue.get("code")),
+        text(issue.get("source_id")),
+        issue.get("row_number"),
+    )
+
+
+def sync_batch_issues(
+    client: Directus,
+    batch_id: str,
+    issues: list[Issue],
+    stored_by_source: dict[str, dict[str, Any]],
+) -> int:
+    existing = client.all(
+        "inventory_import_issues",
+        {"batch": batch_id},
+        "id,severity,code,source_kind,row_number,source_id,message,resolved,resolution_note,inventory_item",
+    )
+    documented: dict[tuple[str, str, str, int | None], dict[str, Any]] = {}
+    for row in existing:
+        if row.get("resolved") is True and text(row.get("resolution_note")):
+            documented[issue_identity(row)] = row
+            continue
+        client.request(
+            "DELETE",
+            f"/items/inventory_import_issues/{quote(str(row['id']), safe='')}",
+        )
+
+    preserved = 0
+    for issue in issues:
+        linked_item = stored_by_source.get(issue.source_id or "")
+        payload = {
+            "batch": batch_id,
+            **asdict(issue),
+            "inventory_item": linked_item.get("id") if linked_item else None,
+        }
+        previous = documented.get(issue_identity(issue))
+        if previous:
+            client.request(
+                "PATCH",
+                f"/items/inventory_import_issues/{quote(str(previous['id']), safe='')}",
+                {
+                    **payload,
+                    "resolved": True,
+                    "resolution_note": previous["resolution_note"],
+                },
+            )
+            preserved += 1
+        else:
+            client.request("POST", "/items/inventory_import_issues", payload)
+    return preserved
+
+
 def apply_snapshot(
     client: Directus,
     batch_id: str,
@@ -797,18 +859,9 @@ def apply_snapshot(
         )
         client.request("POST", "/items/inventory_receipt_lines", payload)
 
-    client.delete_where("inventory_import_issues", "batch", batch_id)
-    for issue in issues:
-        linked_item = stored_by_source.get(issue.source_id or "")
-        client.request(
-            "POST",
-            "/items/inventory_import_issues",
-            {
-                "batch": batch_id,
-                **asdict(issue),
-                "inventory_item": linked_item.get("id") if linked_item else None,
-            },
-        )
+    issue_resolutions_preserved = sync_batch_issues(
+        client, batch_id, issues, stored_by_source
+    )
     batches_archived = archive_previous_inventory_batches(
         client, batch_id, batch_name, source_system
     )
@@ -816,6 +869,7 @@ def apply_snapshot(
         "inventory_items": len(inventory),
         "receipt_lines": len(receipts),
         "issues": len(issues),
+        "issue_resolutions_preserved": issue_resolutions_preserved,
         "products_synced": products_synced,
         "missing_items": len(missing_items),
         "items_deactivated": deactivated,

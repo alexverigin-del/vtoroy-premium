@@ -235,6 +235,9 @@ receipt workflow. This area is available only to administrators and
   `Требует сверки места` instead of scanning all rows.
 - Resolve identity and authenticity blockers in `Проблемы импорта`; never copy
   full serial/IMEI or purchase prices into public copy.
+- Before enabling `Решено`, fill `Как решено`. Closed rows remain available in
+  `4 · Решённые проблемы`; closing an issue does not itself change the linked
+  item's authenticity or catalog eligibility.
 - Review receipt movement through `Сейчас в магазине`, `Центральный офис`,
   `Выбыло до загрузки` and `Требует сверки места`. Historical exits are
   warnings, not current-stock blockers.

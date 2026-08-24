@@ -108,6 +108,11 @@ SELECT pg_temp.isvoi_inventory_ux_preset(
   '{"_and":[{"resolved":{"_eq":false}},{"batch":{"status":{"_neq":"archived"}}}]}'::json,
   '["inventory_item","severity","code","message","resolved"]'::json,'["-created_at"]'::json
 );
+SELECT pg_temp.isvoi_inventory_ux_preset(
+  'inventory_import_issues','4 · Решённые проблемы','task_alt','#059669',
+  '{"resolved":{"_eq":true}}'::json,
+  '["inventory_item","batch","severity","code","message","resolution_note","resolved"]'::json,'["-created_at"]'::json
+);
 
 SELECT pg_temp.isvoi_inventory_ux_preset(
   'inventory_items','1 · Проверить происхождение','policy','#dc2626',

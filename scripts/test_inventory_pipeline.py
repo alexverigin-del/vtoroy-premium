@@ -11,6 +11,7 @@ from pathlib import Path
 from openpyxl import Workbook
 
 from inventory_pipeline import (
+    Issue,
     archive_previous_inventory_batches,
     find_missing_items,
     parse_inventory,
@@ -20,6 +21,7 @@ from inventory_pipeline import (
     review_state,
     risk_codes,
     sync_eligible_product,
+    sync_batch_issues,
     summarize,
 )
 
@@ -116,6 +118,49 @@ class FakeBatchArchiveDirectus:
         if collection == "inventory_import_issues" and filters.get("batch") == "previous":
             return [{"id": "issue-1"}, {"id": "issue-2"}]
         return []
+
+    def request(self, method: str, path: str, payload: dict[str, object] | None = None) -> dict[str, object]:
+        body = payload or {}
+        self.requests.append((method, path, body))
+        return {"id": path.rsplit("/", 1)[-1], **body}
+
+
+class FakeIssueSyncDirectus:
+    def __init__(self) -> None:
+        self.requests: list[tuple[str, str, dict[str, object]]] = []
+        self.rows = [
+            {
+                "id": "resolved-match",
+                "code": "authenticity_review",
+                "source_kind": "inventory",
+                "source_id": "source-1",
+                "row_number": 2,
+                "resolved": True,
+                "resolution_note": "Проверено оператором.",
+            },
+            {
+                "id": "open-match",
+                "code": "identity_conflict",
+                "source_kind": "inventory",
+                "source_id": "source-2",
+                "row_number": 3,
+                "resolved": False,
+                "resolution_note": None,
+            },
+            {
+                "id": "resolved-history",
+                "code": "old_warning",
+                "source_kind": "inventory",
+                "source_id": "source-old",
+                "row_number": 9,
+                "resolved": True,
+                "resolution_note": "Историческое решение.",
+            },
+        ]
+
+    def all(self, collection: str, filters: dict[str, object], fields: str) -> list[dict[str, object]]:
+        self.last_query = (collection, filters, fields)
+        return self.rows
 
     def request(self, method: str, path: str, payload: dict[str, object] | None = None) -> dict[str, object]:
         body = payload or {}
@@ -395,6 +440,49 @@ class InventoryPipelineTest(unittest.TestCase):
         ]
         self.assertEqual(len(issue_patches), 2)
         self.assertTrue(all(body["resolved"] for body in issue_patches))
+
+    def test_same_batch_reapply_preserves_documented_issue_resolutions(self) -> None:
+        client = FakeIssueSyncDirectus()
+        issues = [
+            Issue(
+                severity="blocker",
+                code="authenticity_review",
+                source_kind="inventory",
+                row_number=2,
+                source_id="source-1",
+                message="Нужна повторная проверка.",
+            ),
+            Issue(
+                severity="blocker",
+                code="identity_conflict",
+                source_kind="inventory",
+                row_number=3,
+                source_id="source-2",
+                message="Конфликт идентичности.",
+            ),
+        ]
+
+        preserved = sync_batch_issues(
+            client,
+            "batch-1",
+            issues,
+            {"source-1": {"id": "item-1"}, "source-2": {"id": "item-2"}},
+        )
+
+        self.assertEqual(preserved, 1)
+        deletes = [path for method, path, _ in client.requests if method == "DELETE"]
+        self.assertEqual(deletes, ["/items/inventory_import_issues/open-match"])
+        preserved_patch = next(
+            body for method, path, body in client.requests
+            if method == "PATCH" and path.endswith("/resolved-match")
+        )
+        self.assertTrue(preserved_patch["resolved"])
+        self.assertEqual(preserved_patch["resolution_note"], "Проверено оператором.")
+        self.assertEqual(preserved_patch["inventory_item"], "item-1")
+        creates = [body for method, _, body in client.requests if method == "POST"]
+        self.assertEqual(len(creates), 1)
+        self.assertEqual(creates[0]["code"], "identity_conflict")
+        self.assertFalse(any("resolved-history" in path for _, path, _ in client.requests))
 
     def test_duplicate_source_id_is_rejected(self) -> None:
         path = self.root / "duplicate.xlsx"

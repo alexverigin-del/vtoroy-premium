@@ -195,6 +195,7 @@ expected_bookmarks(role_name, collection, bookmark) AS (
     ('ISVOI Inventory Manager', 'inventory_import_issues', '1 · Открытые блокеры'),
     ('ISVOI Inventory Manager', 'inventory_import_issues', '2 · Открытые предупреждения'),
     ('ISVOI Inventory Manager', 'inventory_import_issues', '3 · Проблемы активной партии'),
+    ('ISVOI Inventory Manager', 'inventory_import_issues', '4 · Решённые проблемы'),
     ('ISVOI Inventory Manager', 'inventory_items', '1 · Проверить происхождение'),
     ('ISVOI Inventory Manager', 'inventory_items', '2 · Исправить идентичность'),
     ('ISVOI Inventory Manager', 'inventory_items', '3 · Готово к передаче'),

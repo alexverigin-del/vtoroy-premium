@@ -47,6 +47,7 @@ if (!item) throw new Error("Linked inventory item is not readable.");
 const marker = `inventory-manager-editability-${Date.now()}`;
 const originalItemNote = item.review_note ?? null;
 const originalIssueNote = issue.resolution_note ?? null;
+const originalIssueResolved = issue.resolved;
 const originalIssueMessage = issue.message;
 let itemChanged = false;
 let issueChanged = false;
@@ -69,11 +70,30 @@ try {
     throw new Error("Inventory Manager changed source quantity.");
   }
 
+  const undocumentedClose = await rawRequest(`/items/inventory_import_issues/${issue.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ resolved: true, resolution_note: null }),
+  });
+  if (undocumentedClose.response.ok) {
+    await request(`/items/inventory_import_issues/${issue.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ resolved: false, resolution_note: originalIssueNote }),
+    });
+    throw new Error("Inventory Manager closed an issue without a resolution note.");
+  }
+
   await request(`/items/inventory_import_issues/${issue.id}`, {
     method: "PATCH",
-    body: JSON.stringify({ resolution_note: marker }),
+    body: JSON.stringify({ resolved: true, resolution_note: marker }),
   });
   issueChanged = true;
+
+  const resolvedIssue = await request(
+    `/items/inventory_import_issues/${issue.id}?fields=id,resolved,resolution_note`,
+  );
+  if (resolvedIssue?.data?.resolved !== true || resolvedIssue?.data?.resolution_note !== marker) {
+    throw new Error("Documented issue resolution was not persisted.");
+  }
 
   const forbiddenIssue = await rawRequest(`/items/inventory_import_issues/${issue.id}`, {
     method: "PATCH",
@@ -93,7 +113,10 @@ try {
   if (issueChanged) {
     await request(`/items/inventory_import_issues/${issue.id}`, {
       method: "PATCH",
-      body: JSON.stringify({ resolution_note: originalIssueNote }),
+      body: JSON.stringify({
+        resolved: originalIssueResolved,
+        resolution_note: originalIssueNote,
+      }),
     });
   }
   if (forbiddenItemChanged) {
@@ -116,6 +139,8 @@ console.log(
     linked_issue: true,
     item_operator_field_editable: true,
     issue_resolution_field_editable: true,
+    undocumented_resolution_rejected: true,
+    documented_resolution_persisted: true,
     source_item_field_protected: true,
     generated_issue_field_protected: true,
     restored: true,

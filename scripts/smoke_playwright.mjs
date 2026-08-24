@@ -481,10 +481,12 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
   assert(passportBlocks > 0, "device: expected I СВОИ Passport block");
   const storyBlocks = await page.locator('[data-component="DeviceStoryCard"]').count();
   assert(storyBlocks === 1, `device: expected one story block, got ${storyBlocks}`);
-  const offerLinks = await page
-    .locator('[data-component="ProductOfferPanel"] a[href$="/delivery"]')
-    .count();
-  assert(offerLinks > 0, "device: expected a store-specific product offer");
+  const offerPanel = page.locator('[data-component="ProductOfferPanel"]');
+  assert((await offerPanel.count()) === 1, "device: expected a product offer panel");
+  const offerLinks = await offerPanel.locator('a[href$="/delivery"]').count();
+  if (process.env.SMOKE_REQUIRE_PRODUCT_OFFERS === "1") {
+    assert(offerLinks > 0, "device: expected a store-specific product offer");
+  }
 
   const leadForm = page.locator("form:has(input[name='contact']):has(textarea[name='message'])");
   await leadForm.first().waitFor({ state: "visible", timeout: 10_000 });

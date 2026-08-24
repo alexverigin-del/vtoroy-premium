@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "node:util";
+
 const IDENTIFIER = /^[a-z_][a-z0-9_]*$/u;
 const PATCH_ID = /^[a-z0-9][a-z0-9._-]{2,99}$/u;
 const SENSITIVE_SEGMENT = /(?:password|secret|token|otp|tfa|auth_data)/iu;
@@ -195,6 +197,10 @@ function deletePath(target, segments) {
 
 export function getPath(row, fieldPath) {
   return fieldPath.split(".").reduce((value, segment) => value?.[segment], row);
+}
+
+export function contentValuesEqual(left, right) {
+  return isDeepStrictEqual(left, right);
 }
 
 export function buildDiff(row, desired, patch) {

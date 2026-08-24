@@ -7,6 +7,7 @@ import {
   buildDiff,
   buildUpdateSql,
   captureLock,
+  contentValuesEqual,
   validatePatch,
 } from "./lib/directus-content-patch.mjs";
 
@@ -53,6 +54,13 @@ assert.equal(desired.content.closing.note, undefined);
 assert.equal(desired.content.untouched, true);
 assert.deepEqual(touchedRoots, ["content", "headline"]);
 assert.equal(buildDiff(row, desired, prepared).length, 3);
+assert.equal(
+  contentValuesEqual(
+    { items: [{ title: "Passport", text: "Факт" }], note: "Сохранить" },
+    { note: "Сохранить", items: [{ text: "Факт", title: "Passport" }] },
+  ),
+  true,
+);
 
 const sql = buildUpdateSql({
   patch: prepared,

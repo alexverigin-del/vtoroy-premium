@@ -11,6 +11,7 @@ import {
   buildSelectorSql,
   buildUpdateSql,
   captureLock,
+  contentValuesEqual,
   quoteIdentifier,
   validatePatch,
 } from "./lib/directus-content-patch.mjs";
@@ -56,7 +57,7 @@ const { desired, touchedRoots } = applyPatchToRow(row, patch, schema);
 const diff = buildDiff(row, desired, patch);
 printSummary(patch, row, currentHash, diff);
 
-if (diff.every((item) => JSON.stringify(item.before) === JSON.stringify(item.after))) {
+if (diff.every((item) => contentValuesEqual(item.before, item.after))) {
   throw new Error("Patch is a no-op; no production values would change");
 }
 
@@ -105,7 +106,7 @@ if ((patch.revalidate ?? "site-content") === "site-content") {
 const verifiedRow = fetchSingleRow(connection, patch.collection, patch.selector).row;
 for (const item of buildDiff(freshRow, verifiedRow, patch)) {
   const expected = diff.find((candidate) => candidate.path === item.path)?.after;
-  if (JSON.stringify(item.after) !== JSON.stringify(expected)) {
+  if (!contentValuesEqual(item.after, expected)) {
     throw new Error(`Post-apply verification failed for ${item.path}`);
   }
 }

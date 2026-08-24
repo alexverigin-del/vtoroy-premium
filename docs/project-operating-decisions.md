@@ -2763,3 +2763,7 @@ Next content-editing priorities:
   `directus:audit-passport-page`, `directus:audit-page-sections`, полный
   `directus:audit:prod`, API policy, ops audit и content ownership прошли.
   Анонимный API остаётся fail-closed; Directus, Redis и PostgreSQL healthy.
+- В editorial split-блоках Passport eyebrow занимает отдельную строку над
+  двухколоночной сеткой. Заголовок слева и первый абзац справа начинаются на
+  одной горизонтали; hero и мобильная последовательность этим правилом не
+  затрагиваются.

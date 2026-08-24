@@ -186,35 +186,37 @@ function PassportGradesSection({ section }: { section: PageSection }) {
 function PassportStatementSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-white py-14 md:py-24">
-      <div className="mx-auto grid max-w-page gap-8 px-4 md:px-6 lg:grid-cols-editorial lg:gap-16">
-        <div>
-          {section.eyebrow ? (
-            <p className="text-sm font-semibold leading-snug text-link-blue">{section.eyebrow}</p>
-          ) : null}
-          {section.headline ? (
-            <h2 className="mt-4 text-4xl font-semibold leading-tight text-carbon md:text-5xl">
-              {section.headline}
-            </h2>
-          ) : null}
-          {section.subheadline ? (
-            <p className="mt-4 text-2xl font-semibold leading-tight text-link-blue md:text-3xl">
-              {section.subheadline}
-            </p>
-          ) : null}
-        </div>
-        <div>
-          {section.body ? (
-            <RichText
-              className="text-lg leading-relaxed text-graphite"
-              html={section.body}
-              nodes={section.bodyRichText}
-            />
-          ) : null}
-          {section.content.note ? (
-            <p className="mt-8 border-t border-hairline pt-6 text-xl font-semibold leading-snug text-carbon">
-              {String(section.content.note)}
-            </p>
-          ) : null}
+      <div className="mx-auto max-w-page px-4 md:px-6">
+        {section.eyebrow ? (
+          <p className="text-sm font-semibold leading-snug text-link-blue">{section.eyebrow}</p>
+        ) : null}
+        <div className="mt-4 grid gap-8 lg:grid-cols-editorial lg:items-start lg:gap-16">
+          <div>
+            {section.headline ? (
+              <h2 className="text-4xl font-semibold leading-tight text-carbon md:text-5xl">
+                {section.headline}
+              </h2>
+            ) : null}
+            {section.subheadline ? (
+              <p className="mt-4 text-2xl font-semibold leading-tight text-link-blue md:text-3xl">
+                {section.subheadline}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            {section.body ? (
+              <RichText
+                className="text-lg leading-relaxed text-graphite"
+                html={section.body}
+                nodes={section.bodyRichText}
+              />
+            ) : null}
+            {section.content.note ? (
+              <p className="mt-8 border-t border-hairline pt-6 text-xl font-semibold leading-snug text-carbon">
+                {String(section.content.note)}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </section>
@@ -242,45 +244,47 @@ function PassportTradeSection({ section }: { section: PageSection }) {
   return (
     <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <div className="mx-auto grid max-w-content gap-8 rounded-card border border-hairline bg-ice p-6 md:p-10 lg:grid-cols-editorial lg:items-end">
-          <div>
-            {section.eyebrow ? (
-              <p className="text-sm font-semibold leading-snug text-link-blue">{section.eyebrow}</p>
-            ) : null}
-            {section.headline ? (
-              <h2 className="mt-3 text-3xl font-semibold leading-tight text-carbon md:text-5xl">
-                {section.headline}
-              </h2>
-            ) : null}
-          </div>
-          <div>
-            {section.body ? (
-              <RichText
-                className="text-copy leading-relaxed text-graphite"
-                html={section.body}
-                nodes={section.bodyRichText}
-              />
-            ) : null}
-            {section.primaryCtaLabel || section.secondaryCtaLabel ? (
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                {section.primaryCtaLabel ? (
-                  <Link
-                    href={normalizeSiteUrl(section.primaryCtaUrl || "/trade")}
-                    className={primaryPillCtaClass}
-                  >
-                    {section.primaryCtaLabel}
-                  </Link>
-                ) : null}
-                {section.secondaryCtaLabel ? (
-                  <Link
-                    href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
-                    className={secondaryPillCtaClass}
-                  >
-                    {section.secondaryCtaLabel}
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
+        <div className="mx-auto max-w-content rounded-card border border-hairline bg-ice p-6 md:p-10">
+          {section.eyebrow ? (
+            <p className="text-sm font-semibold leading-snug text-link-blue">{section.eyebrow}</p>
+          ) : null}
+          <div className="mt-4 grid gap-8 lg:grid-cols-editorial lg:items-start lg:gap-16">
+            <div>
+              {section.headline ? (
+                <h2 className="text-3xl font-semibold leading-tight text-carbon md:text-5xl">
+                  {section.headline}
+                </h2>
+              ) : null}
+            </div>
+            <div>
+              {section.body ? (
+                <RichText
+                  className="text-copy leading-relaxed text-graphite"
+                  html={section.body}
+                  nodes={section.bodyRichText}
+                />
+              ) : null}
+              {section.primaryCtaLabel || section.secondaryCtaLabel ? (
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  {section.primaryCtaLabel ? (
+                    <Link
+                      href={normalizeSiteUrl(section.primaryCtaUrl || "/trade")}
+                      className={primaryPillCtaClass}
+                    >
+                      {section.primaryCtaLabel}
+                    </Link>
+                  ) : null}
+                  {section.secondaryCtaLabel ? (
+                    <Link
+                      href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
+                      className={secondaryPillCtaClass}
+                    >
+                      {section.secondaryCtaLabel}
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

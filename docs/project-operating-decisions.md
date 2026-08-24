@@ -2992,3 +2992,27 @@ Next content-editing priorities:
   `studio.admin.bookmarks_missing=0`,
   `studio.admin.bookmarks_duplicates=0` и
   `inventory.studio.resolved_preset_missing=0`; Directus health — `ok`.
+
+### Passport: факты состояния и истории в Studio (2026-08-24)
+
+- `device_passports.condition_notes` и `story_facts` хранили корректные
+  массивы строк, но Studio metadata использовала пустой `list` без описания
+  дочерних полей. Из-за этого существующие значения выглядели как неактивные
+  пустые блоки.
+- Оба поля переведены на нативный для `string[]` интерфейс `tags` с
+  `cast-json`. Каждый факт вводится отдельным пунктом и подтверждается Enter;
+  факты состояния должны быть наблюдаемыми, а факты истории — подтверждёнными
+  и без персональных данных. Содержимое существующих паспортов не менялось.
+- Canonical structured-data setup и Catalog Editor UX защищены от возврата к
+  пустому `list`. Catalog V3 audit отдельно проверяет metadata обоих полей и
+  валидность сохранённых массивов строк.
+- Перед apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260824T194503Z`; checksum PostgreSQL и uploads
+  прошёл. Offsite copy пропущена, поскольку `OFFSITE_BACKUP_DEST` не задан.
+- Release `3a480a7` применён в `/opt/isvoi`. Exact-role rehearsal временной
+  identity `ISVOI Editor` подтвердил редактирование и восстановление обоих
+  списков, а также сохранение запрета публикации. Identity удалена, token после
+  cleanup вернул `401`.
+- После перезапуска Directus полный `directus:audit:prod` прошёл;
+  `catalog_v3.studio.passport_string_lists_invalid=0` и
+  `catalog_v3.data.passport_string_lists_invalid=0`, Directus health — `ok`.

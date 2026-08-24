@@ -238,6 +238,10 @@ receipt workflow. This area is available only to administrators and
 - Before enabling `Решено`, fill `Как решено`. Closed rows remain available in
   `4 · Решённые проблемы`; closing an issue does not itself change the linked
   item's authenticity or catalog eligibility.
+- Administrator receives the same shared operational bookmarks as Editor,
+  Advanced Editor, Importer and Inventory Manager. In a collection, open the
+  bookmark icon beside its title to select a saved view; personal bookmarks
+  remain separate and are not overwritten by migrations.
 - Review receipt movement through `Сейчас в магазине`, `Центральный офис`,
   `Выбыло до загрузки` and `Требует сверки места`. Historical exits are
   warnings, not current-stock blockers.

@@ -349,6 +349,53 @@ LEFT JOIN directus_presets p
   AND p."user" IS NULL
 WHERE p.id IS NULL
 UNION ALL
+SELECT 'studio.admin.access_missing',count(*)::text
+FROM (VALUES (1)) marker(value)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_roles role
+  JOIN directus_access access ON access.role=role.id AND access."user" IS NULL
+  JOIN directus_policies policy ON policy.id=access.policy
+  WHERE role.name='Administrator'
+    AND policy.name='Administrator'
+    AND policy.app_access=true
+    AND policy.admin_access=true
+    AND policy.enforce_tfa=true
+)
+UNION ALL
+SELECT 'studio.admin.bookmarks_missing',count(*)::text
+FROM (
+  SELECT DISTINCT source.collection,source.bookmark
+  FROM directus_presets source
+  JOIN directus_roles source_role ON source_role.id=source.role
+  WHERE source_role.name IN (
+    'ISVOI Editor','ISVOI Advanced Editor','ISVOI Importer','ISVOI Inventory Manager'
+  )
+    AND source."user" IS NULL
+    AND source.bookmark IS NOT NULL
+) expected
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_presets target
+  JOIN directus_roles target_role ON target_role.id=target.role
+  WHERE target_role.name='Administrator'
+    AND target."user" IS NULL
+    AND target.collection=expected.collection
+    AND target.bookmark=expected.bookmark
+)
+UNION ALL
+SELECT 'studio.admin.bookmarks_duplicates',count(*)::text
+FROM (
+  SELECT preset.collection,preset.bookmark
+  FROM directus_presets preset
+  JOIN directus_roles role ON role.id=preset.role
+  WHERE role.name='Administrator'
+    AND preset."user" IS NULL
+    AND preset.bookmark IS NOT NULL
+  GROUP BY preset.collection,preset.bookmark
+  HAVING count(*) > 1
+) duplicate
+UNION ALL
 SELECT 'studio.editor_layout_groups_missing', count(*)::text
 FROM (
   VALUES

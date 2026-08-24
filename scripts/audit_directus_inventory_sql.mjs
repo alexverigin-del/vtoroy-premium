@@ -59,11 +59,11 @@ WHERE field.collection IN ('inventory_items','inventory_import_issues')
   AND coalesce(field.readonly,false)=true
 UNION ALL
 SELECT 'inventory.studio.resolved_preset_missing', count(*)::text
-FROM (VALUES (1)) marker(value)
+FROM (VALUES ('ISVOI Inventory Manager'),('Administrator')) expected_role(name)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_presets preset
   JOIN directus_roles role ON role.id=preset.role
-  WHERE role.name='ISVOI Inventory Manager'
+  WHERE role.name=expected_role.name
     AND preset.collection='inventory_import_issues'
     AND preset.bookmark='4 · Решённые проблемы'
     AND preset.filter::jsonb @> '{"resolved":{"_eq":true}}'::jsonb

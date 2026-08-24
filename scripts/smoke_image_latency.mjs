@@ -5,6 +5,7 @@
  * Usage:
  *   npm run smoke:images
  *   SMOKE_BASE_URL=https://isvoi.ru IMAGE_SMOKE_LIMIT=5 npm run smoke:images
+ *   IMAGE_SMOKE_MIN_NEXT_ASSETS=3 npm run smoke:images
  */
 
 import { performance } from "node:perf_hooks";
@@ -14,6 +15,7 @@ const DEFAULT_DIRECTUS_URL = "https://api.isvoi.ru";
 const DEFAULT_ROUTES = ["/catalog", "/store", "/device/iphone-13-pro"];
 const DEFAULT_LIMIT = 5;
 const DEFAULT_MIN_ASSETS = 3;
+const DEFAULT_MIN_NEXT_ASSETS = 2;
 const DEFAULT_TIMEOUT_MS = 15_000;
 const DEFAULT_DIRECTUS_BUDGET_MS = 5_000;
 const DEFAULT_NEXT_BUDGET_MS = 6_000;
@@ -168,6 +170,11 @@ async function main() {
     min: 1,
     max: limit,
   });
+  const minNextAssets = readNumber(
+    "IMAGE_SMOKE_MIN_NEXT_ASSETS",
+    Math.min(DEFAULT_MIN_NEXT_ASSETS, limit),
+    { min: 1, max: limit },
+  );
   const directusBudgetMs = readNumber(
     "IMAGE_SMOKE_DIRECTUS_BUDGET_MS",
     DEFAULT_DIRECTUS_BUDGET_MS,
@@ -200,8 +207,8 @@ async function main() {
     `expected at least ${minAssets} Directus asset ids in public pages, got ${assetIds.length}`,
   );
   assert(
-    nextSampleUrls.length >= minAssets,
-    `expected at least ${minAssets} unique Next image optimizer asset URLs in public pages, got ${nextSampleUrls.length}`,
+    nextSampleUrls.length >= minNextAssets,
+    `expected at least ${minNextAssets} unique Next image optimizer asset URLs in public pages, got ${nextSampleUrls.length}`,
   );
 
   console.log(

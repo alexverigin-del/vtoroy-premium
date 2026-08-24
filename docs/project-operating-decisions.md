@@ -2707,6 +2707,10 @@ Next content-editing priorities:
   `/opt/isvoi/backups/directus/20260823T205340Z`, commit `0e957b0`. После apply
   `directus:audit-multicity` полностью зелёный, включая полноту city-page copy,
   права, offers, revalidation и отсутствие старого города.
+- Позднее дублирующая secondary CTA городского hero была осознанно убрана
+  редактором. Поле остаётся доступным, но необязательным: при пустом значении
+  кнопка не выводится. `directus:audit-multicity` синхронизирован с этим
+  контрактом и продолжает требовать primary CTA и весь контактный copy.
 - Код выложен коммитами `adaac87`, `df9aa41`, `cfa477e`; guarded content
   patches — `c1e60a6`. Production checkout синхронизирован с `c1e60a6`, PM2
   online. Functional smoke прошёл для сетевого каталога, городских tech и
@@ -2740,3 +2744,22 @@ Next content-editing priorities:
   грейдов, семь FAQ, терминологию `с пробегом` и рабочий якорь процесса. Audit
   включён в `directus:audit:prod`; общий page-sections contract разрешает
   управляемые hero highlights.
+- Для существующей production-страницы применены 12 guarded content patches;
+  перед добавлением новых секций создан backup
+  `/opt/isvoi/backups/directus/20260824T130400Z`, последний patch-backup —
+  `/opt/isvoi/backups/directus/20260824T131849Z`. Optimistic locks, SQL
+  rehearsal с `ROLLBACK`, post-apply verification и protected revalidation
+  прошли.
+- Проверка content patches сравнивает JSON структурно через
+  `isDeepStrictEqual`, а не через порядок ключей в `JSON.stringify`: PostgreSQL
+  JSONB вправе менять порядок ключей без изменения данных. Исправление
+  зафиксировано коммитом `cb6fea5` и покрыто тестом.
+- Для `live.example` подписи CTA хранятся в секции, а URL намеренно формируется
+  renderer из реально выбранного товара. Поэтому page-sections audit допускает
+  label без сохранённого URL только для этого variant; для остальных секций
+  прежний guardrail сохраняется.
+- Release интерфейса и Directus-модели — `561c94a`. Production visual smoke
+  desktop/mobile, functional smoke `/passport`, copy smoke, image smoke,
+  `directus:audit-passport-page`, `directus:audit-page-sections`, полный
+  `directus:audit:prod`, API policy, ops audit и content ownership прошли.
+  Анонимный API остаётся fail-closed; Directus, Redis и PostgreSQL healthy.

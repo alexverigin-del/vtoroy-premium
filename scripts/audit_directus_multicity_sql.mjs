@@ -72,7 +72,6 @@ FROM store_locations location
 WHERE status='published' AND (
   NULLIF(to_jsonb(location)->>'hero_eyebrow','') IS NULL
   OR NULLIF(to_jsonb(location)->>'hero_primary_cta_label','') IS NULL
-  OR NULLIF(to_jsonb(location)->>'hero_secondary_cta_label','') IS NULL
   OR NULLIF(to_jsonb(location)->>'contact_eyebrow','') IS NULL
   OR NULLIF(to_jsonb(location)->>'contact_address_label','') IS NULL
   OR NULLIF(to_jsonb(location)->>'contact_address_fallback','') IS NULL

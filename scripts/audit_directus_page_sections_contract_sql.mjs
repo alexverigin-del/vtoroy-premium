@@ -234,8 +234,11 @@ WHERE (nullif(primary_cta_url, '') IS NOT NULL AND nullif(primary_cta_label, '')
 UNION ALL
 SELECT 'page_sections.cta.label_without_url', count(*)::text
 FROM page_sections
-WHERE (nullif(primary_cta_label, '') IS NOT NULL AND nullif(primary_cta_url, '') IS NULL)
-   OR (nullif(secondary_cta_label, '') IS NOT NULL AND nullif(secondary_cta_url, '') IS NULL)
+WHERE variant <> 'live.example'
+  AND (
+    (nullif(primary_cta_label, '') IS NOT NULL AND nullif(primary_cta_url, '') IS NULL)
+    OR (nullif(secondary_cta_label, '') IS NOT NULL AND nullif(secondary_cta_url, '') IS NULL)
+  )
 UNION ALL
 SELECT 'page_sections.required_image_missing', count(*)::text
 FROM page_sections

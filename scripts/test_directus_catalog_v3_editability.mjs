@@ -3,6 +3,8 @@
 const baseUrl = (process.env.DIRECTUS_URL || "").replace(/\/$/, "");
 const token = (process.env.DIRECTUS_TOKEN || "").trim();
 const productId = process.env.CATALOG_V3_EDIT_TEST_PRODUCT_ID || "qa-galaxy-s24-case";
+const usedProductId =
+  process.env.CATALOG_V3_PASSPORT_TEST_PRODUCT_ID || "qa-used-samsung-s24";
 
 if (!baseUrl || !token) {
   throw new Error("DIRECTUS_URL and DIRECTUS_TOKEN are required.");
@@ -129,6 +131,88 @@ if (restoredProduct?.data?.short_description !== originalDescription) {
   throw new Error("QA product was edited, but the original value was not restored.");
 }
 
+const publishAttempt = await rawRequest(`/items/products/${product.id}`, {
+  method: "PATCH",
+  body: JSON.stringify({ status: "published" }),
+});
+if (publishAttempt.response.ok) {
+  await request(`/items/products/${product.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status: product.status }),
+  });
+  throw new Error("ISVOI Editor unexpectedly published a product.");
+}
+if (![401, 403].includes(publishAttempt.response.status)) {
+  throw new Error(`Unexpected publication permission response: ${publishAttempt.body}`);
+}
+
+const passportQuery = new URLSearchParams({
+  "filter[product][_eq]": usedProductId,
+  fields: "id,product,summary_rows,diagnostics_status,diagnostics_checklist",
+  limit: "1",
+});
+const passportResult = await request(`/items/device_passports?${passportQuery}`);
+const passport = passportResult?.data?.[0];
+if (!passport) {
+  throw new Error(`Draft QA Passport not found for product: ${usedProductId}`);
+}
+
+const originalSummaryRows = passport.summary_rows ?? null;
+const originalChecklist = passport.diagnostics_checklist ?? null;
+const passportMarker = `catalog-v3-passport-${Date.now()}`;
+const testSummaryRows = [
+  ...(Array.isArray(originalSummaryRows) ? originalSummaryRows : []),
+  { label: "QA-проверка", value: passportMarker, state: "ok" },
+];
+const testChecklist = [
+  ...(Array.isArray(originalChecklist) ? originalChecklist : []),
+  { text: passportMarker, state: "ok" },
+];
+let passportChanged = false;
+
+try {
+  await request(`/items/device_passports/${passport.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      summary_rows: testSummaryRows,
+      diagnostics_checklist: testChecklist,
+    }),
+  });
+  passportChanged = true;
+
+  const changedPassport = await request(
+    `/items/device_passports/${passport.id}?fields=id,summary_rows,diagnostics_checklist`,
+  );
+  if (
+    !changedPassport?.data?.summary_rows?.some((row) => row.value === passportMarker) ||
+    !changedPassport?.data?.diagnostics_checklist?.some((row) => row.text === passportMarker)
+  ) {
+    throw new Error("Structured Passport rows were not returned after the edit.");
+  }
+} finally {
+  if (passportChanged) {
+    await request(`/items/device_passports/${passport.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        summary_rows: originalSummaryRows,
+        diagnostics_checklist: originalChecklist,
+      }),
+    });
+  }
+}
+
+const restoredPassport = await request(
+  `/items/device_passports/${passport.id}?fields=id,summary_rows,diagnostics_checklist`,
+);
+if (
+  JSON.stringify(restoredPassport?.data?.summary_rows ?? null) !==
+    JSON.stringify(originalSummaryRows) ||
+  JSON.stringify(restoredPassport?.data?.diagnostics_checklist ?? null) !==
+    JSON.stringify(originalChecklist)
+) {
+  throw new Error("QA Passport was edited, but its original rows were not restored.");
+}
+
 console.log(
   JSON.stringify({
     ok: true,
@@ -138,6 +222,11 @@ console.log(
     draft_category_type_guard: true,
     draft_category_type_guard_status: mismatchAttempt.response.status,
     validation_message_visible: validationMessageVisible,
+    editor_publication_denied: true,
+    editor_publication_status: publishAttempt.response.status,
+    passport_product_id: usedProductId,
+    passport_structured_rows_editable: true,
+    passport_restored: true,
     restored: true,
   }),
 );

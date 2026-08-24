@@ -10,14 +10,18 @@ https://api.isvoi.ru/admin/
 
 ## Catalog
 
-Use `Каталог` -> `Товары` (`products`) as the only editor-facing catalog entry
-point.
+Use `Карточки сайта` -> `Товары` (`products`) as the only editor-facing Catalog
+V3 entry point. `Страницы сайта` -> `catalog` edits the public page wrapper,
+not product data.
 
 - Start with bookmarks: `Требует заполнения`,
   `Нужен Passport или диагностика`, `Готово к проверке`, `Опубликовано`,
   `Техника` or `Аксессуары`.
 - Product photos are added in the `Фото` group through the related
   `product_images` rows. Do not paste URLs into JSON or legacy fields.
+- Used-device Passport rows are edited as structured repeaters: every short
+  fact needs a label, value and state; every diagnostics checklist row needs a
+  check text and result. Empty rows are allowed in a draft but block publishing.
 - `Тип товара` controls the form: device fields are shown for equipment;
   accessory details and compatibility are shown for accessories.
 - Keep `status`, `stock_status` and `content_status` separate: publication,

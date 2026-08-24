@@ -39,12 +39,46 @@ UNION ALL
 SELECT 'catalog_v3.studio.product_groups_missing', count(*)::text
 FROM (VALUES
   ('group_status'),('group_identity'),('group_sale'),('group_content'),('group_media'),
-  ('group_device'),('group_accessory'),('group_passport'),('group_system')
+  ('group_device'),('group_accessory'),('group_passport'),('group_trade'),('group_system')
 ) AS expected(field)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_fields df
   WHERE df.collection='products' AND df.field=expected.field
     AND df.special LIKE '%group%'
+)
+UNION ALL
+SELECT 'catalog_v3.studio.field_metadata_missing', count(*)::text
+FROM information_schema.columns column_info
+WHERE column_info.table_schema='public'
+  AND column_info.table_name IN (
+    'products','product_images','device_details','accessory_details',
+    'product_compatible_models','device_passports','trade_options'
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM directus_fields field
+    WHERE field.collection=column_info.table_name AND field.field=column_info.column_name
+  )
+UNION ALL
+SELECT 'catalog_v3.studio.readonly_groups', count(*)::text
+FROM directus_fields
+WHERE collection IN (
+  'products','product_images','device_details','accessory_details',
+  'device_passports','trade_options'
+)
+  AND coalesce(special,'') LIKE '%group%'
+  AND coalesce(readonly,false)=true
+UNION ALL
+SELECT 'catalog_v3.studio.passport_repeaters_invalid', count(*)::text
+FROM (VALUES
+  ('summary_rows','[{"field":"label"},{"field":"value"},{"field":"state"}]'::jsonb),
+  ('diagnostics_checklist','[{"field":"text"},{"field":"state"}]'::jsonb)
+) expected(field,fields)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields actual
+  WHERE actual.collection='device_passports' AND actual.field=expected.field
+    AND actual.interface='list'
+    AND coalesce(actual.readonly,false)=false
+    AND actual.options::jsonb->'fields' @> expected.fields
 )
 UNION ALL
 SELECT 'catalog_v3.studio.presets_missing', count(*)::text
@@ -125,6 +159,29 @@ WHERE policy.name='ISVOI Editor' AND permission.collection='products'
     )
   )
 UNION ALL
+SELECT 'catalog_v3.permissions.editor_child_system_write', count(*)::text
+FROM directus_permissions permission
+JOIN directus_policies policy ON policy.id=permission.policy
+WHERE policy.name='ISVOI Editor'
+  AND permission.collection IN ('product_images','device_details','accessory_details')
+  AND permission.action IN ('create','update')
+  AND (
+    permission.fields='*'
+    OR string_to_array(permission.fields,',') && ARRAY[
+      'id','created_at','updated_at','source_path','import_batch'
+    ]::text[]
+  )
+UNION ALL
+SELECT 'catalog_v3.permissions.editor_compatibility_missing', count(*)::text
+FROM (VALUES ('read'),('create'),('update'),('delete')) expected(action)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name='ISVOI Editor'
+    AND permission.collection='product_compatible_models'
+    AND permission.action=expected.action
+)
+UNION ALL
 SELECT 'catalog_v3.integrity.category_type_mismatch', count(*)::text
 FROM products p
 JOIN product_categories c ON c.id=p.category
@@ -153,6 +210,19 @@ WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
     SELECT 1 FROM device_details d
     JOIN device_passports dp ON dp.product=p.id
     WHERE d.product=p.id AND NULLIF(d.grade,'') IS NOT NULL
+  )
+UNION ALL
+SELECT 'catalog_v3.publication.used_passport_content_missing', count(*)::text
+FROM products p
+WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
+  AND NOT EXISTS (
+    SELECT 1 FROM device_passports passport
+    WHERE passport.product=p.id
+      AND jsonb_typeof(passport.summary_rows::jsonb)='array'
+      AND jsonb_array_length(passport.summary_rows::jsonb)>0
+      AND NULLIF(trim(passport.diagnostics_status),'') IS NOT NULL
+      AND jsonb_typeof(passport.diagnostics_checklist::jsonb)='array'
+      AND jsonb_array_length(passport.diagnostics_checklist::jsonb)>0
   )
 UNION ALL
 SELECT 'catalog_v3.publication.new_items_missing_diagnostic_date', count(*)::text
@@ -203,7 +273,15 @@ WHERE p.status='draft' AND p.content_status='ready' AND (
             p.condition<>'used' OR (
               d.diagnostic_date IS NOT NULL AND NULLIF(d.diagnostic_by,'') IS NOT NULL AND
               NULLIF(d.grade,'') IS NOT NULL AND
-              EXISTS (SELECT 1 FROM device_passports passport WHERE passport.product=p.id)
+              EXISTS (
+                SELECT 1 FROM device_passports passport
+                WHERE passport.product=p.id
+                  AND jsonb_typeof(passport.summary_rows::jsonb)='array'
+                  AND jsonb_array_length(passport.summary_rows::jsonb)>0
+                  AND NULLIF(trim(passport.diagnostics_status),'') IS NOT NULL
+                  AND jsonb_typeof(passport.diagnostics_checklist::jsonb)='array'
+                  AND jsonb_array_length(passport.diagnostics_checklist::jsonb)>0
+              )
             )
           )
       )
@@ -258,5 +336,11 @@ UNION ALL
 SELECT 'catalog_v3.publication.guard_missing',
   CASE WHEN EXISTS (
     SELECT 1 FROM pg_trigger WHERE tgname='products_publication_guard' AND NOT tgisinternal
+  ) THEN '0' ELSE '1' END
+UNION ALL
+SELECT 'catalog_v3.publication.passport_guard_missing',
+  CASE WHEN EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgname='device_passports_publication_guard' AND NOT tgisinternal
   ) THEN '0' ELSE '1' END;
 `);

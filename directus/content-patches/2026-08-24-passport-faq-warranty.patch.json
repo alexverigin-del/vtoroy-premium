@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-faq-warranty",
+  "description": "Replace the Passport warranty FAQ with the approved copy",
+  "collection": "faq_items",
+  "selector": {
+    "id": "9fe2d031-4452-4401-9f89-07ca87d563da"
+  },
+  "changes": {
+    "sort": 50,
+    "question": "Одинаковая ли гарантия у всей техники?",
+    "answer": "Нет. Условия могут зависеть от категории, состояния и конкретного устройства. Актуальные условия показываем в карточке и Passport до оформления."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "dc110d99ea410741c94d61bddc465fad088f1393f43c93f65bd20de59a97ffc4"
+  }
+}

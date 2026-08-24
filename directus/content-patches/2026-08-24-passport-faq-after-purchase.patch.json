@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-faq-after-purchase",
+  "description": "Replace the Passport after-purchase FAQ with the approved copy",
+  "collection": "faq_items",
+  "selector": {
+    "id": "efd381b2-8f1e-45c2-9058-0c672a23f222"
+  },
+  "changes": {
+    "sort": 30,
+    "question": "Что если после покупки обнаружится неисправность?",
+    "answer": "Действуют письменные условия гарантии конкретного устройства. До покупки можно увидеть, какие условия применяются и какие особенности уже были зафиксированы в Passport."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "b977c0cfe1c63a7d1ece2e9a88125f4c29f1d5354deee4c8530db11019beb183"
+  }
+}

@@ -351,6 +351,7 @@ function numField(record: Record<string, unknown>, key: string, fallback = 0): n
 }
 
 function normalizeFallbackSection(raw: Record<string, unknown>): PageSection {
+  const body = prepareRichText(strField(raw, "body"));
   return {
     id: strField(raw, "id", strField(raw, "sectionKey")),
     sectionKey: strField(raw, "sectionKey"),
@@ -358,7 +359,8 @@ function normalizeFallbackSection(raw: Record<string, unknown>): PageSection {
     eyebrow: strField(raw, "eyebrow"),
     headline: strField(raw, "headline"),
     subheadline: strField(raw, "subheadline"),
-    body: strField(raw, "body"),
+    body: body.html,
+    bodyRichText: body.nodes,
     primaryCtaLabel: strField(raw, "primaryCtaLabel"),
     primaryCtaUrl: normalizeSiteUrl(strField(raw, "primaryCtaUrl", "#final")),
     secondaryCtaLabel: strField(raw, "secondaryCtaLabel"),

@@ -98,9 +98,12 @@ const themeExtend = {
   },
   gridTemplateColumns: {
     compare: "1.1fr 1fr 1fr",
+    editorial: "minmax(0, 0.9fr) minmax(0, 1.1fr)",
     footer: "1.3fr repeat(3, minmax(0, 1fr))",
+    grade: "3rem minmax(0, 1fr)",
     lead: "1.05fr 0.95fr",
     passport: "0.95fr 1.05fr",
+    "passport-grade": "minmax(0, 1.45fr) minmax(18rem, 0.75fr)",
     product: "minmax(0, 1fr) 410px",
     "related-device": "12rem minmax(0, 1fr)",
     trade: "1fr auto 1fr",

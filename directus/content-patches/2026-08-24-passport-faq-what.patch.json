@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-faq-what",
+  "description": "Replace the Passport definition FAQ with the approved copy",
+  "collection": "faq_items",
+  "selector": {
+    "id": "57337fab-1b60-455c-b5b4-dce790d9dc7c"
+  },
+  "changes": {
+    "sort": 10,
+    "question": "Что такое I СВОИ Passport?",
+    "answer": "Это документ с зафиксированными данными о конкретном устройстве с пробегом: его состоянии, результатах диагностики, известных вмешательствах, найденных дефектах и условиях гарантии. Не описание модели вообще. Данные именно этого экземпляра."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "9bc978887903db3e1cb2314426a266e9361c66efb4141a9990cc5511564228bb"
+  }
+}

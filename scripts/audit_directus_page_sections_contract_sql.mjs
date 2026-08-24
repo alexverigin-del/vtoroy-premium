@@ -127,6 +127,7 @@ allowed_keys(key) AS (
     ('heading'),
     ('headingTag'),
     ('headline'),
+    ('highlights'),
     ('icon'),
     ('image_alt'),
     ('items'),

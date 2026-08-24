@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-live-example",
+  "description": "Align the live Passport example with the approved copy while keeping real product data",
+  "collection": "page_sections",
+  "selector": {
+    "id": "03643d54-7dd0-484c-ace8-32879561b228"
+  },
+  "changes": {
+    "eyebrow": "Фрагмент реального Passport",
+    "headline": "Вот как выглядит «без тумана».",
+    "body": "",
+    "primary_cta_label": "Открыть полный Passport",
+    "primary_cta_url": "",
+    "secondary_cta_label": "Посмотреть устройство",
+    "secondary_cta_url": "",
+    "sort_order": 60,
+    "content": {
+      "mode": "passport",
+      "label": "I СВОИ Passport",
+      "note": "Это не рекламное описание модели. Это данные конкретного экземпляра, который можно посмотреть и проверить перед покупкой."
+    }
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "682537941e37f7d9088d8eab13573304c314157034ebb476563022c035f200d2"
+  }
+}

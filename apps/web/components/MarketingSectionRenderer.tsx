@@ -9,6 +9,7 @@ import { RichText } from "./RichText";
 import { cn } from "../lib/cn";
 import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { isPassportManagedSection, PassportPageSection } from "./PassportPageSection";
 import {
   brandZoneEyebrowClass,
   primaryPillCtaClass,
@@ -26,6 +27,7 @@ type MarketingSectionRendererProps = {
 type MarketingCard = {
   title: string;
   text: string;
+  note: string;
   badge: string;
   url: string;
   label: string;
@@ -185,10 +187,11 @@ function marketingCards(value: unknown): MarketingCard[] {
     const record = item as Record<string, unknown>;
     const title = strField(record, "title");
     const text = strField(record, "text");
+    const note = strField(record, "note");
     const badge = strField(record, "badge", String(index + 1).padStart(2, "0"));
     const url = normalizeSiteUrl(strField(record, "url", ""));
     const label = strField(record, "label");
-    return title || text ? [{ title, text, badge, url, label }] : [];
+    return title || text || note ? [{ title, text, note, badge, url, label }] : [];
   });
 }
 
@@ -564,6 +567,11 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
           ))}
         </div>
       ) : null}
+      {section.content.note ? (
+        <p className="mx-auto mt-6 max-w-copy text-sm font-semibold leading-relaxed text-carbon">
+          {String(section.content.note)}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -813,17 +821,19 @@ function MarketingLiveExampleSection({
   const secondaryUrl = section.secondaryCtaUrl || `/product/${device.id}`;
 
   const modeLabel =
-    mode === "trade"
+    strField(section.content, "label") ||
+    (mode === "trade"
       ? "Пример Trade-логики"
       : mode === "club"
         ? "Пример Club-сценария"
-        : "Фрагмент Passport";
+        : "Фрагмент Passport");
   const modeText =
-    mode === "trade"
+    strField(section.content, "note") ||
+    (mode === "trade"
       ? "Берём реальное устройство из Store как цель обновления: цена и состояние известны, а стоимость вашей техники уточняется после диагностики."
       : mode === "club"
         ? "Passport фиксирует состояние устройства, а условия пилота и будущего обновления подтверждаются отдельно до участия."
-        : "Так выглядит сжатый смысл Passport: не абстрактное обещание, а несколько проверенных фактов до решения.";
+        : "Так выглядит сжатый смысл Passport: не абстрактное обещание, а несколько проверенных фактов до решения.");
 
   return (
     <section className="bg-frost py-14 md:py-20">
@@ -959,6 +969,11 @@ function MarketingPassportModulesSection({ section }: { section: PageSection }) 
                   ) : null}
                   {card.text ? (
                     <p className="mt-1 text-sm leading-relaxed text-ash">{card.text}</p>
+                  ) : null}
+                  {card.note ? (
+                    <p className="mt-3 text-sm font-semibold leading-relaxed text-carbon">
+                      {card.note}
+                    </p>
                   ) : null}
                 </dd>
               </div>
@@ -1255,7 +1270,7 @@ function MarketingStepsSection({ section }: { section: PageSection }) {
   if (steps.length === 0) return null;
 
   return (
-    <section className="bg-white py-14 md:py-20">
+    <section id={section.sectionKey.replaceAll("_", "-")} className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <SectionHeader section={section} />
         <ol className="mx-auto mt-8 grid max-w-content gap-x-6 gap-y-6 sm:grid-cols-2 md:mt-10 md:gap-y-8 lg:grid-cols-4">
@@ -1408,6 +1423,8 @@ export function MarketingSectionRenderer({
 }: MarketingSectionRendererProps) {
   const renderedSection = isHeroSection(section) ? (
     <MarketingHeroSection section={section} slug={slug} />
+  ) : slug === "passport" && isPassportManagedSection(section) ? (
+    <PassportPageSection section={section} />
   ) : isVisualBandSection(section) ? (
     <MarketingVisualBandSection section={section} priority={priorityVisual} />
   ) : isCompareSection(section) ? (

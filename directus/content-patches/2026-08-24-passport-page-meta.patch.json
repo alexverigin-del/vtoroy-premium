@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-page-meta",
+  "description": "Align Passport page title and description with the approved v2 copy",
+  "collection": "site_pages",
+  "selector": {
+    "id": "5853f800-4a2d-4cc5-8bb7-8511c3fe0e07"
+  },
+  "changes": {
+    "title": "I СВОИ Passport — факты о конкретном устройстве",
+    "meta_description": "Состояние, батарея, диагностика, известные вмешательства, дефекты и гарантия конкретного устройства с пробегом."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "0206902ea7c86a25a4e33209a02e621c0d138bc7517e177df22b94339d3542eb"
+  }
+}

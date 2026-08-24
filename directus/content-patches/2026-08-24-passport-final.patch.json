@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-final",
+  "description": "Replace the Passport final CTA with the approved facts-first close",
+  "collection": "page_sections",
+  "selector": {
+    "id": "8f71f5e3-aa7a-4cd2-aff1-9f7fc32b9cd9"
+  },
+  "changes": {
+    "headline": "Выбирайте не по слову «идеал». Выбирайте по фактам.",
+    "body": "<p>У каждого устройства с пробегом своё состояние.<br>Своя батарея.<br>Свои следы использования.<br>Свои нюансы.</p><p>Поэтому мы показываем не абстрактное описание модели, а данные конкретного экземпляра.</p><p><strong>I СВОИ Passport</strong></p><p>Сначала факты.<br>Потом решение.</p>",
+    "primary_cta_label": "Смотреть устройства с Passport",
+    "primary_cta_url": "/catalog",
+    "secondary_cta_label": "Как проходит проверка",
+    "secondary_cta_url": "#passport-steps",
+    "sort_order": 110
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "cfec77d04a033026566d34fb4b6343c74cc66c6f7b1200008f3e100297a4615b"
+  }
+}

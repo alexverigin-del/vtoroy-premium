@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-faq-diagnostics",
+  "description": "Replace the Passport diagnostics FAQ with the approved copy",
+  "collection": "faq_items",
+  "selector": {
+    "id": "bbf281ab-b1a0-40ba-b06b-27268890bb04"
+  },
+  "changes": {
+    "sort": 40,
+    "question": "Можно посмотреть результаты проверки?",
+    "answer": "Да. Проверка проходит открыто: можно увидеть, какие функции проверялись и какие замечания были зафиксированы."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "002e959431182f837ed39898981b7708d79c4409c66f736832b345f4e1375192"
+  }
+}

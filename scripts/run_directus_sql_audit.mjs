@@ -193,6 +193,22 @@ const auditDefinitions = {
       "homepage_copy.info.faq_count": "6",
     },
   },
+  "passport-page": {
+    script: "scripts/audit_directus_passport_page_sql.mjs",
+    zero: [
+      "passport_page.page_missing_or_duplicate",
+      "passport_page.sections.missing_or_duplicate",
+      "passport_page.sections.order_mismatch",
+      "passport_page.grades.contract_invalid",
+      "passport_page.faq.missing_or_duplicate",
+      "passport_page.legacy_used_terminology",
+      "passport_page.cta.invalid_process_anchor",
+    ],
+    equals: {
+      "passport_page.info.section_count": "11",
+      "passport_page.info.faq_count": "7",
+    },
+  },
   leads: {
     script: "scripts/audit_directus_leads_sql.mjs",
     zero: [
@@ -461,6 +477,7 @@ const prodAuditOrder = [
   "legacy-fallback",
   "page-sections",
   "homepage-copy",
+  "passport-page",
   "leads",
   "files",
   "import",

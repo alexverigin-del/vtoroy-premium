@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "2026-08-24-passport-faq-exit-price",
+  "description": "Replace the Passport future-value FAQ with the approved copy",
+  "collection": "faq_items",
+  "selector": {
+    "id": "63091bb7-6e78-4f90-a124-0239ae9a8bfa"
+  },
+  "changes": {
+    "sort": 60,
+    "question": "Почему в Passport может быть указана стоимость при будущем обновлении?",
+    "answer": "Это предварительный ориентир, а не обещание выкупа. Итоговая сумма определяется после повторной диагностики и зависит от состояния устройства на тот момент, комплектации и условий оценки."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "5458624d9523afc78c7a0e82ea9f1315d9ffb90929cdfac85c2597995bae1cef"
+  }
+}

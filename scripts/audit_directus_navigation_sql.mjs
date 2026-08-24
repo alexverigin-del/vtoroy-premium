@@ -131,7 +131,12 @@ WHERE item.id IS NULL
    ))
    OR item.item_role IS DISTINCT FROM expected.item_role
    OR item.sort IS DISTINCT FROM expected.sort
-   OR item.is_active IS DISTINCT FROM true
+   OR item.is_active IS DISTINCT FROM CASE
+     WHEN expected.id='98310275-35d5-4e2e-a248-5ddf871b68be'::uuid THEN EXISTS (
+       SELECT 1 FROM site_pages page WHERE page.slug='club' AND page.status='published'
+     )
+     ELSE true
+   END
    OR COALESCE(item.label_short,'') <> ''
 UNION ALL
 SELECT 'navigation.main.unmanaged_active', count(*)::text

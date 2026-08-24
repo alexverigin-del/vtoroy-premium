@@ -133,6 +133,14 @@ SELECT pg_temp.isvoi_navigation_item(
   '0c0ea292-7eb0-4983-af42-cd78f24d0a4b',2,'page','blog'
 );
 
+-- Keep the pilot out of the main navigation until its managed page is published.
+UPDATE navigation_items item
+SET is_active = EXISTS (
+  SELECT 1 FROM site_pages page
+  WHERE page.slug='club' AND page.status='published'
+)
+WHERE item.id='98310275-35d5-4e2e-a248-5ddf871b68be';
+
 -- Remove only known legacy rows. Unknown editor-created rows are left intact.
 DELETE FROM navigation_items
 WHERE id IN (

@@ -148,6 +148,7 @@
     "directus:setup:studio-ux-v3": "node scripts/setup_directus_studio_ux_v3_sql.mjs",
     "directus:setup:studio-ux-v4": "node scripts/setup_directus_catalog_inventory_ux_v4_sql.mjs",
     "directus:setup:navigation-ux": "node scripts/setup_directus_navigation_ux_sql.mjs",
+    "directus:reconcile:deferred-club": "node scripts/reconcile_directus_deferred_club_sql.mjs",
     "directus:setup:insights": "node scripts/setup_directus_insights_sql.mjs",
     "directus:test:catalog-v3-editability": "node scripts/test_directus_catalog_v3_editability.mjs"
   },

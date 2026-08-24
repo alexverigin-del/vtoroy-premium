@@ -647,6 +647,7 @@ function Pagination({
 }
 
 export function ProductCatalogView({
+  catalogSource,
   city,
   copy,
   facets,
@@ -654,6 +655,7 @@ export function ProductCatalogView({
   result,
   type,
 }: {
+  catalogSource: "legacy" | "v3";
   city?: string;
   copy: CatalogCopy;
   facets: ProductCatalogFacets;
@@ -672,6 +674,7 @@ export function ProductCatalogView({
       className="bg-white py-14 md:py-20"
       data-city={city || undefined}
       data-city-slug={filters.city || undefined}
+      data-catalog-source={catalogSource}
       data-component="ProductCatalogView"
     >
       <div className="mx-auto max-w-shell px-5">

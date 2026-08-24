@@ -134,6 +134,7 @@
     "directus:audit-conversion-v2:sql": "node scripts/audit_directus_conversion_v2_sql.mjs",
     "directus:audit-catalog-v3:sql": "node scripts/audit_directus_catalog_v3_sql.mjs",
     "directus:audit-catalog-v3": "node scripts/run_directus_sql_audit.mjs catalog-v3",
+    "directus:retire-legacy-catalog-prototypes:sql": "node scripts/retire_legacy_catalog_prototypes_sql.mjs",
     "directus:audit-multicity:sql": "node scripts/audit_directus_multicity_sql.mjs",
     "directus:audit-multicity": "node scripts/run_directus_sql_audit.mjs multicity",
     "directus:audit-inventory": "node scripts/run_directus_sql_audit.mjs inventory",

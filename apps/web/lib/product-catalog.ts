@@ -31,6 +31,12 @@ const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN ?? "";
 const REVALIDATE = 300;
 const DEFAULT_PAGE_SIZE = 24;
 
+export type CatalogSource = "legacy" | "v3";
+
+export function getCatalogSource(): CatalogSource {
+  return process.env.CATALOG_SOURCE === "v3" ? "v3" : "legacy";
+}
+
 type Row = Record<string, unknown>;
 type DirectusResponse<T> = {
   data: T;
@@ -548,13 +554,6 @@ const getActiveCatalogCategories = cache(async function getActiveCatalogCategori
   return response?.data.map((row) => mapCategory(row)).filter((item) => item.name) ?? [];
 });
 
-const hasVisibleV3Products = cache(async function hasVisibleV3Products(): Promise<boolean> {
-  const response = await directusRequest<Row[]>(
-    "/items/products?filter[status][_eq]=published&filter[content_status][_eq]=ready&filter[stock_status][_neq]=hidden&filter[stock_quantity][_gt]=0&fields=id&limit=1",
-  );
-  return Boolean(response?.data.length);
-});
-
 function productSort(sort = "default"): string {
   if (sort === "price-asc") return "price,sort";
   if (sort === "price-desc") return "-price,sort";
@@ -576,6 +575,33 @@ export async function getPublishedProducts(
 ): Promise<ProductCatalogResult> {
   const page = normalizePage(filters.page);
   const pageSize = normalizePageSize(filters.pageSize);
+
+  if (getCatalogSource() === "legacy") {
+    const legacy = mapLegacyCards(
+      await getPublishedDeviceCards(),
+      await getActiveCatalogCategories(),
+    ).filter((product) => {
+      if (filters.type && filters.type !== "device") return false;
+      if (filters.brand && filters.brand !== product.brand.slug) return false;
+      if (filters.category && filters.category !== product.category.slug) return false;
+      if (filters.condition && filters.condition !== "used") return false;
+      if (filters.stock && filters.stock !== product.stockStatus) return false;
+      if (filters.q) {
+        const haystack = `${product.title} ${product.model} ${product.brand.name}`.toLowerCase();
+        if (!haystack.includes(filters.q.toLowerCase())) return false;
+      }
+      return true;
+    });
+    const start = (page - 1) * pageSize;
+    return {
+      products: legacy.slice(start, start + pageSize),
+      total: legacy.length,
+      page,
+      pageSize,
+      pageCount: Math.max(1, Math.ceil(legacy.length / pageSize)),
+    };
+  }
+
   const cityMode = Boolean(filters.city);
   const params = new URLSearchParams({
     "filter[status][_eq]": "published",
@@ -604,65 +630,44 @@ export async function getPublishedProducts(
   const response = await directusRequest<Row[]>(`/items/products?${params}`);
   if (response) {
     let products = response.data.map((row) => mapProductCard(row, filters.city, filters.cityName));
-    const v3CatalogIsLive = products.length > 0 || (await hasVisibleV3Products());
-    if (!v3CatalogIsLive) {
-      products = [];
-    } else {
-      if (cityMode) {
-        if (filters.stock) {
-          products = products.filter((product) => {
-            if (filters.stock === "delivery") return product.availabilityScope === "delivery";
-            if (filters.stock === "sold") return product.availabilityScope === "unavailable";
-            return product.availabilityScope === "local" && product.stockStatus === filters.stock;
-          });
-        }
-        products.sort((a, b) => {
-          const rank = { local: 0, delivery: 1, network: 2, unavailable: 3 } as const;
-          return rank[a.availabilityScope ?? "network"] - rank[b.availabilityScope ?? "network"];
+    if (cityMode) {
+      if (filters.stock) {
+        products = products.filter((product) => {
+          if (filters.stock === "delivery") return product.availabilityScope === "delivery";
+          if (filters.stock === "sold") return product.availabilityScope === "unavailable";
+          return product.availabilityScope === "local" && product.stockStatus === filters.stock;
         });
-        const total = products.length;
-        const start = (page - 1) * pageSize;
-        return {
-          products: products.slice(start, start + pageSize),
-          total,
-          page,
-          pageSize,
-          pageCount: Math.max(1, Math.ceil(total / pageSize)),
-        };
       }
-      const total = number(response.meta?.filter_count, products.length);
+      products.sort((a, b) => {
+        const rank = { local: 0, delivery: 1, network: 2, unavailable: 3 } as const;
+        return rank[a.availabilityScope ?? "network"] - rank[b.availabilityScope ?? "network"];
+      });
+      const total = products.length;
+      const start = (page - 1) * pageSize;
       return {
-        products,
+        products: products.slice(start, start + pageSize),
         total,
         page,
         pageSize,
         pageCount: Math.max(1, Math.ceil(total / pageSize)),
       };
     }
+    const total = number(response.meta?.filter_count, products.length);
+    return {
+      products,
+      total,
+      page,
+      pageSize,
+      pageCount: Math.max(1, Math.ceil(total / pageSize)),
+    };
   }
 
-  const legacy = mapLegacyCards(
-    await getPublishedDeviceCards(),
-    await getActiveCatalogCategories(),
-  ).filter((product) => {
-    if (filters.type && filters.type !== "device") return false;
-    if (filters.brand && filters.brand !== product.brand.slug) return false;
-    if (filters.category && filters.category !== product.category.slug) return false;
-    if (filters.condition && filters.condition !== "used") return false;
-    if (filters.stock && filters.stock !== product.stockStatus) return false;
-    if (filters.q) {
-      const haystack = `${product.title} ${product.model} ${product.brand.name}`.toLowerCase();
-      if (!haystack.includes(filters.q.toLowerCase())) return false;
-    }
-    return true;
-  });
-  const start = (page - 1) * pageSize;
   return {
-    products: legacy.slice(start, start + pageSize),
-    total: legacy.length,
+    products: [],
+    total: 0,
     page,
     pageSize,
-    pageCount: Math.max(1, Math.ceil(legacy.length / pageSize)),
+    pageCount: 1,
   };
 }
 
@@ -681,6 +686,7 @@ export async function getAllPublishedProductCards(): Promise<ProductCardData[]> 
 
 export const getProductCatalogFacets = cache(
   async function getProductCatalogFacets(): Promise<ProductCatalogFacets> {
+    const source = getCatalogSource();
     const [brands, categories, models, visibleProducts] = await Promise.all([
       directusRequest<Row[]>(
         "/items/product_brands?filter[is_active][_eq]=true&fields=id,slug,name&sort=sort,name&limit=500",
@@ -689,19 +695,20 @@ export const getProductCatalogFacets = cache(
       directusRequest<Row[]>(
         "/items/device_models?filter[is_active][_eq]=true&fields=id,slug,name,family,year,brand.id,brand.slug,brand.name&sort=brand.name,name&limit=1000",
       ),
-      directusRequest<Row[]>(
-        "/items/products?filter[status][_eq]=published&filter[content_status][_eq]=ready&filter[stock_status][_neq]=hidden&filter[stock_quantity][_gt]=0&fields=product_type,brand.slug,category.slug&limit=500",
-      ),
+      source === "v3"
+        ? directusRequest<Row[]>(
+            "/items/products?filter[status][_eq]=published&filter[content_status][_eq]=ready&filter[stock_status][_neq]=hidden&filter[stock_quantity][_gt]=0&fields=product_type,brand.slug,category.slug&limit=500",
+          )
+        : Promise.resolve(null),
     ]);
 
     const legacyProducts =
-      visibleProducts && visibleProducts.data.length === 0
-        ? mapLegacyCards(await getPublishedDeviceCards(), categories)
-        : [];
+      source === "legacy" ? mapLegacyCards(await getPublishedDeviceCards(), categories) : [];
     const visibleRows = visibleProducts?.data ?? [];
 
-    const brandCounts = visibleProducts
-      ? legacyProducts.length > 0
+    const hasCountSource = source === "legacy" || Boolean(visibleProducts);
+    const brandCounts = hasCountSource
+      ? source === "legacy"
         ? legacyProducts.reduce((counts, product) => {
             counts.set(product.brand.slug, (counts.get(product.brand.slug) ?? 0) + 1);
             return counts;
@@ -712,8 +719,8 @@ export const getProductCatalogFacets = cache(
             return counts;
           }, new Map<string, number>())
       : null;
-    const categoryCounts = visibleProducts
-      ? legacyProducts.length > 0
+    const categoryCounts = hasCountSource
+      ? source === "legacy"
         ? legacyProducts.reduce((counts, product) => {
             counts.set(product.category.slug, (counts.get(product.category.slug) ?? 0) + 1);
             return counts;
@@ -724,8 +731,8 @@ export const getProductCatalogFacets = cache(
             return counts;
           }, new Map<string, number>())
       : null;
-    const visibleProductCounts = visibleProducts
-      ? legacyProducts.length > 0
+    const visibleProductCounts = hasCountSource
+      ? source === "legacy"
         ? ({ device: legacyProducts.length } satisfies Partial<Record<ProductType, number>>)
         : visibleRows.reduce<Partial<Record<ProductType, number>>>((counts, row) => {
             const productType = text(row.product_type);
@@ -892,6 +899,11 @@ function legacyProduct(
 }
 
 export async function getProductBySlug(slug: string): Promise<CatalogProduct | null> {
+  if (getCatalogSource() === "legacy") {
+    const device = await getDeviceBySlug(slug);
+    return device ? legacyProduct(slug, device) : null;
+  }
+
   const encoded = encodeURIComponent(slug);
   const [product, images, deviceDetails, accessoryDetails, passport, trade, compatibility] =
     await Promise.all([
@@ -919,10 +931,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProduct | n
     ]);
 
   const row = product?.data[0];
-  if (!row) {
-    const device = await getDeviceBySlug(slug);
-    return device ? legacyProduct(slug, device) : null;
-  }
+  if (!row) return null;
 
   const card = mapProductCard(row);
   const brand = card.brand;

@@ -330,13 +330,6 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/cata
     "BreadcrumbList",
     "ItemList",
   ]);
-  if (requireDirectusAssets) {
-    await waitForDirectusImages(page, 1);
-  } else {
-    await waitForLoadedImages(page, 1);
-  }
-  await assertImages(page, route, 1, requireDirectusAssets);
-
   const conditionOptions = await page.locator('select[name="condition"] option').allTextContents();
   if (conditionOptions.length > 0) {
     assert(
@@ -347,8 +340,30 @@ async function smokeCatalog(page, baseUrl, requireDirectusAssets, route = "/cata
   }
 
   const catalog = page.locator('[data-component="ProductCatalogView"]');
+  const expectedSource = process.env.SMOKE_EXPECT_CATALOG_SOURCE;
+  if (expectedSource) {
+    assert(
+      (await catalog.getAttribute("data-catalog-source")) === expectedSource,
+      `${route}: expected catalog source ${expectedSource}`,
+    );
+  }
   const foundMatch = visibleText.match(/Найдено:\s*(\d+)/u);
   const visibleCardCount = await catalog.locator('[data-component="ProductCard"]').count();
+  const expectEmpty = process.env.SMOKE_EXPECT_EMPTY_CATALOG === "1";
+  if (expectEmpty) {
+    assert(visibleCardCount === 0, `${route}: expected no published catalog cards`);
+    assert(
+      (await catalog.locator('[data-component="CatalogEmptyState"]').count()) === 1,
+      `${route}: expected the catalog empty state`,
+    );
+  } else {
+    if (requireDirectusAssets) {
+      await waitForDirectusImages(page, 1);
+    } else {
+      await waitForLoadedImages(page, 1);
+    }
+    await assertImages(page, route, 1, requireDirectusAssets);
+  }
   if (foundMatch) {
     const total = Number(foundMatch[1]);
     assert(
@@ -638,6 +653,7 @@ async function main() {
   const devicePath = process.env.SMOKE_DEVICE_PATH || DEFAULT_DEVICE_PATH;
   const blogArticlePath = process.env.SMOKE_BLOG_ARTICLE_PATH || DEFAULT_BLOG_ARTICLE_PATH;
   const requireDirectusAssets = shouldRequireDirectusAssets(baseUrl);
+  const expectEmptyCatalog = process.env.SMOKE_EXPECT_EMPTY_CATALOG === "1";
   const browser = await launchChromium({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
 
@@ -667,8 +683,10 @@ async function main() {
         results.push(await smokeMarketing(page, baseUrl, route));
       }
       results.push(await smokeBlogArticle(page, baseUrl, blogArticlePath, requireDirectusAssets));
-      results.push(await smokeDevice(page, baseUrl, devicePath, requireDirectusAssets));
-      results.push(await smokeLegacyDeviceRedirect(baseUrl, devicePath));
+      if (!expectEmptyCatalog) {
+        results.push(await smokeDevice(page, baseUrl, devicePath, requireDirectusAssets));
+        results.push(await smokeLegacyDeviceRedirect(baseUrl, devicePath));
+      }
     }
 
     for (const result of results) {

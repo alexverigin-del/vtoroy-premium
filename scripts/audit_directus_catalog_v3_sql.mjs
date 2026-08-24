@@ -162,6 +162,68 @@ WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
   AND p.sku NOT LIKE 'LEGACY-%'
   AND d.diagnostic_date IS NULL
 UNION ALL
+SELECT 'catalog_v3.publication.used_items_missing_diagnostic_by', count(*)::text
+FROM products p
+JOIN device_details d ON d.product=p.id
+WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
+  AND NULLIF(d.diagnostic_by,'') IS NULL
+UNION ALL
+SELECT 'catalog_v3.publication.inventory_unconfirmed', count(*)::text
+FROM products p
+WHERE p.status='published'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM inventory_items inventory
+    WHERE inventory.product=p.id
+      AND inventory.for_sale=true
+      AND inventory.quantity>0
+      AND inventory.eligibility_status='eligible'
+  )
+UNION ALL
+SELECT 'catalog_v3.readiness.ready_draft_blockers', count(*)::text
+FROM products p
+WHERE p.status='draft' AND p.content_status='ready' AND (
+  NULLIF(p.sku,'') IS NULL OR p.brand IS NULL OR p.category IS NULL OR p.price<=0 OR
+  NULLIF(p.warranty,'') IS NULL OR p.listing_file IS NULL OR
+  p.stock_status='hidden' OR p.stock_quantity<=0 OR
+  NOT EXISTS (
+    SELECT 1
+    FROM inventory_items inventory
+    WHERE inventory.product=p.id
+      AND inventory.for_sale=true
+      AND inventory.quantity>0
+      AND inventory.eligibility_status='eligible'
+  ) OR (
+    p.product_type='device' AND (
+      p.device_model IS NULL OR
+      NOT EXISTS (
+        SELECT 1 FROM device_details d
+        WHERE d.product=p.id
+          AND (
+            p.condition<>'used' OR (
+              d.diagnostic_date IS NOT NULL AND NULLIF(d.diagnostic_by,'') IS NOT NULL AND
+              NULLIF(d.grade,'') IS NOT NULL AND
+              EXISTS (SELECT 1 FROM device_passports passport WHERE passport.product=p.id)
+            )
+          )
+      )
+    )
+  )
+)
+UNION ALL
+SELECT 'catalog_v3.transition.mixed_source_visibility', count(*)::text
+FROM products p
+JOIN devices legacy ON legacy.id=p.id
+WHERE p.status<>'published' AND legacy.status='published'
+UNION ALL
+SELECT 'catalog_v3.transition.published_legacy_devices', count(*)::text
+FROM devices WHERE status='published'
+UNION ALL
+SELECT 'catalog_v3.transition.published_offers_for_hidden_products', count(*)::text
+FROM product_offers offer
+JOIN products product ON product.id=offer.product
+WHERE offer.status='published' AND product.status<>'published'
+UNION ALL
 SELECT 'catalog_v3.transition.legacy_missing_diagnostic_date', count(*)::text
 FROM products p
 JOIN device_details d ON d.product=p.id

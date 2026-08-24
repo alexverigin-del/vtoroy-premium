@@ -2,7 +2,11 @@ import type { ProductCatalogFilters, ProductType } from "@vtoroy/shared";
 import type { StoreLocation } from "@vtoroy/shared";
 
 import { getNavigationItems, getSitePage, getSiteSettings } from "@/lib/directus";
-import { getProductCatalogFacets, getPublishedProducts } from "@/lib/product-catalog";
+import {
+  getCatalogSource,
+  getProductCatalogFacets,
+  getPublishedProducts,
+} from "@/lib/product-catalog";
 import { siteChrome } from "@/lib/site-content";
 import {
   breadcrumbJsonLd,
@@ -166,6 +170,7 @@ export async function ProductCatalogRoute({
           }}
         />
         <ProductCatalogView
+          catalogSource={getCatalogSource()}
           city={location?.city}
           copy={copy}
           facets={facets}

@@ -81,6 +81,35 @@ WHERE NOT EXISTS (
     AND actual.options::jsonb->'fields' @> expected.fields
 )
 UNION ALL
+SELECT 'catalog_v3.studio.passport_string_lists_invalid',count(*)::text
+FROM (VALUES ('condition_notes'),('story_facts')) expected(field)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_fields actual
+  WHERE actual.collection='device_passports' AND actual.field=expected.field
+    AND actual.interface='tags'
+    AND coalesce(actual.special,'') LIKE '%cast-json%'
+    AND coalesce(actual.readonly,false)=false
+    AND coalesce(actual.hidden,false)=false
+)
+UNION ALL
+SELECT 'catalog_v3.data.passport_string_lists_invalid',count(*)::text
+FROM device_passports passport
+CROSS JOIN LATERAL (VALUES
+  ('condition_notes',passport.condition_notes::jsonb),
+  ('story_facts',passport.story_facts::jsonb)
+) value(field,payload)
+WHERE value.payload IS NOT NULL
+  AND (
+    jsonb_typeof(value.payload) <> 'array'
+    OR EXISTS (
+      SELECT 1 FROM jsonb_array_elements(
+        CASE WHEN jsonb_typeof(value.payload)='array' THEN value.payload ELSE '[]'::jsonb END
+      ) item
+      WHERE jsonb_typeof(item) <> 'string'
+         OR nullif(trim(item #>> '{}'),'') IS NULL
+    )
+  )
+UNION ALL
 SELECT 'catalog_v3.studio.presets_missing', count(*)::text
 FROM (VALUES
   ('Требует заполнения'),('Нужен Passport или диагностика'),

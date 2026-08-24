@@ -247,6 +247,9 @@ receipt workflow. This area is available only to administrators and
   warnings, not current-stock blockers.
 - A product reaches Catalog V3 only after an explicit documented eligibility
   override and still starts as `draft / needs_photo`.
+- In Passport, add each `Факт о состоянии` and `Факт истории` as a separate
+  item and confirm it with Enter. Condition facts must be observable; history
+  facts must be confirmed and must not contain personal data.
 - Keep Avito listings in `draft` until the official category template and the
   three-item pilot have passed QA.
 

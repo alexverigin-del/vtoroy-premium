@@ -152,6 +152,7 @@
     "directus:setup:inventory-issue-lifecycle-v6": "node scripts/setup_directus_inventory_issue_lifecycle_v6_sql.mjs",
     "directus:setup:admin-studio-parity-v7": "node scripts/setup_directus_admin_studio_parity_v7_sql.mjs",
     "directus:setup:catalog-editor-ux-v6": "node scripts/setup_directus_catalog_editor_ux_v6_sql.mjs",
+    "directus:setup:catalog-passport-facts-v7": "node scripts/setup_directus_catalog_passport_facts_v7_sql.mjs",
     "directus:setup:navigation-ux": "node scripts/setup_directus_navigation_ux_sql.mjs",
     "directus:reconcile:deferred-club": "node scripts/reconcile_directus_deferred_club_sql.mjs",
     "directus:setup:insights": "node scripts/setup_directus_insights_sql.mjs",

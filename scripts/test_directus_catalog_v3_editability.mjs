@@ -3,8 +3,7 @@
 const baseUrl = (process.env.DIRECTUS_URL || "").replace(/\/$/, "");
 const token = (process.env.DIRECTUS_TOKEN || "").trim();
 const productId = process.env.CATALOG_V3_EDIT_TEST_PRODUCT_ID || "qa-galaxy-s24-case";
-const usedProductId =
-  process.env.CATALOG_V3_PASSPORT_TEST_PRODUCT_ID || "qa-used-samsung-s24";
+const usedProductId = process.env.CATALOG_V3_PASSPORT_TEST_PRODUCT_ID || "qa-used-samsung-s24";
 
 if (!baseUrl || !token) {
   throw new Error("DIRECTUS_URL and DIRECTUS_TOKEN are required.");
@@ -36,7 +35,8 @@ async function request(path, options = {}) {
 
 const query = new URLSearchParams({
   "filter[id][_eq]": productId,
-  fields: "id,status,content_status,product_type,category.id,category.catalog_section,short_description",
+  fields:
+    "id,status,content_status,product_type,category.id,category.catalog_section,short_description",
   limit: "1",
 });
 const result = await request(`/items/products?${query}`);
@@ -148,7 +148,8 @@ if (![401, 403].includes(publishAttempt.response.status)) {
 
 const passportQuery = new URLSearchParams({
   "filter[product][_eq]": usedProductId,
-  fields: "id,product,summary_rows,diagnostics_status,diagnostics_checklist",
+  fields:
+    "id,product,summary_rows,diagnostics_status,diagnostics_checklist,condition_notes,story_facts",
   limit: "1",
 });
 const passportResult = await request(`/items/device_passports?${passportQuery}`);
@@ -159,6 +160,8 @@ if (!passport) {
 
 const originalSummaryRows = passport.summary_rows ?? null;
 const originalChecklist = passport.diagnostics_checklist ?? null;
+const originalConditionNotes = passport.condition_notes ?? null;
+const originalStoryFacts = passport.story_facts ?? null;
 const passportMarker = `catalog-v3-passport-${Date.now()}`;
 const testSummaryRows = [
   ...(Array.isArray(originalSummaryRows) ? originalSummaryRows : []),
@@ -168,6 +171,14 @@ const testChecklist = [
   ...(Array.isArray(originalChecklist) ? originalChecklist : []),
   { text: passportMarker, state: "ok" },
 ];
+const testConditionNotes = [
+  ...(Array.isArray(originalConditionNotes) ? originalConditionNotes : []),
+  passportMarker,
+];
+const testStoryFacts = [
+  ...(Array.isArray(originalStoryFacts) ? originalStoryFacts : []),
+  passportMarker,
+];
 let passportChanged = false;
 
 try {
@@ -176,16 +187,20 @@ try {
     body: JSON.stringify({
       summary_rows: testSummaryRows,
       diagnostics_checklist: testChecklist,
+      condition_notes: testConditionNotes,
+      story_facts: testStoryFacts,
     }),
   });
   passportChanged = true;
 
   const changedPassport = await request(
-    `/items/device_passports/${passport.id}?fields=id,summary_rows,diagnostics_checklist`,
+    `/items/device_passports/${passport.id}?fields=id,summary_rows,diagnostics_checklist,condition_notes,story_facts`,
   );
   if (
     !changedPassport?.data?.summary_rows?.some((row) => row.value === passportMarker) ||
-    !changedPassport?.data?.diagnostics_checklist?.some((row) => row.text === passportMarker)
+    !changedPassport?.data?.diagnostics_checklist?.some((row) => row.text === passportMarker) ||
+    !changedPassport?.data?.condition_notes?.includes(passportMarker) ||
+    !changedPassport?.data?.story_facts?.includes(passportMarker)
   ) {
     throw new Error("Structured Passport rows were not returned after the edit.");
   }
@@ -196,19 +211,24 @@ try {
       body: JSON.stringify({
         summary_rows: originalSummaryRows,
         diagnostics_checklist: originalChecklist,
+        condition_notes: originalConditionNotes,
+        story_facts: originalStoryFacts,
       }),
     });
   }
 }
 
 const restoredPassport = await request(
-  `/items/device_passports/${passport.id}?fields=id,summary_rows,diagnostics_checklist`,
+  `/items/device_passports/${passport.id}?fields=id,summary_rows,diagnostics_checklist,condition_notes,story_facts`,
 );
 if (
   JSON.stringify(restoredPassport?.data?.summary_rows ?? null) !==
     JSON.stringify(originalSummaryRows) ||
   JSON.stringify(restoredPassport?.data?.diagnostics_checklist ?? null) !==
-    JSON.stringify(originalChecklist)
+    JSON.stringify(originalChecklist) ||
+  JSON.stringify(restoredPassport?.data?.condition_notes ?? null) !==
+    JSON.stringify(originalConditionNotes) ||
+  JSON.stringify(restoredPassport?.data?.story_facts ?? null) !== JSON.stringify(originalStoryFacts)
 ) {
   throw new Error("QA Passport was edited, but its original rows were not restored.");
 }
@@ -226,6 +246,7 @@ console.log(
     editor_publication_status: publishAttempt.response.status,
     passport_product_id: usedProductId,
     passport_structured_rows_editable: true,
+    passport_string_lists_editable: true,
     passport_restored: true,
     restored: true,
   }),

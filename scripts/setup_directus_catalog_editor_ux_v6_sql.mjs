@@ -208,6 +208,16 @@ UPDATE directus_fields SET required=true,
 WHERE collection='device_passports' AND field='product';
 UPDATE directus_fields SET note='Краткий фактический итог диагностики, например «Проверено, замечания указаны».',width='full'
 WHERE collection='device_passports' AND field='diagnostics_status';
+UPDATE directus_fields SET
+  interface='tags',special='cast-json',width='full',readonly=false,hidden=false,
+  options='{"placeholder":"Введите факт и нажмите Enter"}'::json,
+  note='Короткие проверяемые факты о состоянии. Один факт — одна строка; добавляйте пункт клавишей Enter.'
+WHERE collection='device_passports' AND field='condition_notes';
+UPDATE directus_fields SET
+  interface='tags',special='cast-json',width='full',readonly=false,hidden=false,
+  options='{"placeholder":"Введите факт и нажмите Enter"}'::json,
+  note='Короткие подтверждённые факты истории без персональных данных. Один факт — одна строка; добавляйте пункт клавишей Enter.'
+WHERE collection='device_passports' AND field='story_facts';
 
 CREATE OR REPLACE FUNCTION isvoi_passport_complete(
   p_summary json,p_status text,p_checklist json
@@ -309,7 +319,10 @@ CREATE TRIGGER device_passports_publication_guard
 AFTER INSERT OR UPDATE OR DELETE ON device_passports
 FOR EACH ROW EXECUTE FUNCTION isvoi_validate_published_passport_change();
 
-${rollback ? "ROLLBACK;\nSELECT 'catalog_editor_ux_v6.rollback' AS check_name,'ok' AS value;" : `COMMIT;
+${
+  rollback
+    ? "ROLLBACK;\nSELECT 'catalog_editor_ux_v6.rollback' AS check_name,'ok' AS value;"
+    : `COMMIT;
 
 SELECT 'catalog_editor_ux_v6.metadata_missing' AS check_name,count(*)::text AS value
 FROM information_schema.columns column_info
@@ -334,5 +347,6 @@ WHERE NOT EXISTS (
   SELECT 1 FROM directus_fields actual
   WHERE actual.collection='device_passports' AND actual.field=expected.field
     AND actual.interface='list' AND actual.options::jsonb->'fields' @> expected.fields
-);`}
+);`
+}
 `);

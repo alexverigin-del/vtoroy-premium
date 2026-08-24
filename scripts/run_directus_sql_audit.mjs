@@ -400,6 +400,8 @@ const auditDefinitions = {
       "catalog_v3.studio.field_metadata_missing",
       "catalog_v3.studio.readonly_groups",
       "catalog_v3.studio.passport_repeaters_invalid",
+      "catalog_v3.studio.passport_string_lists_invalid",
+      "catalog_v3.data.passport_string_lists_invalid",
       "catalog_v3.studio.presets_missing",
       "catalog_v3.schema.relations_missing",
       "catalog_v3.permissions.public_missing",

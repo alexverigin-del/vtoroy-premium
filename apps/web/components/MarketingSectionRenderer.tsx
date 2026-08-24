@@ -10,6 +10,7 @@ import { cn } from "../lib/cn";
 import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { isPassportManagedSection, PassportPageSection } from "./PassportPageSection";
+import { isTradeManagedSection, TradePageSection } from "./TradePageSection";
 import {
   brandZoneEyebrowClass,
   primaryPillCtaClass,
@@ -1425,6 +1426,8 @@ export function MarketingSectionRenderer({
     <MarketingHeroSection section={section} slug={slug} />
   ) : slug === "passport" && isPassportManagedSection(section) ? (
     <PassportPageSection section={section} />
+  ) : slug === "trade" && isTradeManagedSection(section) ? (
+    <TradePageSection section={section} devices={devices} />
   ) : isVisualBandSection(section) ? (
     <MarketingVisualBandSection section={section} priority={priorityVisual} />
   ) : isCompareSection(section) ? (

@@ -352,6 +352,9 @@ function numField(record: Record<string, unknown>, key: string, fallback = 0): n
 
 function normalizeFallbackSection(raw: Record<string, unknown>): PageSection {
   const body = prepareRichText(strField(raw, "body"));
+  const content = (
+    raw.content && typeof raw.content === "object" ? raw.content : {}
+  ) as PageSection["content"];
   return {
     id: strField(raw, "id", strField(raw, "sectionKey")),
     sectionKey: strField(raw, "sectionKey"),
@@ -368,9 +371,7 @@ function normalizeFallbackSection(raw: Record<string, unknown>): PageSection {
     image: strField(raw, "image"),
     sortOrder: numField(raw, "sortOrder"),
     isActive: boolField(raw, "isActive", true),
-    content: (raw.content && typeof raw.content === "object"
-      ? raw.content
-      : {}) as PageSection["content"],
+    content: prepareSectionContentRichText(content),
   };
 }
 

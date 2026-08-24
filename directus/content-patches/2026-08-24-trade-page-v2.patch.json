@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "id": "2026-08-24-trade-page-v2",
+  "description": "Align Trade SEO with the approved page copy",
+  "collection": "site_pages",
+  "selector": {
+    "id": "48562035-16be-4cc1-88b8-ba9b66558fcc"
+  },
+  "changes": {
+    "title": "I СВОИ Trade — продать, обменять или передать технику на комиссию",
+    "meta_description": "Предварительная оценка техники до визита. Итоговая сумма — после диагностики, проверки комплекта и документов."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "d71cfa52b9ecb65f36cb75228850977d42e725902b11b0b9c624754e2f097c28"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "id": "2026-08-24-final-cta-v2",
+  "description": "Apply the approved Trade v2 copy to final_cta",
+  "collection": "page_sections",
+  "selector": {
+    "id": "9f5cec55-e023-49f1-96a7-c5f6109682e2"
+  },
+  "changes": {
+    "eyebrow": "Предварительная оценка",
+    "headline": "Узнайте ориентир до визита.",
+    "subheadline": "",
+    "body": "<p>Расскажите, что хотите сделать, укажите модель и состояние устройства.</p><p>По этим данным дадим предварительную оценку.</p><p><strong>Финальную сумму подтвердим только после диагностики.</strong></p>",
+    "primary_cta_label": "",
+    "primary_cta_url": "",
+    "secondary_cta_label": "",
+    "secondary_cta_url": "",
+    "sort_order": 60,
+    "is_active": true,
+    "content": {
+      "proof": ["Предварительно — до визита", "Итог — после диагностики", "Без обязательств"],
+      "form": {
+        "scenario_label": "Что хотите сделать?",
+        "scenario_aria_label": "Сценарий Trade",
+        "scenario_options": ["Продать", "Передать на комиссию", "Обменять на другое устройство"],
+        "device_label": "Модель и состояние",
+        "device_placeholder": "Например: iPhone 13 Pro, 256 GB, батарея 86%, царапина на рамке",
+        "contact_label": "Телефон или Telegram",
+        "contact_placeholder": "+7 … или @username",
+        "submit_label": "Получить предварительную оценку",
+        "consent_note": "Отправляя форму, вы соглашаетесь на обработку контактных данных для ответа по заявке.",
+        "note": "Это ни к чему не обязывает. Ответим по указанному контакту."
+      }
+    },
+    "closing_headline": "Ваша техника уже чего-то стоит.",
+    "closing_body": "<p>Осталось понять — сколько.</p><p>Получите предварительный ориентир до визита, пройдите диагностику и узнайте итоговую сумму.</p><p>А потом выбирайте:</p><p><strong>продать · комиссия · обновление</strong></p><p>Без обязательств принять предложение.</p>",
+    "closing_brand": "",
+    "closing_tagline": "",
+    "closing_primary_cta_label": "Оценить мою технику",
+    "closing_primary_cta_url": "#final",
+    "closing_secondary_cta_label": "Выбрать следующее устройство",
+    "closing_secondary_cta_url": "/catalog"
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "eb8439d8b63969e80c03a1190f882d05ac0fddedc1b716ce3e368b096f7f101e"
+  }
+}

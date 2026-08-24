@@ -209,6 +209,29 @@ const auditDefinitions = {
       "passport_page.info.faq_count": "7",
     },
   },
+  "trade-page": {
+    script: "scripts/audit_directus_trade_page_sql.mjs",
+    zero: [
+      "trade_page.page_missing_or_duplicate",
+      "trade_page.sections.missing_or_duplicate",
+      "trade_page.sections.order_mismatch",
+      "trade_page.sections.copy_mismatch",
+      "trade_page.hero.contract_invalid",
+      "trade_page.paths.contract_invalid",
+      "trade_page.live_example.contract_invalid",
+      "trade_page.steps.contract_invalid",
+      "trade_page.compare.contract_invalid",
+      "trade_page.form.contract_invalid",
+      "trade_page.legacy_copy",
+      "trade_page.studio.basic_editor_fields_missing",
+      "trade_page.studio.advanced_content_permission_missing",
+      "trade_page.studio.content_field_metadata_invalid",
+      "trade_page.studio.bookmark_missing",
+    ],
+    equals: {
+      "trade_page.info.section_count": "6",
+    },
+  },
   leads: {
     script: "scripts/audit_directus_leads_sql.mjs",
     zero: [
@@ -478,6 +501,7 @@ const prodAuditOrder = [
   "page-sections",
   "homepage-copy",
   "passport-page",
+  "trade-page",
   "leads",
   "files",
   "import",

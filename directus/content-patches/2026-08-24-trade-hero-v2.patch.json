@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "2026-08-24-trade-hero-v2",
+  "description": "Apply the approved Trade v2 copy to trade_hero",
+  "collection": "page_sections",
+  "selector": {
+    "id": "1a4826b1-a631-4c7a-a209-6780d7208df0"
+  },
+  "changes": {
+    "eyebrow": "I СВОИ · Trade",
+    "headline": "Продайте, обменяйте или передайте технику на комиссию.",
+    "subheadline": "",
+    "body": "<p>Без недели объявлений, переписок и встреч с людьми, которые начинают разговор с «за полцены сегодня заберу».</p><p>Сначала дадим предварительный ориентир по модели и состоянию.</p><p>Итоговую сумму подтвердим после диагностики, проверки комплекта и документов.</p><p><strong>После этого решаете вы.</strong></p>",
+    "primary_cta_label": "Оценить мою технику",
+    "primary_cta_url": "#final",
+    "secondary_cta_label": "Выбрать следующую",
+    "secondary_cta_url": "/catalog",
+    "sort_order": 10,
+    "is_active": true,
+    "content": {
+      "highlights": [
+        {
+          "label": "3 сценария",
+          "value": "Выкуп · комиссия · обновление",
+          "text": ""
+        },
+        {
+          "label": "Понятная оценка",
+          "value": "",
+          "text": "Состояние, комплект и результаты диагностики влияют на итоговую сумму."
+        },
+        {
+          "label": "Без случайных встреч",
+          "value": "",
+          "text": "Диагностика и оформление проходят через I СВОИ."
+        }
+      ],
+      "note": "Предварительно — до визита · Итог — после диагностики · Без обязательств"
+    }
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "96dd839a0964fd0fab9817fbc2daaea46a3214c59e91cbad020c39ecba7bc2a5"
+  }
+}

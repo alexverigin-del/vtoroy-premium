@@ -71,6 +71,13 @@ WHERE collection='products' AND field='status';
 UPDATE directus_fields SET note='Editor готовит карточку до статуса «На проверке»; «Готово» подтверждает Advanced Editor.'
 WHERE collection='products' AND field='content_status';
 
+UPDATE directus_fields SET readonly=false
+WHERE collection IN (
+  'products','product_images','device_details','accessory_details',
+  'device_passports','trade_options'
+)
+  AND coalesce(special,'') LIKE '%group%';
+
 SELECT pg_temp.isvoi_catalog_editor_field('products','admin_note','input-multiline',NULL,NULL,'full',6,'Внутренний комментарий редактора и QA. На сайт не выводится.',NULL,false,false,false,'group_status','Комментарий редактора');
 SELECT pg_temp.isvoi_catalog_editor_field('products','source_system','input',NULL,NULL,'half',1,'Система, создавшая карточку. Только чтение.',NULL,true,true,true,'group_system','Система-источник');
 SELECT pg_temp.isvoi_catalog_editor_field('products','source_id','input',NULL,NULL,'half',2,'Стабильный идентификатор в источнике. Только чтение.',NULL,false,true,true,'group_system','ID в источнике');

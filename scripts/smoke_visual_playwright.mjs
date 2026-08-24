@@ -5,6 +5,7 @@
  * Usage:
  *   npm run smoke:visual
  *   SMOKE_BASE_URL=https://isvoi.ru VISUAL_SMOKE_ROUTES=/,/catalog npm run smoke:visual
+ *   SMOKE_EXPECT_CATALOG_SOURCE=v3 SMOKE_EXPECT_EMPTY_CATALOG=1 npm run smoke:visual
  */
 
 import fs from "node:fs/promises";
@@ -34,9 +35,16 @@ function normalizeBaseUrl(value) {
 }
 
 function routeList() {
-  const devicePath = process.env.SMOKE_DEVICE_PATH || DEFAULT_DEVICE_PATH;
+  const expectedCatalogSource = process.env.SMOKE_EXPECT_CATALOG_SOURCE;
+  const expectEmptyCatalog = process.env.SMOKE_EXPECT_EMPTY_CATALOG === "1";
+  const detailPath =
+    process.env.SMOKE_PRODUCT_PATH ||
+    process.env.SMOKE_DEVICE_PATH ||
+    (expectedCatalogSource === "v3" ? "" : DEFAULT_DEVICE_PATH);
   const rawRoutes = process.env.VISUAL_SMOKE_ROUTES;
-  if (!rawRoutes) return [...DEFAULT_ROUTES, devicePath];
+  if (!rawRoutes) {
+    return expectEmptyCatalog || !detailPath ? DEFAULT_ROUTES : [...DEFAULT_ROUTES, detailPath];
+  }
   return rawRoutes
     .split(",")
     .map((route) => route.trim())

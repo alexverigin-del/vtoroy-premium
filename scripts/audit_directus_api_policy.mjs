@@ -143,16 +143,17 @@ if (serviceToken) {
       name: "service.product_passport",
       path: "/items/device_passports?fields=id,product,story_title&limit=1",
       validate(data) {
-        const passport = Array.isArray(data) ? data[0] : null;
-        return Boolean(passport?.id && passport?.product);
+        return (
+          Array.isArray(data) &&
+          data.every((passport) => Boolean(passport?.id && passport?.product))
+        );
       },
     },
     {
       name: "service.product_trade",
       path: "/items/trade_options?fields=id,product,value,label&filter[is_active][_eq]=true&limit=1",
       validate(data) {
-        const trade = Array.isArray(data) ? data[0] : null;
-        return Boolean(trade?.id && trade?.product);
+        return Array.isArray(data) && data.every((trade) => Boolean(trade?.id && trade?.product));
       },
     },
     {

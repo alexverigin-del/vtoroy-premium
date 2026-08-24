@@ -2852,3 +2852,41 @@ Next content-editing priorities:
   LCP `/catalog` — 268 мс desktop и 328 мс mobile. После фактического запуска
   V3 release gates дополнительно включаются через
   `SMOKE_REQUIRE_BLOG_RELATED_DEVICE=1` и `SMOKE_REQUIRE_PRODUCT_OFFERS=1`.
+
+### Catalog V3 cutover без legacy-прототипов (2026-08-24)
+
+- Решение об автоматическом переключении источника отменено после production
+  ревизии. Сайт теперь использует только явно выбранный server-side режим
+  `CATALOG_SOURCE=legacy|v3`; список, фасеты, карточка товара и sitemap не могут
+  независимо переключиться на другой источник. В production установлен
+  `CATALOG_SOURCE=v3`, возврата к `devices` при пустой выдаче нет.
+- История `directus_revisions` подтвердила, что `iphone-13-pro`, `iphone-14`,
+  `macbook-air-m1` и `ipad-air` были созданы как «иллюстративные карточки
+  прототипа». У них нет подтверждённых строк текущего склада, даты и исполнителя
+  диагностики. Даты поступления и время редакторского изменения не считаются
+  датой диагностики; фиктивные значения не вносились.
+- Перед изменением создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260824T180442Z`. Offsite copy остаётся
+  отложенной: backup-скрипт явно сообщил, что `OFFSITE_BACKUP_DEST` не задан.
+- Транзакционной миграцией архивированы четыре legacy `devices`, четыре
+  соответствующих `products`, четыре `product_offers`, четыре `club_offers` и
+  по 20 связанных строк изображений в каждом медиаконтуре. Product stock
+  установлен в `0/hidden`, content status — `review`; данные и связи сохранены
+  для истории и не удалены.
+- Catalog V3 audit теперь блокирует опубликованный товар без подтверждённой
+  eligible-строки `inventory_items`, used-товар без даты или исполнителя
+  диагностики, publish-ready draft с неполным контрактом, смешанную видимость
+  legacy/V3 и опубликованный offer для неопубликованного товара.
+- Публичный `/catalog` намеренно показывает `Найдено: 0` и управляемый empty
+  state. Это корректнее, чем показывать draft-прототипы как товары в наличии.
+  Smoke поддерживает явные release-ожидания
+  `SMOKE_EXPECT_CATALOG_SOURCE=v3` и `SMOKE_EXPECT_EMPTY_CATALOG=1`.
+- Release — `56273d8`. Production build, PM2 restart, Directus restart, полный
+  `directus:audit:prod` и Playwright smoke прошли; переходные Catalog V3
+  метрики равны нулю, `/` и `/catalog` отвечают `200`, Directus health — `ok`.
+- Следующая публикационная партия должна строиться из фактического inventory:
+  закрыть соответствующие blocker/issues, подтвердить authenticity и
+  eligibility, связать `inventory_items.product`, добавить реальные фото и
+  диагностику, затем опубликовать product и store offer одной проверяемой
+  операцией. Только после появления реальной карточки включаются строгие gates
+  `SMOKE_REQUIRE_PRODUCT_OFFERS=1` и blog-to-product relation.

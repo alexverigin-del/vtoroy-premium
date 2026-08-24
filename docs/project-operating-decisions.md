@@ -2929,3 +2929,41 @@ Next content-editing priorities:
   полный `directus:audit:prod` и Playwright smoke прошли. До первой реальной
   публикации smoke запускается с `SMOKE_EXPECT_CATALOG_SOURCE=v3` и
   `SMOKE_EXPECT_EMPTY_CATALOG=1`.
+
+### Catalog V3 и lifecycle складских проблем (2026-08-24)
+
+- `Карточки сайта` — единственная редакторская точка входа Catalog V3;
+  `Страницы сайта -> catalog` управляет только оболочкой и SEO. Для
+  `device_passports.summary_rows` и `diagnostics_checklist` настроены
+  структурированные Repeaters. Used-товар нельзя опубликовать без даты и
+  исполнителя диагностики, грейда, кратких фактов и чек-листа; изменение или
+  удаление Passport у уже опубликованного used-товара также блокируется.
+- Все родительские группы Catalog V3 остаются интерактивными. Системные ID,
+  import-поля и timestamps дочерних сущностей защищены от записи Editor, а
+  точная совместимость аксессуаров доступна ему через
+  `product_compatible_models`. Отдельные audit-метрики контролируют metadata,
+  readonly-группы, Repeater contract, права и оба publication guard.
+- Для `inventory_import_issues` добавлено представление
+  `4 · Решённые проблемы`. При `resolved=true` поле `resolution_note`
+  обязательно в Studio и проверяется PostgreSQL trigger; закрытие проблемы не
+  меняет автоматически authenticity, eligibility или связь с карточкой сайта.
+  Единственная проблема, ранее закрытая без пояснения, безопасно возвращена в
+  открытые. В production снова 14 открытых блокеров и `0` закрытых без заметки.
+- Повторный apply той же партии больше не удаляет документированные решения:
+  они сохраняются по ключу `source_kind + code + source_id + row_number`,
+  совпавшая issue обновляется без потери решения, а закрытая историческая issue
+  не удаляется. Санитизированный suite расширен до 21 теста.
+- Перед production-схемой создан и проверен backup
+  `/opt/isvoi/backups/directus/20260824T190407Z`; checksum PostgreSQL и uploads
+  прошёл. Offsite copy пропущена, поскольку `OFFSITE_BACKUP_DEST` не задан.
+  Обе миграции прошли SQL rehearsal с `ROLLBACK`, затем production apply.
+- Exact-role API rehearsal временных `ISVOI Editor` и
+  `ISVOI Inventory Manager` подтвердил структурированное редактирование и
+  восстановление Passport, запрет публикации обычным Editor, защиту source
+  fields, запрет недокументированного закрытия и сохранение корректного
+  решения. Тестовые значения восстановлены, обе identities удалены, оба
+  static token после cleanup вернули `401`.
+- Release включает `10e10c5`, `a49cedb` и `afbdf10`. Локальный и production
+  `web:verify`, полный `directus:audit:prod`, PM2 restart, Directus health и
+  Playwright smoke с `SMOKE_EXPECT_CATALOG_SOURCE=v3` и
+  `SMOKE_EXPECT_EMPTY_CATALOG=1` прошли.

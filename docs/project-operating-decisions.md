@@ -3016,3 +3016,38 @@ Next content-editing priorities:
 - После перезапуска Directus полный `directus:audit:prod` прошёл;
   `catalog_v3.studio.passport_string_lists_invalid=0` и
   `catalog_v3.data.passport_string_lists_invalid=0`, Directus health — `ok`.
+
+### Marketing live examples на Catalog V3 (2026-08-24)
+
+- `passport_live_example`, `trade_live_example`, `club_live_example` и
+  curated-подборка Store больше не читают legacy `devices`. Маркетинговые
+  страницы получают строгую выборку непосредственно из Catalog V3 `products`:
+  `published + ready`, положительный остаток и не скрытый stock status.
+- Для live example допускается только техника со статусом `available` или
+  `reserved`; аксессуары, проданные, скрытые и нулевые позиции исключаются.
+  При отсутствии подходящей опубликованной техники секция целиком скрывается
+  без вымышленного товара и пустой рамки. После публикации первой подходящей
+  V3-карточки пример появится автоматически на следующей актуализации страницы.
+- Специализированная Club-страница теперь также рендерит управляемую Directus
+  секцию `club_live_example`. Товарные свойства и ссылки используют контракт
+  `ProductCardData` и маршрут `/product/<id>`; Store использует V3
+  `ProductCard`, а не legacy `DeviceCard`.
+- В `web:verify` добавлен регрессионный тест выбора маркетингового примера. Он
+  проверяет исключение аксессуаров, hidden/sold и нулевого остатка, приоритет
+  доступной техники и отсутствие `DeviceCardData`/`getPublishedDeviceCards` в
+  затронутом marketing flow.
+- Visual smoke учитывает источник каталога: при
+  `SMOKE_EXPECT_CATALOG_SOURCE=v3` detail-page задаётся через
+  `SMOKE_PRODUCT_PATH`, а при `SMOKE_EXPECT_EMPTY_CATALOG=1` не проверяется
+  удалённый legacy route `/device/iphone-13-pro`.
+- Перед deploy создан и проверен backup
+  `/opt/isvoi/backups/directus/20260824T201134Z`; checksum PostgreSQL и uploads
+  прошёл. Offsite copy пропущена, поскольку `OFFSITE_BACKUP_DEST` не задан.
+- Release включает `3a3d9d8` и `1d7aceb`. Локальные lint, typecheck, build,
+  content ownership, regression test и bundle budget прошли. Production build,
+  PM2 restart, основной и visual Playwright smoke, `directus:audit-catalog-v3`
+  и Directus health прошли; `/trade`, `/passport` и `/club` возвращают `200`,
+  live example при текущем пустом V3-каталоге отсутствует.
+- Следующий товарный шаг не требует frontend-изменений: закрыть inventory
+  blockers для первой реальной техники, заполнить фото и Passport, затем
+  опубликовать product и offer по действующему Catalog V3 workflow.

@@ -192,15 +192,18 @@ expected_bookmarks(role_name, collection, bookmark) AS (
     ('ISVOI Importer', 'catalog_import_batches', 'Проверены к импорту'),
     ('ISVOI Importer', 'catalog_import_batches', 'Ошибки'),
     ('ISVOI Importer', 'catalog_import_batches', 'Импортировано'),
-    ('ISVOI Inventory Manager', 'inventory_import_issues', 'Открытые блокеры'),
-    ('ISVOI Inventory Manager', 'inventory_import_issues', 'Открытые предупреждения'),
-    ('ISVOI Inventory Manager', 'inventory_import_issues', 'Проблемы последних партий'),
-    ('ISVOI Inventory Manager', 'inventory_items', 'Требует проверки происхождения'),
-    ('ISVOI Inventory Manager', 'inventory_items', 'Конфликт идентичности'),
-    ('ISVOI Inventory Manager', 'inventory_items', 'Можно передать в каталог'),
+    ('ISVOI Inventory Manager', 'inventory_import_issues', '1 · Открытые блокеры'),
+    ('ISVOI Inventory Manager', 'inventory_import_issues', '2 · Открытые предупреждения'),
+    ('ISVOI Inventory Manager', 'inventory_import_issues', '3 · Проблемы активной партии'),
+    ('ISVOI Inventory Manager', 'inventory_items', '1 · Проверить происхождение'),
+    ('ISVOI Inventory Manager', 'inventory_items', '2 · Исправить идентичность'),
+    ('ISVOI Inventory Manager', 'inventory_items', '3 · Готово к передаче'),
+    ('ISVOI Inventory Manager', 'inventory_items', '4 · Передано в карточки сайта'),
     ('ISVOI Inventory Manager', 'inventory_receipt_lines', 'Требует сверки места'),
     ('ISVOI Inventory Manager', 'channel_category_mappings', 'Avito: нет подтверждённой категории'),
-    ('ISVOI Inventory Manager', 'product_channel_listings', 'Avito: готово к QA')
+    ('ISVOI Inventory Manager', 'product_channel_listings', '1 · Avito: черновики'),
+    ('ISVOI Inventory Manager', 'product_channel_listings', '2 · Avito: готово к QA'),
+    ('ISVOI Inventory Manager', 'product_channel_listings', '3 · Avito: активные')
 ),
 expected_file_folders(name) AS (
   VALUES

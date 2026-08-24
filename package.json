@@ -148,10 +148,12 @@
     "directus:setup:studio-ux-v2": "node scripts/setup_directus_studio_ux_v2_sql.mjs",
     "directus:setup:studio-ux-v3": "node scripts/setup_directus_studio_ux_v3_sql.mjs",
     "directus:setup:studio-ux-v4": "node scripts/setup_directus_catalog_inventory_ux_v4_sql.mjs",
+    "directus:setup:inventory-workflow-ux-v5": "node scripts/setup_directus_inventory_workflow_ux_v5_sql.mjs",
     "directus:setup:navigation-ux": "node scripts/setup_directus_navigation_ux_sql.mjs",
     "directus:reconcile:deferred-club": "node scripts/reconcile_directus_deferred_club_sql.mjs",
     "directus:setup:insights": "node scripts/setup_directus_insights_sql.mjs",
-    "directus:test:catalog-v3-editability": "node scripts/test_directus_catalog_v3_editability.mjs"
+    "directus:test:catalog-v3-editability": "node scripts/test_directus_catalog_v3_editability.mjs",
+    "directus:test:inventory-manager-editability": "node scripts/test_directus_inventory_manager_editability.mjs"
   },
   "engines": {
     "node": ">=24.18.0 <25",

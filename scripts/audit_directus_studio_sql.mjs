@@ -581,10 +581,21 @@ WHERE (
   ) OR (
     field.collection='inventory_items'
     AND field.field NOT IN ('authenticity_status','eligibility_status','review_override','review_note')
+    AND coalesce(field.special,'') NOT LIKE '%group%'
   ) OR (
     field.collection='inventory_import_issues'
     AND field.field NOT IN ('resolved','resolution_note')
-  ) OR field.collection='inventory_receipt_lines'
+    AND coalesce(field.special,'') NOT LIKE '%group%'
+  ) OR (
+    field.collection='inventory_receipt_lines'
+    AND coalesce(field.special,'') NOT LIKE '%group%'
+  )
+UNION ALL
+SELECT 'studio.inventory.operator_groups_readonly', count(*)::text
+FROM directus_fields field
+WHERE field.collection IN ('inventory_items','inventory_import_issues')
+  AND coalesce(field.special,'') LIKE '%group%'
+  AND coalesce(field.readonly,false)=true
 UNION ALL
 SELECT 'studio.inventory.manager_unexpected_update_fields', count(*)::text
 FROM directus_permissions permission

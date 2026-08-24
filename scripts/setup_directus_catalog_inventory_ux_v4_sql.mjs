@@ -96,17 +96,17 @@ WHERE preset.role=role.id AND role.name='ISVOI Inventory Manager'
 SELECT pg_temp.isvoi_inventory_ux_preset(
   'inventory_import_issues','1 · Открытые блокеры','report_problem','#dc2626',
   '{"_and":[{"severity":{"_eq":"blocker"}},{"resolved":{"_eq":false}},{"batch":{"status":{"_neq":"archived"}}}]}'::json,
-  '["batch","severity","code","message","resolved","resolution_note"]'::json,'["-created_at"]'::json
+  '["inventory_item","severity","code","message","resolved","resolution_note"]'::json,'["-created_at"]'::json
 );
 SELECT pg_temp.isvoi_inventory_ux_preset(
   'inventory_import_issues','2 · Открытые предупреждения','warning','#d97706',
   '{"_and":[{"severity":{"_eq":"warning"}},{"resolved":{"_eq":false}},{"batch":{"status":{"_neq":"archived"}}}]}'::json,
-  '["batch","severity","code","message","resolved","resolution_note"]'::json,'["-created_at"]'::json
+  '["inventory_item","severity","code","message","resolved","resolution_note"]'::json,'["-created_at"]'::json
 );
 SELECT pg_temp.isvoi_inventory_ux_preset(
   'inventory_import_issues','3 · Проблемы активной партии','history','#2563eb',
   '{"_and":[{"resolved":{"_eq":false}},{"batch":{"status":{"_neq":"archived"}}}]}'::json,
-  '["batch","severity","code","message","resolved"]'::json,'["-created_at"]'::json
+  '["inventory_item","severity","code","message","resolved"]'::json,'["-created_at"]'::json
 );
 
 SELECT pg_temp.isvoi_inventory_ux_preset(

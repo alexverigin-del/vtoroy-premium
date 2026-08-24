@@ -44,13 +44,28 @@ WHERE NOT EXISTS (
   WHERE field.collection='inventory_receipt_lines' AND field.field=expected.field
 )
 UNION ALL
+SELECT 'inventory.studio.item_metadata_missing', count(*)::text
+FROM information_schema.columns column_info
+WHERE column_info.table_schema='public' AND column_info.table_name='inventory_items'
+  AND NOT EXISTS (
+    SELECT 1 FROM directus_fields field
+    WHERE field.collection='inventory_items' AND field.field=column_info.column_name
+  )
+UNION ALL
+SELECT 'inventory.studio.operator_groups_readonly', count(*)::text
+FROM directus_fields field
+WHERE field.collection IN ('inventory_items','inventory_import_issues')
+  AND coalesce(field.special,'') LIKE '%group%'
+  AND coalesce(field.readonly,false)=true
+UNION ALL
 SELECT 'inventory.schema.relations_missing', count(*)::text
 FROM (VALUES
   ('inventory_import_batches','inventory_workbook'),
   ('inventory_import_batches','receipts_workbook'),
   ('inventory_items','product'),('inventory_items','last_seen_batch'),
   ('inventory_receipt_lines','batch'),('inventory_receipt_lines','inventory_item'),
-  ('inventory_import_issues','batch'),('channel_cost_profiles','category'),
+  ('inventory_import_issues','batch'),('inventory_import_issues','inventory_item'),
+  ('channel_cost_profiles','category'),
   ('channel_category_mappings','product_category'),
   ('product_channel_listings','product'),('product_channel_listings','category_mapping')
 ) expected(collection,field)
@@ -106,6 +121,16 @@ WHERE NOT EXISTS (
     AND expected_field.field = ANY(string_to_array(permission.fields, ','))
 )
 UNION ALL
+SELECT 'inventory.security.issue_item_read_missing', count(*)::text
+FROM (VALUES ('ISVOI Inventory Manager'),('ISVOI Catalog Import')) expected_policy(name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name=expected_policy.name
+    AND permission.collection='inventory_import_issues' AND permission.action='read'
+    AND 'inventory_item'=ANY(string_to_array(permission.fields, ','))
+)
+UNION ALL
 SELECT 'inventory.security.public_or_editor_access', count(*)::text
 FROM directus_permissions permission
 JOIN directus_policies policy ON policy.id=permission.policy
@@ -158,6 +183,12 @@ FROM inventory_items
 WHERE eligibility_status='eligible'
   AND (review_override=false OR NULLIF(review_note,'') IS NULL
     OR authenticity_status NOT IN ('verified','not_required'))
+UNION ALL
+SELECT 'inventory.data.active_inventory_issues_unlinked', count(*)::text
+FROM inventory_import_issues issue
+JOIN inventory_import_batches batch ON batch.id=issue.batch
+WHERE issue.resolved=false AND batch.status<>'archived'
+  AND issue.source_kind='inventory' AND issue.inventory_item IS NULL
 UNION ALL
 SELECT 'inventory.data.invalid_receipt_movement', count(*)::text
 FROM inventory_receipt_lines

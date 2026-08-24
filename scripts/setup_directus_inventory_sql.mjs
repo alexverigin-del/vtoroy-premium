@@ -118,8 +118,22 @@ CREATE TABLE IF NOT EXISTS inventory_import_issues (
   message text NOT NULL,
   resolved boolean NOT NULL DEFAULT false,
   resolution_note text,
+  inventory_item uuid REFERENCES inventory_items(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE inventory_import_issues ADD COLUMN IF NOT EXISTS inventory_item uuid;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname='inventory_import_issues_inventory_item_fkey'
+  ) THEN
+    ALTER TABLE inventory_import_issues
+      ADD CONSTRAINT inventory_import_issues_inventory_item_fkey
+      FOREIGN KEY (inventory_item) REFERENCES inventory_items(id) ON DELETE SET NULL;
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS channel_cost_profiles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -215,6 +229,7 @@ CREATE INDEX IF NOT EXISTS inventory_items_product_idx ON inventory_items(produc
 CREATE INDEX IF NOT EXISTS inventory_items_status_idx ON inventory_items(eligibility_status, identity_status, authenticity_status);
 CREATE INDEX IF NOT EXISTS inventory_receipt_movement_idx ON inventory_receipt_lines(batch, movement_status);
 CREATE INDEX IF NOT EXISTS inventory_issues_batch_idx ON inventory_import_issues(batch, severity, resolved);
+CREATE INDEX IF NOT EXISTS inventory_issues_item_idx ON inventory_import_issues(inventory_item, resolved);
 CREATE INDEX IF NOT EXISTS channel_listings_status_idx ON product_channel_listings(channel, status);
 CREATE INDEX IF NOT EXISTS channel_category_mappings_status_idx
   ON channel_category_mappings(channel, is_active, is_confirmed);
@@ -413,6 +428,7 @@ SELECT isvoi_inventory_field('inventory_import_issues','code','input',NULL,NULL,
 SELECT isvoi_inventory_field('inventory_import_issues','message','input-multiline',NULL,NULL,'full',4,'Описание проблемы.',NULL,true,true);
 SELECT isvoi_inventory_field('inventory_import_issues','resolved','boolean','boolean',NULL,'half',5,'Проблема разобрана.');
 SELECT isvoi_inventory_field('inventory_import_issues','resolution_note','input-multiline',NULL,NULL,'full',6,'Что было исправлено.');
+SELECT isvoi_inventory_field('inventory_import_issues','inventory_item','select-dropdown-m2o','related-values','{"template":"{{source_title}} · {{source_sku}} · {{quantity}} шт."}','full',7,'Связанная строка текущего складского snapshot.','m2o',false,true);
 
 SELECT isvoi_inventory_field('channel_cost_profiles','category','select-dropdown-m2o','related-values','{"template":"{{name}}"}','half',1,'Необязательная категория для более точной ставки.','m2o');
 
@@ -467,6 +483,7 @@ SELECT isvoi_inventory_relation('inventory_receipt_lines','batch','inventory_imp
 SELECT isvoi_inventory_relation('inventory_receipt_lines','inventory_item','inventory_items','receipt_lines','nullify');
 SELECT isvoi_inventory_relation('inventory_receipt_lines','product','products',NULL,'nullify');
 SELECT isvoi_inventory_relation('inventory_import_issues','batch','inventory_import_batches','issues','delete');
+SELECT isvoi_inventory_relation('inventory_import_issues','inventory_item','inventory_items',NULL,'nullify');
 SELECT isvoi_inventory_relation('channel_cost_profiles','category','product_categories',NULL,'nullify');
 SELECT isvoi_inventory_relation('channel_category_mappings','product_category','product_categories',NULL,'delete');
 SELECT isvoi_inventory_relation('product_channel_listings','product','products','channel_listings','delete');
@@ -529,7 +546,7 @@ BEGIN
         WHEN 'inventory_import_batches' THEN 'id,status,batch_name,source_system,snapshot_at,inventory_workbook,receipts_workbook,confirm_missing_deactivation,inventory_rows,inventory_units,receipt_rows,blocker_count,warning_count,last_run_mode,last_run_status,last_run_at,last_run_log,note,created_at,updated_at,items,receipt_lines,issues'
         WHEN 'inventory_items' THEN 'id,source_system,source_id,source_sku,source_article,barcode,source_title,source_description,source_group,source_group_path,condition,item_kind,serial_full,imei_full,quantity,purchase_price,retail_price,for_sale,ownership,identity_status,authenticity_status,eligibility_status,block_reason,review_override,review_note,product,last_seen_batch,source_created_at,source_updated_at,created_at,updated_at,receipt_lines'
         WHEN 'inventory_receipt_lines' THEN 'id,batch,row_number,source_title,source_category,source_subcategory,received_on,imei_full,serial_full,quantity,unit_cost,target_markup,target_margin,target_price,total_cost,total_price,inventory_item,product,match_status,movement_status,central_office_quantity,match_note,source_note,created_at'
-        WHEN 'inventory_import_issues' THEN 'id,batch,severity,code,source_kind,row_number,source_id,message,resolved,resolution_note,created_at'
+        WHEN 'inventory_import_issues' THEN 'id,batch,severity,code,source_kind,row_number,source_id,message,resolved,resolution_note,inventory_item,created_at'
         WHEN 'channel_cost_profiles' THEN 'id,channel,name,category,is_active,is_confirmed,commission_rate,acquiring_rate,tax_rate,return_reserve_rate,promotion_per_unit,delivery_per_unit,other_variable_per_unit,note,created_at,updated_at'
         WHEN 'channel_category_mappings' THEN 'id,channel,mapping_key,product_category,external_category,external_category_id,external_goods_type,default_attributes,template_version,is_active,is_confirmed,note,created_at,updated_at'
         WHEN 'product_channel_listings' THEN 'id,product,channel,status,external_id,title_override,description_override,price_override,category_mapping,category_code,attributes,last_export_hash,last_exported_at,sync_status,sync_error,created_at,updated_at'

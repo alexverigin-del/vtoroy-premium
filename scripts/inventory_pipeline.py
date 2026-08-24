@@ -799,7 +799,16 @@ def apply_snapshot(
 
     client.delete_where("inventory_import_issues", "batch", batch_id)
     for issue in issues:
-        client.request("POST", "/items/inventory_import_issues", {"batch": batch_id, **asdict(issue)})
+        linked_item = stored_by_source.get(issue.source_id or "")
+        client.request(
+            "POST",
+            "/items/inventory_import_issues",
+            {
+                "batch": batch_id,
+                **asdict(issue),
+                "inventory_item": linked_item.get("id") if linked_item else None,
+            },
+        )
     batches_archived = archive_previous_inventory_batches(
         client, batch_id, batch_name, source_system
     )

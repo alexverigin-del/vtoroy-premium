@@ -96,7 +96,12 @@ const genericFieldLabels = [
   ["source_id", "ID в источнике"],
   ["source_system", "Система-источник"],
   ["source_sku", "SKU в источнике"],
+  ["source_article", "Артикул в источнике"],
+  ["barcode", "Штрих-код"],
   ["source_title", "Название в источнике"],
+  ["source_description", "Описание в источнике"],
+  ["source_group", "Группа в источнике"],
+  ["source_group_path", "Структура групп"],
   ["source_note", "Комментарий источника"],
   ["import_batch", "Партия импорта"],
   ["imported_at", "Дата импорта"],
@@ -113,6 +118,14 @@ const genericFieldLabels = [
   ["sale_mode", "Сценарий продажи"],
   ["product_type", "Тип товара"],
   ["condition", "Состояние"],
+  ["item_kind", "Тип учёта"],
+  ["for_sale", "Доступно для продажи"],
+  ["ownership", "Место хранения"],
+  ["last_seen_batch", "Последний snapshot"],
+  ["source_created_at", "Создано в источнике"],
+  ["source_updated_at", "Обновлено в источнике"],
+  ["row_number", "Строка источника"],
+  ["source_kind", "Источник проблемы"],
   ["content_status", "Готовность карточки"],
   ["short_description", "Короткое описание"],
   ["headline", "Заголовок карточки"],
@@ -573,6 +586,7 @@ SELECT pg_temp.isvoi_upsert_group('inventory_items','group_identity','Идент
 SELECT pg_temp.isvoi_upsert_group('inventory_items','group_review','Проверка и допуск','fact_check',3,'open');
 SELECT pg_temp.isvoi_upsert_group('inventory_items','group_economics','Экономика','payments',4,'closed');
 SELECT pg_temp.isvoi_upsert_group('inventory_items','group_relations','Связи','link',5,'closed');
+SELECT pg_temp.isvoi_upsert_group('inventory_items','group_system','Системные данные','settings',6,'closed');
 SELECT pg_temp.isvoi_upsert_group('inventory_import_issues','group_issue','Проблема','report_problem',1,'open');
 SELECT pg_temp.isvoi_upsert_group('inventory_import_issues','group_resolution','Решение','task_alt',2,'open');
 SELECT pg_temp.isvoi_upsert_group('inventory_receipt_lines','group_receipt','Поступление','receipt_long',1,'open');
@@ -599,15 +613,26 @@ FROM (VALUES
   ('inventory_import_batches','source_system','group_system',2),('inventory_import_batches','created_at','group_system',3),
   ('inventory_import_batches','updated_at','group_system',4),
   ('inventory_items','source_title','group_item',1),('inventory_items','source_sku','group_item',2),
-  ('inventory_items','quantity','group_item',3),('inventory_items','product','group_item',4),
+  ('inventory_items','source_article','group_item',3),('inventory_items','barcode','group_item',4),
+  ('inventory_items','condition','group_item',5),('inventory_items','item_kind','group_item',6),
+  ('inventory_items','quantity','group_item',7),('inventory_items','for_sale','group_item',8),
+  ('inventory_items','ownership','group_item',9),('inventory_items','product','group_item',10),
   ('inventory_items','source_id','group_identity',1),('inventory_items','serial_full','group_identity',2),
-  ('inventory_items','imei_full','group_identity',3),('inventory_items','identity_status','group_review',1),
+  ('inventory_items','imei_full','group_identity',3),('inventory_items','source_group','group_identity',4),
+  ('inventory_items','source_group_path','group_identity',5),('inventory_items','source_description','group_identity',6),
+  ('inventory_items','identity_status','group_review',1),
   ('inventory_items','authenticity_status','group_review',2),('inventory_items','eligibility_status','group_review',3),
   ('inventory_items','review_override','group_review',4),('inventory_items','review_note','group_review',5),
   ('inventory_items','block_reason','group_review',6),('inventory_items','purchase_price','group_economics',1),
   ('inventory_items','retail_price','group_economics',2),('inventory_items','receipt_lines','group_relations',1),
+  ('inventory_items','id','group_system',1),('inventory_items','source_system','group_system',2),
+  ('inventory_items','last_seen_batch','group_system',3),('inventory_items','source_created_at','group_system',4),
+  ('inventory_items','source_updated_at','group_system',5),('inventory_items','created_at','group_system',6),
+  ('inventory_items','updated_at','group_system',7),
   ('inventory_import_issues','severity','group_issue',1),('inventory_import_issues','batch','group_issue',2),
-  ('inventory_import_issues','code','group_issue',3),('inventory_import_issues','message','group_issue',4),
+  ('inventory_import_issues','inventory_item','group_issue',3),('inventory_import_issues','code','group_issue',4),
+  ('inventory_import_issues','message','group_issue',5),('inventory_import_issues','source_kind','group_issue',6),
+  ('inventory_import_issues','row_number','group_issue',7),('inventory_import_issues','source_id','group_issue',8),
   ('inventory_import_issues','resolved','group_resolution',1),('inventory_import_issues','resolution_note','group_resolution',2),
   ('inventory_receipt_lines','batch','group_receipt',1),('inventory_receipt_lines','received_on','group_receipt',2),
   ('inventory_receipt_lines','source_title','group_receipt',3),('inventory_receipt_lines','source_note','group_receipt',4),
@@ -630,10 +655,12 @@ WHERE collection='inventory_import_batches' AND field IN (
 UPDATE directus_fields SET readonly=true
 WHERE collection='inventory_items' AND field NOT IN (
   'authenticity_status','eligibility_status','review_override','review_note'
-);
+) AND coalesce(special,'') NOT LIKE '%group%';
 UPDATE directus_fields SET readonly=true
-WHERE collection='inventory_import_issues' AND field NOT IN ('resolved','resolution_note');
-UPDATE directus_fields SET readonly=true WHERE collection='inventory_receipt_lines';
+WHERE collection='inventory_import_issues' AND field NOT IN ('resolved','resolution_note')
+  AND coalesce(special,'') NOT LIKE '%group%';
+UPDATE directus_fields SET readonly=true WHERE collection='inventory_receipt_lines'
+  AND coalesce(special,'') NOT LIKE '%group%';
 
 UPDATE directus_fields SET options=jsonb_set(coalesce(options,'{}'::json)::jsonb,'{start}','"closed"'::jsonb,true)::json
 WHERE collection='device_page_settings' AND interface='group-detail';

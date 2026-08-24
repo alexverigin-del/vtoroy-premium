@@ -503,6 +503,7 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
     section.content.highlights ?? section.content.hero_highlights ?? section.content.facts,
     slug,
   );
+  const compactHighlights = slug === "trade";
   const highlightGridClass =
     highlights.length === 1
       ? "sm:grid-cols-1"
@@ -544,14 +545,20 @@ function MarketingHeroSection({ section, slug }: { section: PageSection; slug: M
       {highlights.length > 0 ? (
         <div
           className={cn(
-            "mx-auto mt-10 grid max-w-content overflow-hidden rounded-card border border-hairline bg-hairline text-left",
+            "mx-auto mt-10 grid overflow-hidden rounded-card border border-hairline bg-hairline",
+            compactHighlights ? "max-w-copy-wide text-center" : "max-w-content text-left",
             highlightGridClass,
           )}
         >
           {highlights.map((highlight) => (
             <article
               key={`${highlight.label}-${highlight.value}`}
-              className="bg-white p-4 md:min-h-marketing-fact md:p-5"
+              className={cn(
+                "bg-white p-4",
+                compactHighlights
+                  ? "flex flex-col items-center justify-center md:p-6"
+                  : "md:min-h-marketing-fact md:p-5",
+              )}
             >
               {highlight.label ? (
                 <p className="text-xs font-semibold text-link-blue">{highlight.label}</p>

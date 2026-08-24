@@ -204,13 +204,13 @@ export function FinalCtaSection({
     <section className="bg-frost py-14 md:py-20" id="final" data-component="FinalCtaSection">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <HomeSectionIntro section={section} align="split" />
-        <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
-          <div className="lg:col-span-6">
+        <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-10">
+          <div className="lg:col-span-6 lg:h-full">
             <ul
               className={cn(
                 isHomepage
                   ? "grid grid-cols-2 border-y border-hairline"
-                  : "mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2",
+                  : "grid h-full grid-rows-3 border-y border-hairline",
               )}
             >
               {renderedProof.map((item, index) => (
@@ -219,7 +219,7 @@ export function FinalCtaSection({
                   className={cn(
                     isHomepage
                       ? "flex min-h-28 flex-col justify-between gap-5 py-5 text-base font-semibold leading-snug text-carbon sm:min-h-32 sm:py-6 sm:text-xl"
-                      : "flex items-start gap-2 text-sm font-medium leading-relaxed text-graphite",
+                      : "grid min-h-28 grid-cols-grade items-center border-b border-hairline py-5 text-lg font-semibold leading-snug text-carbon last:border-b-0 sm:min-h-32 sm:text-xl",
                     isHomepage && index % 2 === 0 && "border-r border-hairline pr-4 sm:pr-6",
                     isHomepage && index % 2 === 1 && "pl-4 sm:pl-6",
                     isHomepage && index < 2 && "border-b border-hairline",
@@ -235,10 +235,10 @@ export function FinalCtaSection({
                   ) : (
                     <>
                       <span
-                        className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-success"
+                        className="h-3 w-3 justify-self-center rounded-full bg-success"
                         aria-hidden="true"
                       />
-                      {item}
+                      <span className="max-w-80 text-balance">{item}</span>
                     </>
                   )}
                 </li>

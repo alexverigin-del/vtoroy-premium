@@ -2890,3 +2890,42 @@ Next content-editing priorities:
   диагностику, затем опубликовать product и store offer одной проверяемой
   операцией. Только после появления реальной карточки включаются строгие gates
   `SMOKE_REQUIRE_PRODUCT_OFFERS=1` и blog-to-product relation.
+
+### Склад: рабочий разбор блокеров в Studio (2026-08-24)
+
+- Причиной визуально неактивных полей были `readonly=true` у родительских
+  group-alias полей `inventory_items` и `inventory_import_issues`. Directus
+  распространяет readonly-состояние группы на её дочерние поля. Общая Studio
+  UX migration теперь исключает group aliases из массовой установки readonly,
+  а отдельные Studio и inventory audits блокируют повторение дефекта.
+- Поля snapshot остаются защищёнными: остаток, закупка и розница, идентификаторы,
+  наименование, группа, штрих-код, автоматически рассчитанные статусы и текст
+  проблемы исправляются в учётной системе или следующим импортом. Inventory
+  Manager может менять только `authenticity_status`, `eligibility_status`,
+  `review_override`, `review_note`, а в проблемах импорта — `resolved` и
+  `resolution_note`.
+- В `inventory_import_issues` добавлена read-only связь `inventory_item`.
+  Миграция связала 85 исторических inventory issues с товарными строками;
+  активных несвязанных inventory issues после apply — `0`. Presets открытых
+  блокеров и предупреждений теперь начинают таблицу со связанного товара.
+- Все 33 физические колонки `inventory_items` имеют Studio metadata, русские
+  подписи, заметки и логическую группировку. На момент выпуска в production
+  остаются 82 складские строки, 14 открытых блокеров, 13 неподтверждённых Avito
+  category mappings и 2 неподтверждённых cost profiles; товарные решения и
+  статусы этим rollout не менялись.
+- Перед миграцией создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260824T182318Z`; checksum PostgreSQL и uploads
+  прошёл. Offsite copy пропущена, потому что `OFFSITE_BACKUP_DEST` не задан.
+  SQL rehearsal с `ROLLBACK` и production apply прошли, после чего был
+  перезапущен только Directus для обновления metadata cache.
+- Реальный API rehearsal временной identity роли `ISVOI Inventory Manager`
+  подтвердил: operator notes редактируются, `quantity` и сгенерированный
+  `message` отклоняются политикой, тестовые значения восстановлены. Временный
+  пользователь удалён, его static token после cleanup вернул отказ.
+- Release включает `c9b53b8` и `92f6849`. Второй commit устраняет ложное
+  падение API-policy audit на корректно пустых `device_passports` и
+  `trade_options` после Catalog V3 cutover; присутствующие записи по-прежнему
+  проверяются на обязательные связи. `web:verify`, 20 inventory pipeline tests,
+  полный `directus:audit:prod` и Playwright smoke прошли. До первой реальной
+  публикации smoke запускается с `SMOKE_EXPECT_CATALOG_SOURCE=v3` и
+  `SMOKE_EXPECT_EMPTY_CATALOG=1`.

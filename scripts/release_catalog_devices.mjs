@@ -159,7 +159,7 @@ for (const [index, device] of manifest.devices.entries()) {
       `${device.sku}: product link is missing; run inventory_pipeline.py --apply after eligibility preparation`,
     );
   }
-  const productId = linkedProduct;
+  const productId = device.productIdOverride || linkedProduct;
   const model = await first(
     "device_models",
     `filter[slug][_eq]=${encodeURIComponent(device.modelSlug)}&fields=id`,

@@ -68,7 +68,19 @@ function fileId(value: unknown): string {
 function filename(value: unknown, fallback: string): string {
   if (value && typeof value === "object") {
     const file = value as DirectusFile;
-    return safeName(file.filename_download || file.title || fallback);
+    const original = file.filename_download || file.title || fallback;
+    const sanitized = safeName(original);
+    const sanitizedStem = path.basename(sanitized, path.extname(sanitized)).replace(/[._-]/g, "");
+    if (sanitizedStem) return sanitized;
+
+    const fallbackName = safeName(fallback);
+    const fallbackExtension = path.extname(fallbackName);
+    const originalExtension = path
+      .extname(original)
+      .toLowerCase()
+      .replace(/[^.a-z0-9]/g, "");
+    const fallbackStem = path.basename(fallbackName, fallbackExtension) || "inventory-file";
+    return `${fallbackStem}${originalExtension || fallbackExtension || ".xlsx"}`;
   }
   return fallback;
 }

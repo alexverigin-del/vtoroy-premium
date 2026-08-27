@@ -114,12 +114,10 @@ for (const [index, device] of manifest.devices.entries()) {
           "Операторская сверка 27.08.2026: склад, серийный хвост, фото и диагностика подтверждены.",
       }
     : {
-        authenticity_status: "review",
-        eligibility_status: prepareOnly ? "eligible" : "blocked",
-        review_override: prepareOnly,
-        review_note: prepareOnly
-          ? "Техническое создание draft-карточки через inventory pipeline. Публикация запрещена до повторной диагностики."
-          : device.publicNote,
+        authenticity_status: "verified",
+        eligibility_status: "blocked",
+        review_override: false,
+        review_note: device.publicNote,
       };
   if (apply) await request("PATCH", `/items/inventory_items/${inventory.id}`, inventoryPatch);
 

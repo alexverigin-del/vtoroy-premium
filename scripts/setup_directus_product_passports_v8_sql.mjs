@@ -302,16 +302,24 @@ SELECT pg_temp.isvoi_permission('ISVOI Public Read','device_model_specifications
 SELECT pg_temp.isvoi_permission('ISVOI Public Read','device_diagnostic_reports','read','id,product,passport,provider,tested_at,status,public_file,public_note,sort','{"_and":[{"status":{"_eq":"current"}},{"public_file":{"_nnull":true}},{"product":{"status":{"_eq":"published"}}},{"product":{"content_status":{"_eq":"ready"}}}]}'::json);
 
 DO $$
-DECLARE role_name text; action_name text;
+DECLARE role_name text;
 BEGIN
   FOREACH role_name IN ARRAY ARRAY['ISVOI Advanced Editor','ISVOI Inventory Manager'] LOOP
-    FOREACH action_name IN ARRAY ARRAY['read','create','update','delete'] LOOP
-      PERFORM pg_temp.isvoi_permission(role_name,'device_model_specifications',action_name,'*');
-    END LOOP;
+    PERFORM pg_temp.isvoi_permission(role_name,'device_model_specifications','read',
+      'id,device_model,group_key,group_label,label,value,source_url,source_checked_at,is_active,sort,created_at,updated_at');
+    PERFORM pg_temp.isvoi_permission(role_name,'device_model_specifications','create',
+      'device_model,group_key,group_label,label,value,source_url,source_checked_at,is_active,sort');
+    PERFORM pg_temp.isvoi_permission(role_name,'device_model_specifications','update',
+      'device_model,group_key,group_label,label,value,source_url,source_checked_at,is_active,sort');
+    PERFORM pg_temp.isvoi_permission(role_name,'device_model_specifications','delete','id');
   END LOOP;
-  FOREACH action_name IN ARRAY ARRAY['read','create','update','delete'] LOOP
-    PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','device_diagnostic_reports',action_name,'*');
-  END LOOP;
+  PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','device_diagnostic_reports','read',
+    'id,product,passport,provider,tested_at,status,original_file,public_file,public_note,sort,created_at,updated_at');
+  PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','device_diagnostic_reports','create',
+    'product,passport,provider,tested_at,status,original_file,public_file,public_note,sort');
+  PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','device_diagnostic_reports','update',
+    'product,passport,provider,tested_at,status,original_file,public_file,public_note,sort');
+  PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','device_diagnostic_reports','delete','id');
   PERFORM pg_temp.isvoi_permission('ISVOI Advanced Editor','device_diagnostic_reports','read','id,product,passport,provider,tested_at,status,public_file,public_note,sort,created_at,updated_at');
   PERFORM pg_temp.isvoi_permission('ISVOI Advanced Editor','device_diagnostic_reports','create','product,passport,provider,tested_at,status,public_file,public_note,sort');
   PERFORM pg_temp.isvoi_permission('ISVOI Advanced Editor','device_diagnostic_reports','update','product,passport,provider,tested_at,status,public_file,public_note,sort');

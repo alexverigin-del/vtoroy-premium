@@ -144,7 +144,10 @@ async function collectMetrics(page) {
         complete: image.complete,
         naturalWidth: image.naturalWidth,
         inNearViewport:
-          rect.top < window.innerHeight * 1.5 && rect.bottom > -window.innerHeight * 0.25,
+          rect.top < window.innerHeight * 1.5 &&
+          rect.bottom > -window.innerHeight * 0.25 &&
+          rect.left < window.innerWidth * 1.5 &&
+          rect.right > -window.innerWidth * 0.25,
       };
     });
 

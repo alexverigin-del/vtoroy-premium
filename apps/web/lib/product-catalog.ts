@@ -139,6 +139,8 @@ const PRODUCT_DETAIL_FIELDS = [
   "device_details.activation_lock",
   "device_details.mdm",
   "device_details.diagnostic_by",
+  "device_details.imei_primary_last4",
+  "device_details.imei_secondary_last4",
   "accessory_details.package_contents",
   "accessory_details.specifications",
 ].join(",");
@@ -255,6 +257,8 @@ function mapDeviceDetails(value: unknown): DeviceDetails | undefined {
   return {
     storage: text(row.storage) || undefined,
     serial: text(row.serial) || undefined,
+    imeiPrimaryLast4: text(row.imei_primary_last4) || undefined,
+    imeiSecondaryLast4: text(row.imei_secondary_last4) || undefined,
     year: number(row.year) || undefined,
     modelIdentifier: text(row.model_identifier) || undefined,
     region: text(row.region) || undefined,
@@ -847,6 +851,30 @@ function mapPassport(row: Row | undefined): DevicePassport | undefined {
   };
 }
 
+function mapModelSpecifications(rows: Row[]): NonNullable<DeviceModel["specifications"]> {
+  return rows.map((row) => ({
+    id: text(row.id),
+    groupKey: text(row.group_key),
+    groupLabel: text(row.group_label),
+    label: text(row.label),
+    value: text(row.value),
+    sourceUrl: text(row.source_url) || undefined,
+    sourceCheckedAt: text(row.source_checked_at) || undefined,
+    sort: number(row.sort, 100),
+  }));
+}
+
+function mapDiagnosticReport(row: Row | undefined): DevicePassport["diagnosticReport"] {
+  if (!row) return undefined;
+  return {
+    provider: text(row.provider),
+    testedAt: text(row.tested_at),
+    status: text(row.status),
+    publicCertificateUrl: assetUrl(row.public_file) || undefined,
+    publicNote: text(row.public_note) || undefined,
+  };
+}
+
 function mapTrade(rows: Row[]): TradeInfo {
   return {
     options: rows
@@ -965,6 +993,24 @@ export async function getProductBySlug(slug: string): Promise<CatalogProduct | n
     mapDeviceDetails(deviceDetails?.data[0]) ?? mapDeviceDetails(row.device_details);
   const structuredAccessoryDetails =
     mapAccessoryDetails(accessoryDetails?.data[0]) ?? mapAccessoryDetails(row.accessory_details);
+  const modelId = text(relation(row.device_model).id);
+  const [modelSpecifications, diagnosticReports] = await Promise.all([
+    modelId
+      ? directusRequest<Row[]>(
+          `/items/device_model_specifications?filter[device_model][_eq]=${encodeURIComponent(modelId)}&filter[is_active][_eq]=true&fields=id,group_key,group_label,label,value,source_url,source_checked_at,sort&sort=sort&limit=100`,
+        )
+      : Promise.resolve(null),
+    directusRequest<Row[]>(
+      `/items/device_diagnostic_reports?filter[product][_eq]=${encoded}&filter[status][_eq]=current&fields=provider,tested_at,status,public_note,public_file.id&sort=-tested_at&limit=1`,
+    ),
+  ]);
+  const mappedPassport = mapPassport(passport?.data[0]);
+  if (mappedPassport) {
+    mappedPassport.diagnosticReport = mapDiagnosticReport(diagnosticReports?.data[0]);
+  }
+  const mappedModel = mapModel(row.device_model, brand);
+  if (mappedModel)
+    mappedModel.specifications = mapModelSpecifications(modelSpecifications?.data ?? []);
   return {
     ...card,
     saleMode:
@@ -973,7 +1019,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProduct | n
         : text(row.sale_mode) === "inquiry"
           ? "inquiry"
           : "reservation",
-    deviceModel: mapModel(row.device_model, brand),
+    deviceModel: mappedModel,
     shortDescription: text(row.short_description),
     headline: text(row.headline, card.title),
     warranty: text(row.warranty),
@@ -981,7 +1027,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProduct | n
     gallery: mapGallery(images?.data ?? []),
     deviceDetails: structuredDeviceDetails,
     accessoryDetails: structuredAccessoryDetails,
-    passport: mapPassport(passport?.data[0]),
+    passport: mappedPassport,
     trade: mapTrade(trade?.data ?? []),
     compatibleModels: mapCompatibility(compatibility?.data ?? [], brand),
   };

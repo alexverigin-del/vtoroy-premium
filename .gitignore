@@ -40,3 +40,8 @@ infra/directus-beget/extensions/
 # Local Codex work products
 .codex-work/
 outputs/
+work/
+
+# Private product-photo staging. Approved files are uploaded to Directus with
+# identifier-free titles; source folder names and manifests may contain serials.
+apps/web/public/assets/products/

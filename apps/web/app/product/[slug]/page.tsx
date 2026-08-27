@@ -123,6 +123,8 @@ function deviceFacts(product: CatalogProduct) {
   if (!details) return [];
   return [
     ["Память", details.storage],
+    ["Серийный номер", details.serial],
+    ["IMEI", details.imeiPrimaryLast4 ? `•••• ${details.imeiPrimaryLast4}` : ""],
     ["Модель", details.modelIdentifier || product.model],
     ["Год / поколение", details.year ? String(details.year) : ""],
     ["Регион", details.region],
@@ -266,7 +268,7 @@ export default async function ProductPage({ params }: PageProps) {
 
               {facts.length > 0 ? (
                 <section className="card p-6">
-                  <h2 className="text-xl font-semibold">Характеристики</h2>
+                  <h2 className="text-xl font-semibold">О конкретном устройстве</h2>
                   <dl className="mt-5 grid gap-3 sm:grid-cols-2">
                     {facts.map(([label, value]) => (
                       <div key={label} className="rounded-card border border-hairline p-4">
@@ -286,6 +288,32 @@ export default async function ProductPage({ params }: PageProps) {
 
               {usedDevice && product.passport ? (
                 <PassportSummary copy={devicePageSettings.passport} passport={product.passport} />
+              ) : null}
+
+              {product.productType === "device" && product.deviceModel?.specifications?.length ? (
+                <section className="card p-6">
+                  <p className={homeSectionLabelClass}>Модель</p>
+                  <h2 className="mt-2 text-xl font-semibold">Технические характеристики модели</h2>
+                  <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                    {product.deviceModel.specifications.map((specification) => (
+                      <div
+                        key={specification.id}
+                        className="rounded-card border border-hairline p-4"
+                      >
+                        <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                          {specification.label}
+                        </dt>
+                        <dd className="mt-1 text-sm font-semibold leading-relaxed text-carbon">
+                          {specification.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="mt-5 text-xs leading-relaxed text-muted">
+                    IP68 — заводская характеристика модели. Она не является гарантией влагозащиты
+                    конкретного устройства с пробегом.
+                  </p>
+                </section>
               ) : null}
             </div>
 

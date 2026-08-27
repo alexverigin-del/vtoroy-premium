@@ -1,5 +1,6 @@
 import type { DevicePageSettings, DevicePassport, PassportState } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
+import { CertificateViewer } from "./CertificateViewer";
 
 const stateDot: Record<PassportState, string> = {
   ok: "bg-emerald-500",
@@ -27,6 +28,7 @@ export function PassportSummary({
   passport: DevicePassport;
 }) {
   const checklist = passport.diagnostics.checklist ?? [];
+  const summaryRows = passport.summaryRows ?? [];
 
   return (
     <aside className="card overflow-hidden" data-component="PassportSummary">
@@ -43,6 +45,26 @@ export function PassportSummary({
       </div>
 
       <div className="p-6">
+        {summaryRows.length > 0 ? (
+          <dl className="mb-5 grid gap-3 sm:grid-cols-2">
+            {summaryRows.map((row) => (
+              <div
+                key={`${row.label}-${row.value}`}
+                className="rounded-card border border-hairline p-4"
+              >
+                <dt className="text-xs font-medium uppercase tracking-wide text-muted">
+                  {row.label}
+                </dt>
+                <dd className="mt-1 flex items-start gap-2 text-sm font-semibold text-carbon">
+                  <span
+                    className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", stateDot[row.state])}
+                  />
+                  {row.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
         <section className="rounded-card border border-hairline p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -72,6 +94,17 @@ export function PassportSummary({
             </ul>
           ) : null}
         </section>
+
+        {passport.diagnosticReport?.publicCertificateUrl ? (
+          <div className="mt-5 border-t border-hairline pt-5">
+            <CertificateViewer
+              href={passport.diagnosticReport.publicCertificateUrl}
+              provider={passport.diagnosticReport.provider}
+              testedAt={passport.diagnosticReport.testedAt}
+              note={passport.diagnosticReport.publicNote}
+            />
+          </div>
+        ) : null}
       </div>
     </aside>
   );

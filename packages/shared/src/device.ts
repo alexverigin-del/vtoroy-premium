@@ -77,6 +77,15 @@ export interface DevicePassport {
   story: DeviceStoryInfo;
   warranty: WarrantyInfo;
   exitPrice: ExitPriceInfo;
+  diagnosticReport?: DeviceDiagnosticReport;
+}
+
+export interface DeviceDiagnosticReport {
+  provider: string;
+  testedAt: string;
+  status: "current" | "superseded" | string;
+  publicCertificateUrl?: string;
+  publicNote?: string;
 }
 
 export interface TradeOption {

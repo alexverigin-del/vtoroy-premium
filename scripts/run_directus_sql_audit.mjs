@@ -432,6 +432,24 @@ const auditDefinitions = {
       "catalog_v3.publication.passport_guard_missing",
     ],
   },
+  "product-passports-v8": {
+    script: "scripts/audit_directus_product_passports_v8_sql.mjs",
+    zero: [
+      "product_passports_v8.schema.tables_missing",
+      "product_passports_v8.schema.fields_missing",
+      "product_passports_v8.schema.relations_missing",
+      "product_passports_v8.studio.metadata_missing",
+      "product_passports_v8.files.folders_missing",
+      "product_passports_v8.permissions.original_exposure",
+      "product_passports_v8.permissions.public_missing",
+      "product_passports_v8.models.specifications_missing",
+      "product_passports_v8.data.invalid_identifier_tails",
+      "product_passports_v8.publication.current_report_missing",
+      "product_passports_v8.publication.original_in_public_folder",
+      "product_passports_v8.publication.public_copy_wrong_folder",
+      "product_passports_v8.revalidation.collections_missing",
+    ],
+  },
   multicity: {
     script: "scripts/audit_directus_multicity_sql.mjs",
     zero: [
@@ -536,6 +554,7 @@ const prodAuditOrder = [
   "club",
   "conversion-v2",
   "catalog-v3",
+  "product-passports-v8",
   "multicity",
   "inventory",
   "insights",

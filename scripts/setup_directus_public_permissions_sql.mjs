@@ -27,7 +27,7 @@ BEGIN
   SELECT array_agg(id::text ORDER BY name)
   INTO v_folder_ids
   FROM directus_folders
-  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial');
+  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI Passport Public');
 
   IF v_folder_ids IS NULL OR array_length(v_folder_ids, 1) IS NULL THEN
     RETURN '{"id":{"_null":true}}'::json;
@@ -158,6 +158,14 @@ BEGIN
 
   PERFORM isvoi_upsert_permission(
     p_policy_name,
+    'device_details',
+    'read',
+    'id,product,storage,serial,imei_primary_last4,imei_secondary_last4,year,model_identifier,region,sim,battery,battery_text,battery_cycles,diagnostic_date,activation_lock,mdm,diagnostic_by,grade,updated_at',
+    '{"product":{"status":{"_eq":"published"}}}'::json
+  );
+
+  PERFORM isvoi_upsert_permission(
+    p_policy_name,
     'trade_options',
     'read',
     'id,product,device,value,label,sort,is_active,updated_at',
@@ -170,6 +178,22 @@ BEGIN
     'read',
     'id,filename_download,type,width,height,focal_point_x,focal_point_y',
     isvoi_public_file_filter()
+  );
+
+  PERFORM isvoi_upsert_permission(
+    p_policy_name,
+    'device_model_specifications',
+    'read',
+    'id,device_model,group_key,group_label,label,value,source_url,source_checked_at,is_active,sort',
+    '{"is_active":{"_eq":true}}'::json
+  );
+
+  PERFORM isvoi_upsert_permission(
+    p_policy_name,
+    'device_diagnostic_reports',
+    'read',
+    'id,product,passport,provider,tested_at,status,public_file,public_note,sort',
+    '{"_and":[{"status":{"_eq":"current"}},{"public_file":{"_nnull":true}},{"product":{"status":{"_eq":"published"}}},{"product":{"content_status":{"_eq":"ready"}}}]}'::json
   );
 
   PERFORM isvoi_upsert_permission(

@@ -54,6 +54,8 @@ const flowOptions = JSON.stringify({
     "product_brands",
     "product_categories",
     "device_models",
+    "device_model_specifications",
+    "device_diagnostic_reports",
     "store_locations",
     "store_location_images",
     "product_offers",

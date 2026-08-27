@@ -20,6 +20,8 @@ WITH expected_tables(table_name) AS (
     ('product_brands'),
     ('product_categories'),
     ('device_models'),
+    ('device_model_specifications'),
+    ('device_diagnostic_reports'),
     ('product_images'),
     ('device_details'),
     ('accessory_details'),
@@ -100,6 +102,13 @@ expected_fields(table_name, field_name) AS (
     ('product_images', 'product'),
     ('product_images', 'image'),
     ('device_details', 'product'),
+    ('device_details', 'imei_primary_last4'),
+    ('device_details', 'imei_secondary_last4'),
+    ('device_model_specifications', 'device_model'),
+    ('device_model_specifications', 'source_url'),
+    ('device_diagnostic_reports', 'product'),
+    ('device_diagnostic_reports', 'original_file'),
+    ('device_diagnostic_reports', 'public_file'),
     ('accessory_details', 'product'),
     ('accessory_details', 'compatibility_mode'),
     ('product_compatible_models', 'product'),
@@ -225,6 +234,11 @@ expected_relations(many_collection, many_field, one_collection) AS (
     ('product_images', 'product', 'products'),
     ('product_images', 'image', 'directus_files'),
     ('device_details', 'product', 'products'),
+    ('device_model_specifications', 'device_model', 'device_models'),
+    ('device_diagnostic_reports', 'product', 'products'),
+    ('device_diagnostic_reports', 'passport', 'device_passports'),
+    ('device_diagnostic_reports', 'original_file', 'directus_files'),
+    ('device_diagnostic_reports', 'public_file', 'directus_files'),
     ('accessory_details', 'product', 'products'),
     ('product_compatible_models', 'product', 'products'),
     ('product_compatible_models', 'device_models_id', 'device_models'),
@@ -365,6 +379,8 @@ FROM (
     ('ISVOI Catalog Imports'),
     ('ISVOI Blog'),
     ('ISVOI Inventory Imports')
+    ,('ISVOI Passport Originals')
+    ,('ISVOI Passport Public')
 ) AS expected_folders(name)
 WHERE NOT EXISTS (
   SELECT 1 FROM directus_folders f WHERE f.name = expected_folders.name
@@ -407,6 +423,8 @@ WHERE NOT EXISTS (
     AND (f.options::jsonb -> 'collections') ? 'blog_tags'
     AND (f.options::jsonb -> 'collections') ? 'blog_posts_tags'
     AND (f.options::jsonb -> 'collections') ? 'blog_posts_devices'
+    AND (f.options::jsonb -> 'collections') ? 'device_model_specifications'
+    AND (f.options::jsonb -> 'collections') ? 'device_diagnostic_reports'
     AND o.type = 'request'
     AND o.key = 'isvoi_revalidate_site_content'
 )

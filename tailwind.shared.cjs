@@ -54,6 +54,7 @@ const themeExtend = {
   },
   zIndex: {
     skip: "60",
+    modal: "100",
   },
   maxWidth: {
     shell: "1440px",

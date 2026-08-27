@@ -99,11 +99,25 @@ export interface DeviceModel {
   family?: string;
   year?: number;
   brand: ProductBrand;
+  specifications?: DeviceModelSpecification[];
+}
+
+export interface DeviceModelSpecification {
+  id: string;
+  groupKey: string;
+  groupLabel: string;
+  label: string;
+  value: string;
+  sourceUrl?: string;
+  sourceCheckedAt?: string;
+  sort: number;
 }
 
 export interface DeviceDetails {
   storage?: string;
   serial?: string;
+  imeiPrimaryLast4?: string;
+  imeiSecondaryLast4?: string;
   year?: number;
   modelIdentifier?: string;
   region?: string;

@@ -3151,3 +3151,65 @@ Next content-editing priorities:
   для `т19` и `т38` — ручная проверка подлинности, Passport, диагностика и фото,
   после чего Inventory Manager отдельно переводит выбранную позицию в
   `eligible` и связывает её с draft product.
+
+### Catalog V3: восемь iPhone, Passport и характеристики моделей (2026-08-27)
+
+- Перед изменением production создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260827T124218Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy не выполнялась: offsite backup и restore rehearsal
+  остаются отложенными по операционному решению.
+- В Directus добавлены `device_diagnostic_reports` и
+  `device_model_specifications`. Оригиналы диагностических сертификатов
+  хранятся в закрытой папке `ISVOI Passport Originals`, а карточка сайта
+  получает только обезличенную копию из `ISVOI Passport Public`. В публичной
+  копии отсутствуют полный IMEI, полный serial, идентификаторы компонентов,
+  номер стирания и QR-код; наружу выводятся только последние четыре цифры IMEI
+  и пять символов serial. Public и Editor не имеют доступа к оригиналам.
+- Для `iphone-14-pro`, `iphone-14-pro-max`, `iphone-16-pro` и
+  `iphone-16-pro-max` заведено 28 нормализованных характеристик: экран, чип,
+  камеры, разъём и зарядка, интерфейсы, IP-рейтинг, размеры и вес. Источник —
+  официальные спецификации Apple:
+  `support.apple.com/en-mide/111849`, `support.apple.com/en-us/111846`,
+  `support.apple.com/en-us/121031`, `support.apple.com/en-us/121032`; дата
+  сверки — 2026-08-27. Региональные SIM-возможности не показываются без
+  подтверждённого model identifier. IP68 подписан как заводская характеристика
+  модели, а не гарантия влагозащиты конкретного устройства с пробегом.
+- Карточка Catalog V3 разделяет факты об экземпляре и справочные данные модели:
+  текущий Passport-блок называется `О конкретном устройстве`, после него
+  выводится `Технические характеристики модели`. Для сертификата доступны
+  адаптивный просмотр и скачивание только публичной обезличенной копии.
+- Восемь складских строк связаны с product, Passport, отчётом, 5–6 реальными
+  WebP-фотографиями и предложением магазина `belgorod`. Для всех подтверждены
+  гарантия `90 дней` и комплектность `Устройство, коробка, кабель`. Avito
+  listing оставлен в `draft`; автоматическая передача в канал не включалась.
+- После pilot QA `т39` опубликованы семь товаров: `т24`, `т25`, `т26`, `т28`,
+  `т29`, `т30`, `т39`. Их product и offer имеют статусы `published + ready`,
+  складские строки — `authenticity_status=verified` и
+  `eligibility_status=eligible`; семь диагностических отчётов имеют статус
+  `current`.
+- Gold iPhone 14 Pro Max `т38` намеренно оставлен `draft + review`. Его
+  складская строка имеет `eligibility_status=blocked`,
+  `review_override=false`, причину `repeat_diagnostics_required` и
+  операторскую заметку. Исходный отчёт сохранён как `superseded`: перед
+  публикацией требуется повторная физическая проверка батареи и наушников,
+  после которой новый отчёт становится `current`.
+- После выпуска снова применён канонический batch
+  `store-snapshot-2026-08-27-corrected` (`90` строк / `361` единица,
+  `14` blocker / `21` warning, `products_synced=7`, `missing_items=0`).
+  Временный release batch архивирован. Pipeline сохраняет документированный
+  ручной `blocked`, поэтому повторный snapshot больше не снимает ограничение
+  `т38` после исчезновения старой автоматической причины.
+- Временная release identity и её изолированная policy удалены после apply;
+  token отозван. Права публикации, relation allowlists и product publication
+  guard проверены exact-role rehearsal. Reverse O2M-связи Passport и relation
+  keys обновляются идемпотентно без перезаписи существующих идентификаторов.
+- `web:verify`, полный `directus:audit:prod`, Catalog V3/inventory/API-policy/
+  files audits, основной, image, visual, copy и performance smoke прошли.
+  Каталог показывает семь позиций, pilot-карточка содержит фото, Passport,
+  сертификат, характеристики, offer, lead form и JSON-LD. Mobile и desktop
+  LCP остаются в release budget; файловый audit распознаёт V3-фото и оба типа
+  Passport-файлов, `files.orphan_isvoi_files.warning=0`.
+- Релизная цепочка изменений завершена коммитом `f614da1`. Следующий
+  обязательный товарный шаг — повторно диагностировать `т38`, выпустить новую
+  обезличенную публичную копию и только после QA перевести product и offer в
+  `published + ready`.

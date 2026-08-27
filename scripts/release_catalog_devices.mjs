@@ -90,11 +90,12 @@ async function upsertProductPassport(productId, payload) {
     "GET",
     `/items/products/${encodeURIComponent(productId)}?fields=id,passport`,
   );
+  const passport = Array.isArray(product?.passport) ? product.passport[0] : product?.passport;
   const passportId =
-    typeof product?.passport === "string"
-      ? product.passport
-      : product?.passport && typeof product.passport === "object"
-        ? product.passport.id
+    typeof passport === "string"
+      ? passport
+      : passport && typeof passport === "object"
+        ? passport.id
         : "";
   if (!apply) return passportId || "dry-run:device_passports";
   if (passportId) {

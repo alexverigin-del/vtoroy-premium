@@ -99,7 +99,13 @@ async function upsertProductPassport(productId, payload) {
         : "";
   if (!apply) return passportId || "dry-run:device_passports";
   if (passportId) {
-    await request("PATCH", `/items/device_passports/${encodeURIComponent(passportId)}`, payload);
+    const updatePayload = { ...payload };
+    delete updatePayload.product;
+    await request(
+      "PATCH",
+      `/items/device_passports/${encodeURIComponent(passportId)}`,
+      updatePayload,
+    );
     return passportId;
   }
   const created = await request("POST", "/items/device_passports", payload);

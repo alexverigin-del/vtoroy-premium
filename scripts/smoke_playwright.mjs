@@ -4,13 +4,13 @@
  *
  * Usage:
  *   npm run smoke:prod
- *   SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/product/iphone-13-pro npm run smoke:prod
+ *   SMOKE_BASE_URL=https://isvoi.ru SMOKE_DEVICE_PATH=/product/apple-iphone-14-pro-256-deep-purple-1f97112b npm run smoke:prod
  */
 
 import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs";
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
-const DEFAULT_DEVICE_PATH = "/product/iphone-13-pro";
+const DEFAULT_DEVICE_PATH = "/product/apple-iphone-14-pro-256-deep-purple-1f97112b";
 const DEFAULT_BLOG_ARTICLE_PATH = "/blog/chto-pokazyvaet-diagnostika-iphone";
 const MARKETING_ROUTES = [
   "/store",

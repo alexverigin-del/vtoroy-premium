@@ -12,7 +12,11 @@ import { performance } from "node:perf_hooks";
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
 const DEFAULT_DIRECTUS_URL = "https://api.isvoi.ru";
-const DEFAULT_ROUTES = ["/catalog", "/store", "/device/iphone-13-pro"];
+const DEFAULT_ROUTES = [
+  "/catalog",
+  "/store",
+  "/product/apple-iphone-14-pro-256-deep-purple-1f97112b",
+];
 const DEFAULT_LIMIT = 5;
 const DEFAULT_MIN_ASSETS = 3;
 const DEFAULT_MIN_NEXT_ASSETS = 2;

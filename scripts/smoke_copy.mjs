@@ -8,7 +8,10 @@
  */
 
 const DEFAULT_BASE_URL = "https://isvoi.ru";
-const DEFAULT_DEVICE_PATHS = ["/product/iphone-13-pro", "/product/iphone-14"];
+const DEFAULT_DEVICE_PATHS = [
+  "/product/apple-iphone-14-pro-256-deep-purple-1f97112b",
+  "/product/apple-iphone-14-pro-max-256-silver-872f3638",
+];
 const DEFAULT_ROUTES = [
   "/",
   "/catalog",

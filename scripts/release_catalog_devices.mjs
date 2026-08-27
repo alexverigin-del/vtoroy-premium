@@ -85,6 +85,26 @@ async function upsert(collection, filterQuery, payload) {
   return created.id;
 }
 
+async function upsertProductPassport(productId, payload) {
+  const product = await request(
+    "GET",
+    `/items/products/${encodeURIComponent(productId)}?fields=id,passport`,
+  );
+  const passportId =
+    typeof product?.passport === "string"
+      ? product.passport
+      : product?.passport && typeof product.passport === "object"
+        ? product.passport.id
+        : "";
+  if (!apply) return passportId || "dry-run:device_passports";
+  if (passportId) {
+    await request("PATCH", `/items/device_passports/${encodeURIComponent(passportId)}`, payload);
+    return passportId;
+  }
+  const created = await request("POST", "/items/device_passports", payload);
+  return created.id;
+}
+
 const devicePhotoFolder = prepareOnly ? "" : await folderId("ISVOI Device Photos");
 const originalFolder = prepareOnly ? "" : await folderId("ISVOI Passport Originals");
 const publicFolder = prepareOnly ? "" : await folderId("ISVOI Passport Public");
@@ -224,29 +244,25 @@ for (const [index, device] of manifest.devices.entries()) {
     grade: device.grade || "Повторная проверка",
   });
 
-  const passportId = await upsert(
-    "device_passports",
-    `filter[product][_eq]=${encodeURIComponent(productId)}`,
-    {
-      product: productId,
-      repair: "Проверенные компоненты отмечены диагностикой как оригинальные.",
-      water: "Следов воздействия жидкости по доступной диагностике не зафиксировано.",
-      summary_rows: device.summaryRows,
-      diagnostics_status: device.publishReady ? "Проверено" : "Требуется повторная диагностика",
-      diagnostics_checklist: device.checklist,
-      condition_grade_text: device.grade ? `Грейд ${device.grade}` : "Повторная проверка",
-      condition_note: device.conditionNote,
-      condition_notes: device.conditionFacts,
-      story_title: "Состояние зафиксировано до покупки",
-      story_body:
-        "Проверили функции, блокировки, батарею и доступные признаки оригинальности компонентов.",
-      story_facts: ["Данные удалены безопасно", "Find My iPhone не обнаружен", "MDM не обнаружен"],
-      warranty_duration: "90 дней",
-      warranty_covered: "Подтверждённые гарантийные случаи по условиям продавца.",
-      warranty_not_covered:
-        "Механические повреждения, попадание жидкости и нарушение условий эксплуатации.",
-    },
-  );
+  const passportId = await upsertProductPassport(productId, {
+    product: productId,
+    repair: "Проверенные компоненты отмечены диагностикой как оригинальные.",
+    water: "Следов воздействия жидкости по доступной диагностике не зафиксировано.",
+    summary_rows: device.summaryRows,
+    diagnostics_status: device.publishReady ? "Проверено" : "Требуется повторная диагностика",
+    diagnostics_checklist: device.checklist,
+    condition_grade_text: device.grade ? `Грейд ${device.grade}` : "Повторная проверка",
+    condition_note: device.conditionNote,
+    condition_notes: device.conditionFacts,
+    story_title: "Состояние зафиксировано до покупки",
+    story_body:
+      "Проверили функции, блокировки, батарею и доступные признаки оригинальности компонентов.",
+    story_facts: ["Данные удалены безопасно", "Find My iPhone не обнаружен", "MDM не обнаружен"],
+    warranty_duration: "90 дней",
+    warranty_covered: "Подтверждённые гарантийные случаи по условиям продавца.",
+    warranty_not_covered:
+      "Механические повреждения, попадание жидкости и нарушение условий эксплуатации.",
+  });
 
   await upsert(
     "device_diagnostic_reports",

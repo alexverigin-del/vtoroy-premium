@@ -318,6 +318,8 @@ BEGIN
 
   PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','products','update',
     'status,content_status,sale_mode,device_model,title,model,color,price,price_text,stock_quantity,stock_status,warranty,warranty_text,completeness,short_description,headline,listing_file,listing_alt,sort,admin_note');
+  PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','store_locations','read',
+    'id,slug,status,name,city,address,sort');
   PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','product_images','read','id,product,image,status,role,label,alt,sort,import_batch,created_at,updated_at');
   PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','product_images','create','product,image,status,role,label,alt,sort,import_batch');
   PERFORM pg_temp.isvoi_permission('ISVOI Inventory Manager','product_images','update','image,status,role,label,alt,sort,import_batch');

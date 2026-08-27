@@ -359,6 +359,18 @@ class InventoryPipelineTest(unittest.TestCase):
 
         self.assertEqual(review_state(existing, item), ("pending", "blocked"))
 
+    def test_documented_manual_block_outlives_stale_automatic_reason(self) -> None:
+        existing = {
+            "authenticity_status": "verified",
+            "eligibility_status": "blocked",
+            "block_reason": "serialized_identity_conflict",
+            "review_override": False,
+            "review_note": "Повторная диагностика батареи и наушников обязательна.",
+        }
+        item = {"identity_status": "matched", "risk_codes": []}
+
+        self.assertEqual(review_state(existing, item), ("verified", "blocked"))
+
     def test_active_authenticity_risk_stays_blocked(self) -> None:
         existing = {
             "authenticity_status": "blocked",

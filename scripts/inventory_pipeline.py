@@ -426,7 +426,10 @@ def review_state(existing: dict[str, Any] | None, item: dict[str, Any]) -> tuple
             if code.strip()
         }
         undocumented_stale_block = not previous_codes and not text(existing.get("review_note"))
-        if previous_codes & AUTO_BLOCK_CODES or undocumented_stale_block:
+        documented_manual_block = bool(text(existing.get("review_note")))
+        if not documented_manual_block and (
+            previous_codes & AUTO_BLOCK_CODES or undocumented_stale_block
+        ):
             eligibility = "pending"
             if authenticity == "blocked":
                 authenticity = "pending"

@@ -152,6 +152,8 @@ async function collectMetrics(page) {
           height: Math.round(rect.height),
         },
         inNearViewport:
+          rect.width > 0 &&
+          rect.height > 0 &&
           rect.top < window.innerHeight * 1.5 &&
           rect.bottom > -window.innerHeight * 0.25 &&
           rect.left < window.innerWidth * 1.5 &&

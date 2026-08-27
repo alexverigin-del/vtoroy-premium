@@ -39,6 +39,7 @@ SELECT 'leads.device_slug_without_relation', count(*)::text
 FROM leads
 WHERE nullif(device, '') IS NOT NULL
   AND device_id IS NULL
+  AND COALESCE(source_path, '') ~ '^(/[^/]+)?/(device|product)/'
 UNION ALL
 SELECT 'leads.blog_attribution_bookmarks_missing', count(*)::text
 FROM (VALUES ('Блог: заявки'), ('Блог: устройства')) required(bookmark)

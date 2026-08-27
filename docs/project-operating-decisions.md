@@ -3108,3 +3108,46 @@ Next content-editing priorities:
   конфликта `т38`; затем выставить операторские authenticity/eligibility,
   связать inventory item с draft product, заполнить реальные фото, Passport и
   диагностику и только после QA публиковать product вместе с store offer.
+
+### Ручная коррекция т19 и т38 (2026-08-27)
+
+- Оператор подтвердил две ошибки учётного snapshot: позиция с артикулом `т19`
+  была случайно удалена из кассы, а фактический цвет `т38` — Gold; у iPhone 14
+  он подтверждён по цвету боковин. Исходная выгрузка Evotor 2026-08-26 не
+  перезаписывалась.
+- Создан отдельный исправленный snapshot
+  `outputs/inventory-unit-economics-2026-08-11/store-snapshot-2026-08-27-corrected.xlsx`
+  с SHA-256
+  `537B5A85E0ED837F3CF28E38FD6D7408BCB3118072654F0618CEF69074107C67`.
+  `т19` восстановлен с прежними UUID, кодом `т129454574`, штрих-кодом
+  `2000000001197`, остатком 1 и прежними ценами; `т38` переименован в iPhone 14
+  Pro Max 256 ГБ Gold без изменения UUID, штрих-кода и serial.
+- Каноническая книга пересчитана как
+  `outputs/inventory-unit-economics-2026-08-11/ISVOI_unit_economics_2026-08-27.xlsx`;
+  её SHA-256 —
+  `BF6F9E5D3222C730F3AC110028877438EB7290A56526843938530E9833C3594E`.
+  Итог: 90 SKU / 361 единица, себестоимость 2 234 398 руб., плановая выручка
+  2 813 700 руб., валовая прибыль 579 302 руб. С поступлениями связано 82 из
+  95 строк, 14 строк выбыли до загрузки. Формулы и все шесть листов проверены;
+  дубликатов UUID, кодов, штрих-кодов и serial нет.
+- Перед production apply создан и проверен backup
+  `/opt/isvoi/backups/directus/20260827T115040Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущена, поскольку `OFFSITE_BACKUP_DEST` не задан.
+- В Directus применена партия `store-snapshot-2026-08-27-corrected`, id
+  `5f0904cb-5c22-45f1-9bf2-43e8e42c2dfa`: 90 строк / 361 единица, 95 строк
+  поступлений, 14 blocker и 21 warning, `missing_items=0`,
+  `products_synced=0`. Предыдущая партия архивирована штатным pipeline.
+- После apply `т19` и `т38` имеют `identity_status=matched`,
+  `authenticity_status=pending`, `eligibility_status=pending`; открытых issues
+  по обеим позициям нет. Serial в документации и отчётах показывается только
+  маской с последними четырьмя символами.
+- Pipeline больше не сохраняет недокументированный stale `blocked`, если
+  автоматическая причина устранена: такая строка возвращается в `pending`.
+  Ручной `blocked` с заполненной `review_note` сохраняется. Изменение покрыто
+  25 тестами и выпущено коммитом `28e29af`.
+- Полный `directus:audit:prod` и production smoke с
+  `SMOKE_EXPECT_CATALOG_SOURCE=v3`, `SMOKE_EXPECT_EMPTY_CATALOG=1` прошли.
+  Коррекция не публикует товары на сайте и не активирует Avito: следующий шаг
+  для `т19` и `т38` — ручная проверка подлинности, Passport, диагностика и фото,
+  после чего Inventory Manager отдельно переводит выбранную позицию в
+  `eligible` и связывает её с draft product.

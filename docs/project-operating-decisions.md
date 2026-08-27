@@ -3051,3 +3051,60 @@ Next content-editing priorities:
 - Следующий товарный шаг не требует frontend-изменений: закрыть inventory
   blockers для первой реальной техники, заполнить фото и Passport, затем
   опубликовать product и offer по действующему Catalog V3 workflow.
+
+### Inventory snapshot 2026-08-26 и правило состояния (2026-08-27)
+
+- Канонические источники обновления: полная выгрузка Evotor
+  `20260731-D256-404B-8066-88053F217AAA-20260826-1821.xlsx` и книга
+  поступлений `Поступление товара.xlsx` из `Передано в магазин`. Их SHA-256:
+  `D1E219B776A004D2177412409FB87BDB325917CF488CF5477A7AFF201365107A` и
+  `2C552A80B5C93A2566DA6405F8BD8F7641C7AA4B80DF51EEA1A5F97E237A433D`.
+- Актуальная рабочая книга сохранена как
+  `outputs/inventory-unit-economics-2026-08-11/ISVOI_unit_economics_2026-08-26.xlsx`.
+  Текущий snapshot содержит 89 SKU / 360 единиц, себестоимость остатка
+  2 180 298 руб., плановую выручку 2 751 600 руб. и валовую прибыль
+  571 302 руб. Поступления содержат 95 строк / 394 единицы; 81 строка связана
+  с текущим остатком, 3 строки относятся к ЦО, 15 выбыли до загрузки и одна
+  требует ручной сверки движения. Формульная проверка и визуальный просмотр
+  всех шести листов прошли, ошибок формул нет.
+- Состояние Catalog V3 определяется структурой Evotor, а не наличием serial:
+  `Группа = Телефоны` и `Структура групп = Телефоны` означают `used`;
+  `Группа = Смартфоны` и ветка
+  `Товары на продажу \\ Смартфоны` означают `new`. В production это даёт
+  32 used SKU / 31 единицу и 4 new SKU / 30 единиц соответственно; ошибок
+  классификации в текущем snapshot нет.
+- Перед production import создан и проверен backup
+  `/opt/isvoi/backups/directus/20260827T054232Z`; checksum PostgreSQL и uploads
+  совпал. Offsite copy не выполнялась, поскольку offsite backup и restore
+  rehearsal остаются отложенными.
+- В Directus применена партия `store-snapshot-2026-08-26-final`, id
+  `95054c73-55a8-4c8b-bd0b-72b569111fb0`: статус `applied_with_blocks`, запуск
+  `success`, 89 строк / 360 единиц, 95 строк поступлений, 15 открытых blocker и
+  23 warning. `products_synced = 0`: склад обновлён только в приватном staging,
+  публикация карточек сайта и передача в Avito не выполнялись.
+- Один SKU, исчезнувший из нового snapshot, сохранён активным до отдельного
+  подтверждения `confirm_missing_deactivation`; общий inventory поэтому
+  содержит 90 строк, хотя последняя партия содержит 89. Исторические строки
+  поступлений и issues также не удаляются.
+- iPhone 14 Pro Max 256 ГБ White Titanium с кодом `т38` и штрих-кодом
+  `2000000001388` остаётся `blocked`: serial с окончанием `42VW` связан с Gold
+  в поступлении и White Titanium в текущем остатке. До ручного решения
+  identity blocker, подтверждения Passport/диагностики и фото product не
+  создаётся.
+- Импорт исправлен коммитами `2591061`, `1458182` и `f30a72a`: принимается
+  кириллическое имя книги поступления, condition берётся из группы/структуры,
+  а `missing_from_snapshot` связывается с сохранённой складской строкой.
+  Коммит `cbc2277` ограничивает lead relation audit только товарными страницами
+  и не требует искусственной связи для свободного запроса подбора.
+- После повторного применения базовой inventory-схемы восстановлены metadata в
+  порядке Studio UX v3, Catalog/Inventory UX v4, Inventory Workflow v5,
+  Issue Lifecycle v6, Administrator Parity v7, Catalog Editor UX v6 и Passport
+  Facts v7. Permission cache очищен, Directus перезапущен. Полный
+  `directus:audit:prod` прошёл, включая admin bookmarks, решённые проблемы,
+  доступность operator groups и Passport facts. Production smoke прошёл с
+  `SMOKE_EXPECT_CATALOG_SOURCE=v3` и `SMOKE_EXPECT_EMPTY_CATALOG=1`; публичный
+  каталог остаётся намеренно пустым до первой подтверждённой карточки.
+- Следующий товарный шаг: разобрать 15 blockers, начиная с serial/color
+  конфликта `т38`; затем выставить операторские authenticity/eligibility,
+  связать inventory item с draft product, заполнить реальные фото, Passport и
+  диагностику и только после QA публиковать product вместе с store offer.

@@ -70,7 +70,7 @@ function filename(value: unknown, fallback: string): string {
     const file = value as DirectusFile;
     const original = file.filename_download || file.title || fallback;
     const sanitized = safeName(original);
-    const sanitizedStem = path.basename(sanitized, path.extname(sanitized)).replace(/[._-]/g, "");
+    const sanitizedStem = sanitized.replace(/\.[A-Za-z0-9]+$/, "").replace(/[._-]/g, "");
     if (sanitizedStem) return sanitized;
 
     const fallbackName = safeName(fallback);

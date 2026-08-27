@@ -103,6 +103,21 @@ def extract_serial(value: Any) -> str:
     return match.group(1).upper() if match else ""
 
 
+def inventory_condition(source_group: Any, source_group_path: Any, serial: str) -> str:
+    """Infer commercial condition from the Evotor taxonomy, not serialization."""
+    group = normalize(source_group)
+    path = [
+        normalize(segment)
+        for segment in re.split(r"\\+|/|>", text(source_group_path))
+        if normalize(segment)
+    ]
+    if group == "телефоны" and (not path or path[-1] == "телефоны"):
+        return "used"
+    if path and path[0] == "товары на продажу":
+        return "new"
+    return "used" if serial else "new"
+
+
 def masked(value: str) -> str:
     value = text(value)
     return f"***{value[-4:]}" if value else ""
@@ -177,6 +192,8 @@ def parse_inventory(path: Path) -> list[dict[str, Any]]:
         if quantity < 0 or purchase < 0 or retail < 0:
             raise ValueError(f"inventory row {row_number}: stock and prices must be non-negative")
         serial = extract_serial(row.get("Описание"))
+        source_group = text(row.get("Группа"))
+        source_group_path = text(row.get("Структура групп"))
         rows.append(
             {
                 "row_number": row_number,
@@ -186,8 +203,8 @@ def parse_inventory(path: Path) -> list[dict[str, Any]]:
                 "barcode": barcode,
                 "source_title": title,
                 "source_description": text(row.get("Описание")),
-                "source_group": text(row.get("Группа")),
-                "source_group_path": text(row.get("Структура групп")),
+                "source_group": source_group,
+                "source_group_path": source_group_path,
                 "serial_full": serial,
                 "quantity": quantity,
                 "purchase_price": purchase,
@@ -197,7 +214,7 @@ def parse_inventory(path: Path) -> list[dict[str, Any]]:
                 "source_created_at": parse_source_datetime(row.get("Создан")),
                 "source_updated_at": parse_source_datetime(row.get("Обновлен")),
                 "item_kind": "serialized" if serial else "pooled",
-                "condition": "used" if serial else "new",
+                "condition": inventory_condition(source_group, source_group_path, serial),
             }
         )
     return rows

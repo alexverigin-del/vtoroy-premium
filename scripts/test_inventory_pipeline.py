@@ -14,6 +14,7 @@ from inventory_pipeline import (
     Issue,
     archive_previous_inventory_batches,
     find_missing_items,
+    inventory_condition,
     parse_inventory,
     parse_receipts,
     product_mapping,
@@ -514,6 +515,18 @@ class InventoryPipelineTest(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(first["inventory"]["rows"], 1)
         self.assertEqual(first["receipts"]["rows"], 0)
+
+    def test_condition_uses_evotor_group_structure_instead_of_serial_presence(self) -> None:
+        self.assertEqual(inventory_condition("Телефоны", "Телефоны", ""), "used")
+        self.assertEqual(inventory_condition("Телефоны", "Телефоны", "SERIAL-1"), "used")
+        self.assertEqual(
+            inventory_condition("Смартфоны", "Товары на продажу \\ Смартфоны", "SERIAL-2"),
+            "new",
+        )
+        self.assertEqual(
+            inventory_condition("Ноутбуки", "Товары на продажу \\ Ноутбуки", "SERIAL-3"),
+            "new",
+        )
 
     def test_repeated_snapshot_has_no_missing_items(self) -> None:
         inventory = [{"source_id": "source-1"}, {"source_id": "source-2"}]

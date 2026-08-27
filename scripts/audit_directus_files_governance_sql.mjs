@@ -7,14 +7,31 @@ process.stdout.write(String.raw`
 WITH folders AS (
   SELECT id, name
   FROM directus_folders
-  WHERE name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI File Review', 'ISVOI Catalog Imports', 'ISVOI Blog')
+  WHERE name IN (
+    'ISVOI Device Photos',
+    'ISVOI Site Assets',
+    'ISVOI Editorial',
+    'ISVOI File Review',
+    'ISVOI Catalog Imports',
+    'ISVOI Blog',
+    'ISVOI Passport Originals',
+    'ISVOI Passport Public'
+  )
 ),
 used_files(id) AS (
   SELECT listing_file::uuid FROM devices WHERE listing_file IS NOT NULL
   UNION
   SELECT image::uuid FROM device_images WHERE image IS NOT NULL
   UNION
+  SELECT listing_file::uuid FROM products WHERE listing_file IS NOT NULL
+  UNION
+  SELECT image::uuid FROM product_images WHERE image IS NOT NULL
+  UNION
   SELECT defect_photo::uuid FROM device_passports WHERE defect_photo IS NOT NULL
+  UNION
+  SELECT original_file::uuid FROM device_diagnostic_reports WHERE original_file IS NOT NULL
+  UNION
+  SELECT public_file::uuid FROM device_diagnostic_reports WHERE public_file IS NOT NULL
   UNION
   SELECT image::uuid FROM page_sections WHERE image IS NOT NULL
   UNION
@@ -93,7 +110,15 @@ SELECT 'files.orphan_isvoi_files.warning', count(*)::text
 FROM directus_files f
 JOIN folders folder ON folder.id = f.folder
 LEFT JOIN used_files u ON u.id = f.id
-WHERE folder.name IN ('ISVOI Device Photos', 'ISVOI Site Assets', 'ISVOI Editorial', 'ISVOI Catalog Imports', 'ISVOI Blog')
+WHERE folder.name IN (
+  'ISVOI Device Photos',
+  'ISVOI Site Assets',
+  'ISVOI Editorial',
+  'ISVOI Catalog Imports',
+  'ISVOI Blog',
+  'ISVOI Passport Originals',
+  'ISVOI Passport Public'
+)
   AND u.id IS NULL
 UNION ALL
 SELECT 'files.hero_editorial_missing_focal_point.warning', count(*)::text

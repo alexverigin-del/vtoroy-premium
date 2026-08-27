@@ -62,22 +62,45 @@ BEGIN
     WHERE id=v_release_policy;
   END IF;
   DELETE FROM directus_permissions WHERE policy=v_release_policy;
+  WITH source_permissions AS (
+    SELECT
+      permission.*,
+      CASE source_policy.id WHEN v_import_policy THEN 0 ELSE 1 END AS source_priority
+    FROM directus_permissions permission
+    JOIN directus_policies source_policy ON source_policy.id=permission.policy
+    WHERE source_policy.id IN (v_manager_policy,v_import_policy)
+  ),
+  preferred AS (
+    SELECT DISTINCT ON (collection,action)
+      collection,action,permissions,validation,presets
+    FROM source_permissions
+    ORDER BY collection,action,source_priority
+  ),
+  field_sets AS (
+    SELECT
+      source.collection,
+      source.action,
+      CASE
+        WHEN bool_or(source.fields='*') THEN '*'
+        ELSE string_agg(DISTINCT btrim(field.value),',' ORDER BY btrim(field.value))
+          FILTER (WHERE btrim(field.value)<>'')
+      END AS fields
+    FROM source_permissions source
+    LEFT JOIN LATERAL unnest(string_to_array(COALESCE(source.fields,''),',')) AS field(value)
+      ON true
+    GROUP BY source.collection,source.action
+  )
   INSERT INTO directus_permissions(policy,collection,action,permissions,validation,presets,fields)
-  SELECT DISTINCT ON (permission.collection,permission.action)
+  SELECT
     v_release_policy,
-    permission.collection,
-    permission.action,
-    permission.permissions,
-    permission.validation,
-    permission.presets,
-    permission.fields
-  FROM directus_permissions permission
-  JOIN directus_policies source_policy ON source_policy.id=permission.policy
-  WHERE source_policy.id IN (v_manager_policy,v_import_policy)
-  ORDER BY
-    permission.collection,
-    permission.action,
-    CASE source_policy.id WHEN v_import_policy THEN 0 ELSE 1 END;
+    preferred.collection,
+    preferred.action,
+    preferred.permissions,
+    preferred.validation,
+    preferred.presets,
+    field_sets.fields
+  FROM preferred
+  JOIN field_sets USING (collection,action);
   SELECT id INTO v_user FROM directus_users WHERE email='catalog-release-qa@service.isvoi' LIMIT 1;
   IF v_user IS NULL THEN
     INSERT INTO directus_users(id,first_name,last_name,email,title,description,status,role,token,provider)

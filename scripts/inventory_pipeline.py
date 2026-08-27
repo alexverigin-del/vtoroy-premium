@@ -774,6 +774,16 @@ def sync_batch_issues(
     return preserved
 
 
+def include_missing_issue_links(
+    stored_by_source: dict[str, dict[str, Any]],
+    missing_items: list[dict[str, Any]],
+) -> None:
+    for missing in missing_items:
+        source_id = text(missing.get("source_id"))
+        if source_id and source_id not in stored_by_source:
+            stored_by_source[source_id] = missing
+
+
 def apply_snapshot(
     client: Directus,
     batch_id: str,
@@ -855,6 +865,8 @@ def apply_snapshot(
                             {"status": "draft", "sync_status": "inventory_missing"},
                         )
             deactivated += 1
+
+    include_missing_issue_links(stored_by_source, missing_items)
 
     client.delete_where("inventory_receipt_lines", "batch", batch_id)
     for receipt in receipts:

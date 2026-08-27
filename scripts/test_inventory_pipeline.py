@@ -14,6 +14,7 @@ from inventory_pipeline import (
     Issue,
     archive_previous_inventory_batches,
     find_missing_items,
+    include_missing_issue_links,
     inventory_condition,
     parse_inventory,
     parse_receipts,
@@ -541,6 +542,12 @@ class InventoryPipelineTest(unittest.TestCase):
         missing = {"id": "item-2", "source_id": "source-2", "source_sku": "sku-2"}
         client = FakeDirectus([{"id": "item-1", "source_id": "source-1"}, missing])
         self.assertEqual(find_missing_items(client, "store_inventory", inventory), [missing])
+
+    def test_missing_item_is_available_for_issue_linking(self) -> None:
+        stored = {"source-1": {"id": "item-1", "source_id": "source-1"}}
+        missing = {"id": "item-2", "source_id": "source-2"}
+        include_missing_issue_links(stored, [missing])
+        self.assertEqual(stored["source-2"], missing)
 
     def test_product_mapping_uses_group_path_for_wearables(self) -> None:
         watch = {

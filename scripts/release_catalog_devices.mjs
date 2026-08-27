@@ -165,6 +165,10 @@ for (const [index, device] of manifest.devices.entries()) {
     `filter[slug][_eq]=${encodeURIComponent(device.modelSlug)}&fields=id`,
   );
   if (!model) throw new Error(`${device.sku}: model ${device.modelSlug} is missing`);
+  const currentProduct = await request(
+    "GET",
+    `/items/products/${encodeURIComponent(productId)}?fields=id,status`,
+  );
 
   const photoIds = [];
   for (const [photoIndex, photo] of device.photos.entries()) {
@@ -202,7 +206,7 @@ for (const [index, device] of manifest.devices.entries()) {
   const shouldPublish =
     device.publishReady && (publishMode === "ready" || (publishMode === "pilot" && device.pilot));
   const productPatch = {
-    status: shouldPublish ? "published" : "draft",
+    status: shouldPublish && currentProduct.status === "published" ? "published" : "draft",
     content_status: device.publishReady ? "ready" : "review",
     device_model: model.id,
     title: device.title,
@@ -326,6 +330,11 @@ for (const [index, device] of manifest.devices.entries()) {
   );
   if (listing && apply)
     await request("PATCH", `/items/product_channel_listings/${listing.id}`, { status: "draft" });
+  if (apply && shouldPublish && currentProduct.status !== "published") {
+    await request("PATCH", `/items/products/${encodeURIComponent(productId)}`, {
+      status: "published",
+    });
+  }
   process.stdout.write(
     `${apply ? "applied" : "checked"} ${device.sku} -> ${productId} (${shouldPublish ? "published" : "draft"})\n`,
   );

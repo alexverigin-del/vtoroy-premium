@@ -371,6 +371,18 @@ class InventoryPipelineTest(unittest.TestCase):
 
         self.assertEqual(review_state(existing, item), ("blocked", "blocked"))
 
+    def test_documented_verified_override_can_prepare_identity_conflict_draft(self) -> None:
+        existing = {
+            "authenticity_status": "verified",
+            "eligibility_status": "blocked",
+            "block_reason": "serialized_identity_conflict",
+            "review_override": True,
+            "review_note": "Оператор сверил устройство; создать только черновик для повторной диагностики.",
+        }
+        item = {"identity_status": "conflict", "risk_codes": []}
+
+        self.assertEqual(review_state(existing, item), ("verified", "eligible"))
+
     def test_existing_product_sync_preserves_editorial_fields_and_listing_status(self) -> None:
         client = FakeProductSyncDirectus(
             {"id": "existing-product", "status": "published", "content_status": "ready"},

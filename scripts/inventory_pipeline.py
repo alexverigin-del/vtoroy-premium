@@ -412,7 +412,7 @@ def review_state(existing: dict[str, Any] | None, item: dict[str, Any]) -> tuple
     authenticity = text(existing.get("authenticity_status")) if existing else "pending"
     eligibility = text(existing.get("eligibility_status")) if existing else "pending"
 
-    if hard_identity:
+    if hard_identity and not override:
         eligibility = "blocked"
     elif hard_risk and not override:
         authenticity = "blocked"

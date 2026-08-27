@@ -162,6 +162,7 @@
     "directus:certificates:public": "node scripts/build_public_diagnostic_certificates.mjs",
     "directus:release:bundle": "node scripts/prepare_product_release_bundle.mjs",
     "directus:release:devices": "node scripts/release_catalog_devices.mjs",
+    "directus:release:identity": "node scripts/setup_directus_catalog_release_identity_sql.mjs",
     "directus:setup:navigation-ux": "node scripts/setup_directus_navigation_ux_sql.mjs",
     "directus:reconcile:deferred-club": "node scripts/reconcile_directus_deferred_club_sql.mjs",
     "directus:setup:insights": "node scripts/setup_directus_insights_sql.mjs",

@@ -85,11 +85,13 @@ async function upsert(collection, filterQuery, payload) {
   return created.id;
 }
 
-const devicePhotoFolder = await folderId("ISVOI Device Photos");
-const originalFolder = await folderId("ISVOI Passport Originals");
-const publicFolder = await folderId("ISVOI Passport Public");
-const store = await first("store_locations", "filter[slug][_eq]=belgorod&fields=id");
-if (!store) throw new Error("Store location belg<orod is missing".replace("<", ""));
+const devicePhotoFolder = prepareOnly ? "" : await folderId("ISVOI Device Photos");
+const originalFolder = prepareOnly ? "" : await folderId("ISVOI Passport Originals");
+const publicFolder = prepareOnly ? "" : await folderId("ISVOI Passport Public");
+const store = prepareOnly
+  ? null
+  : await first("store_locations", "filter[slug][_eq]=belgorod&fields=id");
+if (!prepareOnly && !store) throw new Error("Store location belgorod is missing");
 
 for (const [index, device] of manifest.devices.entries()) {
   const inventory = await first(

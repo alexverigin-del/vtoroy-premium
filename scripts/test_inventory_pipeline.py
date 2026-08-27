@@ -335,6 +335,30 @@ class InventoryPipelineTest(unittest.TestCase):
 
         self.assertEqual(review_state(existing, item), ("pending", "pending"))
 
+    def test_undocumented_stale_block_returns_to_pending(self) -> None:
+        existing = {
+            "authenticity_status": "pending",
+            "eligibility_status": "blocked",
+            "block_reason": None,
+            "review_override": False,
+            "review_note": None,
+        }
+        item = {"identity_status": "matched", "risk_codes": []}
+
+        self.assertEqual(review_state(existing, item), ("pending", "pending"))
+
+    def test_documented_manual_block_is_preserved(self) -> None:
+        existing = {
+            "authenticity_status": "pending",
+            "eligibility_status": "blocked",
+            "block_reason": None,
+            "review_override": False,
+            "review_note": "Проверка остановлена менеджером до получения документов.",
+        }
+        item = {"identity_status": "matched", "risk_codes": []}
+
+        self.assertEqual(review_state(existing, item), ("pending", "blocked"))
+
     def test_active_authenticity_risk_stays_blocked(self) -> None:
         existing = {
             "authenticity_status": "blocked",

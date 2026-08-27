@@ -425,7 +425,8 @@ def review_state(existing: dict[str, Any] | None, item: dict[str, Any]) -> tuple
             for code in text(existing.get("block_reason")).split(",")
             if code.strip()
         }
-        if previous_codes & AUTO_BLOCK_CODES:
+        undocumented_stale_block = not previous_codes and not text(existing.get("review_note"))
+        if previous_codes & AUTO_BLOCK_CODES or undocumented_stale_block:
             eligibility = "pending"
             if authenticity == "blocked":
                 authenticity = "pending"

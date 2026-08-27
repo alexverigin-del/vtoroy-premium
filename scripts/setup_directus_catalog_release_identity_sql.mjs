@@ -83,10 +83,10 @@ BEGIN
     INSERT INTO directus_users(id,first_name,last_name,email,title,description,status,role,token,provider)
     VALUES(gen_random_uuid(),'ISVOI','Catalog Release QA','catalog-release-qa@service.isvoi',
       'Temporary catalog release identity',
-      'Temporary Inventory Manager identity. Delete immediately after release.',
-      'active',v_role,encode(gen_random_bytes(32),'hex'),'default');
+      'Temporary non-admin service identity. Delete immediately after release.',
+      'active',NULL,encode(gen_random_bytes(32),'hex'),'default');
   ELSE
-    UPDATE directus_users SET status='active',role=v_role,password=NULL,
+    UPDATE directus_users SET status='active',role=NULL,password=NULL,
       token=encode(gen_random_bytes(32),'hex') WHERE id=v_user;
   END IF;
   SELECT id INTO v_user FROM directus_users WHERE email='catalog-release-qa@service.isvoi' LIMIT 1;
@@ -96,9 +96,9 @@ BEGIN
 END $$;
 COMMIT;
 SELECT 'catalog_release.identity_ready' AS check_name,count(*)::text AS value
-FROM directus_users users JOIN directus_roles role ON role.id=users.role
+FROM directus_users users
 WHERE users.email='catalog-release-qa@service.isvoi' AND users.status='active'
-  AND users.password IS NULL AND length(users.token)>=64 AND role.name='ISVOI Inventory Manager';
+  AND users.password IS NULL AND length(users.token)>=64 AND users.role IS NULL;
 SELECT 'catalog_release.access_policy_ready' AS check_name,count(*)::text AS value
 FROM directus_access access
 JOIN directus_users users ON users.id=access."user"

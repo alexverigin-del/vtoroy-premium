@@ -190,7 +190,13 @@ async function smokeRoute(browser, baseUrl, route, viewport) {
       issues.push(`LCP ${lcpMs}ms exceeds ${lcpBudgetMs}ms budget`);
     }
     if (metrics.pendingImages.length > 0) {
-      issues.push(`${metrics.pendingImages.length} near-viewport image(s) still pending`);
+      const labels = metrics.pendingImages
+        .slice(0, 3)
+        .map((image) => image.alt || image.src)
+        .join(" | ");
+      issues.push(
+        `${metrics.pendingImages.length} near-viewport image(s) still pending: ${labels}`,
+      );
     }
     if (metrics.failedImages.length > 0 || metrics.imageErrors.length > 0) {
       issues.push(`${metrics.failedImages.length + metrics.imageErrors.length} image error(s)`);

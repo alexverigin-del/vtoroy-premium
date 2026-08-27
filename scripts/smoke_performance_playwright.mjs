@@ -143,6 +143,14 @@ async function collectMetrics(page) {
         loading: image.loading || "",
         complete: image.complete,
         naturalWidth: image.naturalWidth,
+        rect: {
+          top: Math.round(rect.top),
+          right: Math.round(rect.right),
+          bottom: Math.round(rect.bottom),
+          left: Math.round(rect.left),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        },
         inNearViewport:
           rect.top < window.innerHeight * 1.5 &&
           rect.bottom > -window.innerHeight * 0.25 &&
@@ -195,7 +203,10 @@ async function smokeRoute(browser, baseUrl, route, viewport) {
     if (metrics.pendingImages.length > 0) {
       const labels = metrics.pendingImages
         .slice(0, 3)
-        .map((image) => image.alt || image.src)
+        .map(
+          (image) =>
+            `${image.alt || image.src} [left=${image.rect.left}, right=${image.rect.right}, top=${image.rect.top}, width=${image.rect.width}]`,
+        )
         .join(" | ");
       issues.push(
         `${metrics.pendingImages.length} near-viewport image(s) still pending: ${labels}`,

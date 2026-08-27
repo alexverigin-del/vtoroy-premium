@@ -74,11 +74,17 @@ async function upload(filePath, title, folder, type) {
   return uploaded.id;
 }
 
-async function upsert(collection, filterQuery, payload) {
+async function upsert(collection, filterQuery, payload, immutableFields = []) {
   const existing = await first(collection, `${filterQuery}&fields=id`);
   if (!apply) return existing?.id ?? `dry-run:${collection}`;
   if (existing) {
-    await request("PATCH", `/items/${collection}/${encodeURIComponent(existing.id)}`, payload);
+    const updatePayload = { ...payload };
+    for (const field of immutableFields) delete updatePayload[field];
+    await request(
+      "PATCH",
+      `/items/${collection}/${encodeURIComponent(existing.id)}`,
+      updatePayload,
+    );
     return existing.id;
   }
   const created = await request("POST", `/items/${collection}`, payload);
@@ -238,22 +244,27 @@ for (const [index, device] of manifest.devices.entries()) {
   if (apply)
     await request("PATCH", `/items/products/${encodeURIComponent(productId)}`, productPatch);
 
-  await upsert("device_details", `filter[product][_eq]=${encodeURIComponent(productId)}`, {
-    product: productId,
-    storage: device.storage,
-    serial: `•••••${device.serialTail}`,
-    imei_primary_last4: device.imeiPrimaryLast4,
-    imei_secondary_last4: device.imeiSecondaryLast4,
-    year: device.year,
-    battery: `${device.batteryPercent}%`,
-    battery_text: `Аккумулятор ${device.batteryPercent}%`,
-    battery_cycles: device.batteryCycles,
-    diagnostic_date: device.testedAt,
-    activation_lock: "Не обнаружена",
-    mdm: "Не обнаружен",
-    diagnostic_by: "NSYS Diagnostics / I СВОИ",
-    grade: device.grade || "Повторная проверка",
-  });
+  await upsert(
+    "device_details",
+    `filter[product][_eq]=${encodeURIComponent(productId)}`,
+    {
+      product: productId,
+      storage: device.storage,
+      serial: `•••••${device.serialTail}`,
+      imei_primary_last4: device.imeiPrimaryLast4,
+      imei_secondary_last4: device.imeiSecondaryLast4,
+      year: device.year,
+      battery: `${device.batteryPercent}%`,
+      battery_text: `Аккумулятор ${device.batteryPercent}%`,
+      battery_cycles: device.batteryCycles,
+      diagnostic_date: device.testedAt,
+      activation_lock: "Не обнаружена",
+      mdm: "Не обнаружен",
+      diagnostic_by: "NSYS Diagnostics / I СВОИ",
+      grade: device.grade || "Повторная проверка",
+    },
+    ["product"],
+  );
 
   const passportId = await upsertProductPassport(productId, {
     product: productId,
@@ -291,6 +302,7 @@ for (const [index, device] of manifest.devices.entries()) {
         "Публичная выписка обезличена: полные идентификаторы, QR и номера компонентов скрыты.",
       sort: 10,
     },
+    ["product", "passport"],
   );
 
   for (const photo of photoIds) {
@@ -307,6 +319,7 @@ for (const [index, device] of manifest.devices.entries()) {
         sort: photo.sort,
         import_batch: "product-release-v8-2026-08-27",
       },
+      ["product"],
     );
   }
 
@@ -329,6 +342,7 @@ for (const [index, device] of manifest.devices.entries()) {
       source_system: "store_inventory",
       source_id: inventory.id,
     },
+    ["product", "location"],
   );
 
   const listing = await first(

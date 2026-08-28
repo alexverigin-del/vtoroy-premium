@@ -97,6 +97,7 @@ export const fallbackDevicePageSettings: DevicePageSettings = {
     statusPrefix: "Статус:",
     statusFallback: "зафиксирована",
     verifiedLabel: "Проверено",
+    certificateStoreNote: "Полный паспорт (сертификат) устройства доступен в магазине.",
   },
   mobile: {
     reservedLabel: "Очередь",
@@ -1318,6 +1319,10 @@ function mapDevicePageSettingsFromDirectus(row: Record<string, unknown>): Device
       statusPrefix: str(row.passport_status_prefix, defaults.passport.statusPrefix),
       statusFallback: str(row.passport_status_fallback, defaults.passport.statusFallback),
       verifiedLabel: str(row.passport_verified_label, defaults.passport.verifiedLabel),
+      certificateStoreNote: str(
+        row.passport_certificate_store_note,
+        defaults.passport.certificateStoreNote,
+      ),
     },
     mobile: {
       reservedLabel: str(row.mobile_reserved_label, defaults.mobile.reservedLabel),

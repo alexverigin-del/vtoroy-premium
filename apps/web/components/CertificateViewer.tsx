@@ -9,12 +9,14 @@ export function CertificateViewer({
   provider,
   testedAt,
   note,
+  storeNote,
 }: {
   href: string;
   downloadHref?: string;
   provider: string;
   testedAt: string;
   note?: string;
+  storeNote?: string;
 }) {
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -46,6 +48,7 @@ export function CertificateViewer({
         </button>
       </div>
       {note ? <p className="mt-3 text-xs leading-relaxed text-muted">{note}</p> : null}
+      {storeNote ? <p className="mt-2 text-xs font-medium text-carbon">{storeNote}</p> : null}
 
       {open ? (
         <div

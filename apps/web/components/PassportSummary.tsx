@@ -18,6 +18,7 @@ const defaultPassportCopy: PassportCopy = {
   statusPrefix: "Статус:",
   statusFallback: "зафиксирована",
   verifiedLabel: "Проверено",
+  certificateStoreNote: "Полный паспорт (сертификат) устройства доступен в магазине.",
 };
 
 export function PassportSummary({
@@ -127,6 +128,7 @@ export function PassportSummary({
               provider={passport.diagnosticReport.provider}
               testedAt={passport.diagnosticReport.testedAt}
               note={passport.diagnosticReport.publicNote}
+              storeNote={copy.certificateStoreNote}
             />
           </div>
         ) : null}

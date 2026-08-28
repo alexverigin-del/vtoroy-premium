@@ -145,6 +145,7 @@ expected_fields(table_name, field_name) AS (
     ('device_page_settings', 'warranty_title'),
     ('device_page_settings', 'related_title'),
     ('device_page_settings', 'passport_title'),
+    ('device_page_settings', 'passport_certificate_store_note'),
     ('navigation_items', 'url'),
     ('navigation_items', 'link_type'),
     ('navigation_items', 'page'),

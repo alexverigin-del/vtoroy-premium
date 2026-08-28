@@ -259,6 +259,7 @@ const textFields = [
   "passport_status_prefix",
   "passport_status_fallback",
   "passport_verified_label",
+  "passport_certificate_store_note",
   "mobile_reserved_label",
   "mobile_sold_label",
   "mobile_available_label",
@@ -321,6 +322,7 @@ CREATE TABLE IF NOT EXISTS device_page_settings (
   passport_status_prefix varchar DEFAULT 'Статус:',
   passport_status_fallback varchar DEFAULT 'зафиксирована',
   passport_verified_label varchar DEFAULT 'Проверено',
+  passport_certificate_store_note text DEFAULT 'Полный паспорт (сертификат) устройства доступен в магазине.',
   mobile_reserved_label varchar DEFAULT 'Очередь',
   mobile_sold_label varchar DEFAULT 'Подобрать',
   mobile_available_label varchar DEFAULT 'Просмотр',
@@ -375,6 +377,7 @@ ALTER TABLE device_page_settings
   ADD COLUMN IF NOT EXISTS passport_status_prefix varchar DEFAULT 'Статус:',
   ADD COLUMN IF NOT EXISTS passport_status_fallback varchar DEFAULT 'зафиксирована',
   ADD COLUMN IF NOT EXISTS passport_verified_label varchar DEFAULT 'Проверено',
+  ADD COLUMN IF NOT EXISTS passport_certificate_store_note text DEFAULT 'Полный паспорт (сертификат) устройства доступен в магазине.',
   ADD COLUMN IF NOT EXISTS mobile_reserved_label varchar DEFAULT 'Очередь',
   ADD COLUMN IF NOT EXISTS mobile_sold_label varchar DEFAULT 'Подобрать',
   ADD COLUMN IF NOT EXISTS mobile_available_label varchar DEFAULT 'Просмотр',
@@ -514,6 +517,7 @@ SELECT isvoi_upsert_directus_field('device_page_settings', 'passport_diagnostics
 SELECT isvoi_upsert_directus_field('device_page_settings', 'passport_status_prefix', 'input', NULL, NULL, 'half', 95, 'Префикс перед статусом диагностики.', false, NULL, 'group_passport', false, false, 'Префикс статуса');
 SELECT isvoi_upsert_directus_field('device_page_settings', 'passport_status_fallback', 'input', NULL, NULL, 'half', 96, 'Fallback статуса диагностики.', false, NULL, 'group_passport', false, false, 'Fallback статуса');
 SELECT isvoi_upsert_directus_field('device_page_settings', 'passport_verified_label', 'input', NULL, NULL, 'half', 97, 'Текст бейджа проверки.', false, NULL, 'group_passport', false, false, 'Бейдж проверки');
+SELECT isvoi_upsert_directus_field('device_page_settings', 'passport_certificate_store_note', 'input-multiline', NULL, NULL, 'full', 98, 'Пояснение о доступности полного паспорта устройства в магазине.', false, NULL, 'group_passport', false, false, 'Полный паспорт в магазине');
 
 SELECT isvoi_upsert_directus_field('device_page_settings', 'group_related', 'group-detail', NULL, '{"headerIcon":"devices_other","start":"closed"}'::json, 'full', 110, 'Блок похожих устройств и prompt при малом количестве карточек.', false, 'alias,no-data,group', NULL, false, false, 'Похожие устройства');
 SELECT isvoi_upsert_directus_field('device_page_settings', 'related_eyebrow', 'input', NULL, NULL, 'half', 111, 'Eyebrow блока похожих устройств.', false, NULL, 'group_related', false, false, 'Eyebrow');

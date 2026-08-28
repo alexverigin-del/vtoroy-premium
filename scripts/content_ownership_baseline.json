@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-27T12:36:40.729Z",
+  "updatedAt": "2026-08-28T16:00:01.498Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -853,77 +853,77 @@
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 295,
+      "line": 299,
       "text": "Модель",
       "id": "d1a8f6d3958c05aa"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 296,
+      "line": 300,
       "text": "Технические характеристики модели",
       "id": "f08eee49dcdfb203"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 312,
+      "line": 316,
       "text": "IP68 — заводская характеристика модели. Она не является гарантией влагозащиты конкретного устройства с пробегом.",
       "id": "841a76d49d4edc21"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 332,
+      "line": 336,
       "text": "Для этой техники с пробегом опубликованы диагностика и Passport. Состояние можно перепроверить при просмотре.",
       "id": "655707fcc75913e5"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 337,
+      "line": 341,
       "text": "До покупки можно уточнить точные характеристики, комплектность, совместимость и условия гарантии.",
       "id": "471671cdeadda671"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 353,
+      "line": 357,
       "text": "Гарантия и комплект",
       "id": "852777f530e11e29"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 362,
+      "line": 366,
       "text": "Уточнить условия в магазине →",
       "id": "a666208f35900c38"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 373,
+      "line": 377,
       "text": "Есть в наличии",
       "id": "5d5a97636d450ae2"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 373,
+      "line": 377,
       "text": "Подойдут к этой модели",
       "id": "4bb0be4b5b7a0514"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 376,
+      "line": 380,
       "text": "Подходящая техника",
       "id": "851285e846fbb70e"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 376,
+      "line": 380,
       "text": "Совместимые аксессуары",
       "id": "a897c5423416413a"
     },
@@ -1245,42 +1245,42 @@
     {
       "file": "apps/web/components/CertificateViewer.tsx",
       "kind": "jsx-text",
-      "line": 36,
+      "line": 40,
       "text": "Публичная выписка диагностики",
       "id": "4631a8ba145d1294"
     },
     {
       "file": "apps/web/components/CertificateViewer.tsx",
       "kind": "jsx-text",
-      "line": 42,
+      "line": 46,
       "text": "Открыть сертификат",
       "id": "f4baf5cc092261c4"
     },
     {
       "file": "apps/web/components/CertificateViewer.tsx",
       "kind": "string",
-      "line": 53,
+      "line": 58,
       "text": "Публичная выписка диагностики",
       "id": "d7f26ef98e6747a1"
     },
     {
       "file": "apps/web/components/CertificateViewer.tsx",
       "kind": "string",
-      "line": 65,
+      "line": 70,
       "text": "Закрыть",
       "id": "d3802acfde4aa014"
     },
     {
       "file": "apps/web/components/CertificateViewer.tsx",
       "kind": "string",
-      "line": 75,
+      "line": 80,
       "text": "Обезличенная выписка диагностики устройства",
       "id": "87fe32947425e6ba"
     },
     {
       "file": "apps/web/components/CertificateViewer.tsx",
       "kind": "jsx-text",
-      "line": 80,
+      "line": 85,
       "text": "Скачать копию",
       "id": "7fef65b3cfb5e536"
     },
@@ -2942,6 +2942,13 @@
       "line": 20,
       "text": "Проверено",
       "id": "6bd665b24d68bc6d"
+    },
+    {
+      "file": "apps/web/components/PassportSummary.tsx",
+      "kind": "string",
+      "line": 21,
+      "text": "Полный паспорт (сертификат) устройства доступен в магазине.",
+      "id": "9979825bf8299d52"
     },
     {
       "file": "apps/web/components/ProductCard.tsx",
@@ -5676,308 +5683,315 @@
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 102,
+      "line": 100,
+      "text": "Полный паспорт (сертификат) устройства доступен в магазине.",
+      "id": "7ea51cbd53f80925"
+    },
+    {
+      "file": "apps/web/lib/directus.ts",
+      "kind": "string",
+      "line": 103,
       "text": "Очередь",
       "id": "93e262deee7af9df"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 103,
+      "line": 104,
       "text": "Подобрать",
       "id": "5b2930814f125220"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 104,
+      "line": 105,
       "text": "Просмотр",
       "id": "8c4450d0036e4b2e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 106,
+      "line": 107,
       "text": "Действия по товару",
       "id": "0f42f7682c08e985"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 111,
+      "line": 112,
       "text": "Записаться на просмотр",
       "id": "18f1682233126806"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 112,
+      "line": 113,
       "text": "Проверить наличие и записаться",
       "id": "7dd567926d3de50e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 113,
+      "line": 114,
       "text": "Телефон или Telegram",
       "id": "3b70dfcaf499a9ea"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 114,
+      "line": 115,
       "text": "Например, хочу посмотреть сегодня после 18:00",
       "id": "142f0969267e635e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 116,
+      "line": 117,
       "text": "Отправляем...",
       "id": "c484928bbc9ba421"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 117,
+      "line": 118,
       "text": "Заявка будет привязана к этой карточке и текущим условиям.",
       "id": "1f891995cb1fbdd8"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 118,
+      "line": 119,
       "text": "Заявка принята. Мы свяжемся и подтвердим наличие.",
       "id": "d5e8cf2aa6f9a8f0"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 119,
+      "line": 120,
       "text": "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
       "id": "b9bdcbffcd91d82b"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 121,
+      "line": 122,
       "text": "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
       "id": "9cd3825c44ab2cc1"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 122,
+      "line": 123,
       "text": "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
       "id": "f52b98978741f53a"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 126,
+      "line": 127,
       "text": "Встать в лист ожидания по брони",
       "id": "b49e208b61f371ee"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 127,
+      "line": 128,
       "text": "Встать в лист ожидания",
       "id": "d12f25d7299b9e58"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 129,
+      "line": 130,
       "text": "Например, если бронь освободится, готов посмотреть сегодня",
       "id": "d6d8ca6cd66f01fb"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 132,
+      "line": 133,
       "text": "Заявка будет привязана к этой карточке и текущему статусу.",
       "id": "6e216883634d8e8f"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 134,
+      "line": 135,
       "text": "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
       "id": "cb846af976f1cb17"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 137,
+      "line": 138,
       "text": "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
       "id": "7b6a72de0fafff28"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 142,
+      "line": 143,
       "text": "Подобрать похожее устройство",
       "id": "1204913b5480234f"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 143,
+      "line": 144,
       "text": "Подобрать альтернативу",
       "id": "7aec73a96eb5bf63"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 145,
+      "line": 146,
       "text": "Например, хочу похожий iPhone с таким же объёмом памяти",
       "id": "dfd2fd36011ad1c4"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 148,
+      "line": 149,
       "text": "Заявка сохранит контекст этой карточки, чтобы подбор был точнее.",
       "id": "f6585a87a369afb2"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 150,
+      "line": 151,
       "text": "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
       "id": "63d460dfba547434"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 152,
+      "line": 153,
       "text": "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
       "id": "6e6843953cdf045d"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 460,
+      "line": 461,
       "text": "Скрыто",
       "id": "6dddacbd7768bc75"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 710,
+      "line": 711,
       "text": "Ремонт ${passport.repair}",
       "id": "fa3f4755a081ae2d"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 711,
+      "line": 712,
       "text": "Влага ${passport.water}",
       "id": "5224006e4611a949"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 713,
+      "line": 714,
       "text": "Состояние ${passport.condition.gradeText}",
       "id": "a87817f0d5dd13ce"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 1170,
+      "line": 1171,
       "text": "I СВОИ",
       "id": "f521cbebb0fe9445"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 298,
+      "line": 314,
       "text": "Бронь",
       "id": "bf20bf5000ef1799"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 299,
+      "line": 315,
       "text": "Нет в наличии",
       "id": "0a7060828b0c5293"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 300,
+      "line": 316,
       "text": "В наличии",
       "id": "ee12223b1db5c736"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 397,
+      "line": 413,
       "text": "Совместимость по модели",
       "id": "f410220b0089efb4"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 398,
+      "line": 414,
       "text": "Универсальный аксессуар",
       "id": "b754b2d0ab4f0236"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 405,
+      "line": 421,
       "text": "Грейд ${device.grade}",
       "id": "47260cce2d821a7c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 405,
+      "line": 421,
       "text": "С пробегом",
       "id": "6e745dabe5684324"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 411,
+      "line": 427,
       "text": "Новое",
       "id": "d6d52553dfb8f98c"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 439,
+      "line": 455,
       "text": "от ${selectedOffer.priceText}",
       "id": "c8d0ffd4c467aed5"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 464,
+      "line": 480,
       "text": "${selectedOffer.location.city} · Доставка${selectedOffer.deliveryEstimate ?",
       "id": "5b34ccdcd9feb3be"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 479,
+      "line": 495,
       "text": "Узнать о поступлении",
       "id": "7d7c26a6200ffdbb"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 481,
+      "line": 497,
       "text": "Забронировать",
       "id": "4c7cb1d4b7028946"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",
       "kind": "string",
-      "line": 482,
+      "line": 498,
       "text": "Записаться на просмотр",
       "id": "8828cf903958ac01"
     },

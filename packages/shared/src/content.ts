@@ -456,6 +456,7 @@ export interface DevicePageSettings {
     statusPrefix: string;
     statusFallback: string;
     verifiedLabel: string;
+    certificateStoreNote: string;
   };
   mobile: {
     reservedLabel: string;

@@ -76,14 +76,19 @@ for (const device of manifest.devices) {
     ? `<image href="${providerLogo}" x="96" y="112" width="330" height="74" preserveAspectRatio="xMinYMid meet"/>`
     : `<text x="96" y="166" class="provider">NSYS Diagnostics</text>`;
   const isvoiBrand = brandLogo
-    ? `<image href="${brandLogo}" x="920" y="96" width="384" height="158" preserveAspectRatio="xMaxYMid meet"/>`
-    : `<text x="1304" y="164" text-anchor="end" class="brand">I СВОИ</text>`;
+    ? `<image href="${brandLogo}" x="835" y="84" width="320" height="132" preserveAspectRatio="xMinYMid meet"/>
+       <text x="1114" y="125" class="brand-caption">ПРОВЕРЕННАЯ</text>
+       <text x="1114" y="153" class="brand-caption">ТЕХНИКА ДЛЯ</text>
+       <text x="1114" y="181" class="brand-caption">СВОИХ</text>`
+    : `<text x="1000" y="164" text-anchor="end" class="brand">I СВОИ</text>
+       <text x="1020" y="125" class="brand-caption">ПРОВЕРЕННАЯ</text>
+       <text x="1020" y="153" class="brand-caption">ТЕХНИКА ДЛЯ</text>
+       <text x="1020" y="181" class="brand-caption">СВОИХ</text>`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1800" viewBox="0 0 1400 1800">
     <rect width="1400" height="1800" fill="#f8fafc"/>
     <rect x="64" y="64" width="1272" height="1672" rx="12" fill="white" stroke="#dbe3ea"/>
     ${providerBrand}
     ${isvoiBrand}
-    <text x="1304" y="246" text-anchor="end" class="brand-caption">ПРОВЕРЕННАЯ ТЕХНИКА ДЛЯ СВОИХ</text>
     <line x1="96" x2="1304" y1="286" y2="286" class="brand-line"/>
     <text x="96" y="338" class="subtitle">Публичная выписка диагностики</text>
     <text x="1304" y="338" text-anchor="end" class="meta">${escapeXml(device.testedAt)}</text>
@@ -95,7 +100,7 @@ for (const device of manifest.devices) {
     <text x="96" y="1610" class="body">Блокировки · безопасное удаление данных · оригинальность компонентов</text>
     <text x="96" y="1690" class="footer">Источник: NSYS Diagnostics · публичная выписка I СВОИ</text>
     <style>
-      text{font-family:Arial,sans-serif;fill:#16191d}.brand{font-size:54px;font-weight:700}.provider{font-size:34px;font-weight:700;fill:#18334d}.brand-caption{font-size:15px;font-weight:700;fill:#66717d}.brand-line{stroke:#d9c39a}.subtitle{font-size:25px;fill:#66717d}.meta{font-size:24px;fill:#66717d}.title{font-size:34px;font-weight:700}.label{font-size:22px;font-weight:700;fill:#4b5563}.value{font-size:22px}.line{stroke:#e3e8ee}.warning{font-size:23px;font-weight:700;fill:#9a3412}.verified{font-size:23px;font-weight:700;fill:#047857}.note{font-size:19px;fill:#59636e}.condition{font-size:18px;fill:#78350f}.section{font-size:25px;font-weight:700}.body{font-size:22px;fill:#374151}.footer{font-size:18px;fill:#7a8490}
+      text{font-family:Arial,sans-serif;fill:#16191d}.brand{font-size:54px;font-weight:700}.provider{font-size:34px;font-weight:700;fill:#18334d}.brand-caption{font-size:17px;font-weight:500;fill:#6b7077}.brand-line{stroke:#d9c39a}.subtitle{font-size:25px;fill:#66717d}.meta{font-size:24px;fill:#66717d}.title{font-size:34px;font-weight:700}.label{font-size:22px;font-weight:700;fill:#4b5563}.value{font-size:22px}.line{stroke:#e3e8ee}.warning{font-size:23px;font-weight:700;fill:#9a3412}.verified{font-size:23px;font-weight:700;fill:#047857}.note{font-size:19px;fill:#59636e}.condition{font-size:18px;fill:#78350f}.section{font-size:25px;font-weight:700}.body{font-size:22px;fill:#374151}.footer{font-size:18px;fill:#7a8490}
     </style>
   </svg>`;
   const output = path.join(outputDir, `${device.sku.toLowerCase()}.png`);

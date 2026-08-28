@@ -22,6 +22,11 @@ const globalsCss = path.join(webRoot, "app", "globals.css");
 const classCompositionHelper = path.join(webRoot, "lib", "cn.ts");
 const siteLogoComponent = path.join(webRoot, "components", "SiteLogo.tsx");
 const siteChromeUtils = path.join(webRoot, "components", "site-chrome-utils.ts");
+const productImageZoomUtils = path.join(webRoot, "components", "product-image-zoom-utils.ts");
+const reviewedProductImageZoomComponents = new Set([
+  path.join(webRoot, "components", "DeviceGallery.tsx"),
+  path.join(webRoot, "components", "ProductImageViewer.tsx"),
+]);
 
 const riskyPatterns = [
   { label: "template className", pattern: /className=\{`/ },
@@ -194,7 +199,10 @@ for (const file of scanRoots.flatMap(walk)) {
     const allowedLogoSizeStyle =
       file === siteLogoComponent &&
       lineText(source, match.index).includes("style={logoSizeStyle(settings)}");
-    if (!allowedLogoSizeStyle) {
+    const allowedProductImageZoomStyle =
+      reviewedProductImageZoomComponents.has(file) &&
+      /style=\{productImage(?:Lens|Transform)Style\(/.test(lineText(source, match.index));
+    if (!allowedLogoSizeStyle && !allowedProductImageZoomStyle) {
       errors.push(
         `${rel(file)}:${lineNumber(source, match.index)} uses inline style. Tailwind-first UI should use utilities or a reviewed CSS-variable helper.`,
       );
@@ -202,7 +210,7 @@ for (const file of scanRoots.flatMap(walk)) {
   }
 
   for (const match of source.matchAll(/\bCSSProperties\b/g)) {
-    if (file !== siteChromeUtils) {
+    if (file !== siteChromeUtils && file !== productImageZoomUtils) {
       errors.push(
         `${rel(file)}:${lineNumber(source, match.index)} uses CSSProperties outside the reviewed logo CSS-variable helper.`,
       );

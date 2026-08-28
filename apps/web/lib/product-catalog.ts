@@ -818,6 +818,7 @@ function mapGallery(rows: Row[]): GalleryImage[] {
     return [
       {
         src,
+        zoomSrc: assetUrl(row.image, 2400, 1800),
         label: text(row.label, text(row.role)),
         alt: text(row.alt),
         role: text(row.role),

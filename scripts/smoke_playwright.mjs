@@ -492,6 +492,29 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
   }
   await assertImages(page, "device", 1, requireDirectusAssets);
 
+  const gallery = page.locator('[data-component="DeviceGallery"]');
+  const zoomTrigger = gallery.getByRole("button", { name: /^Увеличить фото:/ });
+  assert((await zoomTrigger.count()) === 1, "device: expected one image zoom trigger");
+  await zoomTrigger.click();
+  const imageViewer = page.locator('[data-component="ProductImageViewer"]');
+  await imageViewer.waitFor({ state: "visible", timeout: 10_000 });
+  const zoomImage = imageViewer.locator("img");
+  await zoomImage.evaluate((image) => image.decode());
+  const zoomImageSrc = (await zoomImage.getAttribute("src")) || "";
+  if (requireDirectusAssets) {
+    assert(
+      zoomImageSrc.includes("width=2400") && zoomImageSrc.includes("height=1800"),
+      `device: expected a 2400x1800 Directus zoom source, got ${zoomImageSrc}`,
+    );
+  }
+  await imageViewer.getByRole("button", { name: "Увеличить" }).click();
+  assert(
+    (await imageViewer.getByRole("button", { name: "Сбросить масштаб" }).innerText()) === "1.25×",
+    "device: viewer zoom control did not update",
+  );
+  await page.keyboard.press("Escape");
+  await imageViewer.waitFor({ state: "detached" });
+
   const passportBlocks = await page.locator("text=I СВОИ Passport").count();
   assert(passportBlocks > 0, "device: expected I СВОИ Passport block");
   const storyBlocks = await page.locator('[data-component="DeviceStoryCard"]').count();
@@ -516,6 +539,7 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
     storyBlocks,
     offerLinks,
     leadForms: await leadForm.count(),
+    imageViewer: true,
     jsonLdTypes: seo.jsonLdTypes.length,
   };
 }

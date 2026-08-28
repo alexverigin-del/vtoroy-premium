@@ -19,6 +19,7 @@ export type PassportState = "ok" | "warn" | "bad";
 
 export interface GalleryImage {
   src: string;
+  zoomSrc?: string;
   label: string;
   alt: string;
   role?: string;

@@ -97,6 +97,9 @@ const themeExtend = {
   width: {
     overlay: "390px",
   },
+  height: {
+    "zoom-lens": "132px",
+  },
   gridTemplateColumns: {
     compare: "1.1fr 1fr 1fr",
     editorial: "minmax(0, 0.9fr) minmax(0, 1.1fr)",

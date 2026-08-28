@@ -64,3 +64,15 @@ export const notFoundPrimaryLinkClass =
 
 export const notFoundSecondaryLinkClass =
   "focus-ring inline-flex min-h-11 items-center justify-center rounded-pill border border-hairline bg-white px-7 py-3 text-sm font-semibold text-carbon transition hover:border-link-blue hover:text-link-blue";
+
+export const productImageLensClass =
+  "pointer-events-none absolute z-10 hidden h-zoom-lens w-44 -translate-x-1/2 -translate-y-1/2 rounded-card border border-white bg-white bg-no-repeat shadow-product lg:block";
+
+export const productImageZoomBadgeClass =
+  "absolute bottom-3 right-3 inline-flex min-h-10 items-center rounded-pill border border-white/80 bg-white/90 px-4 text-xs font-semibold text-carbon shadow-soft backdrop-blur transition group-hover:border-link-blue group-hover:text-link-blue";
+
+export const productImageViewerControlClass =
+  "h-11 w-11 text-2xl text-white outline-none transition hover:bg-white/10 focus-visible:shadow-focus disabled:opacity-35";
+
+export const productImageViewerNavClass =
+  "absolute top-1/2 h-11 w-11 -translate-y-1/2 rounded-pill border border-white/20 bg-black/45 text-xl text-white outline-none backdrop-blur transition hover:bg-black/70 focus-visible:shadow-focus";

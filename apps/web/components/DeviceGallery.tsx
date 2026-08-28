@@ -1,9 +1,35 @@
 "use client";
 
-import { type KeyboardEvent, useId, useMemo, useState } from "react";
+import {
+  type KeyboardEvent,
+  type PointerEvent,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { GalleryImage } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { ProductImage, productImageSrc } from "./ProductImage";
+import { ProductImageViewer } from "./ProductImageViewer";
+import { productImageLensStyle } from "./product-image-zoom-utils";
+import { productImageLensClass, productImageZoomBadgeClass } from "./ui-classes";
+
+const LENS_WIDTH = 176;
+const LENS_HEIGHT = 132;
+const LENS_ZOOM = 2.25;
+
+type LensPosition = {
+  visible: boolean;
+  left: number;
+  top: number;
+  backgroundX: number;
+  backgroundY: number;
+};
+
+const clamp = (value: number, minimum: number, maximum: number) =>
+  Math.min(Math.max(value, minimum), maximum);
 
 export function DeviceGallery({ images }: { images: GalleryImage[] }) {
   const galleryId = useId();
@@ -13,19 +39,36 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
         .map((image) => ({
           ...image,
           src: productImageSrc(image.src),
+          zoomSrc: productImageSrc(image.zoomSrc || image.src),
           label: image.label || image.role || "Фото",
         }))
         .filter((image) => image.src),
     [images],
   );
   const [activeIndex, setActiveIndex] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [lens, setLens] = useState<LensPosition>({
+    visible: false,
+    left: 0,
+    top: 0,
+    backgroundX: 50,
+    backgroundY: 50,
+  });
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const boundedActiveIndex = Math.min(activeIndex, normalizedImages.length - 1);
   const active = normalizedImages[boundedActiveIndex];
-
-  if (!active) return null;
-
   const activeTabId = `${galleryId}-tab-${boundedActiveIndex}`;
   const panelId = `${galleryId}-panel`;
+
+  const showImage = useCallback(
+    (index: number) => {
+      const count = normalizedImages.length;
+      if (count) setActiveIndex((index + count) % count);
+    },
+    [normalizedImages.length],
+  );
+
+  if (!active) return null;
 
   function focusTab(tablist: HTMLElement | null, index: number) {
     const tab = tablist?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[index];
@@ -56,25 +99,70 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
     window.requestAnimationFrame(() => focusTab(tablist, nextIndex));
   }
 
+  function updateLens(event: PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType !== "mouse") return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const rawX = event.clientX - rect.left;
+    const rawY = event.clientY - rect.top;
+    setLens({
+      visible: true,
+      left: clamp(rawX, LENS_WIDTH / 2, rect.width - LENS_WIDTH / 2),
+      top: clamp(rawY, LENS_HEIGHT / 2, rect.height - LENS_HEIGHT / 2),
+      backgroundX: clamp((rawX / rect.width) * 100, 0, 100),
+      backgroundY: clamp((rawY / rect.height) * 100, 0, 100),
+    });
+  }
+
   return (
     <section aria-label="Фотографии устройства" data-component="DeviceGallery">
       <figure
         id={panelId}
         role="tabpanel"
-        aria-labelledby={activeTabId}
+        aria-labelledby={normalizedImages.length > 1 ? activeTabId : undefined}
+        aria-label={normalizedImages.length === 1 ? active.label : undefined}
         className="overflow-hidden rounded-card border border-hairline bg-white"
       >
         <div className="relative aspect-product w-full">
-          <ProductImage
-            src={active.src}
-            alt={active.alt || active.label}
-            fill
-            sizes="(min-width: 1120px) 680px, 100vw"
-            className="object-cover"
-            priority={boundedActiveIndex === 0}
-          />
+          <button
+            ref={triggerRef}
+            type="button"
+            className="group relative block h-full w-full cursor-zoom-in overflow-hidden text-left outline-none focus-visible:shadow-focus"
+            aria-label={`Увеличить фото: ${active.label}`}
+            onPointerEnter={updateLens}
+            onPointerMove={updateLens}
+            onPointerLeave={() => setLens((current) => ({ ...current, visible: false }))}
+            onClick={() => setViewerOpen(true)}
+          >
+            <ProductImage
+              src={active.src}
+              alt={active.alt || active.label}
+              fill
+              sizes="(min-width: 1120px) 680px, 100vw"
+              className="pointer-events-none object-cover"
+              priority={boundedActiveIndex === 0}
+            />
+            <span className={productImageZoomBadgeClass}>Увеличить</span>
+            {lens.visible ? (
+              <span
+                aria-hidden="true"
+                data-component="ProductImageLens"
+                className={productImageLensClass}
+                style={productImageLensStyle({
+                  left: lens.left,
+                  top: lens.top,
+                  backgroundImage: active.zoomSrc,
+                  backgroundX: lens.backgroundX,
+                  backgroundY: lens.backgroundY,
+                  zoom: LENS_ZOOM,
+                })}
+              />
+            ) : null}
+          </button>
         </div>
-        <figcaption className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-muted">
+        <figcaption
+          className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-muted"
+          aria-live="polite"
+        >
           <span>{active.label}</span>
           <span>
             {boundedActiveIndex + 1} / {normalizedImages.length}
@@ -110,6 +198,15 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
           })}
         </div>
       ) : null}
+
+      <ProductImageViewer
+        images={normalizedImages}
+        activeIndex={boundedActiveIndex}
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        onSelect={showImage}
+        returnFocusRef={triggerRef}
+      />
     </section>
   );
 }

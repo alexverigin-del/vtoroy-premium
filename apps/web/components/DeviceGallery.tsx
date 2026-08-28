@@ -24,6 +24,7 @@ type LensPosition = {
   visible: boolean;
   left: number;
   top: number;
+  backgroundImage: string;
   backgroundWidth: number;
   backgroundHeight: number;
   backgroundLeft: number;
@@ -53,12 +54,14 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
     visible: false,
     left: 0,
     top: 0,
+    backgroundImage: "",
     backgroundWidth: 0,
     backgroundHeight: 0,
     backgroundLeft: 0,
     backgroundTop: 0,
   });
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const lensRequestRef = useRef(0);
   const boundedActiveIndex = Math.min(activeIndex, normalizedImages.length - 1);
   const active = normalizedImages[boundedActiveIndex];
   const activeTabId = `${galleryId}-tab-${boundedActiveIndex}`;
@@ -103,20 +106,46 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
     window.requestAnimationFrame(() => focusTab(tablist, nextIndex));
   }
 
-  function updateLens(event: PointerEvent<HTMLButtonElement>) {
+  function updateLens(event: PointerEvent<HTMLButtonElement>, backgroundImage?: string) {
     if (event.pointerType !== "mouse") return;
     const rect = event.currentTarget.getBoundingClientRect();
     const rawX = clamp(event.clientX - rect.left, 0, rect.width);
     const rawY = clamp(event.clientY - rect.top, 0, rect.height);
-    setLens({
+    setLens((current) => ({
       visible: true,
       left: clamp(rawX, LENS_WIDTH / 2, rect.width - LENS_WIDTH / 2),
       top: clamp(rawY, LENS_HEIGHT / 2, rect.height - LENS_HEIGHT / 2),
+      backgroundImage: backgroundImage || current.backgroundImage,
       backgroundWidth: rect.width * LENS_ZOOM,
       backgroundHeight: rect.height * LENS_ZOOM,
       backgroundLeft: LENS_WIDTH / 2 - rawX * LENS_ZOOM,
       backgroundTop: LENS_HEIGHT / 2 - rawY * LENS_ZOOM,
-    });
+    }));
+  }
+
+  function handleLensEnter(event: PointerEvent<HTMLButtonElement>) {
+    const requestId = lensRequestRef.current + 1;
+    lensRequestRef.current = requestId;
+    const renderedImage = event.currentTarget.querySelector("img");
+    updateLens(event, renderedImage?.currentSrc || active.src);
+
+    if (!active.zoomSrc || active.zoomSrc === renderedImage?.currentSrc) return;
+    const zoomImage = new Image();
+    zoomImage.onload = () => {
+      void zoomImage
+        .decode()
+        .catch(() => undefined)
+        .then(() => {
+          if (lensRequestRef.current !== requestId) return;
+          setLens((current) => ({ ...current, backgroundImage: active.zoomSrc }));
+        });
+    };
+    zoomImage.src = active.zoomSrc;
+  }
+
+  function hideLens() {
+    lensRequestRef.current += 1;
+    setLens((current) => ({ ...current, visible: false }));
   }
 
   return (
@@ -134,9 +163,9 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
             type="button"
             className="group relative block h-full w-full cursor-zoom-in overflow-hidden text-left outline-none focus-visible:shadow-focus"
             aria-label={`Увеличить фото: ${active.label}`}
-            onPointerEnter={updateLens}
+            onPointerEnter={handleLensEnter}
             onPointerMove={updateLens}
-            onPointerLeave={() => setLens((current) => ({ ...current, visible: false }))}
+            onPointerLeave={hideLens}
             onClick={() => setViewerOpen(true)}
           >
             <ProductImage
@@ -156,7 +185,7 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
                 style={productImageLensStyle({
                   left: lens.left,
                   top: lens.top,
-                  backgroundImage: active.zoomSrc,
+                  backgroundImage: lens.backgroundImage,
                   backgroundWidth: lens.backgroundWidth,
                   backgroundHeight: lens.backgroundHeight,
                   backgroundLeft: lens.backgroundLeft,

@@ -3396,3 +3396,21 @@ Next content-editing priorities:
   rendition `2400x1800`, декодирование следующего изображения и сохранение
   рабочего viewer. Отдельный QA с задержкой ответа `1.2 с` прошёл на desktop;
   desktop/mobile visual QA, полный build и bundle budget также прошли.
+
+### Catalog V3: первый факт для опубликованного грейда A (2026-08-28)
+
+- Для всех пяти опубликованных товаров с точным `device_details.grade = 'A'`
+  первым элементом `device_passports.condition_notes` установлено
+  «Нет замечаний по корпусу.». Существующие факты о батарее, циклах и
+  оригинальности компонентов сохранены следом в прежнем порядке.
+- Архивные `iPhone 14` и `iPad Air` с грейдом A не менялись: обновление
+  намеренно ограничено `products.status = 'published'` и не затрагивает
+  `A−`, `B` или другие грейды.
+- В repo добавлен идемпотентный SQL workflow
+  `directus:update:grade-a-condition` с режимами `--rehearsal` и `--rollback`.
+  Production rehearsal с `ROLLBACK` и apply подтвердили пять целевых Passport.
+- Перед apply создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260828T202557Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущена согласно действующему отложенному решению.
+  После apply Directus cache сброшен перезапуском, health вернулся в `ok`,
+  мгновенная site-content revalidation и HTTP-проверка пяти карточек прошли.

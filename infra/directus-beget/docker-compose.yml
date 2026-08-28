@@ -42,7 +42,7 @@ services:
       - "127.0.0.1:8055:8055"
     volumes:
       - ./uploads:/directus/uploads
-      - ./extensions:/directus/extensions
+      - ./extensions-bundled:/directus/extensions:ro
     environment:
       SECRET: ${SECRET}
 

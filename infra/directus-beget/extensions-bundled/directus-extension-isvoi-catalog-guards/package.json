@@ -1,0 +1,21 @@
+{
+  "name": "directus-extension-isvoi-catalog-guards",
+  "version": "1.0.0",
+  "description": "Studio-readable cross-field validation for the ISVOI Catalog V3.",
+  "type": "module",
+  "keywords": [
+    "directus",
+    "directus-extension",
+    "directus-extension-hook"
+  ],
+  "files": [
+    "dist",
+    "src"
+  ],
+  "directus:extension": {
+    "type": "hook",
+    "path": "dist/index.js",
+    "source": "src/index.js",
+    "host": "^11.17.4"
+  }
+}

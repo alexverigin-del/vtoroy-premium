@@ -76,16 +76,19 @@ if (mismatchAttempt.response.ok) {
   });
   throw new Error("Draft accepted a category from another catalog section.");
 }
-if ([401, 403, 404].includes(mismatchAttempt.response.status)) {
+if (mismatchAttempt.response.status !== 400) {
   throw new Error(
-    `Draft category mismatch was rejected by access/routing instead of validation: ${mismatchAttempt.response.status}`,
+    `Draft category mismatch must return a Studio-readable 400 response, received ${mismatchAttempt.response.status}: ${mismatchAttempt.body}`,
   );
 }
 const validationMessageVisible = mismatchAttempt.body.includes(
   "Категория не соответствует типу товара",
 );
-if (!validationMessageVisible && mismatchAttempt.response.status !== 500) {
-  throw new Error(`Unexpected draft validation response: ${mismatchAttempt.body}`);
+const validationCodeVisible = mismatchAttempt.body.includes("CATEGORY_TYPE_MISMATCH");
+if (!validationMessageVisible || !validationCodeVisible) {
+  throw new Error(
+    `Studio-readable category validation details are missing: ${mismatchAttempt.body}`,
+  );
 }
 
 const productAfterMismatch = await request(
@@ -242,6 +245,7 @@ console.log(
     draft_category_type_guard: true,
     draft_category_type_guard_status: mismatchAttempt.response.status,
     validation_message_visible: validationMessageVisible,
+    validation_code_visible: validationCodeVisible,
     editor_publication_denied: true,
     editor_publication_status: publishAttempt.response.status,
     passport_product_id: usedProductId,

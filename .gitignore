@@ -33,6 +33,8 @@ imports/
 infra/directus-beget/data/
 infra/directus-beget/uploads/
 infra/directus-beget/extensions/
+!infra/directus-beget/extensions-bundled/
+!infra/directus-beget/extensions-bundled/**
 
 # OS / editor
 .DS_Store

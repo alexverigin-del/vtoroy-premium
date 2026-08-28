@@ -39,8 +39,10 @@ docker compose up -d
 #    Log in with ADMIN_EMAIL / ADMIN_PASSWORD, then change the password.
 ```
 
-Persistent data lives in host directories (gitignored):
-`./data/postgres`, `./uploads`, `./extensions`.
+Persistent data lives in the gitignored host directories `./data/postgres` and
+`./uploads`. Reviewed custom extensions are versioned in
+`./extensions-bundled` and mounted read-only into Directus; do not install
+production hooks ad hoc in the old gitignored `./extensions` directory.
 
 ## Going to production on Beget
 

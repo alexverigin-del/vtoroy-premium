@@ -3414,3 +3414,26 @@ Next content-editing priorities:
   SHA-256, offsite copy пропущена согласно действующему отложенному решению.
   После apply Directus cache сброшен перезапуском, health вернулся в `ok`,
   мгновенная site-content revalidation и HTTP-проверка пяти карточек прошли.
+
+### Catalog V3: очистка кадра «Состояние экрана» Space Black (2026-08-28)
+
+- Для `т28` (`Apple iPhone 14 Pro Max 256 ГБ Space Black`) перепроверена
+  привязка пятого слота галереи. На сайте использовался правильный кадр этого
+  устройства, но в подготовленной версии на глянцевой боковине остались
+  заметные отпечатки и жирные следы.
+- В кадре удалены только временные загрязнения боковины и стекла. Геометрия,
+  цвет Space Black, кнопка, антенная вставка, кромки и реальные следы состояния
+  не должны ретушироваться. Итоговый WebP имеет размер `2400x1800` и SHA-256
+  `b19a2750d75c23c41a9093cba446891fe753c9e570b8ccbb042061258cc0688e`.
+- Bundle `product-photo-refresh-2026-08-28-space-black-screen-cleanup`
+  повторно связал пять существующих слотов `т28`: первые четыре изображения
+  побайтно не изменились, пятый получил новый файл. Пять предыдущих файлов
+  сохранены в `ISVOI Product Photo Archive`; `files.product_photo_archive=48`,
+  review и orphan warnings равны нулю.
+- Перед apply создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260828T203801Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущена согласно действующему отложенному решению.
+- Обновление выполнено временной non-admin release identity. После apply
+  identity и policy удалены, token возвращает `401`. Catalog V3, Files и
+  Passport V8 audits, production и image smoke прошли. Адресный Playwright QA
+  подтвердил новый Directus file id в слоте `5 / 5` на desktop и mobile.

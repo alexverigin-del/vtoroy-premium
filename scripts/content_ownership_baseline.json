@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-28T16:00:01.498Z",
+  "updatedAt": "2026-08-28T19:52:27.753Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -1784,21 +1784,35 @@
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "string",
-      "line": 16,
+      "line": 45,
       "text": "Фото",
       "id": "1335b29aa42e3116"
     },
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "string",
-      "line": 60,
+      "line": 123,
       "text": "Фотографии устройства",
       "id": "79558b83cad15afa"
     },
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "string",
-      "line": 86,
+      "line": 136,
+      "text": "Увеличить фото: ${active.label}",
+      "id": "0c6ebeb4988bff3e"
+    },
+    {
+      "file": "apps/web/components/DeviceGallery.tsx",
+      "kind": "jsx-text",
+      "line": 150,
+      "text": "Увеличить",
+      "id": "1d5eba39536de116"
+    },
+    {
+      "file": "apps/web/components/DeviceGallery.tsx",
+      "kind": "string",
+      "line": 181,
       "text": "Ракурсы устройства",
       "id": "cb9f5ed5a1ca4250"
     },
@@ -3390,6 +3404,76 @@
       "line": 740,
       "text": "Получить варианты",
       "id": "861416fa81bc7c71"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 374,
+      "text": "Просмотр фотографий устройства",
+      "id": "c3065c81d5f30554"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 388,
+      "text": "Уменьшить",
+      "id": "98d196a9f035b23a"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 398,
+      "text": "Сбросить масштаб",
+      "id": "fb61a16c47d650b3"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 407,
+      "text": "Увеличить",
+      "id": "e5c59420169f9cc8"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 418,
+      "text": "Закрыть",
+      "id": "57f32b61aeccbd5f"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 494,
+      "text": "Загружаем фото",
+      "id": "895cd8fab01722b2"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 495,
+      "text": "Загружаем ${pendingIndex + 1} / ${images.length}",
+      "id": "9f8178fe3882a897"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "jsx-text",
+      "line": 504,
+      "text": "Фото не загрузилось. Попробуйте переключить ещё раз.",
+      "id": "70ceedb9769ba731"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 514,
+      "text": "Предыдущее фото",
+      "id": "7d89cae57ede351c"
+    },
+    {
+      "file": "apps/web/components/ProductImageViewer.tsx",
+      "kind": "string",
+      "line": 527,
+      "text": "Следующее фото",
+      "id": "51c63bd3dda631e6"
     },
     {
       "file": "apps/web/components/ProductLeadForm.tsx",

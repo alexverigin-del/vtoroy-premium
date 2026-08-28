@@ -76,3 +76,6 @@ export const productImageViewerControlClass =
 
 export const productImageViewerNavClass =
   "absolute top-1/2 h-11 w-11 -translate-y-1/2 rounded-pill border border-white/20 bg-black/45 text-xl text-white outline-none backdrop-blur transition hover:bg-black/70 focus-visible:shadow-focus";
+
+export const productImageViewerLoadingClass =
+  "pointer-events-none absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-2 rounded-pill border border-white/15 bg-black/70 px-3 py-2 text-xs font-medium text-white shadow-soft backdrop-blur";

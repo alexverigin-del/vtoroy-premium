@@ -495,10 +495,37 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
   const gallery = page.locator('[data-component="DeviceGallery"]');
   const zoomTrigger = gallery.getByRole("button", { name: /^Увеличить фото:/ });
   assert((await zoomTrigger.count()) === 1, "device: expected one image zoom trigger");
+  const zoomTriggerBox = await zoomTrigger.boundingBox();
+  assert(zoomTriggerBox, "device: expected image zoom trigger bounds");
+  await zoomTrigger.hover({
+    position: { x: zoomTriggerBox.width / 2, y: zoomTriggerBox.height / 2 },
+  });
+  const imageLens = gallery.locator('[data-component="ProductImageLens"]');
+  await imageLens.waitFor({ state: "visible", timeout: 10_000 });
+  const lensMetrics = await imageLens.evaluate((element) => {
+    const [backgroundWidth, backgroundHeight] = getComputedStyle(element)
+      .backgroundSize.split(" ")
+      .map(Number.parseFloat);
+    const triggerRect = element.parentElement.getBoundingClientRect();
+    return {
+      backgroundWidth,
+      backgroundHeight,
+      triggerWidth: triggerRect.width,
+      triggerHeight: triggerRect.height,
+    };
+  });
+  assert(
+    Math.abs(lensMetrics.backgroundWidth - lensMetrics.triggerWidth * 2.25) <= 2 &&
+      Math.abs(lensMetrics.backgroundHeight - lensMetrics.triggerHeight * 2.25) <= 2,
+    `device: expected a true 2.25x lens, got ${JSON.stringify(lensMetrics)}`,
+  );
   await zoomTrigger.click();
   const imageViewer = page.locator('[data-component="ProductImageViewer"]');
   await imageViewer.waitFor({ state: "visible", timeout: 10_000 });
-  const zoomImage = imageViewer.locator("img");
+  const zoomImage = requireDirectusAssets
+    ? imageViewer.locator('[data-image-layer="zoom"]')
+    : imageViewer.locator('[data-image-layer="base"]');
+  await zoomImage.waitFor({ state: "visible", timeout: 15_000 });
   await zoomImage.evaluate((image) => image.decode());
   const zoomImageSrc = (await zoomImage.getAttribute("src")) || "";
   if (requireDirectusAssets) {
@@ -511,6 +538,21 @@ async function smokeDevice(page, baseUrl, devicePath, requireDirectusAssets) {
   assert(
     (await imageViewer.getByRole("button", { name: "Сбросить масштаб" }).innerText()) === "1.25×",
     "device: viewer zoom control did not update",
+  );
+  const currentBaseImage = imageViewer.locator('[data-image-layer="base"]');
+  const initialImageIndex = await currentBaseImage.getAttribute("data-image-index");
+  await imageViewer.getByRole("button", { name: "Следующее фото" }).click();
+  await imageViewer
+    .locator(`[data-image-layer="base"]:not([data-image-index="${initialImageIndex}"])`)
+    .waitFor({ state: "visible", timeout: 15_000 });
+  const switchedImage = imageViewer.locator('[data-image-layer="base"]');
+  const switchedImageState = await switchedImage.evaluate(async (image) => {
+    await image.decode();
+    return { complete: image.complete, naturalWidth: image.naturalWidth };
+  });
+  assert(
+    switchedImageState.complete && switchedImageState.naturalWidth > 0,
+    `device: viewer switched to an undecoded image: ${JSON.stringify(switchedImageState)}`,
   );
   await page.keyboard.press("Escape");
   await imageViewer.waitFor({ state: "detached" });

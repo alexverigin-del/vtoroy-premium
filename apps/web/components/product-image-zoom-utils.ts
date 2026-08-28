@@ -3,24 +3,26 @@ import type { CSSProperties } from "react";
 export function productImageLensStyle({
   left,
   top,
-  backgroundX,
-  backgroundY,
+  backgroundWidth,
+  backgroundHeight,
+  backgroundLeft,
+  backgroundTop,
   backgroundImage,
-  zoom,
 }: {
   left: number;
   top: number;
-  backgroundX: number;
-  backgroundY: number;
+  backgroundWidth: number;
+  backgroundHeight: number;
+  backgroundLeft: number;
+  backgroundTop: number;
   backgroundImage: string;
-  zoom: number;
 }): CSSProperties {
   return {
     left,
     top,
     backgroundImage: `url("${backgroundImage}")`,
-    backgroundPosition: `${backgroundX}% ${backgroundY}%`,
-    backgroundSize: `${zoom * 100}%`,
+    backgroundPosition: `${backgroundLeft}px ${backgroundTop}px`,
+    backgroundSize: `${backgroundWidth}px ${backgroundHeight}px`,
   };
 }
 

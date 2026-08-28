@@ -24,8 +24,10 @@ type LensPosition = {
   visible: boolean;
   left: number;
   top: number;
-  backgroundX: number;
-  backgroundY: number;
+  backgroundWidth: number;
+  backgroundHeight: number;
+  backgroundLeft: number;
+  backgroundTop: number;
 };
 
 const clamp = (value: number, minimum: number, maximum: number) =>
@@ -51,8 +53,10 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
     visible: false,
     left: 0,
     top: 0,
-    backgroundX: 50,
-    backgroundY: 50,
+    backgroundWidth: 0,
+    backgroundHeight: 0,
+    backgroundLeft: 0,
+    backgroundTop: 0,
   });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const boundedActiveIndex = Math.min(activeIndex, normalizedImages.length - 1);
@@ -102,14 +106,16 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
   function updateLens(event: PointerEvent<HTMLButtonElement>) {
     if (event.pointerType !== "mouse") return;
     const rect = event.currentTarget.getBoundingClientRect();
-    const rawX = event.clientX - rect.left;
-    const rawY = event.clientY - rect.top;
+    const rawX = clamp(event.clientX - rect.left, 0, rect.width);
+    const rawY = clamp(event.clientY - rect.top, 0, rect.height);
     setLens({
       visible: true,
       left: clamp(rawX, LENS_WIDTH / 2, rect.width - LENS_WIDTH / 2),
       top: clamp(rawY, LENS_HEIGHT / 2, rect.height - LENS_HEIGHT / 2),
-      backgroundX: clamp((rawX / rect.width) * 100, 0, 100),
-      backgroundY: clamp((rawY / rect.height) * 100, 0, 100),
+      backgroundWidth: rect.width * LENS_ZOOM,
+      backgroundHeight: rect.height * LENS_ZOOM,
+      backgroundLeft: LENS_WIDTH / 2 - rawX * LENS_ZOOM,
+      backgroundTop: LENS_HEIGHT / 2 - rawY * LENS_ZOOM,
     });
   }
 
@@ -151,9 +157,10 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
                   left: lens.left,
                   top: lens.top,
                   backgroundImage: active.zoomSrc,
-                  backgroundX: lens.backgroundX,
-                  backgroundY: lens.backgroundY,
-                  zoom: LENS_ZOOM,
+                  backgroundWidth: lens.backgroundWidth,
+                  backgroundHeight: lens.backgroundHeight,
+                  backgroundLeft: lens.backgroundLeft,
+                  backgroundTop: lens.backgroundTop,
                 })}
               />
             ) : null}

@@ -12,14 +12,60 @@ import {
 import type { GalleryImage } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
 import { productImageTransformStyle } from "./product-image-zoom-utils";
-import { productImageViewerControlClass, productImageViewerNavClass } from "./ui-classes";
+import {
+  productImageViewerControlClass,
+  productImageViewerLoadingClass,
+  productImageViewerNavClass,
+} from "./ui-classes";
 
 const MAX_ZOOM = 4;
+const IMAGE_LOAD_TIMEOUT_MS = 15_000;
 
 type ViewerImage = GalleryImage & { zoomSrc: string };
 
+type DisplayedImage = {
+  index: number;
+  baseReady: boolean;
+  zoomReady: boolean;
+};
+
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(Math.max(value, minimum), maximum);
+
+function loadAndDecodeImage(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!src) {
+      reject(new Error("Image source is empty"));
+      return;
+    }
+
+    const image = new Image();
+    let settled = false;
+    const timeout = window.setTimeout(
+      () => finish(new Error("Image loading timed out")),
+      IMAGE_LOAD_TIMEOUT_MS,
+    );
+
+    function finish(error?: Error) {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      image.onload = null;
+      image.onerror = null;
+      if (error) reject(error);
+      else resolve();
+    }
+
+    image.onload = () => {
+      void image
+        .decode()
+        .catch(() => undefined)
+        .then(() => finish());
+    };
+    image.onerror = () => finish(new Error(`Image failed to load: ${src}`));
+    image.src = src;
+  });
+}
 
 export function ProductImageViewer({
   images,
@@ -36,6 +82,14 @@ export function ProductImageViewer({
   onSelect: (index: number) => void;
   returnFocusRef: RefObject<HTMLButtonElement>;
 }) {
+  const initialIndex = clamp(activeIndex, 0, Math.max(images.length - 1, 0));
+  const [displayed, setDisplayed] = useState<DisplayedImage>({
+    index: initialIndex,
+    baseReady: false,
+    zoomReady: false,
+  });
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
@@ -45,14 +99,36 @@ export function ProductImageViewer({
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const dragPointRef = useRef<{ x: number; y: number } | null>(null);
   const pinchDistanceRef = useRef<number | null>(null);
+  const imagesRef = useRef(images);
   const activeIndexRef = useRef(activeIndex);
+  const displayedIndexRef = useRef(initialIndex);
+  const pendingIndexRef = useRef<number | null>(null);
+  const requestRef = useRef(0);
+  const openRef = useRef(open);
+  const onCloseRef = useRef(onClose);
   const onSelectRef = useRef(onSelect);
-  const boundedActiveIndex = Math.min(activeIndex, images.length - 1);
-  const active = images[boundedActiveIndex];
+  const displayedIndex = clamp(displayed.index, 0, Math.max(images.length - 1, 0));
+  const active = images[displayedIndex];
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
 
   useEffect(() => {
     activeIndexRef.current = activeIndex;
   }, [activeIndex]);
+
+  useEffect(() => {
+    displayedIndexRef.current = displayedIndex;
+  }, [displayedIndex]);
+
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -67,27 +143,120 @@ export function ProductImageViewer({
     pinchDistanceRef.current = null;
   }, []);
 
+  const prepareHighResolution = useCallback((index: number, requestId: number) => {
+    const image = imagesRef.current[index];
+    if (!image?.zoomSrc || image.zoomSrc === image.src) return;
+
+    void loadAndDecodeImage(image.zoomSrc)
+      .then(() => {
+        if (!openRef.current || requestRef.current !== requestId) return;
+        setDisplayed((current) =>
+          current.index === index ? { ...current, zoomReady: true } : current,
+        );
+      })
+      .catch(() => undefined);
+  }, []);
+
   const selectImage = useCallback(
     (index: number) => {
-      const count = images.length;
+      const currentImages = imagesRef.current;
+      const count = currentImages.length;
       if (!count) return;
-      onSelectRef.current((index + count) % count);
-      resetTransform();
+
+      const targetIndex = (index + count) % count;
+      if (targetIndex === displayedIndexRef.current && pendingIndexRef.current === null) return;
+
+      const target = currentImages[targetIndex];
+      const requestId = requestRef.current + 1;
+      requestRef.current = requestId;
+      pendingIndexRef.current = targetIndex;
+      setPendingIndex(targetIndex);
+      setLoadError(false);
+
+      void loadAndDecodeImage(target.src)
+        .then(() => {
+          if (!openRef.current || requestRef.current !== requestId) return;
+          displayedIndexRef.current = targetIndex;
+          pendingIndexRef.current = null;
+          setDisplayed({ index: targetIndex, baseReady: true, zoomReady: false });
+          setPendingIndex(null);
+          onSelectRef.current(targetIndex);
+          resetTransform();
+          prepareHighResolution(targetIndex, requestId);
+        })
+        .catch(() => {
+          if (!openRef.current || requestRef.current !== requestId) return;
+          pendingIndexRef.current = null;
+          setPendingIndex(null);
+          setLoadError(true);
+        });
     },
-    [images.length, resetTransform],
+    [prepareHighResolution, resetTransform],
+  );
+
+  const selectRelative = useCallback(
+    (delta: number) => {
+      const fromIndex = pendingIndexRef.current ?? displayedIndexRef.current;
+      selectImage(fromIndex + delta);
+    },
+    [selectImage],
   );
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      requestRef.current += 1;
+      pendingIndexRef.current = null;
+      setPendingIndex(null);
+      setLoadError(false);
+      return;
+    }
+
+    const currentImages = imagesRef.current;
+    const index = clamp(activeIndexRef.current, 0, Math.max(currentImages.length - 1, 0));
+    const image = currentImages[index];
+    if (!image) return;
+
+    const requestId = requestRef.current + 1;
+    requestRef.current = requestId;
+    displayedIndexRef.current = index;
+    pendingIndexRef.current = null;
+    setDisplayed({ index, baseReady: false, zoomReady: false });
+    setPendingIndex(null);
+    setLoadError(false);
     resetTransform();
+
+    void loadAndDecodeImage(image.src)
+      .then(() => {
+        if (!openRef.current || requestRef.current !== requestId) return;
+        setDisplayed((current) =>
+          current.index === index ? { ...current, baseReady: true } : current,
+        );
+        prepareHighResolution(index, requestId);
+      })
+      .catch(() => {
+        if (!openRef.current || requestRef.current !== requestId) return;
+        setLoadError(true);
+      });
+
+    const count = currentImages.length;
+    if (count > 1) {
+      const previous = currentImages[(index - 1 + count) % count];
+      const next = currentImages[(index + 1) % count];
+      void loadAndDecodeImage(previous.src).catch(() => undefined);
+      if (next.src !== previous.src) void loadAndDecodeImage(next.src).catch(() => undefined);
+    }
+  }, [open, prepareHighResolution, resetTransform]);
+
+  useEffect(() => {
+    if (!open) return;
     const returnFocus = returnFocusRef.current;
     document.body.classList.add("overflow-hidden");
     closeRef.current?.focus();
 
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-      if (event.key === "ArrowLeft") selectImage(activeIndexRef.current - 1);
-      if (event.key === "ArrowRight") selectImage(activeIndexRef.current + 1);
+      if (event.key === "Escape") onCloseRef.current();
+      if (event.key === "ArrowLeft") selectRelative(-1);
+      if (event.key === "ArrowRight") selectRelative(1);
       if (event.key === "+" || event.key === "=") {
         setScale((current) => clamp(current + 0.25, 1, MAX_ZOOM));
       }
@@ -117,7 +286,7 @@ export function ProductImageViewer({
       document.removeEventListener("keydown", onKeyDown);
       returnFocus?.focus();
     };
-  }, [onClose, open, resetTransform, returnFocusRef, selectImage]);
+  }, [open, returnFocusRef, selectRelative]);
 
   useEffect(() => {
     if (scale === 1) setOffset({ x: 0, y: 0 });
@@ -194,6 +363,8 @@ export function ProductImageViewer({
     if (!points.length) setDragging(false);
   }
 
+  const imageIsReady = displayed.baseReady || displayed.zoomReady;
+
   return (
     <div
       ref={modalRef}
@@ -207,7 +378,7 @@ export function ProductImageViewer({
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{active.label}</p>
           <p className="text-xs text-white/60">
-            {boundedActiveIndex + 1} / {images.length}
+            {displayedIndex + 1} / {images.length}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -246,7 +417,7 @@ export function ProductImageViewer({
             className={productImageViewerControlClass}
             aria-label="Закрыть"
             title="Закрыть"
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
           >
             ×
           </button>
@@ -256,7 +427,7 @@ export function ProductImageViewer({
       <div
         ref={stageRef}
         className={cn(
-          "relative min-h-0 flex-1 touch-none select-none overflow-hidden",
+          "relative min-h-0 flex-1 touch-none select-none overflow-hidden bg-carbon",
           scale > 1 && (dragging ? "cursor-grabbing" : "cursor-grab"),
         )}
         onWheel={handleWheel}
@@ -266,17 +437,74 @@ export function ProductImageViewer({
         onPointerCancel={handlePointerUp}
         onDoubleClick={() => updateScale(scale > 1 ? 1 : 2.5)}
       >
+        {/* The decoded base stays mounted while a new angle or the high-resolution layer loads. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={active.zoomSrc}
+          src={active.src}
           alt={active.alt || active.label}
           draggable={false}
+          data-image-layer="base"
+          data-image-index={displayedIndex}
           className={cn(
             "pointer-events-none absolute inset-0 m-auto max-h-full max-w-full object-contain",
             !dragging && "transition-transform duration-150",
+            imageIsReady ? "opacity-100" : "opacity-0",
           )}
           style={productImageTransformStyle({ x: offset.x, y: offset.y, scale })}
+          onLoad={() =>
+            setDisplayed((current) =>
+              current.index === displayedIndex ? { ...current, baseReady: true } : current,
+            )
+          }
+          onError={() => setLoadError(true)}
         />
+
+        {displayed.zoomReady && active.zoomSrc !== active.src ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={active.zoomSrc}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            data-image-layer="zoom"
+            data-image-index={displayedIndex}
+            className={cn(
+              "pointer-events-none absolute inset-0 m-auto max-h-full max-w-full object-contain",
+              !dragging && "transition-transform duration-150",
+            )}
+            style={productImageTransformStyle({ x: offset.x, y: offset.y, scale })}
+            onError={() =>
+              setDisplayed((current) =>
+                current.index === displayedIndex ? { ...current, zoomReady: false } : current,
+              )
+            }
+          />
+        ) : null}
+
+        {!imageIsReady || pendingIndex !== null ? (
+          <div
+            className={productImageViewerLoadingClass}
+            role="status"
+            aria-live="polite"
+            data-component="ProductImageLoading"
+          >
+            <span className="h-2 w-2 animate-pulse rounded-pill bg-white" aria-hidden="true" />
+            <span>
+              {pendingIndex === null
+                ? "Загружаем фото"
+                : `Загружаем ${pendingIndex + 1} / ${images.length}`}
+            </span>
+          </div>
+        ) : null}
+
+        {loadError ? (
+          <p
+            className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-2 text-center text-xs text-white"
+            role="alert"
+          >
+            Фото не загрузилось. Попробуйте переключить ещё раз.
+          </p>
+        ) : null}
 
         {images.length > 1 ? (
           <>
@@ -288,7 +516,7 @@ export function ProductImageViewer({
               onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.stopPropagation();
-                selectImage(boundedActiveIndex - 1);
+                selectRelative(-1);
               }}
             >
               ←
@@ -301,7 +529,7 @@ export function ProductImageViewer({
               onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.stopPropagation();
-                selectImage(boundedActiveIndex + 1);
+                selectRelative(1);
               }}
             >
               →

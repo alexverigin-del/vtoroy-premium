@@ -3213,3 +3213,46 @@ Next content-editing priorities:
   обязательный товарный шаг — повторно диагностировать `т38`, выпустить новую
   обезличенную публичную копию и только после QA перевести product и offer в
   `published + ready`.
+
+### Catalog V3: обновление фотографий восьми устройств (2026-08-28)
+
+- Итоговые фотографии из задачи Codex
+  `01a043d0-8b4c-75b2-bf80-bb7bb869875c` применены ко всем восьми SKU:
+  `т24`, `т25`, `т26`, `т28`, `т29`, `т30`, `т38`, `т39`. Bundle
+  `product-photo-refresh-2026-08-28` содержит 42 выбранных WebP размером
+  `2400x1800`: по 5–6 кадров на карточку. В него включена пересъёмка Deep
+  Purple от 2026-08-28.
+- Перед изменением создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260828T142614Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущена, поскольку offsite backup и restore
+  rehearsal остаются отложенными.
+- Для каждого product заменены `products.listing_file` и существующие строки
+  `product_images` без изменения их id, sort, статуса публикации и роли. Создано
+  42 новых Directus file id, обновлено 42 gallery-связи и 8 listing-связей.
+  Семь карточек остались `published + ready`; `т38` сохранил
+  `draft + review` и блокировку до повторной диагностики. Цены, остатки,
+  Passport, предложения магазинов и Avito listings не менялись.
+- Публичные filename/title строятся только из SKU, номера слота, batch и
+  SHA-256; полный serial/IMEI в bundle, Directus filenames и URL отсутствует.
+  Каждый server asset повторно скачан из Directus и побайтно сверен с SHA-256
+  manifest. Формат и размеры также проверены после загрузки.
+- Обработка фото удаляет только временные отпечатки, жирные следы, свободную
+  пыль и дефекты фона. Реальные царапины, сколы, вмятины, потёртости покрытия,
+  геометрия, цвет и идентичность устройства сохраняются. Общий alignment QA
+  подтвердил центрирование и безопасную зону всех восьми listing/front кадров.
+- Предыдущие 42 файла не удалены. После проверки отсутствия активных ссылок
+  они перемещены из `ISVOI File Review` в управляемую папку
+  `ISVOI Product Photo Archive` для rollback. Folder migration защищает архив,
+  Blog, Inventory Imports и обе Passport-папки от ошибочного переноса в
+  `ISVOI Device Photos`. File audit показывает `review_folder_count=0`,
+  `orphan_isvoi_files.warning=0`, `product_photo_archive=42`.
+- В repo добавлен идемпотентный workflow `directus:photos:bundle`,
+  `directus:photos:refresh` и `directus:photos:archive`. Apply выполнялся через
+  временную non-admin release identity; после выпуска identity и policy
+  удалены, token возвращает `401`.
+- Полный `directus:audit:prod`, API-policy, ops/content ownership, основной,
+  image, visual и performance smoke прошли. Каталог по-прежнему показывает
+  семь опубликованных устройств; visual smoke карточки `т39` прошёл на desktop
+  и mobile, LCP каталога составил около 308 мс desktop / 220 мс mobile.
+- Код workflow и guardrails выпущен через `5632785`. Рабочие исходники,
+  QA-листы и bundle не коммитятся.

@@ -98,6 +98,10 @@ DECLARE
   v_editorial_folder uuid;
   v_review_folder uuid;
   v_photo_archive_folder uuid;
+  v_blog_folder uuid;
+  v_inventory_folder uuid;
+  v_passport_originals_folder uuid;
+  v_passport_public_folder uuid;
 BEGIN
   v_device_folder := isvoi_file_folder_id('ISVOI Device Photos');
   v_import_folder := isvoi_file_folder_id('ISVOI Catalog Imports');
@@ -105,6 +109,10 @@ BEGIN
   v_editorial_folder := isvoi_file_folder_id('ISVOI Editorial');
   v_review_folder := isvoi_file_folder_id('ISVOI File Review');
   v_photo_archive_folder := isvoi_file_folder_id('ISVOI Product Photo Archive');
+  v_blog_folder := isvoi_file_folder_id('ISVOI Blog');
+  v_inventory_folder := isvoi_file_folder_id('ISVOI Inventory Imports');
+  v_passport_originals_folder := isvoi_file_folder_id('ISVOI Passport Originals');
+  v_passport_public_folder := isvoi_file_folder_id('ISVOI Passport Public');
 
   UPDATE directus_files
   SET folder = v_device_folder
@@ -112,7 +120,16 @@ BEGIN
     AND title NOT LIKE 'isvoi:site:%'
     AND title NOT LIKE 'isvoi:catalog-import:%'
     AND title NOT LIKE 'isvoi:editorial:%'
-    AND (folder IS NULL OR folder NOT IN (v_review_folder, v_photo_archive_folder));
+    AND (
+      folder IS NULL OR folder NOT IN (
+        v_review_folder,
+        v_photo_archive_folder,
+        v_blog_folder,
+        v_inventory_folder,
+        v_passport_originals_folder,
+        v_passport_public_folder
+      )
+    );
 
   UPDATE directus_files
   SET folder = v_import_folder
@@ -174,7 +191,11 @@ WHERE name IN (
   'ISVOI Site Assets',
   'ISVOI Editorial',
   'ISVOI File Review',
-  'ISVOI Product Photo Archive'
+  'ISVOI Product Photo Archive',
+  'ISVOI Blog',
+  'ISVOI Inventory Imports',
+  'ISVOI Passport Originals',
+  'ISVOI Passport Public'
 )
 UNION ALL
 SELECT 'device_files_in_folder', count(*)::text

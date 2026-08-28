@@ -165,7 +165,7 @@
     "directus:release:identity": "node scripts/setup_directus_catalog_release_identity_sql.mjs",
     "directus:photos:bundle": "node scripts/prepare_catalog_photo_refresh.mjs",
     "directus:photos:refresh": "node scripts/refresh_catalog_product_photos.mjs",
-    "directus:photos:purge": "node scripts/purge_catalog_photo_refresh_files.mjs",
+    "directus:photos:archive": "node scripts/archive_catalog_photo_refresh_files.mjs",
     "directus:setup:navigation-ux": "node scripts/setup_directus_navigation_ux_sql.mjs",
     "directus:reconcile:deferred-club": "node scripts/reconcile_directus_deferred_club_sql.mjs",
     "directus:setup:insights": "node scripts/setup_directus_insights_sql.mjs",

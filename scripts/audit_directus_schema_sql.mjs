@@ -376,6 +376,7 @@ FROM (
     ('ISVOI Site Assets'),
     ('ISVOI Editorial'),
     ('ISVOI File Review'),
+    ('ISVOI Product Photo Archive'),
     ('ISVOI Catalog Imports'),
     ('ISVOI Blog'),
     ('ISVOI Inventory Imports')

@@ -12,6 +12,7 @@ WITH folders AS (
     'ISVOI Site Assets',
     'ISVOI Editorial',
     'ISVOI File Review',
+    'ISVOI Product Photo Archive',
     'ISVOI Catalog Imports',
     'ISVOI Blog',
     'ISVOI Passport Originals',
@@ -132,5 +133,10 @@ UNION ALL
 SELECT 'files.device_photos', count(*)::text
 FROM directus_files f
 JOIN folders folder ON folder.id = f.folder
-WHERE folder.name = 'ISVOI Device Photos';
+WHERE folder.name = 'ISVOI Device Photos'
+UNION ALL
+SELECT 'files.product_photo_archive', count(*)::text
+FROM directus_files f
+JOIN folders folder ON folder.id = f.folder
+WHERE folder.name = 'ISVOI Product Photo Archive';
 `);

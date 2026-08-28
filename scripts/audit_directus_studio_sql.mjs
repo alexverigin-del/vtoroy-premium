@@ -212,6 +212,7 @@ expected_file_folders(name) AS (
     ('ISVOI Site Assets'),
     ('ISVOI Editorial'),
     ('ISVOI File Review'),
+    ('ISVOI Product Photo Archive'),
     ('ISVOI Catalog Imports'),
     ('ISVOI Blog')
 ),

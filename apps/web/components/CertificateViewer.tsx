@@ -5,11 +5,13 @@ import { secondaryPillCtaClass } from "./ui-classes";
 
 export function CertificateViewer({
   href,
+  downloadHref,
   provider,
   testedAt,
   note,
 }: {
   href: string;
+  downloadHref?: string;
   provider: string;
   testedAt: string;
   note?: string;
@@ -77,7 +79,7 @@ export function CertificateViewer({
               />
             </div>
             <div className="border-t border-hairline px-4 py-3 text-right">
-              <a className={secondaryPillCtaClass} href={href} download>
+              <a className={secondaryPillCtaClass} href={downloadHref ?? href} download>
                 Скачать копию
               </a>
             </div>

@@ -85,6 +85,7 @@ export interface DeviceDiagnosticReport {
   testedAt: string;
   status: "current" | "superseded" | string;
   publicCertificateUrl?: string;
+  publicCertificateDownloadUrl?: string;
   publicNote?: string;
 }
 

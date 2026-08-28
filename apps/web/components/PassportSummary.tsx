@@ -123,6 +123,7 @@ export function PassportSummary({
           <div className="mt-5 border-t border-hairline pt-5">
             <CertificateViewer
               href={passport.diagnosticReport.publicCertificateUrl}
+              downloadHref={passport.diagnosticReport.publicCertificateDownloadUrl}
               provider={passport.diagnosticReport.provider}
               testedAt={passport.diagnosticReport.testedAt}
               note={passport.diagnosticReport.publicNote}

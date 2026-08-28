@@ -191,6 +191,22 @@ function assetUrl(value: unknown, width = 1200, height = 900): string {
     : "";
 }
 
+function certificateAssetUrls(value: unknown): { preview: string; download: string } {
+  const file = relation(value);
+  const id = text(file.id) || text(value);
+  if (!id) return { preview: "", download: "" };
+  return {
+    preview: directusAssetUrl(id, {
+      width: 1400,
+      quality: 92,
+      fit: "inside",
+      format: "png",
+      withoutEnlargement: true,
+    }),
+    download: directusAssetUrl(id),
+  };
+}
+
 async function directusRequest<T>(
   path: string,
   options: { noStore?: boolean } = {},
@@ -866,11 +882,13 @@ function mapModelSpecifications(rows: Row[]): NonNullable<DeviceModel["specifica
 
 function mapDiagnosticReport(row: Row | undefined): DevicePassport["diagnosticReport"] {
   if (!row) return undefined;
+  const certificate = certificateAssetUrls(row.public_file);
   return {
     provider: text(row.provider),
     testedAt: text(row.tested_at),
     status: text(row.status),
-    publicCertificateUrl: assetUrl(row.public_file) || undefined,
+    publicCertificateUrl: certificate.preview || undefined,
+    publicCertificateDownloadUrl: certificate.download || undefined,
     publicNote: text(row.public_note) || undefined,
   };
 }

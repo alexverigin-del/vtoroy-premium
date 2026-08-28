@@ -50,7 +50,10 @@ const files = await request(
 if (files.length === 0) throw new Error(`No superseded files found for ${batch}`);
 
 for (const file of files) {
-  if (!String(file.title || "").startsWith("isvoi:release-v8:")) {
+  const title = String(file.title || "");
+  const isKnownProductPhoto =
+    title.startsWith("isvoi:release-v8:") || title.startsWith("isvoi:product-photo-refresh-");
+  if (!isKnownProductPhoto) {
     throw new Error(`Refusing unexpected file ${file.id}: ${file.title}`);
   }
   const productReference = await first(

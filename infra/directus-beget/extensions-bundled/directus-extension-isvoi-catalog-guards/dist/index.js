@@ -1,4 +1,3 @@
-import { createError } from "@directus/errors";
 import {
   CATEGORY_TYPE_MISMATCH_CODE,
   CATEGORY_TYPE_MISMATCH_MESSAGE,
@@ -7,11 +6,16 @@ import {
   relationId,
 } from "../src/guard.js";
 
-const CategoryTypeMismatchError = createError(
-  CATEGORY_TYPE_MISMATCH_CODE,
-  CATEGORY_TYPE_MISMATCH_MESSAGE,
-  400,
-);
+class CategoryTypeMismatchError extends Error {
+  name = "DirectusError";
+  code = CATEGORY_TYPE_MISMATCH_CODE;
+  status = 400;
+  extensions;
+
+  constructor() {
+    super(CATEGORY_TYPE_MISMATCH_MESSAGE);
+  }
+}
 
 async function validateCategoryType(payload, currentRows, database) {
   const rows = effectiveProductRows(payload, currentRows);

@@ -1,6 +1,6 @@
 {
   "name": "directus-extension-isvoi-catalog-guards",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Studio-readable cross-field validation for the ISVOI Catalog V3.",
   "type": "module",
   "keywords": [

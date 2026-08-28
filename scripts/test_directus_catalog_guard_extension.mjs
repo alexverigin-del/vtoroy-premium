@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   CATEGORY_TYPE_MISMATCH_CODE,
   CATEGORY_TYPE_MISMATCH_MESSAGE,
@@ -46,7 +47,40 @@ assert.match(runtime, new RegExp(CATEGORY_TYPE_MISMATCH_CODE));
 assert.match(runtime, /CATEGORY_TYPE_MISMATCH_MESSAGE/);
 assert.match(guard, new RegExp(CATEGORY_TYPE_MISMATCH_MESSAGE));
 assert.match(runtime, /400/);
+assert.doesNotMatch(runtime, /@directus\/errors/);
 assert.match(compose, /\.\/extensions-bundled:\/directus\/extensions:ro/);
+
+const runtimeModule = await import(
+  pathToFileURL(path.join(extensionRoot, manifest["directus:extension"].path))
+);
+const filters = new Map();
+runtimeModule.default({
+  filter(name, handler) {
+    filters.set(name, handler);
+  },
+});
+assert.deepEqual([...filters.keys()].sort(), ["products.items.create", "products.items.update"]);
+
+const database = (table) => ({
+  select() {
+    return this;
+  },
+  whereIn() {
+    return Promise.resolve(table === "product_categories" ? categories : []);
+  },
+});
+await assert.rejects(
+  filters.get("products.items.create")(
+    { product_type: "accessory", category: "smartphones" },
+    {},
+    { database },
+  ),
+  (error) =>
+    error.name === "DirectusError" &&
+    error.code === CATEGORY_TYPE_MISMATCH_CODE &&
+    error.status === 400 &&
+    error.message === CATEGORY_TYPE_MISMATCH_MESSAGE,
+);
 
 console.log(
   JSON.stringify({
@@ -55,6 +89,8 @@ console.log(
     message: CATEGORY_TYPE_MISMATCH_MESSAGE,
     status: 400,
     create_and_partial_update_supported: true,
+    runtime_registration_verified: true,
+    runtime_error_contract_verified: true,
     production_mount_read_only: true,
   }),
 );

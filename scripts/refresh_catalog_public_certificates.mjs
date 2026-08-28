@@ -149,21 +149,33 @@ for (const device of manifest.devices) {
       throw new Error(`${device.sku}: replacement diagnostic date is older than current report`);
     }
     const replacementAlreadyCurrent = String(currentReport.tested_at) === String(device.testedAt);
-    const originalFile = await uploadFile({
-      filePath: device.originalCertificate,
-      title: `isvoi:${brandingVersion}:${safeSku}:original`,
-      folder: originalFolder,
-      mime: "application/pdf",
-      filename: `isvoi-${safeSku}-diagnostic-original.pdf`,
-    });
+    let originalFile;
     if (replacementAlreadyCurrent) {
-      if (
-        relationId(currentReport.original_file) !== originalFile ||
-        relationId(currentReport.public_file) !== publicFile
-      ) {
-        throw new Error(`${device.sku}: current report files do not match the branded manifest`);
+      originalFile = relationId(currentReport.original_file);
+      if (!originalFile) throw new Error(`${device.sku}: current report original is missing`);
+      const expectedOriginal = await fs.readFile(path.resolve(device.originalCertificate));
+      if (sha256(await readAsset(originalFile)) !== sha256(expectedOriginal)) {
+        throw new Error(`${device.sku}: current report original does not match the manifest`);
       }
-    } else if (apply) {
+      const oldPublicId = relationId(currentReport.public_file);
+      if (oldPublicId && oldPublicId !== publicFile) oldPublicFiles.add(oldPublicId);
+      if (apply && oldPublicId !== publicFile) {
+        await request(
+          "PATCH",
+          `/items/device_diagnostic_reports/${encodeURIComponent(currentReport.id)}`,
+          { public_file: publicFile, public_note: device.publicNote },
+        );
+      }
+    } else {
+      originalFile = await uploadFile({
+        filePath: device.originalCertificate,
+        title: `isvoi:diagnostic:${device.testedAt}:${safeSku}:original`,
+        folder: originalFolder,
+        mime: "application/pdf",
+        filename: `isvoi-${safeSku}-diagnostic-original.pdf`,
+      });
+    }
+    if (!replacementAlreadyCurrent && apply) {
       await request(
         "PATCH",
         `/items/device_diagnostic_reports/${encodeURIComponent(currentReport.id)}`,

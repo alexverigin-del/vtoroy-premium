@@ -76,10 +76,7 @@ for (const device of manifest.devices) {
     ? `<image href="${providerLogo}" x="96" y="112" width="330" height="74" preserveAspectRatio="xMinYMid meet"/>`
     : `<text x="96" y="166" class="provider">NSYS Diagnostics</text>`;
   const isvoiBrand = brandLogo
-    ? `<image href="${brandLogo}" x="835" y="84" width="320" height="132" preserveAspectRatio="xMinYMid meet"/>
-       <text x="1114" y="125" class="brand-caption">ПРОВЕРЕННАЯ</text>
-       <text x="1114" y="153" class="brand-caption">ТЕХНИКА ДЛЯ</text>
-       <text x="1114" y="181" class="brand-caption">СВОИХ</text>`
+    ? `<image href="${brandLogo}" x="804" y="91" width="500" height="116" preserveAspectRatio="xMaxYMid meet"/>`
     : `<text x="1000" y="164" text-anchor="end" class="brand">I СВОИ</text>
        <text x="1020" y="125" class="brand-caption">ПРОВЕРЕННАЯ</text>
        <text x="1020" y="153" class="brand-caption">ТЕХНИКА ДЛЯ</text>

@@ -3335,3 +3335,25 @@ Next content-editing priorities:
   `/opt/isvoi/backups/directus/20260828T160147Z`; PostgreSQL и uploads прошли
   SHA-256. Временная release identity удалена, её token возвращает `401`.
   Schema, Passport V8, files и production smoke прошли.
+
+### Passport: утверждённый боковой логотип из печатных макетов (2026-08-28)
+
+- Источник логоблока — финальный пакет из задачи «Проработка макетов для
+  ISVOI»: `ISVOI_FINAL_APPROVED_PRINT_PACKAGE_REV05_WITH_LIGHTBOX.zip`, мастер
+  светового баннера `ISVOI_LIGHTBOX_200x30_MASTER.svg`. Для сертификатов
+  сохранены утверждённые пропорции Bold-вордмарка, увеличенный отступ и
+  трёхстрочный боковой дескриптор; цвет текста адаптирован для белого фона.
+- В repo добавлен единый воспроизводимый ассет
+  `assets/brand/isvoi-logo-side-descriptor-light.svg`. Генератор вставляет его
+  как цельный знак и больше не набирает дескриптор отдельными SVG-строками.
+- Все восемь публичных выписок пересобраны и заменены в production Directus.
+  Закрытые оригиналы не менялись; прежние восемь PNG после проверки активных
+  связей перенесены в `ISVOI Passport Archive`. Итоговый счётчик архива — 23,
+  orphan и review warnings равны нулю.
+- Перед apply создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260828T184307Z`; PostgreSQL и uploads прошли
+  SHA-256. Offsite copy пропущена согласно действующему отложенному решению.
+- Обновление выполнено временной non-admin release identity. После apply
+  identity и policy удалены, token возвращает `401`. Passport V8 и files
+  audits, отдельный desktop/mobile QA сертификата и полный production smoke
+  прошли.

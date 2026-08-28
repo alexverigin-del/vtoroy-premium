@@ -160,6 +160,8 @@
     "directus:setup:catalog-passport-facts-v7": "node scripts/setup_directus_catalog_passport_facts_v7_sql.mjs",
     "directus:setup:product-passports-v8": "node scripts/setup_directus_product_passports_v8_sql.mjs",
     "directus:certificates:public": "node scripts/build_public_diagnostic_certificates.mjs",
+    "directus:certificates:refresh": "node scripts/refresh_catalog_public_certificates.mjs",
+    "directus:certificates:setup": "node scripts/setup_directus_certificate_branding_sql.mjs",
     "directus:release:bundle": "node scripts/prepare_product_release_bundle.mjs",
     "directus:release:devices": "node scripts/release_catalog_devices.mjs",
     "directus:release:identity": "node scripts/setup_directus_catalog_release_identity_sql.mjs",

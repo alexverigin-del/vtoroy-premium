@@ -287,7 +287,11 @@ export default async function ProductPage({ params }: PageProps) {
               ) : null}
 
               {usedDevice && product.passport ? (
-                <PassportSummary copy={devicePageSettings.passport} passport={product.passport} />
+                <PassportSummary
+                  copy={devicePageSettings.passport}
+                  conditionTitle={devicePageSettings.sections.conditionTitle}
+                  passport={product.passport}
+                />
               ) : null}
 
               {product.productType === "device" && product.deviceModel?.specifications?.length ? (

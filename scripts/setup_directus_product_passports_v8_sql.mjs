@@ -158,6 +158,9 @@ WHERE NOT EXISTS (SELECT 1 FROM directus_folders WHERE name='ISVOI Passport Orig
 INSERT INTO directus_folders(id,name,parent)
 SELECT gen_random_uuid(),'ISVOI Passport Public',NULL
 WHERE NOT EXISTS (SELECT 1 FROM directus_folders WHERE name='ISVOI Passport Public');
+INSERT INTO directus_folders(id,name,parent)
+SELECT gen_random_uuid(),'ISVOI Passport Archive',NULL
+WHERE NOT EXISTS (SELECT 1 FROM directus_folders WHERE name='ISVOI Passport Archive');
 
 INSERT INTO directus_collections(
   collection,icon,note,display_template,archive_field,archive_value,
@@ -363,7 +366,11 @@ FROM (VALUES ('device_diagnostic_reports'),('device_model_specifications')) expe
 WHERE to_regclass('public.'||expected.name) IS NULL
 UNION ALL
 SELECT 'product_passports_v8.folders_missing',count(*)::text
-FROM (VALUES ('ISVOI Passport Originals'),('ISVOI Passport Public')) expected(name)
+FROM (VALUES
+  ('ISVOI Passport Originals'),
+  ('ISVOI Passport Public'),
+  ('ISVOI Passport Archive')
+) expected(name)
 WHERE NOT EXISTS(SELECT 1 FROM directus_folders f WHERE f.name=expected.name)
 UNION ALL
 SELECT 'product_passports_v8.public_original_exposure',count(*)::text

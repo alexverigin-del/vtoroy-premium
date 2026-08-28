@@ -16,7 +16,8 @@ WITH folders AS (
     'ISVOI Catalog Imports',
     'ISVOI Blog',
     'ISVOI Passport Originals',
-    'ISVOI Passport Public'
+    'ISVOI Passport Public',
+    'ISVOI Passport Archive'
   )
 ),
 used_files(id) AS (
@@ -138,5 +139,10 @@ UNION ALL
 SELECT 'files.product_photo_archive', count(*)::text
 FROM directus_files f
 JOIN folders folder ON folder.id = f.folder
-WHERE folder.name = 'ISVOI Product Photo Archive';
+WHERE folder.name = 'ISVOI Product Photo Archive'
+UNION ALL
+SELECT 'files.passport_archive', count(*)::text
+FROM directus_files f
+JOIN folders folder ON folder.id = f.folder
+WHERE folder.name = 'ISVOI Passport Archive';
 `);

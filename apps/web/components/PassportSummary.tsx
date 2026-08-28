@@ -22,13 +22,21 @@ const defaultPassportCopy: PassportCopy = {
 
 export function PassportSummary({
   copy = defaultPassportCopy,
+  conditionTitle,
   passport,
 }: {
   copy?: PassportCopy;
+  conditionTitle: string;
   passport: DevicePassport;
 }) {
   const checklist = passport.diagnostics.checklist ?? [];
   const summaryRows = passport.summaryRows ?? [];
+  const conditionDetails =
+    passport.condition.notes.length > 0
+      ? passport.condition.notes
+      : passport.condition.note
+        ? [passport.condition.note]
+        : [];
 
   return (
     <aside className="card overflow-hidden" data-component="PassportSummary">
@@ -64,6 +72,22 @@ export function PassportSummary({
               </div>
             ))}
           </dl>
+        ) : null}
+        {conditionDetails.length > 0 ? (
+          <section className="mb-5 border-l-2 border-accent bg-surface px-4 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              {passport.condition.gradeText || conditionTitle}
+            </p>
+            <h3 className="mt-1 font-semibold text-carbon">{conditionTitle}</h3>
+            <ul className="mt-3 grid gap-2 text-sm leading-relaxed text-muted">
+              {conditionDetails.map((note) => (
+                <li key={note} className="flex items-start gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                  <span>{note}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         ) : null}
         <section className="rounded-card border border-hairline p-5">
           <div className="flex items-start justify-between gap-4">

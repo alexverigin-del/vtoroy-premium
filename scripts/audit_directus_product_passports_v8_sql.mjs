@@ -43,7 +43,11 @@ WHERE NOT EXISTS(
 )
 UNION ALL
 SELECT 'product_passports_v8.files.folders_missing',count(*)::text
-FROM (VALUES ('ISVOI Passport Originals'),('ISVOI Passport Public')) expected(name)
+FROM (VALUES
+  ('ISVOI Passport Originals'),
+  ('ISVOI Passport Public'),
+  ('ISVOI Passport Archive')
+) expected(name)
 WHERE NOT EXISTS(SELECT 1 FROM directus_folders f WHERE f.name=expected.name)
 UNION ALL
 SELECT 'product_passports_v8.permissions.original_exposure',count(*)::text

@@ -102,6 +102,7 @@ DECLARE
   v_inventory_folder uuid;
   v_passport_originals_folder uuid;
   v_passport_public_folder uuid;
+  v_passport_archive_folder uuid;
 BEGIN
   v_device_folder := isvoi_file_folder_id('ISVOI Device Photos');
   v_import_folder := isvoi_file_folder_id('ISVOI Catalog Imports');
@@ -113,6 +114,7 @@ BEGIN
   v_inventory_folder := isvoi_file_folder_id('ISVOI Inventory Imports');
   v_passport_originals_folder := isvoi_file_folder_id('ISVOI Passport Originals');
   v_passport_public_folder := isvoi_file_folder_id('ISVOI Passport Public');
+  v_passport_archive_folder := isvoi_file_folder_id('ISVOI Passport Archive');
 
   UPDATE directus_files
   SET folder = v_device_folder
@@ -127,7 +129,8 @@ BEGIN
         v_blog_folder,
         v_inventory_folder,
         v_passport_originals_folder,
-        v_passport_public_folder
+        v_passport_public_folder,
+        v_passport_archive_folder
       )
     );
 
@@ -195,7 +198,8 @@ WHERE name IN (
   'ISVOI Blog',
   'ISVOI Inventory Imports',
   'ISVOI Passport Originals',
-  'ISVOI Passport Public'
+  'ISVOI Passport Public',
+  'ISVOI Passport Archive'
 )
 UNION ALL
 SELECT 'device_files_in_folder', count(*)::text

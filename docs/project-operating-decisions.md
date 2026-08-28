@@ -3437,3 +3437,26 @@ Next content-editing priorities:
   identity и policy удалены, token возвращает `401`. Catalog V3, Files и
   Passport V8 audits, production и image smoke прошли. Адресный Playwright QA
   подтвердил новый Directus file id в слоте `5 / 5` на desktop и mobile.
+
+### Catalog V3: понятная ошибка категории в Directus Studio (2026-08-29)
+
+- Для `products.items.create` и `products.items.update` установлен versioned
+  Directus hook `directus-extension-isvoi-catalog-guards`. При несовпадении
+  `product_type` и `product_categories.catalog_section` Studio получает HTTP
+  `400`, код `CATEGORY_TYPE_MISMATCH` и сообщение «Категория не соответствует
+  типу товара». SQL-триггер сохранён как fallback для прямых операций с БД.
+- Проверенные production extensions хранятся в
+  `infra/directus-beget/extensions-bundled` и монтируются в контейнер read-only.
+  Hook собран без внешнего импорта `@directus/errors`: pnpm-layout образа
+  Directus 11.17.4 не открывает этот пакет расширениям. Self-contained ошибка
+  повторяет контракт Directus (`name=DirectusError`, `code`, `status`).
+- Тест `directus:catalog-guard:test` проверяет регистрацию create/update
+  фильтров, partial update, read-only mount и точный error contract; он включён
+  в `web:verify` и `directus:audit:prod`. Production rehearsal под реальной
+  ролью `ISVOI Editor` подтвердил понятный `400`, допустимое редактирование с
+  восстановлением, запрет публикации `403` и редактирование Passport.
+- Перед выкатом создан и проверен VPS backup
+  `/opt/isvoi/backups/directus/20260828T210834Z`; PostgreSQL и uploads прошли
+  SHA-256, offsite copy пропущена согласно действующему отложенному решению.
+  Временная QA identity и policy удалены, token возвращает `401`. Directus
+  health, полный production/Studio/Catalog V3 audit и smoke сайта прошли.

@@ -55,6 +55,25 @@ async function folderId(name) {
   return folder.id;
 }
 
+async function readAsset(fileId) {
+  const response = await fetch(`${directusUrl}/assets/${encodeURIComponent(fileId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error(`GET /assets/${fileId}: ${response.status}`);
+  }
+  return Buffer.from(await response.arrayBuffer());
+}
+
+async function validatePhotoBytes(device, photo, slot, bytes) {
+  const digest = crypto.createHash("sha256").update(bytes).digest("hex");
+  const metadata = await sharp(bytes).metadata();
+  if (digest !== photo.sha256) throw new Error(`${device.sku} slot ${slot}: SHA-256 mismatch`);
+  if (metadata.format !== "webp" || metadata.width !== 2400 || metadata.height !== 1800) {
+    throw new Error(`${device.sku} slot ${slot}: invalid image format or dimensions`);
+  }
+}
+
 function resolveBundlePath(relativePath) {
   const resolved = path.resolve(baseDir, relativePath);
   if (resolved !== baseDir && !resolved.startsWith(`${baseDir}${path.sep}`)) {
@@ -71,16 +90,14 @@ async function uploadPhoto(device, photo, folder) {
     "files",
     `filter[title][_eq]=${encodeURIComponent(title)}&fields=id,title,folder`,
   );
-  if (existing) return existing.id;
+  if (existing) {
+    await validatePhotoBytes(device, photo, slot, await readAsset(existing.id));
+    return existing.id;
+  }
 
   const filePath = resolveBundlePath(photo.path);
   const bytes = await fs.readFile(filePath);
-  const digest = crypto.createHash("sha256").update(bytes).digest("hex");
-  const metadata = await sharp(bytes).metadata();
-  if (digest !== photo.sha256) throw new Error(`${device.sku} slot ${slot}: SHA-256 mismatch`);
-  if (metadata.format !== "webp" || metadata.width !== 2400 || metadata.height !== 1800) {
-    throw new Error(`${device.sku} slot ${slot}: invalid image format or dimensions`);
-  }
+  await validatePhotoBytes(device, photo, slot, bytes);
   if (!apply) return `dry-run:${title}`;
 
   const form = new FormData();

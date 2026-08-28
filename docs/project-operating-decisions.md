@@ -3315,3 +3315,23 @@ Next content-editing priorities:
   `/opt/isvoi/backups/directus/20260828T152547Z`; PostgreSQL и uploads прошли
   SHA-256. Временная non-admin release identity удалена, token возвращает
   `401`. Полный Directus, Passport V8, files, API-policy и ops audits прошли.
+
+### Passport: полный сертификат в магазине и боковой lockup (2026-08-28)
+
+- В singleton `device_page_settings` добавлено управляемое поле
+  `passport_certificate_store_note`. Значение production: «Полный паспорт
+  (сертификат) устройства доступен в магазине». Текст выводится отдельной
+  строкой под пояснением публичной выписки и редактируется в группе Passport
+  коллекции «Шаблон товарной страницы».
+- Все восемь публичных выписок повторно брендированы: справа используется
+  горизонтальный lockup с золотой риской, словом «СВОИ» и подписью
+  «ПРОВЕРЕННАЯ / ТЕХНИКА ДЛЯ / СВОИХ» в три строки. Размер листа остаётся
+  `1400x1800`; закрытые оригиналы не заменялись и сверены по SHA-256.
+- Workflow `directus:certificates:refresh` разрешает повторное брендирование
+  публичной копии актуального отчёта без создания дубликата приватного PDF.
+  Восемь предыдущих публичных PNG перемещены в `ISVOI Passport Archive`;
+  `files.passport_archive=15`, orphan и review warnings равны нулю.
+- Перед изменением создан VPS backup
+  `/opt/isvoi/backups/directus/20260828T160147Z`; PostgreSQL и uploads прошли
+  SHA-256. Временная release identity удалена, её token возвращает `401`.
+  Schema, Passport V8, files и production smoke прошли.

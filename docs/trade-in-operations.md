@@ -53,6 +53,8 @@ Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_set
 - Backup перед миграцией: `/opt/isvoi/backups/directus/20260829T152005Z`; PostgreSQL и uploads прошли проверку контрольных сумм.
 - Offsite-копирование не выполнялось: `OFFSITE_BACKUP_DEST` на сервере не настроен.
 - `trade_settings` оставлен в `draft`, опубликованных версий цен нет, демонстрационные цены не загружались.
-- `TRADE_WIZARD_ENABLED` не включён; frontend/API-код ещё не развёрнут в production.
+- Frontend/API развёрнуты в production на commit `40d8532`; `TRADE_WIZARD_ENABLED` не задан, поэтому калькулятор не отображается.
+- Отдельный `DIRECTUS_TRADE_TOKEN` ещё не настроен и потребуется перед публикацией цен. Пока флаг выключен, Trade-in API не обращается к pricing и возвращает fail-closed `503`.
+- Production smoke прошёл; `/api/trade/config` сообщает `active: false`, quote возвращает `pricing_unavailable`, публичный доступ к `trade_settings` закрыт с `403`.
 - Post-migration audits `trade-mvp`, `trade-page`, `leads`, `catalog-v3` и `multicity` прошли без блокеров.
 - Актуальный очищенный schema snapshot сохранён в `directus/schema/snapshots/current.json`.

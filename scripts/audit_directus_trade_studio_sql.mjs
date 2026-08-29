@@ -75,10 +75,13 @@ WITH collection_labels(collection,label) AS (
   VALUES
     ('ISVOI Editor','page_sections','Trade'),
     ('ISVOI Advanced Editor','page_sections','Trade'),
+    ('Administrator','trade_pricing_versions','Trade-in · версии цен'),
     ('ISVOI Editor','trade_pricing_versions','Trade-in · версии цен'),
     ('ISVOI Advanced Editor','trade_pricing_versions','Trade-in · версии цен'),
+    ('Administrator','trade_device_configs','Trade-in · диапазоны'),
     ('ISVOI Editor','trade_device_configs','Trade-in · диапазоны'),
     ('ISVOI Advanced Editor','trade_device_configs','Trade-in · диапазоны'),
+    ('Administrator','trade_condition_rules','Trade-in · правила оценки'),
     ('ISVOI Editor','trade_condition_rules','Trade-in · правила оценки'),
     ('ISVOI Advanced Editor','trade_condition_rules','Trade-in · правила оценки')
 )

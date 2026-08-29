@@ -524,6 +524,7 @@ UNION ALL
 SELECT 'studio.leads.open_without_source_context', count(*)::text
 FROM leads
 WHERE status IN ('new', 'in_progress', 'waiting')
+  AND coalesce(is_test, false) = false
   AND (
     nullif(source_path, '') IS NULL
     OR nullif(source_url, '') IS NULL

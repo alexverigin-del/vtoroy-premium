@@ -123,7 +123,7 @@ SELECT pg_temp.isvoi_trade_studio_preset(
 );
 
 DO $$ DECLARE role_name text; BEGIN
-  FOREACH role_name IN ARRAY ARRAY['ISVOI Editor','ISVOI Advanced Editor'] LOOP
+  FOREACH role_name IN ARRAY ARRAY['Administrator','ISVOI Editor','ISVOI Advanced Editor'] LOOP
     PERFORM pg_temp.isvoi_trade_studio_preset(
       role_name,'trade_pricing_versions','Trade-in · версии цен','currency_ruble','#0071e3',
       '{}'::json,

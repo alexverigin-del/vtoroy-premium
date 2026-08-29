@@ -90,6 +90,6 @@ Trade-in разделён на два уровня доступа:
 
 Проверка: `npm run directus:audit:trade-studio`. Изменения Studio сначала прогоняются через `npm run directus:setup:trade-studio:rehearse`; apply создаёт проверенный backup перед транзакцией.
 
-Метаданные Studio применены в production 29 августа 2026 года после backup `/opt/isvoi/backups/directus/20260829T183616Z`. Аудиты `trade-studio`, `trade-mvp`, `trade-page` и `trade-pricing-v2` прошли. Активный пользователь с ролью `ISVOI Advanced Editor` пока не назначен; до назначения управление доступно Administrator.
+Метаданные Studio применены в production 29 августа 2026 года после backup `/opt/isvoi/backups/directus/20260829T183616Z`. Административные представления добавлены после backup `/opt/isvoi/backups/directus/20260829T184201Z`. Аудиты `studio`, `leads`, `trade-studio`, `trade-mvp`, `trade-page` и `trade-pricing-v2` прошли; тестовые QA-заявки отделены от операционного контроля реальных лидов. Активный пользователь с ролью `ISVOI Advanced Editor` пока не назначен; до назначения управление полностью доступно Administrator.
 
 Контентная граница: заголовок, видимость и disclaimer секции управляются из `page_sections`; модели, память, вопросы, варианты ответов и факторы — из Trade-in коллекций. Служебные тексты кнопок, ошибок и safety-сценария остаются частью версии интерфейса и меняются через разработку, чтобы редактор не мог нарушить контракт формы.

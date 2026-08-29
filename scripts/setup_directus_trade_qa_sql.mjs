@@ -72,6 +72,16 @@ SELECT pg_temp.isvoi_append_permission_field('ISVOI Trade Service','leads','read
 SELECT pg_temp.isvoi_append_permission_field('ISVOI Lead Intake','leads','create','is_test');
 SELECT pg_temp.isvoi_append_permission_field('ISVOI Lead Intake','leads','read','is_test');
 
+INSERT INTO directus_permissions(policy,collection,action,fields)
+SELECT policy.id,'leads','read','id,created_at,reference_code,scenario,device,is_test'
+FROM directus_policies policy
+WHERE policy.name='ISVOI Advanced Editor'
+  AND NOT EXISTS(
+    SELECT 1 FROM directus_permissions permission
+    WHERE permission.policy=policy.id AND permission.collection='leads'
+      AND permission.action='read'
+  );
+
 DO $$
 DECLARE policy_name text;
 BEGIN

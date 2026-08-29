@@ -509,6 +509,17 @@ const auditDefinitions = {
       "trade_mvp.qa_public_exposure",
     ],
   },
+  "trade-pricing-v2": {
+    script: "scripts/audit_directus_trade_pricing_v2_sql.mjs",
+    zero: [
+      "trade_pricing_v2.version_missing",
+      "trade_pricing_v2.config_mismatches",
+      "trade_pricing_v2.rules_invalid",
+      "trade_pricing_v2.settings_invalid",
+      "trade_pricing_v2.published_rows",
+      "trade_pricing_v2.previous_draft_invalid",
+    ],
+  },
   inventory: {
     script: "scripts/audit_directus_inventory_sql.mjs",
     zero: [

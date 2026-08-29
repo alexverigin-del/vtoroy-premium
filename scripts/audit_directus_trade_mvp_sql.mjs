@@ -56,20 +56,20 @@ SELECT 'trade_mvp.draft_configs_invalid',
   CASE WHEN count(*)=19 AND count(*) FILTER(WHERE c.status='draft' AND c.base_min>0 AND c.base_max>=c.base_min)=19 THEN '0' ELSE '1' END
 FROM trade_device_configs c
 JOIN trade_pricing_versions v ON v.id=c.pricing_version
-WHERE v.version='trade-mvp-2026-08-29-draft' AND v.status='draft'
+WHERE v.version='trade-pricing-v2-draft' AND v.status='draft'
 UNION ALL
 SELECT 'trade_mvp.draft_rules_invalid',
   CASE WHEN count(*)=21 AND count(*) FILTER(WHERE r.status='draft')=21 THEN '0' ELSE '1' END
 FROM trade_condition_rules r
 JOIN trade_pricing_versions v ON v.id=r.pricing_version
-WHERE v.version='trade-mvp-2026-08-29-draft' AND v.status='draft'
+WHERE v.version='trade-pricing-v2-draft' AND v.status='draft'
 UNION ALL
 SELECT 'trade_mvp.draft_settings_invalid',(1-count(*))::text
 FROM trade_settings settings
 JOIN trade_pricing_versions version ON version.id=settings.active_pricing_version
 JOIN store_locations store ON store.id=settings.default_store
 WHERE settings.id=1 AND settings.status='draft' AND settings.quote_validity_days=7
-  AND version.version='trade-mvp-2026-08-29-draft' AND version.status='draft'
+  AND version.version='trade-pricing-v2-draft' AND version.status='draft'
   AND store.slug='belgorod' AND store.status='published'
 UNION ALL
 SELECT 'trade_mvp.qa_fields_missing',(3-count(*))::text

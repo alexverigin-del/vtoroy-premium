@@ -15,7 +15,7 @@
 
 ## 2. Заполнение реальных цен
 
-Подготовленный draft: `trade-mvp-2026-08-29-draft`. Методика, публичные ориентиры и стартовые диапазоны зафиксированы в `trade-in-pricing-benchmark-2026-08-29.md`. Seed добавляет 19 конфигураций и 21 правило идемпотентно, не публикуя их. Для отсутствующей в каталоге пилотной модели он безопасно создаёт `iPhone 13 Pro` под брендом Apple.
+Первоначальный draft `trade-mvp-2026-08-29-draft` сохранён как историческая версия. Текущий рабочий draft — `trade-pricing-v2-draft`; методика, источники и 19 диапазонов зафиксированы в `trade-in-pricing-recommendation-2026-08-29.md`. Seed v2 добавляет отдельную forward-only версию, 19 конфигураций и 21 правило идемпотентно, не изменяет v1 и ничего не публикует.
 
 1. Создать draft в `trade_pricing_versions`.
 2. Добавить конфигурации памяти в `trade_device_configs` только для:
@@ -54,12 +54,12 @@ Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_set
 ## Состояние production на 29 августа 2026
 
 - Аддитивная миграция схемы применена после успешного rollback-rehearsal.
-- Backup перед миграцией схемы: `/opt/isvoi/backups/directus/20260829T152005Z`. Свежий backup перед загрузкой draft-цен: `/opt/isvoi/backups/directus/20260829T161229Z`. В обоих PostgreSQL и uploads прошли проверку контрольных сумм.
+- Backup перед миграцией схемы: `/opt/isvoi/backups/directus/20260829T152005Z`. Backup перед загрузкой v1: `/opt/isvoi/backups/directus/20260829T161229Z`. Backup перед загрузкой v2: `/opt/isvoi/backups/directus/20260829T181145Z`. PostgreSQL и uploads прошли проверку контрольных сумм.
 - Offsite-копирование не выполнялось: `OFFSITE_BACKUP_DEST` на сервере не настроен.
 - Production checkout обновлён до `8ec2244`. Создана отдельная headless-учётка `trade-service@service.isvoi` только с политикой `ISVOI Trade Service`; token хранится только в `DIRECTUS_TRADE_TOKEN` server env и не выводился в логи.
-- Загружена draft-версия `trade-mvp-2026-08-29-draft`: 19 конфигураций и 21 правило. Добавлена активная модель `iPhone 13 Pro`; `trade_settings` оставлен в `draft`, опубликованных версий, конфигураций и правил нет.
+- `trade-mvp-2026-08-29-draft` сохранён без изменений. Отдельно загружена версия `trade-pricing-v2-draft`: 19 конфигураций и 21 правило; `trade_settings` указывает на v2, но остаётся в `draft`. Опубликованных версий, конфигураций и правил нет.
 - `TRADE_WIZARD_ENABLED=0`; после перечитывания env калькулятор не отображается, config и quote работают fail-closed с `503`.
-- Десять детерминированных контрольных расчётов `web:test:trade-pricing-v1` прошли на production checkout.
+- Десять детерминированных контрольных расчётов `web:test:trade-pricing-v2` прошли локально. Закрытый production QA smoke подтвердил 19 конфигураций, 7 вопросов, 10 серверных расчётов по v2, валидацию телефона и идемпотентность тестовой заявки.
 - Production smoke прошёл; `/api/trade/config` сообщает `active: false`, quote возвращает `pricing_unavailable`, публичный доступ к `trade_settings` закрыт с `403`.
-- Post-migration audits `trade-mvp`, `trade-page`, `leads`, `catalog-v3` и `multicity` прошли без блокеров; после загрузки draft повторный `trade-mvp` audit и полный production smoke также прошли.
+- После загрузки v2 точные audits `trade-mvp` и `trade-pricing-v2` прошли без блокеров; публичный config вернул `503` и `active: false`, а `TRADE_WIZARD_ENABLED=0` подтверждён на сервере.
 - Актуальный очищенный schema snapshot сохранён в `directus/schema/snapshots/current.json`.

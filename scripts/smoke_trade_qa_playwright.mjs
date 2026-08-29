@@ -47,6 +47,10 @@ async function main() {
     assert(configResponse.ok(), `QA config failed with ${configResponse.status()}`);
     const config = await configResponse.json();
     assert(config.active === true, "QA config is inactive");
+    assert(
+      config.pricingVersion === "trade-pricing-v2-draft",
+      `expected trade-pricing-v2-draft, got ${config.pricingVersion}`,
+    );
     assert(config.devices.length === 19, `expected 19 QA configs, got ${config.devices.length}`);
     assert(
       config.questions.length === 7,
@@ -65,10 +69,10 @@ async function main() {
     );
     const controls = [
       ["iphone-13-pro", "128 ГБ", {}, [18_000, 20_000]],
-      ["iphone-14-pro", "256 ГБ", { has_damage: "yes" }, [19_500, 25_500]],
-      ["iphone-14-pro-max", "512 ГБ", { has_damage: "unknown" }, [30_000, 36_000]],
-      ["iphone-16-pro", "256 ГБ", {}, [42_500, 47_500]],
-      ["iphone-16-pro-max", "1 ТБ", { has_damage: "yes" }, [60_000, 70_500]],
+      ["iphone-14-pro", "256 ГБ", { has_damage: "yes" }, [16_500, 22_500]],
+      ["iphone-14-pro-max", "512 ГБ", { has_damage: "unknown" }, [23_500, 29_000]],
+      ["iphone-16-pro", "256 ГБ", {}, [40_500, 45_500]],
+      ["iphone-16-pro-max", "1 ТБ", { has_damage: "yes" }, [43_000, 52_000]],
       ["iphone-14-pro", "128 ГБ", { powers_on: "no" }, "manual_evaluation_required"],
       ["iphone-14-pro-max", "256 ГБ", { display_works: "no" }, "manual_evaluation_required"],
       ["iphone-16-pro", "512 ГБ", { was_repaired: "unknown" }, "manual_evaluation_required"],

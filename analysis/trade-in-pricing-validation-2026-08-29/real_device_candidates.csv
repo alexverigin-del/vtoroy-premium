@@ -1,0 +1,11 @@
+﻿candidate_key,candidate_source,model_slug,storage,grade,battery_text,diagnostics_status,eligibility_status,listing_price,historical_purchase_price,quote_min,quote_max,actual_gross_margin_pct,projected_gross_margin_pct,gross_headroom_pass,diagnostics_complete
+apple-iphone-14-pro-256-deep-purple-1f97112b,normalized_product,iphone-14-pro,256 ГБ,B,Аккумулятор 95%,Проверено,eligible,44500,37600,23500,26500,15.5,40.4,true,true
+apple-iphone-14-pro-max-256-gold-8627e960,normalized_product,iphone-14-pro-max,256 ГБ,Повторная проверка,Аккумулятор 100%,Требуется повторная диагностика,blocked,51599,43600,25500,28500,15.5,44.8,true,false
+apple-iphone-14-pro-max-256-space-black-ca379309,normalized_product,iphone-14-pro-max,256 ГБ,A,Аккумулятор 100%,Проверено,eligible,51599,43600,25500,28500,15.5,44.8,true,true
+apple-iphone-16-pro-256-white-titanium-57d1ecdb,normalized_product,iphone-16-pro,256 ГБ,A,Аккумулятор 90%,Проверено,eligible,70500,63400,40500,45500,10.1,35.5,true,true
+apple-iphone-16-pro-256-desert-titanium-e697a34e,normalized_product,iphone-16-pro,256 ГБ,A,Аккумулятор 97%,Проверено,eligible,70500,63400,40500,45500,10.1,35.5,true,true
+apple-iphone-16-pro-max-512-black-titanium-c476a8ff,normalized_product,iphone-16-pro-max,512 ГБ,A,Аккумулятор 92%,Проверено,eligible,80300,73300,49500,55000,8.7,31.5,true,true
+apple-iphone-14-pro-512-space-black-ae6111f3,normalized_product,iphone-14-pro,512 ГБ,B,Аккумулятор 98%,Проверено,eligible,47599,40300,29500,33000,15.3,30.7,true,true
+apple-iphone-14-pro-max-256-silver-872f3638,normalized_product,iphone-14-pro-max,256 ГБ,A,Аккумулятор 100%,Проверено,eligible,51599,43600,25500,28500,15.5,44.8,true,true
+70428b9765a8ac7b8132da895122a978,pending_inventory,iphone-16-pro-max,256 ГБ,,,,pending,75900,68900,45000,50000,9.2,34.1,true,false
+a41ac643a77d1ef16a83dd4db9e0a911,pending_inventory,iphone-16-pro-max,512 ГБ,,,,pending,80300,73300,49500,55000,8.7,31.5,true,false

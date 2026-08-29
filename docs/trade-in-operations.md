@@ -63,3 +63,16 @@ Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_set
 - Production smoke прошёл; `/api/trade/config` сообщает `active: false`, quote возвращает `pricing_unavailable`, публичный доступ к `trade_settings` закрыт с `403`.
 - После загрузки v2 точные audits `trade-mvp` и `trade-pricing-v2` прошли без блокеров; публичный config вернул `503` и `active: false`, а `TRADE_WIZARD_ENABLED=0` подтверждён на сервере.
 - Актуальный очищенный schema snapshot сохранён в `directus/schema/snapshots/current.json`.
+
+## Gate на реальных устройствах
+
+Воспроизводимая проверка использует обезличенные production inventory и Passport и не выгружает IMEI или серийные номера:
+
+- `npm run trade:validate:real-devices` — обновляет реестр кандидатов, расчёты и форму приёмки Trade Desk;
+- `npm run trade:validate:real-devices:gate` — завершает процесс с ошибкой, пока все выпускные условия не выполнены;
+- отчёт: `analysis/trade-in-pricing-validation-2026-08-29/README.md`;
+- форма подтверждения: `analysis/trade-in-pricing-validation-2026-08-29/trade_desk_acceptance.json`.
+
+Состояние на 29 августа 2026 года: найдено 10 реальных складских кандидатов, 10/10 проходят минимальный валовой запас 25% при верхней границе v2 quote, но диагностика завершена только для 7/10. Расчётная валовая маржа v2 составляет 30,7–44,8%. Gate остаётся `BLOCKED`, пока не завершены три диагностики, не заполнены подтверждённые offer/подготовка/гарантийный резерв для 10 устройств и Trade Desk не утвердил минимальную net margin и каждый кейс.
+
+Статус `PASSED` является обязательным условием перед публикацией pricing version. Сам по себе он не включает калькулятор: для этого по-прежнему требуется отдельное решение об изменении `trade_settings.status` и `TRADE_WIZARD_ENABLED`.

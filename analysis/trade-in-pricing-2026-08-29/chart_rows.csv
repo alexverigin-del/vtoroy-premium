@@ -1,0 +1,20 @@
+﻿model,storage,current_max,recommended_max,max_change,configuration
+iPhone 13 Pro,128 ГБ,20000,20000,0,iPhone 13 Pro 128 ГБ
+iPhone 13 Pro,256 ГБ,22000,22000,0,iPhone 13 Pro 256 ГБ
+iPhone 13 Pro,512 ГБ,24500,24500,0,iPhone 13 Pro 512 ГБ
+iPhone 13 Pro,1 ТБ,26500,26500,0,iPhone 13 Pro 1 ТБ
+iPhone 14 Pro,128 ГБ,26000,25000,-1000,iPhone 14 Pro 128 ГБ
+iPhone 14 Pro,256 ГБ,29500,26500,-3000,iPhone 14 Pro 256 ГБ
+iPhone 14 Pro,512 ГБ,33000,33000,0,iPhone 14 Pro 512 ГБ
+iPhone 14 Pro,1 ТБ,37500,34500,-3000,iPhone 14 Pro 1 ТБ
+iPhone 14 Pro Max,128 ГБ,30000,26000,-4000,iPhone 14 Pro Max 128 ГБ
+iPhone 14 Pro Max,256 ГБ,34000,28500,-5500,iPhone 14 Pro Max 256 ГБ
+iPhone 14 Pro Max,512 ГБ,38000,31000,-7000,iPhone 14 Pro Max 512 ГБ
+iPhone 14 Pro Max,1 ТБ,41500,40000,-1500,iPhone 14 Pro Max 1 ТБ
+iPhone 16 Pro,128 ГБ,44500,44000,-500,iPhone 16 Pro 128 ГБ
+iPhone 16 Pro,256 ГБ,47500,45500,-2000,iPhone 16 Pro 256 ГБ
+iPhone 16 Pro,512 ГБ,51000,51000,0,iPhone 16 Pro 512 ГБ
+iPhone 16 Pro,1 ТБ,59500,57500,-2000,iPhone 16 Pro 1 ТБ
+iPhone 16 Pro Max,256 ГБ,53500,50000,-3500,iPhone 16 Pro Max 256 ГБ
+iPhone 16 Pro Max,512 ГБ,59500,55000,-4500,iPhone 16 Pro Max 512 ГБ
+iPhone 16 Pro Max,1 ТБ,74500,56000,-18500,iPhone 16 Pro Max 1 ТБ

@@ -1,0 +1,20 @@
+﻿model_slug,model,storage,recommended_min,recommended_max,current_min,current_max,max_change,market_anchor,headroom_pct,source_confidence
+iphone-13-pro,iPhone 13 Pro,128 ГБ,18000,20000,18000,20000,0,26990.0,25.9,high
+iphone-13-pro,iPhone 13 Pro,256 ГБ,19500,22000,19500,22000,0,29690.0,25.9,medium
+iphone-13-pro,iPhone 13 Pro,512 ГБ,22000,24500,22000,24500,0,36500.0,32.9,low
+iphone-13-pro,iPhone 13 Pro,1 ТБ,23500,26500,23500,26500,0,38000.0,30.3,low
+iphone-14-pro,iPhone 14 Pro,128 ГБ,22500,25000,23000,26000,-1000,33590.0,25.6,medium
+iphone-14-pro,iPhone 14 Pro,256 ГБ,23500,26500,26500,29500,-3000,35590.0,25.5,high
+iphone-14-pro,iPhone 14 Pro,512 ГБ,29500,33000,29500,33000,0,44700.0,26.2,low
+iphone-14-pro,iPhone 14 Pro,1 ТБ,31000,34500,33500,37500,-3000,46200.0,25.3,low
+iphone-14-pro-max,iPhone 14 Pro Max,128 ГБ,23000,26000,27000,30000,-4000,34990.0,25.7,high
+iphone-14-pro-max,iPhone 14 Pro Max,256 ГБ,25500,28500,30500,34000,-5500,38390.0,25.8,high
+iphone-14-pro-max,iPhone 14 Pro Max,512 ГБ,27500,31000,34000,38000,-7000,41390.0,25.1,medium
+iphone-14-pro-max,iPhone 14 Pro Max,1 ТБ,36000,40000,37000,41500,-1500,53700.0,25.5,low
+iphone-16-pro,iPhone 16 Pro,128 ГБ,39500,44000,40000,44500,-500,58700.0,25.0,low
+iphone-16-pro,iPhone 16 Pro,256 ГБ,40500,45500,42500,47500,-2000,60990.0,25.4,medium
+iphone-16-pro,iPhone 16 Pro,512 ГБ,45500,51000,45500,51000,0,71800.0,29.0,low
+iphone-16-pro,iPhone 16 Pro,1 ТБ,51500,57500,53500,59500,-2000,77100.0,25.4,low
+iphone-16-pro-max,iPhone 16 Pro Max,256 ГБ,45000,50000,48000,53500,-3500,66990.0,25.4,high
+iphone-16-pro-max,iPhone 16 Pro Max,512 ГБ,49500,55000,53500,59500,-4500,73400.0,25.1,low
+iphone-16-pro-max,iPhone 16 Pro Max,1 ТБ,50000,56000,67000,74500,-18500,74990.0,25.3,low

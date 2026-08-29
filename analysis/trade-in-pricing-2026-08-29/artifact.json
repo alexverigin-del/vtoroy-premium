@@ -1,0 +1,769 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Trade-in ISVOI: рекомендованная ценовая матрица",
+    "description": "Рыночная сверка 19 конфигураций и безопасный draft v2 без публикации.",
+    "generatedAt": "2026-08-29T18:00:00+03:00",
+    "sources": [
+      {
+        "id": "pricing_analysis",
+        "label": "Воспроизводимый расчёт Trade-in",
+        "path": "analysis/trade-in-pricing-2026-08-29/trade_in_pricing_analysis.ipynb"
+      },
+      {
+        "id": "pricing_chart_sql",
+        "label": "SQLite: сравнение верхних границ",
+        "path": "analysis/trade-in-pricing-2026-08-29/pricing_analysis.sqlite",
+        "query": {
+          "engine": "sqlite",
+          "language": "sql",
+          "sql": "SELECT configuration, series, price FROM pricing_comparison ORDER BY sort_order, series",
+          "executed_at": "2026-08-29T18:00:00+03:00",
+          "description": "Возвращает текущую и рекомендованную верхние границы по 19 конфигурациям.",
+          "tables_used": [
+            "pricing_comparison"
+          ],
+          "filters": [
+            "Срез 2026-08-29",
+            "19 конфигураций MVP"
+          ],
+          "metric_definitions": [
+            "price — верхняя граница диапазона в рублях для указанной версии."
+          ]
+        }
+      },
+      {
+        "id": "pricing_matrix_sql",
+        "label": "SQLite: рекомендованная матрица",
+        "path": "analysis/trade-in-pricing-2026-08-29/pricing_analysis.sqlite",
+        "query": {
+          "engine": "sqlite",
+          "language": "sql",
+          "sql": "SELECT model, storage, current_min, current_max, recommended_min, recommended_max, max_change, headroom_pct, confidence FROM pricing_matrix ORDER BY recommended_max DESC",
+          "executed_at": "2026-08-29T18:00:00+03:00",
+          "description": "Возвращает точные диапазоны, изменения и запас по 19 конфигурациям.",
+          "tables_used": [
+            "pricing_matrix"
+          ],
+          "filters": [
+            "Срез 2026-08-29",
+            "19 конфигураций MVP"
+          ],
+          "metric_definitions": [
+            "recommended_max — минимум из максимума re:Store и 75% рыночного ориентира, округлённый вниз до 500 ₽.",
+            "recommended_min — 90% recommended_max, округлённые вниз до 500 ₽.",
+            "headroom_pct — запас между рыночным ориентиром и recommended_max."
+          ]
+        }
+      },
+      {
+        "id": "restore",
+        "label": "re:Store Trade-in",
+        "href": "https://re-store.ru/promo/trade-in/"
+      },
+      {
+        "id": "opt_express",
+        "label": "Opt-Express: б/у Apple",
+        "href": "https://opt-express.ru/catalog/smartfony/b-u/apple/"
+      },
+      {
+        "id": "bestphone",
+        "label": "BestPhone: б/у iPhone",
+        "href": "https://bestphone.ru/catalog/b_u_iphone_14_pro_max/"
+      },
+      {
+        "id": "mobile_outlet",
+        "label": "Mobile Outlet: iPhone 14 Pro",
+        "href": "https://mobile-outlet.ru/collection/iphone-14-pro-bu"
+      },
+      {
+        "id": "mobilo4ka",
+        "label": "Mobilo4ka: iPhone 16 Pro 256 ГБ",
+        "href": "https://moskva.mobilo4ka.ru/bu-tehnika/apple-bu/iphone-bu/iphone-16-pro-bu/256gb/"
+      },
+      {
+        "id": "appzone",
+        "label": "AppZone: iPhone 16 Pro Max 1 ТБ",
+        "href": "https://appzone.store/catalog/iphone-b-u/iphone-16-pro-max-b-u/apple-iphone-16-pro-max-1tb-chernyy-titan-b-u/"
+      }
+    ],
+    "charts": [
+      {
+        "id": "pricing_comparison",
+        "title": "Верхняя граница текущего draft и рекомендации",
+        "subtitle": "Наибольшая коррекция приходится на iPhone 16 Pro Max 1 ТБ и линейку iPhone 14 Pro Max.",
+        "type": "horizontalBar",
+        "dataset": "pricing_comparison",
+        "sourceId": "pricing_chart_sql",
+        "encodings": {
+          "x": {
+            "field": "configuration",
+            "type": "nominal",
+            "label": "Конфигурация"
+          },
+          "y": {
+            "field": "price",
+            "type": "quantitative",
+            "format": "currency",
+            "unit": "₽",
+            "label": "Верхняя граница"
+          },
+          "color": {
+            "field": "series",
+            "type": "nominal",
+            "label": "Версия"
+          },
+          "tooltip": [
+            {
+              "field": "configuration",
+              "type": "nominal",
+              "label": "Конфигурация"
+            },
+            {
+              "field": "series",
+              "type": "nominal",
+              "label": "Версия"
+            },
+            {
+              "field": "price",
+              "type": "quantitative",
+              "format": "currency",
+              "unit": "₽",
+              "label": "Цена"
+            }
+          ]
+        },
+        "valueFormat": "currency",
+        "unit": "₽",
+        "maxRows": 38
+      }
+    ],
+    "tables": [
+      {
+        "id": "pricing_matrix",
+        "title": "Рекомендованные диапазоны по 19 конфигурациям",
+        "subtitle": "Точная таблица для согласования нового draft; значения в рублях.",
+        "dataset": "pricing_matrix",
+        "sourceId": "pricing_matrix_sql",
+        "density": "compact",
+        "defaultSort": {
+          "field": "recommended_max",
+          "direction": "desc"
+        },
+        "columns": [
+          {
+            "field": "model",
+            "label": "Модель"
+          },
+          {
+            "field": "storage",
+            "label": "Память"
+          },
+          {
+            "field": "current_max",
+            "label": "Текущий max",
+            "type": "currency",
+            "format": "currency",
+            "unit": "₽",
+            "align": "right"
+          },
+          {
+            "field": "recommended_min",
+            "label": "Новый min",
+            "type": "currency",
+            "format": "currency",
+            "unit": "₽",
+            "align": "right"
+          },
+          {
+            "field": "recommended_max",
+            "label": "Новый max",
+            "type": "currency",
+            "format": "currency",
+            "unit": "₽",
+            "align": "right"
+          },
+          {
+            "field": "max_change",
+            "label": "Изменение max",
+            "type": "currency",
+            "format": "currency",
+            "unit": "₽",
+            "align": "right",
+            "movement": true
+          },
+          {
+            "field": "headroom_pct",
+            "label": "Запас, %",
+            "type": "number",
+            "format": "number",
+            "unit": "%",
+            "align": "right"
+          },
+          {
+            "field": "confidence",
+            "label": "Уверенность"
+          }
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# Trade-in ISVOI: рекомендованная ценовая матрица"
+      },
+      {
+        "id": "executive_summary",
+        "type": "markdown",
+        "sourceId": "pricing_analysis",
+        "body": "## Executive Summary\n\nРекомендуется новый консервативный draft: меняются **13 из 19** конфигураций, минимальный запас до рыночного ориентира — **25.0%**. Самая крупная коррекция — iPhone 16 Pro Max 1 ТБ: верхняя граница снижается на **18 500 ₽**, до 56 000 ₽. Публичная версия и калькулятор остаются выключены."
+      },
+      {
+        "id": "findings",
+        "type": "markdown",
+        "sourceId": "pricing_analysis",
+        "body": "## Основные выводы\n\n- Все четыре iPhone 13 Pro остаются без изменений.\n- У iPhone 14 Pro Max 128/256/512 ГБ верхние границы снижаются на 4 000/5 500/7 000 ₽.\n- iPhone 16 Pro Max 256/512 ГБ получают верхние границы 50 000/55 000 ₽.\n- Для 10 конфигураций уверенность низкая: до публикации нужна дополнительная розничная выборка."
+      },
+      {
+        "id": "comparison_chart",
+        "type": "chart",
+        "chartId": "pricing_comparison"
+      },
+      {
+        "id": "matrix_heading",
+        "type": "markdown",
+        "body": "## Рекомендованная матрица\n\nТочные значения для согласования и контрольных расчётов."
+      },
+      {
+        "id": "matrix_table",
+        "type": "table",
+        "tableId": "pricing_matrix"
+      },
+      {
+        "id": "next_steps",
+        "type": "markdown",
+        "body": "## Рекомендуемые следующие шаги\n\n1. Подтвердить целевой запас и фактические расходы Trade Desk.\n2. Собрать минимум по три свежие карточки для конфигураций с низкой уверенностью.\n3. Провести десять расчётов на реальных устройствах.\n4. После подтверждения создать новую forward-only версию `trade-pricing-v2-draft`, не публикуя её и не включая калькулятор."
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "body": "## Ограничения\n\nПубличные карточки различаются по состоянию, батарее, комплекту, гарантии и региону. В расчёте нет фактических расходов ISVOI, скорости продажи и гарантийных обращений. Матрица подходит для draft и проверки, но не доказывает чистую прибыльность."
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## Вопросы перед публикацией\n\n- Какой минимальный валовой запас принимает Trade Desk?\n- Каковы средние расходы на диагностику, подготовку и гарантию по поколениям?\n- Какие конфигурации продаются дольше 30 дней?\n- Нужен ли отдельный дисконт для 1 ТБ из-за более медленной оборачиваемости?"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-08-29T18:00:00+03:00",
+    "status": "ready",
+    "datasets": {
+      "summary": [
+        {
+          "configurations": 19,
+          "changed_configurations": 13,
+          "unchanged_configurations": 6,
+          "largest_reduction_rub": 18500,
+          "minimum_headroom_pct": 25.0,
+          "low_confidence_configurations": 10
+        }
+      ],
+      "pricing_comparison": [
+        {
+          "configuration": "iPhone 13 Pro 128 ГБ",
+          "series": "Рекомендация",
+          "price": 20000
+        },
+        {
+          "configuration": "iPhone 13 Pro 128 ГБ",
+          "series": "Текущий draft",
+          "price": 20000
+        },
+        {
+          "configuration": "iPhone 13 Pro 256 ГБ",
+          "series": "Рекомендация",
+          "price": 22000
+        },
+        {
+          "configuration": "iPhone 13 Pro 256 ГБ",
+          "series": "Текущий draft",
+          "price": 22000
+        },
+        {
+          "configuration": "iPhone 13 Pro 512 ГБ",
+          "series": "Рекомендация",
+          "price": 24500
+        },
+        {
+          "configuration": "iPhone 13 Pro 512 ГБ",
+          "series": "Текущий draft",
+          "price": 24500
+        },
+        {
+          "configuration": "iPhone 13 Pro 1 ТБ",
+          "series": "Рекомендация",
+          "price": 26500
+        },
+        {
+          "configuration": "iPhone 13 Pro 1 ТБ",
+          "series": "Текущий draft",
+          "price": 26500
+        },
+        {
+          "configuration": "iPhone 14 Pro 128 ГБ",
+          "series": "Рекомендация",
+          "price": 25000
+        },
+        {
+          "configuration": "iPhone 14 Pro 128 ГБ",
+          "series": "Текущий draft",
+          "price": 26000
+        },
+        {
+          "configuration": "iPhone 14 Pro 256 ГБ",
+          "series": "Рекомендация",
+          "price": 26500
+        },
+        {
+          "configuration": "iPhone 14 Pro 256 ГБ",
+          "series": "Текущий draft",
+          "price": 29500
+        },
+        {
+          "configuration": "iPhone 14 Pro 512 ГБ",
+          "series": "Рекомендация",
+          "price": 33000
+        },
+        {
+          "configuration": "iPhone 14 Pro 512 ГБ",
+          "series": "Текущий draft",
+          "price": 33000
+        },
+        {
+          "configuration": "iPhone 14 Pro 1 ТБ",
+          "series": "Рекомендация",
+          "price": 34500
+        },
+        {
+          "configuration": "iPhone 14 Pro 1 ТБ",
+          "series": "Текущий draft",
+          "price": 37500
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 128 ГБ",
+          "series": "Рекомендация",
+          "price": 26000
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 128 ГБ",
+          "series": "Текущий draft",
+          "price": 30000
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 256 ГБ",
+          "series": "Рекомендация",
+          "price": 28500
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 256 ГБ",
+          "series": "Текущий draft",
+          "price": 34000
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 512 ГБ",
+          "series": "Рекомендация",
+          "price": 31000
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 512 ГБ",
+          "series": "Текущий draft",
+          "price": 38000
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 1 ТБ",
+          "series": "Рекомендация",
+          "price": 40000
+        },
+        {
+          "configuration": "iPhone 14 Pro Max 1 ТБ",
+          "series": "Текущий draft",
+          "price": 41500
+        },
+        {
+          "configuration": "iPhone 16 Pro 128 ГБ",
+          "series": "Рекомендация",
+          "price": 44000
+        },
+        {
+          "configuration": "iPhone 16 Pro 128 ГБ",
+          "series": "Текущий draft",
+          "price": 44500
+        },
+        {
+          "configuration": "iPhone 16 Pro 256 ГБ",
+          "series": "Рекомендация",
+          "price": 45500
+        },
+        {
+          "configuration": "iPhone 16 Pro 256 ГБ",
+          "series": "Текущий draft",
+          "price": 47500
+        },
+        {
+          "configuration": "iPhone 16 Pro 512 ГБ",
+          "series": "Рекомендация",
+          "price": 51000
+        },
+        {
+          "configuration": "iPhone 16 Pro 512 ГБ",
+          "series": "Текущий draft",
+          "price": 51000
+        },
+        {
+          "configuration": "iPhone 16 Pro 1 ТБ",
+          "series": "Рекомендация",
+          "price": 57500
+        },
+        {
+          "configuration": "iPhone 16 Pro 1 ТБ",
+          "series": "Текущий draft",
+          "price": 59500
+        },
+        {
+          "configuration": "iPhone 16 Pro Max 256 ГБ",
+          "series": "Рекомендация",
+          "price": 50000
+        },
+        {
+          "configuration": "iPhone 16 Pro Max 256 ГБ",
+          "series": "Текущий draft",
+          "price": 53500
+        },
+        {
+          "configuration": "iPhone 16 Pro Max 512 ГБ",
+          "series": "Рекомендация",
+          "price": 55000
+        },
+        {
+          "configuration": "iPhone 16 Pro Max 512 ГБ",
+          "series": "Текущий draft",
+          "price": 59500
+        },
+        {
+          "configuration": "iPhone 16 Pro Max 1 ТБ",
+          "series": "Рекомендация",
+          "price": 56000
+        },
+        {
+          "configuration": "iPhone 16 Pro Max 1 ТБ",
+          "series": "Текущий draft",
+          "price": 74500
+        }
+      ],
+      "pricing_matrix": [
+        {
+          "model": "iPhone 16 Pro",
+          "storage": "1 ТБ",
+          "current_min": 53500,
+          "current_max": 59500,
+          "recommended_min": 51500,
+          "recommended_max": 57500,
+          "max_change": -2000,
+          "headroom_pct": 25.4,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 16 Pro Max",
+          "storage": "1 ТБ",
+          "current_min": 67000,
+          "current_max": 74500,
+          "recommended_min": 50000,
+          "recommended_max": 56000,
+          "max_change": -18500,
+          "headroom_pct": 25.3,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 16 Pro Max",
+          "storage": "512 ГБ",
+          "current_min": 53500,
+          "current_max": 59500,
+          "recommended_min": 49500,
+          "recommended_max": 55000,
+          "max_change": -4500,
+          "headroom_pct": 25.1,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 16 Pro",
+          "storage": "512 ГБ",
+          "current_min": 45500,
+          "current_max": 51000,
+          "recommended_min": 45500,
+          "recommended_max": 51000,
+          "max_change": 0,
+          "headroom_pct": 29.0,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 16 Pro Max",
+          "storage": "256 ГБ",
+          "current_min": 48000,
+          "current_max": 53500,
+          "recommended_min": 45000,
+          "recommended_max": 50000,
+          "max_change": -3500,
+          "headroom_pct": 25.4,
+          "confidence": "Высокая"
+        },
+        {
+          "model": "iPhone 16 Pro",
+          "storage": "256 ГБ",
+          "current_min": 42500,
+          "current_max": 47500,
+          "recommended_min": 40500,
+          "recommended_max": 45500,
+          "max_change": -2000,
+          "headroom_pct": 25.4,
+          "confidence": "Средняя"
+        },
+        {
+          "model": "iPhone 16 Pro",
+          "storage": "128 ГБ",
+          "current_min": 40000,
+          "current_max": 44500,
+          "recommended_min": 39500,
+          "recommended_max": 44000,
+          "max_change": -500,
+          "headroom_pct": 25.0,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 14 Pro Max",
+          "storage": "1 ТБ",
+          "current_min": 37000,
+          "current_max": 41500,
+          "recommended_min": 36000,
+          "recommended_max": 40000,
+          "max_change": -1500,
+          "headroom_pct": 25.5,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 14 Pro",
+          "storage": "1 ТБ",
+          "current_min": 33500,
+          "current_max": 37500,
+          "recommended_min": 31000,
+          "recommended_max": 34500,
+          "max_change": -3000,
+          "headroom_pct": 25.3,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 14 Pro",
+          "storage": "512 ГБ",
+          "current_min": 29500,
+          "current_max": 33000,
+          "recommended_min": 29500,
+          "recommended_max": 33000,
+          "max_change": 0,
+          "headroom_pct": 26.2,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 14 Pro Max",
+          "storage": "512 ГБ",
+          "current_min": 34000,
+          "current_max": 38000,
+          "recommended_min": 27500,
+          "recommended_max": 31000,
+          "max_change": -7000,
+          "headroom_pct": 25.1,
+          "confidence": "Средняя"
+        },
+        {
+          "model": "iPhone 14 Pro Max",
+          "storage": "256 ГБ",
+          "current_min": 30500,
+          "current_max": 34000,
+          "recommended_min": 25500,
+          "recommended_max": 28500,
+          "max_change": -5500,
+          "headroom_pct": 25.8,
+          "confidence": "Высокая"
+        },
+        {
+          "model": "iPhone 13 Pro",
+          "storage": "1 ТБ",
+          "current_min": 23500,
+          "current_max": 26500,
+          "recommended_min": 23500,
+          "recommended_max": 26500,
+          "max_change": 0,
+          "headroom_pct": 30.3,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 14 Pro",
+          "storage": "256 ГБ",
+          "current_min": 26500,
+          "current_max": 29500,
+          "recommended_min": 23500,
+          "recommended_max": 26500,
+          "max_change": -3000,
+          "headroom_pct": 25.5,
+          "confidence": "Высокая"
+        },
+        {
+          "model": "iPhone 14 Pro Max",
+          "storage": "128 ГБ",
+          "current_min": 27000,
+          "current_max": 30000,
+          "recommended_min": 23000,
+          "recommended_max": 26000,
+          "max_change": -4000,
+          "headroom_pct": 25.7,
+          "confidence": "Высокая"
+        },
+        {
+          "model": "iPhone 14 Pro",
+          "storage": "128 ГБ",
+          "current_min": 23000,
+          "current_max": 26000,
+          "recommended_min": 22500,
+          "recommended_max": 25000,
+          "max_change": -1000,
+          "headroom_pct": 25.6,
+          "confidence": "Средняя"
+        },
+        {
+          "model": "iPhone 13 Pro",
+          "storage": "512 ГБ",
+          "current_min": 22000,
+          "current_max": 24500,
+          "recommended_min": 22000,
+          "recommended_max": 24500,
+          "max_change": 0,
+          "headroom_pct": 32.9,
+          "confidence": "Низкая"
+        },
+        {
+          "model": "iPhone 13 Pro",
+          "storage": "256 ГБ",
+          "current_min": 19500,
+          "current_max": 22000,
+          "recommended_min": 19500,
+          "recommended_max": 22000,
+          "max_change": 0,
+          "headroom_pct": 25.9,
+          "confidence": "Средняя"
+        },
+        {
+          "model": "iPhone 13 Pro",
+          "storage": "128 ГБ",
+          "current_min": 18000,
+          "current_max": 20000,
+          "recommended_min": 18000,
+          "recommended_max": 20000,
+          "max_change": 0,
+          "headroom_pct": 25.9,
+          "confidence": "Высокая"
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "pricing_analysis",
+      "label": "Воспроизводимый расчёт Trade-in",
+      "path": "analysis/trade-in-pricing-2026-08-29/trade_in_pricing_analysis.ipynb"
+    },
+    {
+      "id": "pricing_chart_sql",
+      "label": "SQLite: сравнение верхних границ",
+      "path": "analysis/trade-in-pricing-2026-08-29/pricing_analysis.sqlite",
+      "query": {
+        "engine": "sqlite",
+        "language": "sql",
+        "sql": "SELECT configuration, series, price FROM pricing_comparison ORDER BY sort_order, series",
+        "executed_at": "2026-08-29T18:00:00+03:00",
+        "description": "Возвращает текущую и рекомендованную верхние границы по 19 конфигурациям.",
+        "tables_used": [
+          "pricing_comparison"
+        ],
+        "filters": [
+          "Срез 2026-08-29",
+          "19 конфигураций MVP"
+        ],
+        "metric_definitions": [
+          "price — верхняя граница диапазона в рублях для указанной версии."
+        ]
+      }
+    },
+    {
+      "id": "pricing_matrix_sql",
+      "label": "SQLite: рекомендованная матрица",
+      "path": "analysis/trade-in-pricing-2026-08-29/pricing_analysis.sqlite",
+      "query": {
+        "engine": "sqlite",
+        "language": "sql",
+        "sql": "SELECT model, storage, current_min, current_max, recommended_min, recommended_max, max_change, headroom_pct, confidence FROM pricing_matrix ORDER BY recommended_max DESC",
+        "executed_at": "2026-08-29T18:00:00+03:00",
+        "description": "Возвращает точные диапазоны, изменения и запас по 19 конфигурациям.",
+        "tables_used": [
+          "pricing_matrix"
+        ],
+        "filters": [
+          "Срез 2026-08-29",
+          "19 конфигураций MVP"
+        ],
+        "metric_definitions": [
+          "recommended_max — минимум из максимума re:Store и 75% рыночного ориентира, округлённый вниз до 500 ₽.",
+          "recommended_min — 90% recommended_max, округлённые вниз до 500 ₽.",
+          "headroom_pct — запас между рыночным ориентиром и recommended_max."
+        ]
+      }
+    },
+    {
+      "id": "restore",
+      "label": "re:Store Trade-in",
+      "href": "https://re-store.ru/promo/trade-in/"
+    },
+    {
+      "id": "opt_express",
+      "label": "Opt-Express: б/у Apple",
+      "href": "https://opt-express.ru/catalog/smartfony/b-u/apple/"
+    },
+    {
+      "id": "bestphone",
+      "label": "BestPhone: б/у iPhone",
+      "href": "https://bestphone.ru/catalog/b_u_iphone_14_pro_max/"
+    },
+    {
+      "id": "mobile_outlet",
+      "label": "Mobile Outlet: iPhone 14 Pro",
+      "href": "https://mobile-outlet.ru/collection/iphone-14-pro-bu"
+    },
+    {
+      "id": "mobilo4ka",
+      "label": "Mobilo4ka: iPhone 16 Pro 256 ГБ",
+      "href": "https://moskva.mobilo4ka.ru/bu-tehnika/apple-bu/iphone-bu/iphone-16-pro-bu/256gb/"
+    },
+    {
+      "id": "appzone",
+      "label": "AppZone: iPhone 16 Pro Max 1 ТБ",
+      "href": "https://appzone.store/catalog/iphone-b-u/iphone-16-pro-max-b-u/apple-iphone-16-pro-max-1tb-chernyy-titan-b-u/"
+    }
+  ],
+  "package_info": {
+    "name": "isvoi-trade-pricing-recommendation",
+    "version": "2026-08-29"
+  }
+}

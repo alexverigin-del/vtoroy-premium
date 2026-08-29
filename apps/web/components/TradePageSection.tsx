@@ -1,5 +1,4 @@
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import type { PageSection, ProductCardData, TradePublicConfig } from "@vtoroy/shared";
 import { cn } from "@/lib/cn";
 import {
@@ -9,17 +8,9 @@ import {
 } from "@/lib/marketing-products";
 import { ProductImage, productImageSrc } from "./ProductImage";
 import { RichText } from "./RichText";
+import { TradeInWizard } from "./TradeInWizard";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
-
-const TradeInWizard = dynamic(
-  () => import("./TradeInWizard").then((module) => module.TradeInWizard),
-  {
-    loading: () => (
-      <div className="mx-auto min-h-96 max-w-[620px] animate-pulse rounded-card bg-surface motion-reduce:animate-none" />
-    ),
-  },
-);
 
 type TradeCard = {
   badge: string;

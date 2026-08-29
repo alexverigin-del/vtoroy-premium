@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
+import { isValidPhoneNumber } from "@/lib/phone";
 import { getTradeQuote, TradeApiError, validateTradeExchangeSelection } from "@/lib/trade-server";
 import { isTradeQaRequest } from "@/lib/trade-qa";
 
@@ -510,6 +511,13 @@ export async function POST(request: NextRequest) {
   const preferredVisitDate = text(body.preferred_visit_date, 10);
   const preferredVisitPeriod = text(body.preferred_visit_period, 24);
   const requestedContactChannel = text(body.contact_channel, 24);
+  const contactChannel = ["phone", "telegram"].includes(requestedContactChannel)
+    ? requestedContactChannel
+    : inferContactChannel(contact);
+
+  if (kind === "trade" && contactChannel === "phone" && !isValidPhoneNumber(contact)) {
+    return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
+  }
 
   if (!validVisitDate(preferredVisitDate)) {
     return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
@@ -548,9 +556,7 @@ export async function POST(request: NextRequest) {
     kind,
     status: "new",
     priority: "normal",
-    contact_channel: ["phone", "telegram"].includes(requestedContactChannel)
-      ? requestedContactChannel
-      : inferContactChannel(contact),
+    contact_channel: contactChannel,
     name: text(body.name, 160),
     contact,
     product: text(body.product, 255),

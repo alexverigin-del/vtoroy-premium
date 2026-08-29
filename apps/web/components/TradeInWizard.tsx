@@ -13,6 +13,7 @@ import type {
 } from "@vtoroy/shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
+import { isValidPhoneNumber, sanitizePhoneInput } from "@/lib/phone";
 import { useLeadIntake } from "./useLeadIntake";
 
 type Step =
@@ -227,12 +228,15 @@ function ContactFields({
   onChannel,
   contact,
   onContact,
+  error,
 }: {
   channel: TradeContactChannel;
   onChannel: (value: TradeContactChannel) => void;
   contact: string;
   onContact: (value: string) => void;
+  error?: string;
 }) {
+  const contactErrorId = "trade-contact-error";
   return (
     <>
       <SegmentedControl
@@ -249,13 +253,26 @@ function ContactFields({
           {channel === "phone" ? "Телефон" : "Telegram"}
         </span>
         <input
+          type={channel === "phone" ? "tel" : "text"}
           value={contact}
-          onChange={(event) => onContact(event.target.value)}
+          onChange={(event) =>
+            onContact(
+              channel === "phone" ? sanitizePhoneInput(event.target.value) : event.target.value,
+            )
+          }
           inputMode={channel === "phone" ? "tel" : "text"}
           autoComplete={channel === "phone" ? "tel" : "off"}
           placeholder={channel === "phone" ? "+7 999 123-45-67" : "@username"}
+          maxLength={channel === "phone" ? 24 : 180}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? contactErrorId : undefined}
           className="mt-2 h-16 w-full rounded-input border border-hairline bg-white px-3 text-base text-carbon outline-none transition focus:border-link-blue focus:ring-2 focus:ring-link-blue/15"
         />
+        {error ? (
+          <span id={contactErrorId} role="alert" className="mt-2 block text-sm text-warning">
+            {error}
+          </span>
+        ) : null}
       </label>
     </>
   );
@@ -283,6 +300,7 @@ export function TradeInWizard({
   const [manualDescription, setManualDescription] = useState("");
   const [contactChannel, setContactChannel] = useState<TradeContactChannel>("phone");
   const [contact, setContact] = useState("");
+  const [contactError, setContactError] = useState("");
   const [storeId, setStoreId] = useState(config.defaultStoreId ?? config.stores[0]?.id ?? "");
   const [visitDate, setVisitDate] = useState("");
   const [visitPeriod, setVisitPeriod] = useState<TradeVisitPeriod>("day");
@@ -443,7 +461,15 @@ export function TradeInWizard({
 
   async function submitTradeLead(manual = false) {
     if (!contact.trim()) {
-      setError("Укажите телефон или Telegram для ответа менеджера.");
+      setContactError(
+        contactChannel === "phone"
+          ? "Введите номер телефона."
+          : "Укажите Telegram для ответа менеджера.",
+      );
+      return;
+    }
+    if (contactChannel === "phone" && !isValidPhoneNumber(contact)) {
+      setContactError("Введите корректный номер телефона: от 10 до 15 цифр.");
       return;
     }
     if (manual && !manualDescription.trim()) {
@@ -599,9 +625,16 @@ export function TradeInWizard({
               </label>
               <ContactFields
                 channel={contactChannel}
-                onChannel={setContactChannel}
+                onChannel={(value) => {
+                  setContactChannel(value);
+                  setContactError("");
+                }}
                 contact={contact}
-                onContact={setContact}
+                onContact={(value) => {
+                  setContact(value);
+                  setContactError("");
+                }}
+                error={contactError}
               />
               <p className="text-xs leading-5 text-muted">
                 Контакт нужен только для ответа менеджера. В расчёте он не используется.
@@ -952,9 +985,16 @@ export function TradeInWizard({
             <div className="mt-4 grid gap-3">
               <ContactFields
                 channel={contactChannel}
-                onChannel={setContactChannel}
+                onChannel={(value) => {
+                  setContactChannel(value);
+                  setContactError("");
+                }}
                 contact={contact}
-                onContact={setContact}
+                onContact={(value) => {
+                  setContact(value);
+                  setContactError("");
+                }}
+                error={contactError}
               />
               {config.stores.length ? (
                 <label>

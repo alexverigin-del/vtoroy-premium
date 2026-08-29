@@ -114,10 +114,60 @@ async function main() {
       );
     }
 
+    const invalidPhoneResponse = await qaPage.request.post(`${baseUrl}/lead-intake`, {
+      data: {
+        kind: "trade",
+        scenario: "manual_evaluation",
+        contact_channel: "phone",
+        contact: "not-a-phone",
+        device: "QA phone validation smoke",
+        idempotency_key: "trade-qa-invalid-phone-smoke-v1",
+        source: "/trade/qa",
+      },
+    });
+    const invalidPhonePayload = await invalidPhoneResponse.json();
+    assert(
+      invalidPhoneResponse.status() === 400 &&
+        invalidPhonePayload.ok === false &&
+        invalidPhonePayload.error === "validation_error",
+      `invalid QA phone must be rejected, got ${invalidPhoneResponse.status()} ${invalidPhonePayload.error}`,
+    );
+
+    const validLeadData = {
+      kind: "trade",
+      scenario: "manual_evaluation",
+      contact_channel: "phone",
+      contact: "+7 900 000-00-00",
+      device: "QA phone validation smoke",
+      idempotency_key: "trade-qa-valid-phone-smoke-v1",
+      source: "/trade/qa",
+    };
+    const validPhoneResponse = await qaPage.request.post(`${baseUrl}/lead-intake`, {
+      data: validLeadData,
+    });
+    const validPhonePayload = await validPhoneResponse.json();
+    assert(
+      validPhoneResponse.ok() &&
+        validPhonePayload.ok === true &&
+        validPhonePayload.storage === "directus" &&
+        /^QA-\d{6}-\d{3}$/.test(validPhonePayload.reference_code ?? ""),
+      `valid QA phone lead failed with ${validPhoneResponse.status()}`,
+    );
+
+    const repeatedPhoneResponse = await qaPage.request.post(`${baseUrl}/lead-intake`, {
+      data: validLeadData,
+    });
+    const repeatedPhonePayload = await repeatedPhoneResponse.json();
+    assert(
+      repeatedPhoneResponse.ok() &&
+        repeatedPhonePayload.reference_code === validPhonePayload.reference_code,
+      "QA phone lead idempotency check failed",
+    );
+
     await qaPage.getByRole("button", { name: "Завершить QA" }).click();
     await qaPage.getByText("Внутренняя приёмка", { exact: true }).waitFor();
     console.log(
-      `Trade QA smoke passed for ${baseUrl}: 19 configs, 7 questions, 10 control calculations`,
+      `Trade QA smoke passed for ${baseUrl}: 19 configs, 7 questions, 10 control calculations, phone lead validation`,
     );
     await qaContext.close();
   } finally {

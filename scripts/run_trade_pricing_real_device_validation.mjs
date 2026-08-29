@@ -99,7 +99,7 @@ const report = `# Trade-in pricing v2: проверка на реальных у
 
 ## Результат
 
-- Реальных inventory-кандидатов: **${gate.candidate_count}/${gate.target}**.
+- Активированных inventory-кандидатов: **${gate.candidate_count}/${gate.target}**.
 - Завершённая диагностика/Passport: **${gate.diagnostics_ready}/${gate.target}**.
 - Запас не меньше 25% при верхней границе quote: **${gate.gross_headroom_ready}/${gate.target}**.
 - Фактическая валовая маржа текущих закупок: **${actualMargins[0]}–${actualMargins.at(-1)}%**.
@@ -107,7 +107,7 @@ const report = `# Trade-in pricing v2: проверка на реальных у
 - Заполнены подготовка и гарантийный резерв: **${gate.cost_inputs_ready}/${gate.target}**.
 - Одобрено Trade Desk: **${gate.approved_candidates}/${gate.target}**; общее подтверждение: **${gate.approval_complete ? "да" : "нет"}**.
 
-Матрица v2 проходит защитный gross-headroom на всех десяти реальных складских позициях. Production пока содержит семь полностью проверенных единиц, одну единицу с повторной диагностикой и две непривязанные складские единицы без Passport. Поэтому реальный Trade Desk gate остаётся закрытым.
+Матрица v2 проходит защитный gross-headroom на **${gate.gross_headroom_ready}/${gate.candidate_count}** активированных складских позициях. Неактивированные строки загрузки остатков намеренно не входят в контрольную выборку до создания товарной карточки, загрузки фото и завершения Passport. Поэтому Trade Desk gate остаётся закрытым до появления десяти активированных кандидатов и завершения их диагностики.
 
 ## Контрольные устройства
 
@@ -118,7 +118,7 @@ ${rows.join("\n")}
 ## Что требуется для снятия блокировки
 
 1. Завершить повторную диагностику iPhone 14 Pro Max 256 ГБ Gold.
-2. Нормализовать и создать Passport для двух pending inventory единиц iPhone 16 Pro Max 256/512 ГБ.
+2. После штатной активации новых устройств с фото и Passport повторно собрать выборку до 10 единиц.
 3. В \`trade_desk_acceptance.json\` заполнить для всех десяти устройств подтверждённый offer, стоимость подготовки и гарантийный резерв.
 4. Trade Desk задаёт минимальную net margin, одобряет каждый кейс и заполняет общее подтверждение.
 5. Выполнить \`npm run trade:validate:real-devices:gate\`; только статус PASSED разрешает обсуждать публикацию pricing version.

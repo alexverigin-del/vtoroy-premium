@@ -520,6 +520,24 @@ const auditDefinitions = {
       "trade_pricing_v2.previous_draft_invalid",
     ],
   },
+  "trade-studio": {
+    script: "scripts/audit_directus_trade_studio_sql.mjs",
+    zero: [
+      "trade_studio.collections_missing",
+      "trade_studio.collections_hidden",
+      "trade_studio.collection_labels_missing",
+      "trade_studio.field_labels_missing",
+      "trade_studio.select_choices_missing",
+      "trade_studio.editor_read_permissions_missing",
+      "trade_studio.editor_unexpected_writes",
+      "trade_studio.advanced_permissions_missing",
+      "trade_studio.advanced_unexpected_deletes",
+      "trade_studio.public_exposure",
+      "trade_studio.presets_missing",
+      "trade_studio.page_section_controls_missing",
+      "trade_studio.settings_singleton_invalid",
+    ],
+  },
   inventory: {
     script: "scripts/audit_directus_inventory_sql.mjs",
     zero: [

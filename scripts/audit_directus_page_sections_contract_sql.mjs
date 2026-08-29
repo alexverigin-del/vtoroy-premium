@@ -59,6 +59,7 @@ WITH allowed_variants(variant) AS (
     ('cards.three'),
     ('catalog.curated'),
     ('catalog.grid'),
+    ('calculator.intro'),
     ('club.levels'),
     ('compare'),
     ('decision.guide'),

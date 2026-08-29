@@ -50,6 +50,22 @@ FROM (VALUES
 ) labels(collection,field,label)
 WHERE field.collection=labels.collection AND field.field=labels.field;
 
+UPDATE directus_fields field
+SET translations=json_build_array(json_build_object('language','ru-RU','translation',labels.label))::json
+FROM (VALUES
+  ('quote_id','Предварительная оценка'),
+  ('target_product_id','Товар для обмена'),
+  ('target_offer_id','Предложение магазина'),
+  ('store_location_id','Магазин'),
+  ('preferred_visit_date','Желаемый день визита'),
+  ('preferred_visit_period','Желаемый период визита'),
+  ('diagnostics_status','Статус диагностики'),
+  ('final_offer','Финальное предложение'),
+  ('final_offer_reason','Причина изменения предложения'),
+  ('reference_code','Номер заявки')
+) labels(field,label)
+WHERE field.collection='leads' AND field.field=labels.field;
+
 CREATE OR REPLACE FUNCTION pg_temp.isvoi_append_permission_field(
   p_policy text,p_collection varchar,p_action varchar,p_field text
 ) RETURNS void LANGUAGE plpgsql AS $$

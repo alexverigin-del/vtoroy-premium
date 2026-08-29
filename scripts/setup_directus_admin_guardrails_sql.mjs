@@ -178,7 +178,13 @@ WHERE policy IN (
 -- touch any other collection.
 DELETE FROM directus_permissions
 WHERE policy = isvoi_policy_id('ISVOI Lead Intake')
-  AND NOT (collection = 'leads' AND action = 'create');
+  AND NOT (
+    collection = 'leads'
+    AND (
+      action = 'create'
+      OR (action = 'read' AND fields = 'reference_code,idempotency_key,is_test')
+    )
+  );
 
 -- Catalog import automation must stay headless. It may use tokens/flows, not
 -- the Studio app.
@@ -257,7 +263,13 @@ UNION ALL
 SELECT 'admin_guardrails.lead_intake_extra_permissions', count(*)::text
 FROM directus_permissions
 WHERE policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Lead Intake')
-  AND NOT (collection = 'leads' AND action = 'create')
+  AND NOT (
+    collection = 'leads'
+    AND (
+      action = 'create'
+      OR (action = 'read' AND fields = 'reference_code,idempotency_key,is_test')
+    )
+  )
 UNION ALL
 SELECT 'admin_guardrails.admin_users_without_tfa', count(*)::text
 FROM directus_users u

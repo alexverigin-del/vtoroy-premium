@@ -760,7 +760,7 @@ FROM (
     AND role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
     AND preset.collection IN ('products','leads','product_offers','store_locations')
   GROUP BY preset.role,preset.collection
-  HAVING count(*)>CASE WHEN preset.collection='leads' THEN 12 ELSE 8 END
+  HAVING count(*)>CASE WHEN preset.collection='leads' THEN 13 ELSE 8 END
 ) excessive
 UNION ALL
 SELECT 'studio.bookmarks.duplicates', count(*)::text

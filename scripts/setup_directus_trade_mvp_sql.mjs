@@ -292,6 +292,22 @@ SELECT pg_temp.isvoi_trade_field('leads','final_offer_reason','input-multiline',
 SELECT pg_temp.isvoi_trade_field('leads','reference_code','input',NULL,'half',89,'Публичный номер заявки.',true);
 SELECT pg_temp.isvoi_trade_field('leads','idempotency_key','input',NULL,'half',90,'Техническая защита от дублей.',true,true);
 
+UPDATE directus_fields field
+SET translations=json_build_array(json_build_object('language','ru-RU','translation',labels.label))::json
+FROM (VALUES
+  ('quote_id','Предварительная оценка'),
+  ('target_product_id','Товар для обмена'),
+  ('target_offer_id','Предложение магазина'),
+  ('store_location_id','Магазин'),
+  ('preferred_visit_date','Желаемый день визита'),
+  ('preferred_visit_period','Желаемый период визита'),
+  ('diagnostics_status','Статус диагностики'),
+  ('final_offer','Финальное предложение'),
+  ('final_offer_reason','Причина изменения предложения'),
+  ('reference_code','Номер заявки')
+) labels(field,label)
+WHERE field.collection='leads' AND field.field=labels.field;
+
 CREATE OR REPLACE FUNCTION pg_temp.isvoi_trade_relation(p_many varchar,p_field varchar,p_one varchar,p_one_field varchar,p_action varchar) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
  IF EXISTS(SELECT 1 FROM directus_relations WHERE many_collection=p_many AND many_field=p_field) THEN

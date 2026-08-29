@@ -57,7 +57,13 @@ WITH expected_tables(table_name) AS (
     ('club_rule_items'),
     ('club_process_items'),
     ('club_legal_documents'),
-    ('club_page_settings')
+    ('club_page_settings'),
+    ('trade_pricing_versions'),
+    ('trade_device_configs'),
+    ('trade_condition_rules'),
+    ('trade_quotes'),
+    ('trade_settings'),
+    ('trade_events')
 ),
 expected_fields(table_name, field_name) AS (
   VALUES
@@ -163,6 +169,18 @@ expected_fields(table_name, field_name) AS (
     ('leads', 'product'),
     ('leads', 'product_type'),
     ('leads', 'source_url'),
+    ('leads', 'quote_id'),
+    ('leads', 'target_product_id'),
+    ('leads', 'target_offer_id'),
+    ('leads', 'store_location_id'),
+    ('leads', 'preferred_visit_date'),
+    ('leads', 'preferred_visit_period'),
+    ('leads', 'diagnostics_status'),
+    ('leads', 'final_offer'),
+    ('leads', 'final_offer_reason'),
+    ('leads', 'reference_code'),
+    ('leads', 'idempotency_key'),
+    ('leads', 'is_test'),
     ('lead_comments', 'lead'),
     ('lead_comments', 'comment'),
     ('catalog_import_batches', 'workbook'),
@@ -218,7 +236,32 @@ expected_fields(table_name, field_name) AS (
     ('channel_category_mappings', 'template_version'),
     ('product_channel_listings', 'product'),
     ('product_channel_listings', 'category_mapping'),
-    ('product_channel_listings', 'external_id')
+    ('product_channel_listings', 'external_id'),
+    ('trade_pricing_versions', 'version'),
+    ('trade_pricing_versions', 'status'),
+    ('trade_device_configs', 'pricing_version'),
+    ('trade_device_configs', 'device_model'),
+    ('trade_device_configs', 'storage'),
+    ('trade_device_configs', 'base_min'),
+    ('trade_device_configs', 'base_max'),
+    ('trade_condition_rules', 'pricing_version'),
+    ('trade_condition_rules', 'question_key'),
+    ('trade_condition_rules', 'option_value'),
+    ('trade_condition_rules', 'manual_evaluation'),
+    ('trade_condition_rules', 'safety_stop'),
+    ('trade_quotes', 'device_config'),
+    ('trade_quotes', 'pricing_version'),
+    ('trade_quotes', 'range_min'),
+    ('trade_quotes', 'range_max'),
+    ('trade_quotes', 'valid_until'),
+    ('trade_quotes', 'is_test'),
+    ('trade_settings', 'active_pricing_version'),
+    ('trade_settings', 'quote_validity_days'),
+    ('trade_settings', 'default_store'),
+    ('trade_events', 'event_name'),
+    ('trade_events', 'session_id'),
+    ('trade_events', 'quote'),
+    ('trade_events', 'is_test')
 ),
 expected_relations(many_collection, many_field, one_collection) AS (
   VALUES
@@ -281,7 +324,21 @@ expected_relations(many_collection, many_field, one_collection) AS (
     ('channel_cost_profiles', 'category', 'product_categories'),
     ('channel_category_mappings', 'product_category', 'product_categories'),
     ('product_channel_listings', 'product', 'products'),
-    ('product_channel_listings', 'category_mapping', 'channel_category_mappings')
+    ('product_channel_listings', 'category_mapping', 'channel_category_mappings'),
+    ('trade_pricing_versions', 'published_by', 'directus_users'),
+    ('trade_device_configs', 'pricing_version', 'trade_pricing_versions'),
+    ('trade_device_configs', 'device_model', 'device_models'),
+    ('trade_condition_rules', 'pricing_version', 'trade_pricing_versions'),
+    ('trade_quotes', 'device_config', 'trade_device_configs'),
+    ('trade_quotes', 'pricing_version', 'trade_pricing_versions'),
+    ('trade_quotes', 'superseded_by', 'trade_quotes'),
+    ('trade_settings', 'active_pricing_version', 'trade_pricing_versions'),
+    ('trade_settings', 'default_store', 'store_locations'),
+    ('trade_events', 'quote', 'trade_quotes'),
+    ('leads', 'quote_id', 'trade_quotes'),
+    ('leads', 'target_product_id', 'products'),
+    ('leads', 'target_offer_id', 'product_offers'),
+    ('leads', 'store_location_id', 'store_locations')
 ),
 system_collections(collection) AS (
   VALUES
@@ -526,7 +583,13 @@ UNION ALL
 SELECT 'permissions.lead_intake_extra_permissions', count(*)::text
 FROM directus_permissions
 WHERE policy IN (SELECT id FROM directus_policies WHERE name = 'ISVOI Lead Intake')
-  AND NOT (collection = 'leads' AND action = 'create')
+  AND NOT (
+    collection = 'leads'
+    AND (
+      action = 'create'
+      OR (action = 'read' AND fields = 'reference_code,idempotency_key,is_test')
+    )
+  )
 UNION ALL
 SELECT 'permissions.non_admin_wildcards', count(*)::text
 FROM directus_permissions pe

@@ -41,7 +41,7 @@ async function main() {
     );
     await qaPage.getByLabel("Код доступа").fill(secret);
     await Promise.all([
-      qaPage.waitForURL(`${baseUrl}/trade/qa`, { waitUntil: "load" }),
+      qaPage.waitForNavigation({ waitUntil: "load" }),
       qaPage.getByRole("button", { name: "Открыть QA" }).click(),
     ]);
     assert((await qaPage.locator("#trade-calculator").count()) === 1, "QA wizard is missing");

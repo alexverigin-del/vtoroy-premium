@@ -28,5 +28,47 @@ SELECT 'trade_mvp.invalid_published_configs',count(*)::text FROM trade_device_co
 UNION ALL
 SELECT 'trade_mvp.invalid_active_settings',count(*)::text FROM trade_settings WHERE status='published' AND active_pricing_version IS NULL
 UNION ALL
-SELECT 'trade_mvp.calculator_section_missing',(1-count(*))::text FROM page_sections ps JOIN site_pages sp ON sp.id=ps.page WHERE sp.slug='trade' AND ps.section_key='trade_calculator_intro' AND ps.is_active=true;
+SELECT 'trade_mvp.calculator_section_missing',(1-count(*))::text FROM page_sections ps JOIN site_pages sp ON sp.id=ps.page WHERE sp.slug='trade' AND ps.section_key='trade_calculator_intro' AND ps.is_active=true
+UNION ALL
+SELECT 'trade_mvp.service_identity_missing',(1-count(*))::text
+FROM directus_users
+WHERE email='trade-service@service.isvoi' AND status='active' AND role IS NULL
+  AND password IS NULL AND length(token)>=64
+UNION ALL
+SELECT 'trade_mvp.service_identity_policy_missing',(1-count(*))::text
+FROM directus_access access
+JOIN directus_users users ON users.id=access."user"
+JOIN directus_policies policy ON policy.id=access.policy
+WHERE users.email='trade-service@service.isvoi' AND policy.name='ISVOI Trade Service'
+UNION ALL
+SELECT 'trade_mvp.service_identity_unexpected_access',count(*)::text
+FROM directus_access access
+JOIN directus_users users ON users.id=access."user"
+LEFT JOIN directus_policies policy ON policy.id=access.policy
+WHERE users.email='trade-service@service.isvoi'
+  AND policy.name IS DISTINCT FROM 'ISVOI Trade Service'
+UNION ALL
+SELECT 'trade_mvp.draft_pilot_models_missing',(5-count(*))::text
+FROM device_models WHERE is_active=true
+  AND slug IN ('iphone-13-pro','iphone-14-pro','iphone-14-pro-max','iphone-16-pro','iphone-16-pro-max')
+UNION ALL
+SELECT 'trade_mvp.draft_configs_invalid',
+  CASE WHEN count(*)=19 AND count(*) FILTER(WHERE c.status='draft' AND c.base_min>0 AND c.base_max>=c.base_min)=19 THEN '0' ELSE '1' END
+FROM trade_device_configs c
+JOIN trade_pricing_versions v ON v.id=c.pricing_version
+WHERE v.version='trade-mvp-2026-08-29-draft' AND v.status='draft'
+UNION ALL
+SELECT 'trade_mvp.draft_rules_invalid',
+  CASE WHEN count(*)=21 AND count(*) FILTER(WHERE r.status='draft')=21 THEN '0' ELSE '1' END
+FROM trade_condition_rules r
+JOIN trade_pricing_versions v ON v.id=r.pricing_version
+WHERE v.version='trade-mvp-2026-08-29-draft' AND v.status='draft'
+UNION ALL
+SELECT 'trade_mvp.draft_settings_invalid',(1-count(*))::text
+FROM trade_settings settings
+JOIN trade_pricing_versions version ON version.id=settings.active_pricing_version
+JOIN store_locations store ON store.id=settings.default_store
+WHERE settings.id=1 AND settings.status='draft' AND settings.quote_validity_days=7
+  AND version.version='trade-mvp-2026-08-29-draft' AND version.status='draft'
+  AND store.slug='belgorod' AND store.status='published';
 `);

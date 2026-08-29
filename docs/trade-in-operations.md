@@ -15,6 +15,8 @@
 
 ## 2. Заполнение реальных цен
 
+Подготовленный draft: `trade-mvp-2026-08-29-draft`. Методика, публичные ориентиры и стартовые диапазоны зафиксированы в `trade-in-pricing-benchmark-2026-08-29.md`. Seed добавляет 19 конфигураций и 21 правило идемпотентно, не публикуя их. Для отсутствующей в каталоге пилотной модели он безопасно создаёт `iPhone 13 Pro` под брендом Apple.
+
 1. Создать draft в `trade_pricing_versions`.
 2. Добавить конфигурации памяти в `trade_device_configs` только для:
    - iPhone 13 Pro;
@@ -55,6 +57,8 @@ Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_set
 - `trade_settings` оставлен в `draft`, опубликованных версий цен нет, демонстрационные цены не загружались.
 - Frontend/API развёрнуты в production на commit `40d8532`; `TRADE_WIZARD_ENABLED` не задан, поэтому калькулятор не отображается.
 - Отдельный `DIRECTUS_TRADE_TOKEN` ещё не настроен и потребуется перед публикацией цен. Пока флаг выключен, Trade-in API не обращается к pricing и возвращает fail-closed `503`.
+- В репозитории подготовлены отдельная headless-учётка `trade-service@service.isvoi`, безопасная установка токена в server env и draft seed цен. До отдельного production-применения они не меняют текущую среду.
+- Десять детерминированных контрольных расчётов входят в `web:test:trade-pricing-v1`; калькулятор при этом остаётся выключенным.
 - Production smoke прошёл; `/api/trade/config` сообщает `active: false`, quote возвращает `pricing_unavailable`, публичный доступ к `trade_settings` закрыт с `403`.
 - Post-migration audits `trade-mvp`, `trade-page`, `leads`, `catalog-v3` и `multicity` прошли без блокеров.
 - Актуальный очищенный schema snapshot сохранён в `directus/schema/snapshots/current.json`.

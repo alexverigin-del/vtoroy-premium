@@ -497,6 +497,13 @@ const auditDefinitions = {
       "trade_mvp.invalid_published_configs",
       "trade_mvp.invalid_active_settings",
       "trade_mvp.calculator_section_missing",
+      "trade_mvp.service_identity_missing",
+      "trade_mvp.service_identity_policy_missing",
+      "trade_mvp.service_identity_unexpected_access",
+      "trade_mvp.draft_pilot_models_missing",
+      "trade_mvp.draft_configs_invalid",
+      "trade_mvp.draft_rules_invalid",
+      "trade_mvp.draft_settings_invalid",
     ],
   },
   inventory: {

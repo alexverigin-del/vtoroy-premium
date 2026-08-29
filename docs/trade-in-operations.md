@@ -52,13 +52,12 @@ Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_set
 ## Состояние production на 29 августа 2026
 
 - Аддитивная миграция схемы применена после успешного rollback-rehearsal.
-- Backup перед миграцией: `/opt/isvoi/backups/directus/20260829T152005Z`; PostgreSQL и uploads прошли проверку контрольных сумм.
+- Backup перед миграцией схемы: `/opt/isvoi/backups/directus/20260829T152005Z`. Свежий backup перед загрузкой draft-цен: `/opt/isvoi/backups/directus/20260829T161229Z`. В обоих PostgreSQL и uploads прошли проверку контрольных сумм.
 - Offsite-копирование не выполнялось: `OFFSITE_BACKUP_DEST` на сервере не настроен.
-- `trade_settings` оставлен в `draft`, опубликованных версий цен нет, демонстрационные цены не загружались.
-- Frontend/API развёрнуты в production на commit `40d8532`; `TRADE_WIZARD_ENABLED` не задан, поэтому калькулятор не отображается.
-- Отдельный `DIRECTUS_TRADE_TOKEN` ещё не настроен и потребуется перед публикацией цен. Пока флаг выключен, Trade-in API не обращается к pricing и возвращает fail-closed `503`.
-- В репозитории подготовлены отдельная headless-учётка `trade-service@service.isvoi`, безопасная установка токена в server env и draft seed цен. До отдельного production-применения они не меняют текущую среду.
-- Десять детерминированных контрольных расчётов входят в `web:test:trade-pricing-v1`; калькулятор при этом остаётся выключенным.
+- Production checkout обновлён до `8ec2244`. Создана отдельная headless-учётка `trade-service@service.isvoi` только с политикой `ISVOI Trade Service`; token хранится только в `DIRECTUS_TRADE_TOKEN` server env и не выводился в логи.
+- Загружена draft-версия `trade-mvp-2026-08-29-draft`: 19 конфигураций и 21 правило. Добавлена активная модель `iPhone 13 Pro`; `trade_settings` оставлен в `draft`, опубликованных версий, конфигураций и правил нет.
+- `TRADE_WIZARD_ENABLED=0`; после перечитывания env калькулятор не отображается, config и quote работают fail-closed с `503`.
+- Десять детерминированных контрольных расчётов `web:test:trade-pricing-v1` прошли на production checkout.
 - Production smoke прошёл; `/api/trade/config` сообщает `active: false`, quote возвращает `pricing_unavailable`, публичный доступ к `trade_settings` закрыт с `403`.
-- Post-migration audits `trade-mvp`, `trade-page`, `leads`, `catalog-v3` и `multicity` прошли без блокеров.
+- Post-migration audits `trade-mvp`, `trade-page`, `leads`, `catalog-v3` и `multicity` прошли без блокеров; после загрузки draft повторный `trade-mvp` audit и полный production smoke также прошли.
 - Актуальный очищенный schema snapshot сохранён в `directus/schema/snapshots/current.json`.

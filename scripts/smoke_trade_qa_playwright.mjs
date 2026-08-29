@@ -40,11 +40,8 @@ async function main() {
       "QA login is missing",
     );
     await qaPage.getByLabel("Код доступа").fill(secret);
-    await Promise.all([
-      qaPage.waitForNavigation({ waitUntil: "load" }),
-      qaPage.getByRole("button", { name: "Открыть QA" }).click(),
-    ]);
-    assert((await qaPage.locator("#trade-calculator").count()) === 1, "QA wizard is missing");
+    await qaPage.getByRole("button", { name: "Открыть QA" }).click({ noWaitAfter: true });
+    await qaPage.locator("#trade-calculator").waitFor({ state: "visible" });
 
     const configResponse = await qaPage.request.get(`${baseUrl}/api/trade/config`);
     assert(configResponse.ok(), `QA config failed with ${configResponse.status()}`);

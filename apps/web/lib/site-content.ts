@@ -24,7 +24,7 @@ const infoSlugs = new Set<InfoSlug>([
 ]);
 const marketingFallbackEnhancementKeys: Record<MarketingSlug, Set<string>> = {
   store: new Set(["store_decision", "store_curated_catalog"]),
-  trade: new Set(["trade_live_example"]),
+  trade: new Set(["trade_calculator_intro", "trade_live_example"]),
   passport: new Set(["passport_live_example"]),
   club: new Set(["club_live_example"]),
 };

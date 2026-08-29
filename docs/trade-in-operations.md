@@ -1,0 +1,58 @@
+# Trade-in MVP: настройка и выпуск
+
+Актуальный дизайн: https://www.figma.com/design/cINpBQkJ5tuqHcD8jw3Ceo  
+После переноса в проект ISVOI замените ссылку здесь и в `trade-in-figma-screen-matrix.md`.
+
+## 1. Схема и сервисный доступ
+
+1. Выполнить текущие catalog, multicity и leads audits.
+2. Проверить миграцию без фиксации: `node scripts/setup_directus_trade_mvp_sql.mjs --rehearse`.
+3. Сделать backup PostgreSQL и применить SQL из `directus:setup:trade-mvp` штатным способом проекта.
+4. Выполнить `directus:audit:trade-mvp` и экспортировать новый schema snapshot.
+5. Создать отдельного service user с политикой `ISVOI Trade Service`; его статический token сохранить только в `DIRECTUS_TRADE_TOKEN`.
+
+Публичная роль не должна иметь разрешений на коллекции `trade_*` и `leads`.
+
+## 2. Заполнение реальных цен
+
+1. Создать draft в `trade_pricing_versions`.
+2. Добавить конфигурации памяти в `trade_device_configs` только для:
+   - iPhone 13 Pro;
+   - iPhone 14 Pro;
+   - iPhone 14 Pro Max;
+   - iPhone 16 Pro;
+   - iPhone 16 Pro Max.
+3. Заполнить реальные `base_min` и `base_max`. Демонстрационные цены публиковать нельзя.
+4. Для каждого вопроса создать три правила `yes/no/unknown` с одной версией цен:
+   - `powers_on` — «Включается и загружается?»;
+   - `display_works` — «Экран и сенсор работают?»;
+   - `hardware_works` — «Камеры, кнопки и разъёмы работают?»;
+   - `has_damage` — «Есть трещины, сколы или сильные царапины?»;
+   - `was_repaired` — «Был ремонт или замена деталей?»;
+   - `battery_risk` — «Аккумулятор вздут, греется или повреждён?»;
+   - `account_removed` — «Устройство отвязано от аккаунта?».
+5. Для `battery_risk=yes` установить `safety_stop=true`. Для ответов, где автоматическая цена ненадёжна, установить `manual_evaluation=true`.
+6. Опубликовать все конфигурации и правила, затем одну pricing version. Ограничение базы не даст опубликовать две версии одновременно.
+7. В singleton `trade_settings` выбрать версию, Белгород и срок 7 дней. Статус пока оставить `draft`.
+
+## 3. Контроль и включение
+
+- Выполнить минимум десять ручных расчётов: разные модели, память, хорошее состояние, повреждения, неизвестный ремонт, safety-stop и ручная оценка.
+- Сверить серверные min/max с таблицей Trade Desk, срок до 23:59 МСК и объясняющие факторы.
+- Проверить обмен: локальный остаток Белгорода, межгород, нулевой каталог и исчезновение товара перед отправкой.
+- Проверить повторную отправку одной заявки: должен вернуться тот же `reference_code`.
+- Утвердить предупреждение об аккумуляторе и юридический disclaimer.
+- Назначить владельца pricing среди `ISVOI Advanced Editor`.
+- Установить `trade_settings.status=published`, затем `TRADE_WIZARD_ENABLED=1` и перезапустить web-приложение.
+
+Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_settings` в `paused`. Существующая страница Trade остаётся доступной без калькулятора.
+
+## Состояние production на 29 августа 2026
+
+- Аддитивная миграция схемы применена после успешного rollback-rehearsal.
+- Backup перед миграцией: `/opt/isvoi/backups/directus/20260829T152005Z`; PostgreSQL и uploads прошли проверку контрольных сумм.
+- Offsite-копирование не выполнялось: `OFFSITE_BACKUP_DEST` на сервере не настроен.
+- `trade_settings` оставлен в `draft`, опубликованных версий цен нет, демонстрационные цены не загружались.
+- `TRADE_WIZARD_ENABLED` не включён; frontend/API-код ещё не развёрнут в production.
+- Post-migration audits `trade-mvp`, `trade-page`, `leads`, `catalog-v3` и `multicity` прошли без блокеров.
+- Актуальный очищенный schema snapshot сохранён в `directus/schema/snapshots/current.json`.

@@ -33,6 +33,14 @@ type LeadPayload = {
   product_type?: "device" | "accessory";
   device?: string;
   device_id?: string;
+  quote_id?: string;
+  target_product_id?: string;
+  target_offer_id?: string;
+  store_location_id?: string;
+  preferred_visit_date?: string;
+  preferred_visit_period?: "morning" | "day" | "evening";
+  contact_channel?: "phone" | "telegram";
+  idempotency_key?: string;
   club_offer?: string;
   club_plan?: string;
   club_term_months?: number | string;
@@ -43,6 +51,12 @@ type LeadPayload = {
   message?: string;
   source?: string;
   website?: string;
+};
+
+export type LeadSubmitResult = {
+  ok: true;
+  storage: "directus" | "log";
+  reference_code?: string;
 };
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
@@ -107,10 +121,10 @@ export function useLeadIntake() {
   }, []);
 
   const submitLead = useCallback(
-    async (payload: LeadPayload): Promise<boolean> => {
+    async (payload: LeadPayload): Promise<LeadSubmitResult | null> => {
       if (!payload.contact.trim() || (TURNSTILE_SITE_KEY && !turnstileToken)) {
         setState("error");
-        return false;
+        return null;
       }
 
       setState("submitting");
@@ -127,12 +141,13 @@ export function useLeadIntake() {
       if (!response?.ok) {
         resetTurnstile();
         setState("error");
-        return false;
+        return null;
       }
 
+      const result = (await response.json().catch(() => null)) as LeadSubmitResult | null;
       resetTurnstile();
       setState("success");
-      return true;
+      return result?.ok ? result : { ok: true, storage: "log" };
     },
     [resetTurnstile, turnstileToken],
   );

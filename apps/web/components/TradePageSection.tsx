@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { PageSection, ProductCardData } from "@vtoroy/shared";
+import dynamic from "next/dynamic";
+import type { PageSection, ProductCardData, TradePublicConfig } from "@vtoroy/shared";
 import { cn } from "@/lib/cn";
 import {
   marketingExampleDevice,
@@ -10,6 +11,15 @@ import { ProductImage, productImageSrc } from "./ProductImage";
 import { RichText } from "./RichText";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
+
+const TradeInWizard = dynamic(
+  () => import("./TradeInWizard").then((module) => module.TradeInWizard),
+  {
+    loading: () => (
+      <div className="mx-auto min-h-96 max-w-[620px] animate-pulse rounded-card bg-surface motion-reduce:animate-none" />
+    ),
+  },
+);
 
 type TradeCard = {
   badge: string;
@@ -34,11 +44,32 @@ type TradeComparisonRow = {
 };
 
 const managedSectionKeys = new Set([
+  "trade_calculator_intro",
   "trade_paths",
   "trade_live_example",
   "trade_steps",
   "trade_compare",
 ]);
+
+function TradeCalculatorSection({
+  section,
+  config,
+}: {
+  section: PageSection;
+  config?: TradePublicConfig;
+}) {
+  if (!config?.active) return null;
+  return (
+    <>
+      <TradeInWizard config={config} />
+      {section.content.disclaimer ? (
+        <div className="bg-white px-6 pb-10 text-center text-xs leading-relaxed text-muted md:pb-14">
+          <p className="mx-auto max-w-copy">{String(section.content.disclaimer)}</p>
+        </div>
+      ) : null}
+    </>
+  );
+}
 
 function stringField(record: Record<string, unknown>, key: string): string {
   const value = record[key];
@@ -399,10 +430,15 @@ export function isTradeManagedSection(section: PageSection): boolean {
 export function TradePageSection({
   section,
   products,
+  tradeConfig,
 }: {
   section: PageSection;
   products: ProductCardData[];
+  tradeConfig?: TradePublicConfig;
 }) {
+  if (section.sectionKey === "trade_calculator_intro") {
+    return <TradeCalculatorSection section={section} config={tradeConfig} />;
+  }
   if (section.sectionKey === "trade_paths") return <TradePathsSection section={section} />;
   if (section.sectionKey === "trade_live_example") {
     return <TradeLiveExampleSection section={section} products={products} />;

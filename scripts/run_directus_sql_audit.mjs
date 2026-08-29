@@ -233,7 +233,7 @@ const auditDefinitions = {
       "trade_page.studio.bookmark_missing",
     ],
     equals: {
-      "trade_page.info.section_count": "6",
+      "trade_page.info.section_count": "7",
     },
   },
   leads: {
@@ -480,6 +480,23 @@ const auditDefinitions = {
       "multicity.revalidation.collections_missing",
       "multicity.content.old_city_mentions",
       "multicity.guard.missing",
+    ],
+  },
+  "trade-mvp": {
+    script: "scripts/audit_directus_trade_mvp_sql.mjs",
+    zero: [
+      "trade_mvp.tables_missing",
+      "trade_mvp.lead_fields_missing",
+      "trade_mvp.collections_missing",
+      "trade_mvp.relations_missing",
+      "trade_mvp.public_permissions",
+      "trade_mvp.service_policy_missing",
+      "trade_mvp.service_permissions_missing",
+      "trade_mvp.settings_count_invalid",
+      "trade_mvp.multiple_published_versions",
+      "trade_mvp.invalid_published_configs",
+      "trade_mvp.invalid_active_settings",
+      "trade_mvp.calculator_section_missing",
     ],
   },
   inventory: {

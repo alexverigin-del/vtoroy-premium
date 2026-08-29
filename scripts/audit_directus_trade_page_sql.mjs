@@ -41,6 +41,7 @@ process.stdout.write(String.raw`
 WITH expected(section_key, sort_order) AS (
   VALUES
     ('trade_hero', 10),
+    ('trade_calculator_intro', 15),
     ('trade_paths', 20),
     ('trade_live_example', 30),
     ('trade_steps', 40),
@@ -103,7 +104,7 @@ WHERE section_key = 'trade_hero'
   AND (
     eyebrow <> 'I СВОИ · Trade'
     OR headline <> 'Продайте, обменяйте или передайте технику на комиссию.'
-    OR primary_cta_url <> '#final'
+    OR primary_cta_url <> '#trade-calculator'
     OR secondary_cta_url <> '/catalog'
     OR jsonb_array_length(coalesce(content::jsonb -> 'highlights', '[]'::jsonb)) <> 3
     OR nullif(content::jsonb ->> 'note', '') IS NULL

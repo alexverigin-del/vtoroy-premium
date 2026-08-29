@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
+import { getTradeQuote, TradeApiError, validateTradeExchangeSelection } from "@/lib/trade-server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,6 +16,14 @@ type LeadRequest = {
   product_type?: unknown;
   device?: unknown;
   device_id?: unknown;
+  quote_id?: unknown;
+  target_product_id?: unknown;
+  target_offer_id?: unknown;
+  store_location_id?: unknown;
+  preferred_visit_date?: unknown;
+  preferred_visit_period?: unknown;
+  contact_channel?: unknown;
+  idempotency_key?: unknown;
   club_offer?: unknown;
   club_plan?: unknown;
   club_term_months?: unknown;
@@ -51,6 +60,14 @@ type StoredLead = {
   product_type: string;
   device: string;
   device_id: string;
+  quote_id: string;
+  target_product_id: string;
+  target_offer_id: string;
+  store_location_id: string;
+  preferred_visit_date: string;
+  preferred_visit_period: string;
+  idempotency_key: string;
+  reference_code: string;
   club_offer: string;
   club_plan: string;
   club_term_months: string;
@@ -77,6 +94,13 @@ const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 8;
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const rateLimitBuckets = new Map<string, number[]>();
+const TRADE_SCENARIOS = new Set([
+  "sale",
+  "commission_consultation",
+  "exchange",
+  "manual_evaluation",
+  "stock_notification",
+]);
 
 function text(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -250,6 +274,14 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       product_type: optionalText(lead.product_type),
       device: optionalText(lead.device),
       device_id: optionalText(lead.device_id),
+      quote_id: optionalText(lead.quote_id),
+      target_product_id: optionalText(lead.target_product_id),
+      target_offer_id: optionalText(lead.target_offer_id),
+      store_location_id: optionalText(lead.store_location_id),
+      preferred_visit_date: optionalText(lead.preferred_visit_date),
+      preferred_visit_period: optionalText(lead.preferred_visit_period),
+      idempotency_key: optionalText(lead.idempotency_key),
+      reference_code: lead.reference_code,
       club_offer: optionalText(lead.club_offer),
       club_plan: optionalText(lead.club_plan),
       club_term_months: optionalText(lead.club_term_months),
@@ -271,13 +303,32 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       utm_term: optionalText(lead.utm_term),
       user_agent: optionalText(lead.user_agent),
     };
-    const response = await postPayload(directusLead);
+    let response = await postPayload(directusLead);
     if (response?.ok) return true;
+    if (response && [400, 409].includes(response.status)) {
+      const failure = await response
+        .clone()
+        .text()
+        .catch(() => "");
+      if (/reference_code|leads_reference_code_unique/i.test(failure)) {
+        lead.reference_code = tradeReference();
+        directusLead.reference_code = lead.reference_code;
+        response = await postPayload(directusLead);
+        if (response?.ok) return true;
+      }
+    }
 
     const fallbackMessage = [
       lead.scenario ? `Сценарий: ${lead.scenario}` : "",
       lead.message ? `Комментарий: ${lead.message}` : "",
       lead.device_id ? `Device ID: ${lead.device_id}` : "",
+      lead.quote_id ? `Trade quote: ${lead.quote_id}` : "",
+      lead.target_product_id ? `Target product: ${lead.target_product_id}` : "",
+      lead.target_offer_id ? `Target offer: ${lead.target_offer_id}` : "",
+      lead.store_location_id ? `Store: ${lead.store_location_id}` : "",
+      lead.preferred_visit_date ? `Preferred date: ${lead.preferred_visit_date}` : "",
+      lead.preferred_visit_period ? `Preferred period: ${lead.preferred_visit_period}` : "",
+      `Reference: ${lead.reference_code}`,
       lead.club_offer ? `Club offer: ${lead.club_offer}` : "",
       lead.club_plan ? `Club plan: ${lead.club_plan}` : "",
       lead.club_term_months ? `Club term: ${lead.club_term_months}` : "",
@@ -320,6 +371,86 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
   }
 }
 
+function directusConnection() {
+  return {
+    url: (process.env.DIRECTUS_URL ?? process.env.NEXT_PUBLIC_DIRECTUS_URL ?? "").replace(
+      /\/+$/,
+      "",
+    ),
+    token:
+      process.env.DIRECTUS_TRADE_TOKEN ??
+      process.env.DIRECTUS_LEADS_TOKEN ??
+      process.env.DIRECTUS_TOKEN ??
+      "",
+  };
+}
+
+async function existingTradeReference(idempotencyKey: string): Promise<string> {
+  if (!idempotencyKey) return "";
+  const directus = directusConnection();
+  if (!directus.url || !directus.token) return "";
+  const params = new URLSearchParams({
+    "filter[idempotency_key][_eq]": idempotencyKey,
+    fields: "reference_code",
+    limit: "1",
+  });
+  try {
+    const response = await fetch(`${directus.url}/items/leads?${params}`, {
+      headers: { Authorization: `Bearer ${directus.token}` },
+      cache: "no-store",
+    });
+    if (!response.ok) return "";
+    const payload = (await response.json()) as { data?: Array<{ reference_code?: string }> };
+    return payload.data?.[0]?.reference_code?.trim() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function tradeReference(now = new Date()): string {
+  const moscow = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+  const date = [
+    String(moscow.getUTCFullYear()).slice(-2),
+    String(moscow.getUTCMonth() + 1).padStart(2, "0"),
+    String(moscow.getUTCDate()).padStart(2, "0"),
+  ].join("");
+  const suffix = String(Math.floor(100 + Math.random() * 900));
+  return `TR-${date}-${suffix}`;
+}
+
+function validVisitDate(value: string): boolean {
+  return !value || /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+async function validateTradeSubmission(input: {
+  scenario: string;
+  quoteId: string;
+  productId: string;
+  offerId: string;
+  storeId: string;
+}): Promise<string | null> {
+  if (!TRADE_SCENARIOS.has(input.scenario)) return "validation_error";
+  if (["manual_evaluation", "stock_notification"].includes(input.scenario)) return null;
+  if (!input.quoteId) return "validation_error";
+  try {
+    await getTradeQuote(input.quoteId);
+    if (input.scenario === "exchange") {
+      if (!input.productId || !input.offerId) return "product_unavailable";
+      const available = await validateTradeExchangeSelection(
+        input.quoteId,
+        input.productId,
+        input.offerId,
+        input.storeId || undefined,
+      );
+      if (!available) return "product_unavailable";
+    }
+    return null;
+  } catch (error) {
+    if (error instanceof TradeApiError) return error.code;
+    return "pricing_unavailable";
+  }
+}
+
 async function appendLeadLog(lead: StoredLead): Promise<void> {
   const logPath = process.env.LEADS_LOG_PATH || path.join(process.cwd(), "var", "leads.jsonl");
   await fs.mkdir(path.dirname(logPath), { recursive: true });
@@ -347,9 +478,50 @@ export async function POST(request: NextRequest) {
   const sourcePath = text(body.source_path, 255) || text(body.source, 255) || "site";
   const sourceUrl = text(body.source_url, 800) || text(request.headers.get("referer"), 800);
   const kind = inferKind(text(body.kind, 64), scenario);
+  const idempotencyKey = text(body.idempotency_key, 120);
 
   if (!contact) {
     return NextResponse.json({ ok: false, error: "contact_required" }, { status: 400 });
+  }
+
+  if (kind === "trade" && idempotencyKey) {
+    const existingReference = await existingTradeReference(idempotencyKey);
+    if (existingReference) {
+      return NextResponse.json({
+        ok: true,
+        storage: "directus",
+        reference_code: existingReference,
+      });
+    }
+  }
+
+  const quoteId = text(body.quote_id, 80);
+  const targetProductId = text(body.target_product_id, 255);
+  const targetOfferId = text(body.target_offer_id, 80);
+  const storeLocationId = text(body.store_location_id, 80);
+  const preferredVisitDate = text(body.preferred_visit_date, 10);
+  const preferredVisitPeriod = text(body.preferred_visit_period, 24);
+  const requestedContactChannel = text(body.contact_channel, 24);
+
+  if (!validVisitDate(preferredVisitDate)) {
+    return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
+  }
+  if (preferredVisitPeriod && !["morning", "day", "evening"].includes(preferredVisitPeriod)) {
+    return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
+  }
+  if (kind === "trade") {
+    const tradeError = await validateTradeSubmission({
+      scenario,
+      quoteId,
+      productId: targetProductId,
+      offerId: targetOfferId,
+      storeId: storeLocationId,
+    });
+    if (tradeError) {
+      const status =
+        tradeError === "quote_expired" || tradeError === "product_unavailable" ? 409 : 400;
+      return NextResponse.json({ ok: false, error: tradeError }, { status });
+    }
   }
 
   if (kind === "club" && !accepted(body.club_consent_accepted)) {
@@ -367,7 +539,9 @@ export async function POST(request: NextRequest) {
     kind,
     status: "new",
     priority: "normal",
-    contact_channel: inferContactChannel(contact),
+    contact_channel: ["phone", "telegram"].includes(requestedContactChannel)
+      ? requestedContactChannel
+      : inferContactChannel(contact),
     name: text(body.name, 160),
     contact,
     product: text(body.product, 255),
@@ -377,6 +551,14 @@ export async function POST(request: NextRequest) {
       : "",
     device: text(body.device, 255),
     device_id: text(body.device_id, 255),
+    quote_id: quoteId,
+    target_product_id: targetProductId,
+    target_offer_id: targetOfferId,
+    store_location_id: storeLocationId,
+    preferred_visit_date: preferredVisitDate,
+    preferred_visit_period: preferredVisitPeriod,
+    idempotency_key: idempotencyKey,
+    reference_code: tradeReference(),
     club_offer: clubOffer,
     club_plan: text(body.club_plan, 255),
     club_term_months: text(body.club_term_months, 32),
@@ -399,7 +581,14 @@ export async function POST(request: NextRequest) {
     user_agent: text(request.headers.get("user-agent"), 800),
   };
 
-  const savedToDirectus = await postToDirectus(lead);
+  let savedToDirectus = await postToDirectus(lead);
+  if (!savedToDirectus && idempotencyKey) {
+    const existingReference = await existingTradeReference(idempotencyKey);
+    if (existingReference) {
+      lead.reference_code = existingReference;
+      savedToDirectus = true;
+    }
+  }
   if (!savedToDirectus) {
     await appendLeadLog(lead);
   }
@@ -407,5 +596,6 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     ok: true,
     storage: savedToDirectus ? "directus" : "log",
+    reference_code: lead.reference_code,
   });
 }

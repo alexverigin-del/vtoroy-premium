@@ -16,6 +16,7 @@ import { DEFAULT_SOCIAL_IMAGE } from "../site-metadata";
 import { getStoreLocation } from "@/lib/store-locations";
 import { getAllPublishedV3ProductCards, getPublishedProducts } from "@/lib/product-catalog";
 import { CityHubPage } from "@/components/CityHubPage";
+import { getTradePublicConfig } from "@/lib/trade-server";
 
 export const revalidate = 300;
 
@@ -106,11 +107,12 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
   }
   if (!isMarketingSlug(slug) && !isInfoSlug(slug)) notFound();
 
-  const [page, settings, navigation, products] = await Promise.all([
+  const [page, settings, navigation, products, tradeConfig] = await Promise.all([
     getSitePage(slug),
     getSiteSettings(),
     getNavigationItems(),
     isMarketingSlug(slug) ? getAllPublishedV3ProductCards() : Promise.resolve([]),
+    slug === "trade" ? getTradePublicConfig() : Promise.resolve(undefined),
   ]);
   if (isInfoSlug(slug) && !page) notFound();
   const chrome = siteChrome(settings, navigation);
@@ -143,6 +145,7 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
               slug={slug}
               products={products}
               priorityVisual={section === firstVisualBandSection}
+              tradeConfig={tradeConfig}
             />
           ) : (
             <InfoPageSectionRenderer key={section.id || section.sectionKey} section={section} />

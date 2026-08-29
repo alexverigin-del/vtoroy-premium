@@ -53,8 +53,7 @@ async function main() {
       `expected 7 QA questions, got ${config.questions.length}`,
     );
 
-    const selected = config.devices[0];
-    const answers = Object.fromEntries(
+    const baselineAnswers = Object.fromEntries(
       config.questions.map((question) => [
         question.key,
         question.key === "has_damage" ||
@@ -64,22 +63,61 @@ async function main() {
           : "yes",
       ]),
     );
-    const quoteResponse = await qaPage.request.post(`${baseUrl}/api/trade/quote`, {
-      data: {
-        deviceModelId: selected.deviceModelId,
-        configurationId: selected.id,
-        answers,
-      },
-    });
-    assert(quoteResponse.ok(), `QA quote failed with ${quoteResponse.status()}`);
-    const quote = await quoteResponse.json();
-    assert(quote.ok === true && quote.quote?.id, "QA quote id is missing");
-    assert(quote.quote.pricingVersion === config.pricingVersion, "QA pricing version mismatch");
+    const controls = [
+      ["iphone-13-pro", "128 ГБ", {}, [18_000, 20_000]],
+      ["iphone-14-pro", "256 ГБ", { has_damage: "yes" }, [19_500, 25_500]],
+      ["iphone-14-pro-max", "512 ГБ", { has_damage: "unknown" }, [30_000, 36_000]],
+      ["iphone-16-pro", "256 ГБ", {}, [42_500, 47_500]],
+      ["iphone-16-pro-max", "1 ТБ", { has_damage: "yes" }, [60_000, 70_500]],
+      ["iphone-14-pro", "128 ГБ", { powers_on: "no" }, "manual_evaluation_required"],
+      ["iphone-14-pro-max", "256 ГБ", { display_works: "no" }, "manual_evaluation_required"],
+      ["iphone-16-pro", "512 ГБ", { was_repaired: "unknown" }, "manual_evaluation_required"],
+      ["iphone-16-pro-max", "512 ГБ", { battery_risk: "yes" }, "safety_stop"],
+      ["iphone-13-pro", "256 ГБ", { account_removed: "no" }, [19_500, 22_000]],
+    ];
+
+    for (const [modelSlug, storage, answerOverrides, expected] of controls) {
+      const selected = config.devices.find(
+        (device) => device.modelSlug === modelSlug && device.storage === storage,
+      );
+      assert(selected, `QA config is missing ${modelSlug} ${storage}`);
+      const quoteResponse = await qaPage.request.post(`${baseUrl}/api/trade/quote`, {
+        data: {
+          deviceModelId: selected.deviceModelId,
+          configurationId: selected.id,
+          answers: { ...baselineAnswers, ...answerOverrides },
+        },
+      });
+      const payload = await quoteResponse.json();
+      if (typeof expected === "string") {
+        assert(
+          quoteResponse.status() === 422 && payload.error === expected,
+          `${modelSlug} ${storage}: expected ${expected}, got ${quoteResponse.status()} ${payload.error}`,
+        );
+        continue;
+      }
+      assert(
+        quoteResponse.ok(),
+        `${modelSlug} ${storage}: quote failed with ${quoteResponse.status()}`,
+      );
+      assert(
+        payload.ok === true && payload.quote?.id,
+        `${modelSlug} ${storage}: quote id is missing`,
+      );
+      assert(
+        payload.quote.range.min === expected[0] && payload.quote.range.max === expected[1],
+        `${modelSlug} ${storage}: expected ${expected.join("–")}, got ${payload.quote.range.min}–${payload.quote.range.max}`,
+      );
+      assert(
+        payload.quote.pricingVersion === config.pricingVersion,
+        `${modelSlug} ${storage}: pricing version mismatch`,
+      );
+    }
 
     await qaPage.getByRole("button", { name: "Завершить QA" }).click();
     await qaPage.getByText("Внутренняя приёмка", { exact: true }).waitFor();
     console.log(
-      `Trade QA smoke passed for ${baseUrl}: 19 configs, 7 questions, test quote created`,
+      `Trade QA smoke passed for ${baseUrl}: 19 configs, 7 questions, 10 control calculations`,
     );
     await qaContext.close();
   } finally {

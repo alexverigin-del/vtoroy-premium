@@ -70,5 +70,39 @@ JOIN trade_pricing_versions version ON version.id=settings.active_pricing_versio
 JOIN store_locations store ON store.id=settings.default_store
 WHERE settings.id=1 AND settings.status='draft' AND settings.quote_validity_days=7
   AND version.version='trade-mvp-2026-08-29-draft' AND version.status='draft'
-  AND store.slug='belgorod' AND store.status='published';
+  AND store.slug='belgorod' AND store.status='published'
+UNION ALL
+SELECT 'trade_mvp.qa_fields_missing',(3-count(*))::text
+FROM information_schema.columns
+WHERE table_schema='public' AND (table_name,column_name) IN (
+  ('trade_quotes','is_test'),('trade_events','is_test'),('leads','is_test')
+)
+UNION ALL
+SELECT 'trade_mvp.qa_permission_fields_missing',count(*)::text
+FROM (VALUES
+  ('ISVOI Trade Service','trade_quotes','read'),
+  ('ISVOI Trade Service','trade_quotes','create'),
+  ('ISVOI Trade Service','trade_events','create'),
+  ('ISVOI Trade Service','leads','read'),
+  ('ISVOI Lead Intake','leads','create'),
+  ('ISVOI Lead Intake','leads','read'),
+  ('ISVOI Editor','trade_quotes','read'),
+  ('ISVOI Editor','trade_events','read'),
+  ('ISVOI Editor','leads','read'),
+  ('ISVOI Advanced Editor','trade_quotes','read'),
+  ('ISVOI Advanced Editor','trade_events','read'),
+  ('ISVOI Advanced Editor','leads','read')
+) expected(policy_name,collection_name,action_name)
+WHERE NOT EXISTS(
+  SELECT 1 FROM directus_permissions permission
+  JOIN directus_policies policy ON policy.id=permission.policy
+  WHERE policy.name=expected.policy_name AND permission.collection=expected.collection_name
+    AND permission.action=expected.action_name
+    AND (permission.fields='*' OR 'is_test'=ANY(string_to_array(permission.fields,',')))
+)
+UNION ALL
+SELECT 'trade_mvp.qa_public_exposure',count(*)::text
+FROM directus_permissions permission
+WHERE permission.policy IN(SELECT id FROM directus_policies WHERE name='ISVOI Public Read')
+  AND permission.collection IN ('trade_quotes','trade_events','leads');
 `);

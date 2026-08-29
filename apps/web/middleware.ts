@@ -100,6 +100,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/belgorod${search}`, request.url), 301);
   }
 
+  if (pathname === "/trade/qa" || pathname.startsWith("/trade/qa/")) {
+    const response = NextResponse.next();
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  }
+
   return NextResponse.next();
 }
 

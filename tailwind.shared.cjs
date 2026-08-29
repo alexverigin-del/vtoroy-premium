@@ -83,6 +83,7 @@ const themeExtend = {
   minHeight: {
     touch: "44px",
     turnstile: "65px",
+    "trade-option": "100px",
     "path-card": "230px",
     "marketing-fact": "190px",
     "marketing-card": "250px",
@@ -99,6 +100,12 @@ const themeExtend = {
   },
   height: {
     "zoom-lens": "132px",
+  },
+  maxHeight: {
+    "trade-list": "420px",
+  },
+  spacing: {
+    "safe-sticky": "calc(1rem + env(safe-area-inset-bottom))",
   },
   gridTemplateColumns: {
     compare: "1.1fr 1fr 1fr",

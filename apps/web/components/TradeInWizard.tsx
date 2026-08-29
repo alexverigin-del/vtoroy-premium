@@ -12,6 +12,7 @@ import type {
   TradeVisitPeriod,
 } from "@vtoroy/shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { cn } from "@/lib/cn";
 import { useLeadIntake } from "./useLeadIntake";
 
 type Step =
@@ -37,7 +38,7 @@ type PersistedState = {
   selectedOffer?: TradeExchangeOffer;
 };
 
-const STORAGE_KEY = "isvoi.trade.v1";
+type TradeWizardMode = "public" | "qa";
 const PERIOD_LABELS: Record<TradeVisitPeriod, string> = {
   morning: "Утро",
   day: "День",
@@ -50,13 +51,23 @@ const SCENARIO_LABELS: Record<TradeScenario, string> = {
   manual_evaluation: "Ручная оценка",
   stock_notification: "Сообщить о поступлении",
 };
+const PROGRESS_WIDTHS = {
+  1: "w-1/4",
+  2: "w-1/2",
+  3: "w-3/4",
+  4: "w-full",
+} as const;
+const stickyPrimaryActionClass =
+  "focus-ring inline-flex min-h-12 w-full items-center justify-center rounded-pill bg-action-blue px-6 py-3 text-base font-semibold text-white transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60";
+const tradeSelectClass =
+  "mt-2 h-16 w-full rounded-input border border-hairline bg-white px-3 text-base text-carbon outline-none focus:border-link-blue focus:ring-2 focus:ring-link-blue/15 disabled:bg-surface";
+const tradeTextareaClass =
+  "mt-2 min-h-32 w-full resize-none rounded-input border border-hairline bg-white p-3 text-sm leading-6 text-carbon outline-none focus:border-link-blue focus:ring-2 focus:ring-link-blue/15";
 
-function readPersistedState(): Partial<PersistedState> {
+function readPersistedState(key: string): Partial<PersistedState> {
   if (typeof window === "undefined") return {};
   try {
-    return JSON.parse(
-      window.sessionStorage.getItem(STORAGE_KEY) ?? "{}",
-    ) as Partial<PersistedState>;
+    return JSON.parse(window.sessionStorage.getItem(key) ?? "{}") as Partial<PersistedState>;
   } catch {
     return {};
   }
@@ -83,8 +94,8 @@ function isExpired(value: string): boolean {
   return new Date(value).getTime() < Date.now();
 }
 
-function eventSessionId(): string {
-  const key = "isvoi.trade.session";
+function eventSessionId(mode: TradeWizardMode): string {
+  const key = mode === "qa" ? "isvoi.trade.qa.session" : "isvoi.trade.session";
   const current = window.sessionStorage.getItem(key);
   if (current) return current;
   const created = window.crypto.randomUUID();
@@ -95,11 +106,12 @@ function eventSessionId(): string {
 function trackTradeEvent(
   eventName: TradeEventName,
   details: Record<string, string | number | undefined> = {},
+  mode: TradeWizardMode = "public",
 ) {
   if (typeof window === "undefined") return;
   const payload = {
     event_name: eventName,
-    session_id: eventSessionId(),
+    session_id: eventSessionId(mode),
     quote_id: details.quote_id,
     scenario: details.scenario,
     step: details.step,
@@ -121,8 +133,10 @@ function Progress({ step }: { step: 1 | 2 | 3 | 4 }) {
       <p className="text-xs font-medium leading-4 text-muted">Шаг {step} из 4</p>
       <div className="mt-2 h-1 overflow-hidden rounded-sm bg-hairline" aria-hidden="true">
         <div
-          className="h-full rounded-sm bg-action-blue transition-[width] motion-reduce:transition-none"
-          style={{ width: `${step * 25}%` }}
+          className={cn(
+            "h-full rounded-sm bg-action-blue transition-all motion-reduce:transition-none",
+            PROGRESS_WIDTHS[step],
+          )}
         />
       </div>
     </div>
@@ -130,9 +144,7 @@ function Progress({ step }: { step: 1 | 2 | 3 | 4 }) {
 }
 
 function WizardHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-[28px] font-bold leading-[1.2] text-carbon md:text-4xl">{children}</h2>
-  );
+  return <h2 className="text-3xl font-bold leading-tight text-carbon md:text-4xl">{children}</h2>;
 }
 
 function StickyAction({
@@ -149,12 +161,12 @@ function StickyAction({
   onSecondary?: () => void;
 }) {
   return (
-    <div className="sticky bottom-0 z-20 mt-8 border-t border-hairline bg-white/95 px-0 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur md:relative md:-mx-6 md:px-6">
+    <div className="sticky bottom-0 z-20 mt-8 border-t border-hairline bg-white/95 px-0 py-4 pb-safe-sticky backdrop-blur md:relative md:-mx-6 md:px-6">
       <button
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="focus-ring inline-flex min-h-12 w-full items-center justify-center rounded-pill bg-action-blue px-6 py-3 text-base font-semibold text-white transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60"
+        className={stickyPrimaryActionClass}
       >
         {label}
       </button>
@@ -184,16 +196,17 @@ function SegmentedControl<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-[13px] font-medium leading-[18px] text-carbon">{label}</legend>
+      <legend className="mb-2 text-xs font-medium leading-5 text-carbon">{label}</legend>
       <div className="grid auto-cols-fr grid-flow-col gap-1.5">
         {options.map((option) => (
           <label
             key={option.value}
-            className={`flex min-h-11 cursor-pointer items-center justify-center rounded-input border px-2 text-center text-xs font-medium transition focus-within:shadow-focus ${
+            className={cn(
+              "flex min-h-11 cursor-pointer items-center justify-center rounded-input border px-2 text-center text-xs font-medium transition focus-within:shadow-focus",
               value === option.value
                 ? "border-action-blue bg-action-blue text-white"
-                : "border-hairline bg-white text-carbon hover:border-link-blue"
-            }`}
+                : "border-hairline bg-white text-carbon hover:border-link-blue",
+            )}
           >
             <input
               type="radio"
@@ -248,8 +261,15 @@ function ContactFields({
   );
 }
 
-export function TradeInWizard({ config }: { config: TradePublicConfig }) {
-  const restored = useMemo(readPersistedState, []);
+export function TradeInWizard({
+  config,
+  mode = "public",
+}: {
+  config: TradePublicConfig;
+  mode?: TradeWizardMode;
+}) {
+  const wizardStorageKey = mode === "qa" ? "isvoi.trade.qa.v1" : "isvoi.trade.v1";
+  const restored = useMemo(() => readPersistedState(wizardStorageKey), [wizardStorageKey]);
   const [step, setStep] = useState<Step>(restored.step ?? "device");
   const [deviceModelId, setDeviceModelId] = useState(restored.deviceModelId ?? "");
   const [configurationId, setConfigurationId] = useState(restored.configurationId ?? "");
@@ -302,9 +322,9 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
   useEffect(() => {
     if (!started.current) {
       started.current = true;
-      trackTradeEvent("trade_start", { step: "device" });
+      trackTradeEvent("trade_start", { step: "device" }, mode);
     }
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     const state: PersistedState = {
@@ -316,9 +336,18 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
       scenario,
       selectedOffer,
     };
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    window.sessionStorage.setItem(wizardStorageKey, JSON.stringify(state));
     window.history.replaceState({ ...(window.history.state ?? {}), tradeStep: step }, "");
-  }, [answers, configurationId, deviceModelId, quote, scenario, selectedOffer, step]);
+  }, [
+    answers,
+    configurationId,
+    deviceModelId,
+    quote,
+    scenario,
+    selectedOffer,
+    step,
+    wizardStorageKey,
+  ]);
 
   useEffect(() => {
     const onPopState = (event: PopStateEvent) => {
@@ -357,15 +386,19 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
     if (payload?.ok) {
       setQuote(payload.quote);
       navigate("quote");
-      trackTradeEvent("trade_condition_completed", { step: "condition" });
-      trackTradeEvent("trade_quote_shown", {
-        quote_id: payload.quote.id,
-        duration_ms: Date.now() - startedAt,
-      });
+      trackTradeEvent("trade_condition_completed", { step: "condition" }, mode);
+      trackTradeEvent(
+        "trade_quote_shown",
+        {
+          quote_id: payload.quote.id,
+          duration_ms: Date.now() - startedAt,
+        },
+        mode,
+      );
       return;
     }
     const code = payload && !payload.ok ? payload.error : "network_error";
-    trackTradeEvent("trade_api_error", { step: "quote", error_code: code });
+    trackTradeEvent("trade_api_error", { step: "quote", error_code: code }, mode);
     if (code === "safety_stop") navigate("safety");
     else if (code === "manual_evaluation_required") {
       setScenario("manual_evaluation");
@@ -403,7 +436,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
 
   function chooseScenario(value: TradeScenario) {
     setScenario(value);
-    trackTradeEvent("trade_scenario_selected", { scenario: value, quote_id: quote?.id });
+    trackTradeEvent("trade_scenario_selected", { scenario: value, quote_id: quote?.id }, mode);
     if (value === "exchange") void openExchange();
     else navigate("contact");
   }
@@ -434,17 +467,21 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
       message: manual
         ? "Запрос ручной оценки устройства"
         : "Пожелание по визиту. Точное время должен подтвердить менеджер.",
-      source: "/trade",
+      source: mode === "qa" ? "/trade/qa" : "/trade",
     });
     if (!result) {
       setError("Не удалось отправить заявку. Данные сохранены на экране — попробуйте ещё раз.");
       return;
     }
     setReferenceCode(result.reference_code ?? "TR—СОХРАНЕНО");
-    trackTradeEvent("trade_lead_submitted", {
-      scenario: manual ? "manual_evaluation" : scenario,
-      quote_id: quote?.id,
-    });
+    trackTradeEvent(
+      "trade_lead_submitted",
+      {
+        scenario: manual ? "manual_evaluation" : scenario,
+        quote_id: quote?.id,
+      },
+      mode,
+    );
     navigate("submitted");
   }
 
@@ -459,7 +496,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
 
   return (
     <section id="trade-calculator" className="scroll-mt-24 bg-white py-10 md:py-16">
-      <div className="mx-auto max-w-[620px] px-6">
+      <div className="mx-auto max-w-form px-6">
         <div ref={headingRef} tabIndex={-1} className="outline-none">
           <Progress step={stepNumber} />
         </div>
@@ -511,7 +548,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
                   value={configurationId}
                   onChange={(event) => setConfigurationId(event.target.value)}
                   disabled={!deviceModelId}
-                  className="mt-2 h-16 w-full rounded-input border border-hairline bg-white px-3 text-base text-carbon outline-none focus:border-link-blue focus:ring-2 focus:ring-link-blue/15 disabled:bg-surface"
+                  className={tradeSelectClass}
                 >
                   <option value="">Выберите память</option>
                   {configurations.map((item) => (
@@ -537,7 +574,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
               disabled={!deviceModelId || !configurationId}
               onClick={() => {
                 if (!deviceModelId || !configurationId) return;
-                trackTradeEvent("trade_model_selected", { step: "device" });
+                trackTradeEvent("trade_model_selected", { step: "device" }, mode);
                 navigate("condition");
               }}
             />
@@ -557,7 +594,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
                   value={manualDescription}
                   onChange={(event) => setManualDescription(event.target.value)}
                   placeholder="iPhone 12, 128 ГБ, включается, есть царапины на корпусе"
-                  className="mt-2 min-h-32 w-full resize-none rounded-input border border-hairline bg-white p-3 text-[15px] leading-[22px] text-carbon outline-none focus:border-link-blue focus:ring-2 focus:ring-link-blue/15"
+                  className={tradeTextareaClass}
                 />
               </label>
               <ContactFields
@@ -566,7 +603,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
                 contact={contact}
                 onContact={setContact}
               />
-              <p className="text-xs leading-[17px] text-muted">
+              <p className="text-xs leading-5 text-muted">
                 Контакт нужен только для ответа менеджера. В расчёте он не используется.
               </p>
               {turnstileRequired ? <div ref={turnstileElementRef} /> : null}
@@ -633,7 +670,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
           <>
             <div className="rounded-card border border-warning bg-surface p-4">
               <p className="text-sm font-semibold text-warning">Важное предупреждение</p>
-              <p className="mt-1 text-[13px] leading-[19px] text-carbon">
+              <p className="mt-1 text-xs leading-5 text-carbon">
                 Есть признаки повреждения аккумулятора.
               </p>
             </div>
@@ -651,14 +688,14 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
               ].map((item, index) => (
                 <li
                   key={item}
-                  className="flex min-h-16 items-center gap-3 rounded-card bg-surface px-3 py-2.5 text-[13px] leading-[18px] text-carbon"
+                  className="flex min-h-16 items-center gap-3 rounded-card bg-surface px-3 py-2.5 text-xs leading-5 text-carbon"
                 >
                   <strong className="text-base text-warning">{index + 1}</strong>
                   {item}
                 </li>
               ))}
             </ol>
-            <p className="mt-3 text-xs font-medium leading-[17px] text-warning">
+            <p className="mt-3 text-xs font-medium leading-5 text-warning">
               Расчёт и стандартная запись остановлены до безопасной передачи.
             </p>
             <StickyAction
@@ -681,10 +718,8 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
               aria-live="polite"
             >
               <p className="text-xs font-medium text-muted">Предварительная оценка</p>
-              <p className="mt-2 text-[32px] font-bold leading-[38px] text-carbon">
-                {quoteAmount(quote)}
-              </p>
-              <p className="mt-2 text-[13px] leading-[19px] text-muted">
+              <p className="mt-2 text-3xl font-bold leading-10 text-carbon">{quoteAmount(quote)}</p>
+              <p className="mt-2 text-xs leading-5 text-muted">
                 Действует до {expiryLabel(quote.validUntil)} · итог подтвердим после диагностики
               </p>
             </div>
@@ -744,16 +779,14 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
             </p>
             <div className="mt-4 rounded-card border border-warning bg-surface p-6">
               <p className="text-xs text-muted">Оценка устарела</p>
-              <p className="mt-2 text-[30px] font-bold leading-[38px] text-warning">
+              <p className="mt-2 text-3xl font-bold leading-10 text-warning">
                 было {quoteAmount(quote)}
               </p>
-              <p className="mt-2 text-[13px] text-muted">Предложение больше не действует</p>
+              <p className="mt-2 text-xs text-muted">Предложение больше не действует</p>
             </div>
             <div className="mt-3 rounded-card border border-warning bg-surface p-4">
               <p className="text-sm font-semibold text-warning">Цены изменились</p>
-              <p className="mt-1 text-[13px] text-carbon">
-                Повторим расчёт с сохранёнными ответами.
-              </p>
+              <p className="mt-1 text-xs text-carbon">Повторим расчёт с сохранёнными ответами.</p>
             </div>
             <p className="mt-4 text-sm text-muted">
               Модель, память и ответы о состоянии уже сохранены — заполнять заново не нужно.
@@ -793,7 +826,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
                   key={value}
                   type="button"
                   onClick={() => chooseScenario(value as TradeScenario)}
-                  className="focus-ring flex min-h-[100px] items-center gap-3 rounded-card border border-hairline bg-white p-4 text-left transition hover:border-link-blue"
+                  className="focus-ring flex min-h-trade-option items-center gap-3 rounded-card border border-hairline bg-white p-4 text-left transition hover:border-link-blue"
                 >
                   <span
                     className="h-5 w-5 shrink-0 rounded-full border border-hairline"
@@ -801,7 +834,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
                   />
                   <span>
                     <strong className="block text-base text-carbon">{title}</strong>
-                    <span className="mt-0.5 block text-[13px] leading-[18px] text-muted">
+                    <span className="mt-0.5 block text-xs leading-5 text-muted">
                       {description}
                       <br />
                       <span className="text-link-blue">Выбрать →</span>
@@ -829,21 +862,26 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
             <WizardHeading>Выберите устройство для обмена</WizardHeading>
             <div className="mt-3 rounded-card border border-hairline bg-surface p-5">
               <p className="text-xs text-muted">Ваш Trade‑in quote</p>
-              <p className="mt-1 text-[28px] font-bold text-carbon">{quoteAmount(quote)}</p>
+              <p className="mt-1 text-3xl font-bold text-carbon">{quoteAmount(quote)}</p>
               <p className="mt-1 text-xs text-muted">
                 До {expiryLabel(quote.validUntil)} · итог после диагностики
               </p>
             </div>
-            <div className="mt-3 grid max-h-[420px] gap-3 overflow-y-auto pr-1">
+            <div className="mt-3 grid max-h-trade-list gap-3 overflow-y-auto pr-1">
               {offers.map((offer) => (
                 <button
                   key={offer.offerId}
                   type="button"
                   onClick={() => setSelectedOffer(offer)}
-                  className={`focus-ring rounded-card border p-4 text-left ${selectedOffer?.offerId === offer.offerId ? "border-action-blue bg-ice" : "border-hairline bg-white"}`}
+                  className={cn(
+                    "focus-ring rounded-card border p-4 text-left",
+                    selectedOffer?.offerId === offer.offerId
+                      ? "border-action-blue bg-ice"
+                      : "border-hairline bg-white",
+                  )}
                 >
                   {selectedOffer?.offerId === offer.offerId ? (
-                    <span className="text-[10px] font-bold uppercase text-link-blue">Выбрано</span>
+                    <span className="text-caption font-bold uppercase text-link-blue">Выбрано</span>
                   ) : null}
                   <strong className="mt-1 block text-lg text-carbon">{offer.title}</strong>
                   <span className="mt-1 block text-sm text-muted">
@@ -875,7 +913,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
             <p className="mt-2 text-sm leading-5 text-muted">
               Оставьте заявку — сообщим, когда появится подходящий вариант, или выберите продажу.
             </p>
-            <div className="mt-4 flex min-h-[220px] flex-col items-center justify-center rounded-card bg-surface p-6 text-center">
+            <div className="mt-4 flex min-h-path-card flex-col items-center justify-center rounded-card bg-surface p-6 text-center">
               <span className="h-16 w-16 rounded-full border border-hairline bg-white" />
               <strong className="mt-4 text-lg text-carbon">Каталог обновляется</strong>
               <p className="mt-2 text-sm text-muted">
@@ -884,7 +922,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
             </div>
             <div className="mt-3 rounded-card border border-action-blue bg-white p-4">
               <p className="text-sm font-semibold text-link-blue">Что произойдёт дальше</p>
-              <p className="mt-1 text-[13px] leading-[19px] text-carbon">
+              <p className="mt-1 text-xs leading-5 text-carbon">
                 Менеджер свяжется только при появлении подходящего варианта.
               </p>
             </div>
@@ -957,7 +995,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
                   />
                 </>
               ) : null}
-              <p className="text-xs leading-[17px] text-muted">
+              <p className="text-xs leading-5 text-muted">
                 Точное время подтвердит менеджер. При ошибке отправки введённые данные сохранятся.
               </p>
               {turnstileRequired ? <div ref={turnstileElementRef} /> : null}
@@ -981,7 +1019,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
           <>
             <div className="rounded-card border border-success bg-surface p-4">
               <p className="text-sm font-semibold text-success">Заявка принята</p>
-              <p className="mt-1 text-[13px] leading-[19px] text-carbon">
+              <p className="mt-1 text-xs leading-5 text-carbon">
                 Мы сохранили выбранный сценарий и пожелание по визиту.
               </p>
             </div>
@@ -989,7 +1027,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
               <WizardHeading>Заявка отправлена</WizardHeading>
             </div>
             <p className="mt-3 text-sm text-muted">Номер заявки</p>
-            <p className="mt-2 text-[30px] font-bold text-carbon">{referenceCode}</p>
+            <p className="mt-2 text-3xl font-bold text-carbon">{referenceCode}</p>
             <dl className="mt-4 rounded-card bg-surface p-4 text-sm">
               <div className="flex justify-between gap-4 border-b border-hairline py-3">
                 <dt className="text-muted">Сценарий</dt>
@@ -1031,7 +1069,7 @@ export function TradeInWizard({ config }: { config: TradePublicConfig }) {
             <StickyAction
               label="Вернуться на сайт"
               onClick={() => {
-                window.sessionStorage.removeItem(STORAGE_KEY);
+                window.sessionStorage.removeItem(wizardStorageKey);
                 window.location.assign("/");
               }}
               secondaryLabel="Скопировать номер заявки"

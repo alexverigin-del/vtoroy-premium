@@ -21,6 +21,7 @@ import {
   tradeQuoteValidUntil,
   type TradePricingRule,
 } from "./trade-calculation";
+import { tradeQaEnabled } from "./trade-qa";
 
 type Row = Record<string, unknown>;
 type DirectusResponse<T> = { data: T };
@@ -117,8 +118,13 @@ type TradeContext = {
   rules: TradePricingRule[];
 };
 
-async function loadTradeContext(): Promise<TradeContext | null> {
-  if (!tradeFeatureEnabled()) return null;
+export type TradeContextOptions = { allowDraft?: boolean };
+
+async function loadTradeContext(options: TradeContextOptions = {}): Promise<TradeContext | null> {
+  const allowDraft = options.allowDraft === true && tradeQaEnabled();
+  if (options.allowDraft && !allowDraft) return null;
+  if (!allowDraft && !tradeFeatureEnabled()) return null;
+  const expectedStatus = allowDraft ? "draft" : "published";
 
   const settingsResponse = await directusRequest<DirectusResponse<Row>>(
     "/items/trade_settings/1?fields=id,status,quote_validity_days,active_pricing_version.id,active_pricing_version.version,active_pricing_version.status,default_store.id,default_store.slug,default_store.name,default_store.city",
@@ -127,8 +133,8 @@ async function loadTradeContext(): Promise<TradeContext | null> {
   const pricingVersion = relation(settings.active_pricing_version);
   const pricingVersionId = text(pricingVersion.id);
   if (
-    text(settings.status) !== "published" ||
-    text(pricingVersion.status) !== "published" ||
+    text(settings.status) !== expectedStatus ||
+    text(pricingVersion.status) !== expectedStatus ||
     !pricingVersionId
   )
     return null;
@@ -136,10 +142,10 @@ async function loadTradeContext(): Promise<TradeContext | null> {
   const versionFilter = encodeURIComponent(pricingVersionId);
   const [configResponse, ruleResponse, storeResponse] = await Promise.all([
     directusRequest<DirectusResponse<Row[]>>(
-      `/items/trade_device_configs?filter[status][_eq]=published&filter[pricing_version][_eq]=${versionFilter}&fields=id,storage,sort,base_min,base_max,device_model.id,device_model.slug,device_model.name&sort=sort,device_model.name,storage&limit=200`,
+      `/items/trade_device_configs?filter[status][_eq]=${expectedStatus}&filter[pricing_version][_eq]=${versionFilter}&fields=id,storage,sort,base_min,base_max,device_model.id,device_model.slug,device_model.name&sort=sort,device_model.name,storage&limit=200`,
     ),
     directusRequest<DirectusResponse<Row[]>>(
-      `/items/trade_condition_rules?filter[status][_eq]=published&filter[pricing_version][_eq]=${versionFilter}&fields=id,question_key,question_label,question_help,question_sort,option_value,option_label,option_sort,delta_min,delta_max,factor_label,factor_type,manual_evaluation,safety_stop&sort=question_sort,option_sort&limit=200`,
+      `/items/trade_condition_rules?filter[status][_eq]=${expectedStatus}&filter[pricing_version][_eq]=${versionFilter}&fields=id,question_key,question_label,question_help,question_sort,option_value,option_label,option_sort,delta_min,delta_max,factor_label,factor_type,manual_evaluation,safety_stop&sort=question_sort,option_sort&limit=200`,
     ),
     directusRequest<DirectusResponse<Row[]>>(
       "/items/store_locations?filter[status][_eq]=published&fields=id,slug,name,city&sort=sort&limit=100",
@@ -248,8 +254,10 @@ async function loadTradeContext(): Promise<TradeContext | null> {
   return config.active ? { config, pricingVersionId, configs, rules } : null;
 }
 
-export async function getTradePublicConfig(): Promise<TradePublicConfig> {
-  const context = await loadTradeContext();
+export async function getTradePublicConfig(
+  options: TradeContextOptions = {},
+): Promise<TradePublicConfig> {
+  const context = await loadTradeContext(options);
   return (
     context?.config ?? {
       active: false,
@@ -272,8 +280,11 @@ function validateAnswers(answers: TradeAnswers, questions: TradeQuestion[]): voi
   }
 }
 
-export async function createTradeQuote(payload: TradeQuoteRequest): Promise<TradeQuote> {
-  const context = await loadTradeContext();
+export async function createTradeQuote(
+  payload: TradeQuoteRequest,
+  options: TradeContextOptions = {},
+): Promise<TradeQuote> {
+  const context = await loadTradeContext(options);
   if (!context) throw new TradeApiError("pricing_unavailable", 503);
   const selected = context.configs.get(payload.configurationId);
   if (!selected || selected.public.deviceModelId !== payload.deviceModelId) {
@@ -306,6 +317,7 @@ export async function createTradeQuote(payload: TradeQuoteRequest): Promise<Trad
       positive_factors: calculated.positiveFactors,
       risk_factors: calculated.riskFactors,
       valid_until: validUntil.toISOString(),
+      is_test: options.allowDraft === true,
     }),
   });
   const quoteId = text(response?.data?.id);
@@ -332,14 +344,26 @@ export async function createTradeQuote(payload: TradeQuoteRequest): Promise<Trad
   };
 }
 
-export async function getTradeQuote(quoteId: string): Promise<TradeQuote> {
+type TradeQuoteAccess = { testMode?: "exclude" | "only" | "include" };
+
+export async function getTradeQuote(
+  quoteId: string,
+  access: TradeQuoteAccess = {},
+): Promise<TradeQuote> {
   const response = await directusRequest<DirectusResponse<Row>>(
-    `/items/trade_quotes/${encodeURIComponent(quoteId)}?fields=id,status,range_min,range_max,currency,valid_until,positive_factors,risk_factors,device_config.id,device_config.storage,device_config.device_model.id,device_config.device_model.name,pricing_version.version`,
+    `/items/trade_quotes/${encodeURIComponent(quoteId)}?fields=id,status,range_min,range_max,currency,valid_until,positive_factors,risk_factors,is_test,device_config.id,device_config.storage,device_config.device_model.id,device_config.device_model.name,pricing_version.version`,
   );
   const row = record(response?.data);
   const config = relation(row.device_config);
   const model = relation(config.device_model);
   if (!text(row.id)) throw new TradeApiError("validation_error", 400);
+  const testMode = access.testMode ?? "exclude";
+  if (
+    (testMode === "only" && !boolean(row.is_test)) ||
+    (testMode === "exclude" && boolean(row.is_test))
+  ) {
+    throw new TradeApiError("validation_error", 400);
+  }
   if (text(row.status) !== "active" || isTradeQuoteExpired(text(row.valid_until))) {
     throw new TradeApiError("quote_expired", 409);
   }
@@ -364,10 +388,11 @@ export async function getTradeQuote(quoteId: string): Promise<TradeQuote> {
 export async function getTradeExchangeOffers(
   quoteId: string,
   requestedStoreId?: string,
+  options: TradeContextOptions = {},
 ): Promise<TradeExchangeOffer[]> {
   const [quote, config, products] = await Promise.all([
-    getTradeQuote(quoteId),
-    getTradePublicConfig(),
+    getTradeQuote(quoteId, { testMode: options.allowDraft ? "only" : "exclude" }),
+    getTradePublicConfig(options),
     getAllPublishedV3ProductCards(),
   ]);
   const storeId = requestedStoreId || config.defaultStoreId;
@@ -423,8 +448,9 @@ export async function validateTradeExchangeSelection(
   productId: string,
   offerId: string,
   storeId?: string,
+  options: TradeContextOptions = {},
 ): Promise<boolean> {
-  const offers = await getTradeExchangeOffers(quoteId, storeId);
+  const offers = await getTradeExchangeOffers(quoteId, storeId, options);
   return offers.some((offer) => offer.productId === productId && offer.offerId === offerId);
 }
 
@@ -436,6 +462,7 @@ export async function recordTradeEvent(event: {
   step?: string;
   durationMs?: number;
   errorCode?: string;
+  isTest?: boolean;
 }): Promise<void> {
   await directusRequest("/items/trade_events", {
     method: "POST",
@@ -447,6 +474,7 @@ export async function recordTradeEvent(event: {
       step: event.step || null,
       duration_ms: event.durationMs ?? null,
       error_code: event.errorCode || null,
+      is_test: event.isTest === true,
     }),
   });
 }

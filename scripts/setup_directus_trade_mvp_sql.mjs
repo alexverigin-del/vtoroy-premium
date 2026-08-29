@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS trade_quotes (
   risk_factors jsonb NOT NULL DEFAULT '[]'::jsonb,
   valid_until timestamptz NOT NULL,
   superseded_by uuid,
+  is_test boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -88,6 +89,7 @@ CREATE TABLE IF NOT EXISTS trade_events (
   step varchar(80),
   duration_ms integer,
   error_code varchar(80),
+  is_test boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -102,6 +104,9 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS final_offer integer;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS final_offer_reason text;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS reference_code varchar(32);
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS idempotency_key varchar(120);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
+ALTER TABLE trade_quotes ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
+ALTER TABLE trade_events ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='trade_pricing_versions_status_check') THEN
@@ -334,13 +339,13 @@ SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_settings','re
 SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_pricing_versions','read','id,version,status,published_at');
 SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_device_configs','read','id,status,pricing_version,device_model,storage,base_min,base_max,sort');
 SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_condition_rules','read','id,status,pricing_version,question_key,question_label,question_help,question_sort,option_value,option_label,option_sort,delta_min,delta_max,factor_label,factor_type,manual_evaluation,safety_stop');
-SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_quotes','read','id,status,device_config,pricing_version,answers_snapshot,range_min,range_max,currency,positive_factors,risk_factors,valid_until,superseded_by,created_at');
-SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_quotes','create','status,device_config,pricing_version,answers_snapshot,range_min,range_max,currency,positive_factors,risk_factors,valid_until','{}'::json,'{"status":{"_eq":"active"},"currency":{"_eq":"RUB"}}'::json,'{"status":"active","currency":"RUB"}'::json);
+SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_quotes','read','id,status,device_config,pricing_version,answers_snapshot,range_min,range_max,currency,positive_factors,risk_factors,valid_until,superseded_by,is_test,created_at');
+SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_quotes','create','status,device_config,pricing_version,answers_snapshot,range_min,range_max,currency,positive_factors,risk_factors,valid_until,is_test','{}'::json,'{"status":{"_eq":"active"},"currency":{"_eq":"RUB"}}'::json,'{"status":"active","currency":"RUB"}'::json);
 SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_quotes','update','status,superseded_by');
-SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_events','create','event_name,session_id,quote,scenario,step,duration_ms,error_code');
+SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','trade_events','create','event_name,session_id,quote,scenario,step,duration_ms,error_code,is_test');
 SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','store_locations','read','id,slug,status,name,city,intercity_delivery_enabled','{"status":{"_eq":"published"}}'::json);
 SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','device_models','read','id,slug,name,is_active','{"is_active":{"_eq":true}}'::json);
-SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','leads','read','id,reference_code,idempotency_key');
+SELECT pg_temp.isvoi_trade_permission('ISVOI Trade Service','leads','read','id,reference_code,idempotency_key,is_test');
 
 DO $$ DECLARE role_name text; collection_name text; fields text; write_fields text; BEGIN
  FOREACH role_name IN ARRAY ARRAY['ISVOI Editor','ISVOI Advanced Editor'] LOOP
@@ -350,8 +355,8 @@ DO $$ DECLARE role_name text; collection_name text; fields text; write_fields te
     WHEN 'trade_device_configs' THEN 'id,status,pricing_version,device_model,storage,base_min,base_max,sort,created_at,updated_at'
     WHEN 'trade_condition_rules' THEN 'id,status,pricing_version,question_key,question_label,question_help,question_sort,option_value,option_label,option_sort,delta_min,delta_max,factor_label,factor_type,manual_evaluation,safety_stop,created_at,updated_at'
     WHEN 'trade_settings' THEN 'id,status,active_pricing_version,quote_validity_days,default_store,updated_at'
-    WHEN 'trade_quotes' THEN 'id,status,device_config,pricing_version,answers_snapshot,range_min,range_max,currency,positive_factors,risk_factors,valid_until,superseded_by,created_at'
-    ELSE 'id,event_name,session_id,quote,scenario,step,duration_ms,error_code,created_at' END;
+    WHEN 'trade_quotes' THEN 'id,status,device_config,pricing_version,answers_snapshot,range_min,range_max,currency,positive_factors,risk_factors,valid_until,superseded_by,is_test,created_at'
+    ELSE 'id,event_name,session_id,quote,scenario,step,duration_ms,error_code,is_test,created_at' END;
    PERFORM pg_temp.isvoi_trade_permission(role_name,collection_name,'read',fields);
    IF role_name='ISVOI Advanced Editor' AND collection_name IN ('trade_pricing_versions','trade_device_configs','trade_condition_rules','trade_settings') THEN
     write_fields := CASE collection_name
@@ -367,11 +372,11 @@ DO $$ DECLARE role_name text; collection_name text; fields text; write_fields te
 END $$;
 
 SELECT pg_temp.isvoi_trade_permission('ISVOI Lead Intake','leads','create',
- 'kind,status,priority,contact_channel,name,contact,product,product_type,device,device_id,scenario,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at,user_agent,quote_id,target_product_id,target_offer_id,store_location_id,preferred_visit_date,preferred_visit_period,reference_code,idempotency_key',
+ 'kind,status,priority,contact_channel,name,contact,product,product_type,device,device_id,scenario,message,source,source_path,source_url,page_title,referrer,utm_source,utm_medium,utm_campaign,utm_content,utm_term,club_offer,club_plan,club_term_months,club_budget_text,club_device_request,club_consent_version,club_consent_at,user_agent,quote_id,target_product_id,target_offer_id,store_location_id,preferred_visit_date,preferred_visit_period,reference_code,idempotency_key,is_test',
  NULL,'{"contact":{"_nnull":true},"status":{"_eq":"new"},"priority":{"_in":["normal","high"]},"kind":{"_in":["selection","purchase","trade","upgrade","club","support"]},"contact_channel":{"_in":["unknown","phone","telegram","whatsapp","email"]}}'::json,'{"status":"new","priority":"normal"}'::json);
-SELECT pg_temp.isvoi_trade_permission('ISVOI Lead Intake','leads','read','reference_code,idempotency_key');
+SELECT pg_temp.isvoi_trade_permission('ISVOI Lead Intake','leads','read','reference_code,idempotency_key,is_test');
 
-UPDATE directus_permissions SET fields=concat_ws(',',fields,'quote_id,target_product_id,target_offer_id,store_location_id,preferred_visit_date,preferred_visit_period,diagnostics_status,final_offer,final_offer_reason,reference_code')
+UPDATE directus_permissions SET fields=concat_ws(',',fields,'quote_id,target_product_id,target_offer_id,store_location_id,preferred_visit_date,preferred_visit_period,diagnostics_status,final_offer,final_offer_reason,reference_code,is_test')
 WHERE collection='leads' AND action='read' AND policy IN(SELECT id FROM directus_policies WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor')) AND fields NOT LIKE '%quote_id%';
 UPDATE directus_permissions SET fields=concat_ws(',',fields,'store_location_id,preferred_visit_date,preferred_visit_period,diagnostics_status,final_offer,final_offer_reason')
 WHERE collection='leads' AND action='update' AND policy IN(SELECT id FROM directus_policies WHERE name IN ('ISVOI Editor','ISVOI Advanced Editor')) AND fields NOT LIKE '%diagnostics_status%';

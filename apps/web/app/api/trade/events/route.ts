@@ -1,6 +1,7 @@
 import type { TradeEventName } from "@vtoroy/shared";
 import { NextRequest, NextResponse } from "next/server";
 import { recordTradeEvent } from "@/lib/trade-server";
+import { isTradeQaRequest } from "@/lib/trade-qa";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
       ? Math.max(0, Math.min(Number(body.duration_ms), 86_400_000))
       : undefined,
     errorCode: safeText(body.error_code, 80) || undefined,
+    isTest: isTradeQaRequest(request),
   });
   return NextResponse.json({ ok: true }, { status: 202 });
 }

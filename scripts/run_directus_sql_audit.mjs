@@ -504,6 +504,9 @@ const auditDefinitions = {
       "trade_mvp.draft_configs_invalid",
       "trade_mvp.draft_rules_invalid",
       "trade_mvp.draft_settings_invalid",
+      "trade_mvp.qa_fields_missing",
+      "trade_mvp.qa_permission_fields_missing",
+      "trade_mvp.qa_public_exposure",
     ],
   },
   inventory: {

@@ -1,6 +1,7 @@
 import type { TradeQuoteRequest } from "@vtoroy/shared";
 import { NextRequest, NextResponse } from "next/server";
 import { createTradeQuote, TradeApiError } from "@/lib/trade-server";
+import { isTradeQaRequest } from "@/lib/trade-qa";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const quote = await createTradeQuote(body);
+    const quote = await createTradeQuote(body, { allowDraft: isTradeQaRequest(request) });
     return NextResponse.json({ ok: true, quote }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof TradeApiError) {

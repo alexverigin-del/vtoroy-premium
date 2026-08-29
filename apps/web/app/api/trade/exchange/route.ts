@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTradeExchangeOffers, TradeApiError } from "@/lib/trade-server";
+import { isTradeQaRequest } from "@/lib/trade-qa";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const offers = await getTradeExchangeOffers(quoteId, storeId || undefined);
+    const offers = await getTradeExchangeOffers(quoteId, storeId || undefined, {
+      allowDraft: isTradeQaRequest(request),
+    });
     return NextResponse.json(
       { ok: true, offers },
       { headers: { "Cache-Control": "private, no-store" } },

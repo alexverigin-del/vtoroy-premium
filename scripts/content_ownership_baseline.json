@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-28T19:52:27.753Z",
+  "updatedAt": "2026-08-29T16:49:37.031Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -97,21 +97,21 @@
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 48,
+      "line": 49,
       "text": "I СВОИ · ${location.city}: локальное наличие техники и аксессуаров, самовывоз и доставка из других магазинов сети.",
       "id": "f526d2db8c1e4fe8"
     },
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 50,
+      "line": 51,
       "text": "${location.name} — техника и аксессуары",
       "id": "667084361bef8b34"
     },
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 132,
+      "line": 134,
       "text": "Главная",
       "id": "36a04f938a572876"
     },
@@ -559,77 +559,77 @@
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 100,
+      "line": 126,
       "text": "оцен",
       "id": "3aee8ce809c75918"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 100,
+      "line": 126,
       "text": "передать",
       "id": "816337509d1a120e"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 103,
+      "line": 129,
       "text": "обнов",
       "id": "d866c2dd2ac447b7"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 105,
+      "line": 131,
       "text": "забронировать",
       "id": "6ca0d0d83d4c6c99"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 106,
+      "line": 132,
       "text": "купить",
       "id": "8c50a1d706495336"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 107,
+      "line": 133,
       "text": "брон",
       "id": "fdd7f0490ce8bfe2"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 108,
+      "line": 134,
       "text": "лист ожидания",
       "id": "ae2137aef391f4f1"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 111,
+      "line": 137,
       "text": "альтернатив",
       "id": "fd52bd9c562e2aad"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 111,
+      "line": 137,
       "text": "похож",
       "id": "f3507795ec20dfa5"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 278,
+      "line": 325,
       "text": "Сценарий: ${lead.scenario}",
       "id": "3df88cc5a51627d8"
     },
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 279,
+      "line": 326,
       "text": "Комментарий: ${lead.message}",
       "id": "7127f850040dee31"
     },
@@ -975,6 +975,90 @@
       "line": 40,
       "text": "Открыть город →",
       "id": "a51b913884a68002"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "string",
+      "line": 14,
+      "text": "Trade-in QA — I СВОИ",
+      "id": "9aaa6a1d6d7d7cfa"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "string",
+      "line": 15,
+      "text": "Закрытый контур приёмки Trade-in.",
+      "id": "c1a4cdf2f457f68f"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 43,
+      "text": "Внутренняя приёмка",
+      "id": "9c8dc02079a45569"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 46,
+      "text": "Введите отдельный QA-код. Клиентский калькулятор останется выключенным.",
+      "id": "9c6a9d83b3c8cfdd"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 51,
+      "text": "Код доступа",
+      "id": "76aac37de0794270"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "string",
+      "line": 64,
+      "text": "Слишком много попыток. Попробуйте позже.",
+      "id": "a52cc791532a4499"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "string",
+      "line": 65,
+      "text": "Неверный код доступа.",
+      "id": "3733ffef74786e80"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 68,
+      "text": "Открыть QA",
+      "id": "e7eaabcd81a2ec81"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 87,
+      "text": "Тестовые оценки и заявки отделены от клиентских данных.",
+      "id": "65f801922c4819a7"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 96,
+      "text": "Завершить QA",
+      "id": "3e7b0980182245e8"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 106,
+      "text": "Draft пока недоступен",
+      "id": "5ccdc08aeb981d27"
+    },
+    {
+      "file": "apps/web/app/trade/qa/page.tsx",
+      "kind": "jsx-text",
+      "line": 107,
+      "text": "Проверьте активную draft-версию, 19 конфигураций и 21 правило в Directus.",
+      "id": "18ef9cb7f7528369"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
@@ -1784,35 +1868,35 @@
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "string",
-      "line": 45,
+      "line": 46,
       "text": "Фото",
       "id": "1335b29aa42e3116"
     },
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "string",
-      "line": 123,
+      "line": 152,
       "text": "Фотографии устройства",
       "id": "79558b83cad15afa"
     },
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "string",
-      "line": 136,
+      "line": 165,
       "text": "Увеличить фото: ${active.label}",
       "id": "0c6ebeb4988bff3e"
     },
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "jsx-text",
-      "line": 150,
+      "line": 179,
       "text": "Увеличить",
       "id": "1d5eba39536de116"
     },
     {
       "file": "apps/web/components/DeviceGallery.tsx",
       "kind": "string",
-      "line": 181,
+      "line": 210,
       "text": "Ракурсы устройства",
       "id": "cb9f5ed5a1ca4250"
     },
@@ -2365,420 +2449,420 @@
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 90,
+      "line": 91,
       "text": "Витрина",
       "id": "86ff7270336aaacc"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 91,
+      "line": 92,
       "text": "проверенные вещи",
       "id": "5e4a1ed8fa452740"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 92,
+      "line": 93,
       "text": "Карточки показывают грейд, наличие, гарантию и известную историю до решения.",
       "id": "248765d9502b91b2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 95,
+      "line": 96,
       "text": "Проверка",
       "id": "7685c798bf8586e5"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 96,
+      "line": 97,
       "text": "при вас",
       "id": "d9aebca3d45f86a9"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 97,
+      "line": 98,
       "text": "Состояние устройства фиксируется открыто, без обещаний со слов продавца.",
       "id": "49c0e9200f8bc7f6"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 100,
+      "line": 101,
       "text": "После покупки",
       "id": "e6fc4472c1e3b648"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 101,
+      "line": 102,
       "text": "Passport + гарантия",
       "id": "80c02878475084d1"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 102,
+      "line": 103,
       "text": "Покупатель получает понятную историю вещи и письменные условия.",
       "id": "8d459353a24592ac"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 107,
+      "line": 108,
       "text": "Маршрут",
       "id": "7fb0e8d62a221f3a"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 108,
+      "line": 109,
       "text": "выкуп / комиссия / обновление",
       "id": "e23906435299d221"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 109,
+      "line": 110,
       "text": "После оценки вы выбираете сценарий, а не торгуетесь в переписках.",
       "id": "18ac6156f83e2d38"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 112,
+      "line": 113,
       "text": "Оценка",
       "id": "da8a873ce4f845d1"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 113,
+      "line": 114,
       "text": "после диагностики",
       "id": "04eb36fa2628f878"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 114,
+      "line": 115,
       "text": "Цена опирается на состояние, комплектацию и понятный спрос внутри круга.",
       "id": "64477128ff3b336f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 117,
+      "line": 118,
       "text": "Безопасность",
       "id": "b1cbd5adc8e6af51"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 118,
+      "line": 119,
       "text": "без случайных встреч",
       "id": "421bc003be90519b"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 119,
+      "line": 120,
       "text": "Вещь проходит через Store и дальше уходит с зафиксированной историей.",
       "id": "ec696e8d93afc846"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 124,
+      "line": 125,
       "text": "Состояние",
       "id": "a42ee73f753648f4"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 125,
+      "line": 126,
       "text": "зафиксировано",
       "id": "cd7f2ca835e4694b"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 126,
+      "line": 127,
       "text": "Экран, корпус, аккумулятор, ремонты и следы влаги не остаются словами.",
       "id": "9a58d080d0451b5f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 129,
+      "line": 130,
       "text": "Покупка",
       "id": "bf6aa79ccdfe526f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 130,
+      "line": 131,
       "text": "без тумана",
       "id": "9b591366b22eda8f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 131,
+      "line": 132,
       "text": "Покупатель видит нюансы до решения, а не узнаёт их после сделки.",
       "id": "0b67dca19d0b9cfd"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 134,
+      "line": 135,
       "text": "Обновление",
       "id": "1e5f52a1d3f82d14"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 135,
+      "line": 136,
       "text": "предварительная стоимость",
       "id": "dca5afc58b9026a6"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 136,
+      "line": 137,
       "text": "Расчёт подтверждается после повторной диагностики устройства.",
       "id": "0071a23a954c2e3f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 141,
+      "line": 142,
       "text": "Формат",
       "id": "32711b62f00dca62"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 142,
+      "line": 143,
       "text": "пилот",
       "id": "8f9b77630b6dcad2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 143,
+      "line": 144,
       "text": "Условия обсуждаются только вокруг конкретного устройства.",
       "id": "a5e289f0488960ad"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 147,
+      "line": 148,
       "text": "без лишнего шума",
       "id": "2643cff7d194cb9a"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 148,
+      "line": 149,
       "text": "Trade и Store помогают перейти на следующую вещь без объявлений и торга.",
       "id": "55fb59f39e9e542c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 151,
+      "line": 152,
       "text": "Расчёт",
       "id": "c9735831ba167455"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 152,
+      "line": 153,
       "text": "до участия",
       "id": "de873d2a68f8d8b2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 153,
+      "line": 154,
       "text": "Стоимость и обязательства подтверждаются отдельно до решения.",
       "id": "ff16aa4ac50afd1c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 159,
+      "line": 160,
       "text": "I СВОИ · Store",
       "id": "e1e249557a3e6282"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 160,
+      "line": 161,
       "text": "I СВОИ · Trade",
       "id": "c1ae936c0bb96530"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 161,
+      "line": 162,
       "text": "I СВОИ · Passport",
       "id": "4bdb551d9b8d57b4"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 162,
+      "line": 163,
       "text": "I СВОИ · Club — пилот",
       "id": "d906dc731785dad9"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 263,
+      "line": 264,
       "text": "Сравнение сценариев I СВОИ",
       "id": "c1853b9f701d6fd5"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 264,
+      "line": 265,
       "text": "Что сравниваем",
       "id": "79f6850bc052b811"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 265,
+      "line": 266,
       "text": "Случайный рынок",
       "id": "beafdfe016b4b640"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 266,
+      "line": 267,
       "text": "I СВОИ",
       "id": "74bd562a5c8c000f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 297,
+      "line": 298,
       "text": "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
       "id": "5a3f93619e162a3c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 299,
+      "line": 300,
       "text": "Store как точка доверия.",
       "id": "82862ce609cbccd5"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 304,
+      "line": 305,
       "text": "Чистая витрина, видимая ответственность и спокойная консультация без давления.",
       "id": "0ea8261c06718896"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 474,
+      "line": 475,
       "text": "Оставить заявку",
       "id": "ef737fe8481b98fd"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 476,
+      "line": 477,
       "text": "Смотреть каталог",
       "id": "4565768e6690b658"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 785,
+      "line": 786,
       "text": "Получить предварительную оценку",
       "id": "bdfce1eada61830a"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 787,
+      "line": 788,
       "text": "Узнать условия пилота",
       "id": "a271fa9afc130902"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 788,
+      "line": 789,
       "text": "Смотреть Passport",
       "id": "c069db7ac62c1e1c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 792,
+      "line": 793,
       "text": "Открыть карточку",
       "id": "2fe62ce71fe56e92"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 798,
+      "line": 799,
       "text": "Пример Trade-логики",
       "id": "fcebb269821f0a34"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 800,
+      "line": 801,
       "text": "Пример Club-сценария",
       "id": "1b844f04ce846ea6"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 801,
+      "line": 802,
       "text": "Фрагмент Passport",
       "id": "70e86a76780ca799"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 805,
+      "line": 806,
       "text": "Берём реальное устройство из Store как цель обновления: цена и состояние известны, а стоимость вашей техники уточняется после диагностики.",
       "id": "abf7a8fc5f727704"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 807,
+      "line": 808,
       "text": "Passport фиксирует состояние устройства, а условия пилота и будущего обновления подтверждаются отдельно до участия.",
       "id": "866116e9246992ed"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 808,
+      "line": 809,
       "text": "Так выглядит сжатый смысл Passport: не абстрактное обещание, а несколько проверенных фактов до решения.",
       "id": "7306747342230b14"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "jsx-text",
-      "line": 1136,
+      "line": 1137,
       "text": "Как выбрать вещь",
       "id": "5291ff247855a43c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "jsx-text",
-      "line": 1139,
+      "line": 1140,
       "text": "Сначала задача и горизонт владения, потом состояние, бюджет и сценарий выхода.",
       "id": "9c723e516fb4f259"
     },
@@ -3887,6 +3971,811 @@
       "line": 72,
       "text": "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
       "id": "0f1a47f5df38ef57"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 43,
+      "text": "Утро",
+      "id": "7823fa23bca3e5ff"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 44,
+      "text": "День",
+      "id": "1b420b54dc6272aa"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 45,
+      "text": "Вечер",
+      "id": "9bfdf2edaa9f79a4"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 48,
+      "text": "Продажа",
+      "id": "2cf7b2264ede00e8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 49,
+      "text": "Комиссия",
+      "id": "41955098f8c90719"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 50,
+      "text": "Обмен",
+      "id": "bec49de825e6366a"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 51,
+      "text": "Ручная оценка",
+      "id": "df4d4bf63973058b"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 52,
+      "text": "Сообщить о поступлении",
+      "id": "99a8371eee213017"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 239,
+      "text": "Удобный канал связи",
+      "id": "1d69cf9bc5556279"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 242,
+      "text": "Телефон",
+      "id": "66feae5f7c110ffe"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 368,
+      "text": "Ответьте на все вопросы о состоянии устройства.",
+      "id": "735b0b1d187b26ae"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 406,
+      "text": "Не удалось рассчитать оценку. Проверьте соединение и попробуйте ещё раз.",
+      "id": "7dc692caad65eab9"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 434,
+      "text": "Не удалось загрузить каталог. Попробуйте ещё раз.",
+      "id": "f183f8603b831155"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 446,
+      "text": "Укажите телефон или Telegram для ответа менеджера.",
+      "id": "6d964966658f4db8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 450,
+      "text": "Коротко опишите устройство и его состояние.",
+      "id": "a144055e897d8073"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 468,
+      "text": "Запрос ручной оценки устройства",
+      "id": "a58f7151e61c570c"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 469,
+      "text": "Пожелание по визиту. Точное время должен подтвердить менеджер.",
+      "id": "1d4442cabb9a37b1"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 473,
+      "text": "Не удалось отправить заявку. Данные сохранены на экране — попробуйте ещё раз.",
+      "id": "51c4485a8afa449b"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 476,
+      "text": "TR—СОХРАНЕНО",
+      "id": "69cf8e652479fd61"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 506,
+      "text": "Что вы хотите оценить?",
+      "id": "b8165868bd32d115"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 507,
+      "text": "Выберите точную конфигурацию — от неё зависит диапазон.",
+      "id": "e40a15fcc6b78858"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 512,
+      "text": "Категория",
+      "id": "fdeaf30497df2c17"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 514,
+      "text": "Смартфон",
+      "id": "27cc236a0eced648"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 520,
+      "text": "Бренд",
+      "id": "d00c9b84226a14f3"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 528,
+      "text": "Модель",
+      "id": "5f0678f1936a6192"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 537,
+      "text": "Выберите модель",
+      "id": "ea9c6caa0994e9a8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 546,
+      "text": "Память",
+      "id": "76a7a6428bf88305"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 553,
+      "text": "Выберите память",
+      "id": "53c22969509e6ff1"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 568,
+      "text": "Не знаю точную модель",
+      "id": "b6a7b793cc3be0de"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 573,
+      "text": "Продолжить",
+      "id": "1458bd13dbca0c5c"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 586,
+      "text": "Оценим устройство вручную",
+      "id": "fda9141605b18bdb"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 587,
+      "text": "Не нашли модель. Опишите устройство — менеджер уточнит детали и рассчитает стоимость.",
+      "id": "5c5221d181d9ea13"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 592,
+      "text": "Опишите устройство",
+      "id": "5567a24563b600a3"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 596,
+      "text": "iPhone 12, 128 ГБ, включается, есть царапины на корпусе",
+      "id": "0cb5684cc3bea963"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 606,
+      "text": "Контакт нужен только для ответа менеджера. В расчёте он не используется.",
+      "id": "d6a3aca0976154c5"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 617,
+      "text": "Отправить на оценку",
+      "id": "1f8be0a8e43b8204"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 617,
+      "text": "Отправляем…",
+      "id": "2641d05ca7130bbd"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 620,
+      "text": "Вернуться к моделям",
+      "id": "a69fc1b60869ab43"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 628,
+      "text": "В каком состоянии устройство?",
+      "id": "1891f7225e796bdb"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 633,
+      "text": "Устройство",
+      "id": "cdc7976e2d4320c0"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 639,
+      "text": "Изменить",
+      "id": "c525a6c53f085037"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 662,
+      "text": "Показать оценку",
+      "id": "4e20a4f2a901409e"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 662,
+      "text": "Рассчитываем…",
+      "id": "380f72aecca4486d"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 672,
+      "text": "Важное предупреждение",
+      "id": "e8b131102f880d35"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 673,
+      "text": "Есть признаки повреждения аккумулятора.",
+      "id": "6ebdf40e3ad3cdef"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 678,
+      "text": "Не заряжайте и не пересылайте устройство",
+      "id": "fffc7136504ddf33"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 680,
+      "text": "Чтобы безопасно передать устройство, выполните три шага.",
+      "id": "6d1cf83e754d9550"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 685,
+      "text": "Выключите устройство, если это можно сделать без давления на корпус.",
+      "id": "113d66298d5499f4"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 686,
+      "text": "Не давите на корпус и не пытайтесь вскрыть устройство.",
+      "id": "a7874b523c161bf8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 687,
+      "text": "Свяжитесь с магазином — подскажем безопасный способ передачи.",
+      "id": "85eeddc415f58f7a"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 698,
+      "text": "Расчёт и стандартная запись остановлены до безопасной передачи.",
+      "id": "d50c6eab855b1a13"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 702,
+      "text": "Связаться с магазином",
+      "id": "783b03f67da9655f"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 707,
+      "text": "Вернуться к ответам",
+      "id": "ed722019ef2cea48"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 715,
+      "text": "Ваша предварительная оценка",
+      "id": "6dda3e4396286e92"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 720,
+      "text": "Предварительная оценка",
+      "id": "8eabb3e6213bb7de"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 728,
+      "text": "Что повысило оценку",
+      "id": "14b964c7ddf104f1"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 744,
+      "text": "Что может её изменить",
+      "id": "b0ce7a605e83f97b"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 762,
+      "text": "Изменить ответы",
+      "id": "29ad5ea83bff0928"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 766,
+      "text": "Выбрать способ сделки",
+      "id": "3945e393446f8098"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 776,
+      "text": "Оценка устарела",
+      "id": "c9c7ad2af3253cc6"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 777,
+      "text": "Старый диапазон сохранили как ориентир — продолжить с ним нельзя.",
+      "id": "b78d3aa0cdecc6b8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 785,
+      "text": "Предложение больше не действует",
+      "id": "a56592bcd41e0e21"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 788,
+      "text": "Цены изменились",
+      "id": "394849fb4a946c0c"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 789,
+      "text": "Повторим расчёт с сохранёнными ответами.",
+      "id": "844c65a06193290a"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 791,
+      "text": "Модель, память и ответы о состоянии уже сохранены — заполнять заново не нужно.",
+      "id": "7f95847eb907a3f8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 800,
+      "text": "Обновить оценку",
+      "id": "56b2f30f95a5491d"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 800,
+      "text": "Обновляем…",
+      "id": "0c74fa5723ba6a73"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 803,
+      "text": "Изменить ответы",
+      "id": "f4d51b39799e19ba"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 811,
+      "text": "Как поступить с устройством?",
+      "id": "122a6b4bab43d966"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 812,
+      "text": "Выбор не фиксируется заранее — сравните варианты.",
+      "id": "70b4238f9812b159"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 817,
+      "text": "Деньги после диагностики",
+      "id": "f554489da04e11c6"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 817,
+      "text": "Продать",
+      "id": "fe4c0f514c32dc9c"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 820,
+      "text": "Передать на комиссию",
+      "id": "a3e39af53bb031f4"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 821,
+      "text": "Условия и ожидаемую сумму рассчитаем индивидуально после диагностики",
+      "id": "62ab33e24d928f50"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 823,
+      "text": "Обменять",
+      "id": "5e1189843b5df4b8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 823,
+      "text": "Реальный каталог и ориентир доплаты",
+      "id": "08c9d7eace846c20"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 840,
+      "text": "Выбрать →",
+      "id": "32eb0bc8d4382b85"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 852,
+      "text": "Нет подходящего товара сейчас?",
+      "id": "d9d1513697290568"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 855,
+      "text": "Сценарий можно изменить до отправки заявки.",
+      "id": "d01c64e8fae51e42"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 862,
+      "text": "Выберите устройство для обмена",
+      "id": "948856bc412398b9"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 864,
+      "text": "Ваш Trade‑in quote",
+      "id": "0a971c17851a95b4"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 884,
+      "text": "Выбрано",
+      "id": "523fa6f11e1fd6b8"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 889,
+      "text": "доставка",
+      "id": "e35ab32a5cc2a4e6"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 889,
+      "text": "самовывоз",
+      "id": "2413ac791f1cbaae"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 901,
+      "text": "Проверяем…",
+      "id": "10df920c6b7a7d15"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 901,
+      "text": "Продолжить с этим устройством",
+      "id": "5186d986b4d7f8df"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 904,
+      "text": "Вернуться к вариантам",
+      "id": "50207f47659b4049"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 912,
+      "text": "Сейчас нет подходящих устройств",
+      "id": "055cac54fdf19d16"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 913,
+      "text": "Оставьте заявку — сообщим, когда появится подходящий вариант, или выберите продажу.",
+      "id": "3f5dc1fca241a922"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 918,
+      "text": "Каталог обновляется",
+      "id": "540519925cfae657"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 919,
+      "text": "Не показываем неактивные или уже проданные предложения.",
+      "id": "fb8854b5004b48d4"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 924,
+      "text": "Что произойдёт дальше",
+      "id": "993775b9cf37da96"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 925,
+      "text": "Менеджер свяжется только при появлении подходящего варианта.",
+      "id": "8d1429376085f3b5"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 935,
+      "text": "Выбрать продажу",
+      "id": "f1d939da3d33fec7"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 947,
+      "text": "Запишитесь на диагностику",
+      "id": "e64ed453e3b78781"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 947,
+      "text": "Оставьте контакт",
+      "id": "94acced167ef302b"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 949,
+      "text": "Оставьте удобный канал и пожелание по времени — точный визит подтвердит менеджер.",
+      "id": "3011023144bfd4d9"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 961,
+      "text": "Магазин",
+      "id": "1a8a25c66258d33b"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 978,
+      "text": "Желаемый день",
+      "id": "3b5641e288bb4105"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 988,
+      "text": "Удобный период",
+      "id": "4b138dae98385800"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 998,
+      "text": "Точное время подтвердит менеджер. При ошибке отправки введённые данные сохранятся.",
+      "id": "230a3aa459ba8ffc"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 1009,
+      "text": "Отправить заявку",
+      "id": "642feff20ab47f58"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 1012,
+      "text": "Изменить сценарий",
+      "id": "f58ccfe57eb8454c"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1021,
+      "text": "Заявка принята",
+      "id": "493a84f243fe9d9b"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1022,
+      "text": "Мы сохранили выбранный сценарий и пожелание по визиту.",
+      "id": "d6a578ccfc10e072"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1027,
+      "text": "Заявка отправлена",
+      "id": "f2f841df30cf9c67"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1029,
+      "text": "Номер заявки",
+      "id": "edbaf420782ce992"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1033,
+      "text": "Сценарий",
+      "id": "71ea7cc7e3ad9b3a"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1039,
+      "text": "Устройство",
+      "id": "f94eba826cfef74d"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 1041,
+      "text": "Уточнит менеджер",
+      "id": "e263152d1fc85559"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1046,
+      "text": "Оценка",
+      "id": "d3ec8ed1d5a71f29"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1059,
+      "text": "Связь",
+      "id": "499b2203bab4ad62"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "jsx-text",
+      "line": 1065,
+      "text": "Менеджер подтвердит детали по выбранному каналу. Пожелание по времени пока не является подтверждённой записью.",
+      "id": "8f8ac030c708942a"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 1070,
+      "text": "Вернуться на сайт",
+      "id": "7794216537802209"
+    },
+    {
+      "file": "apps/web/components/TradeInWizard.tsx",
+      "kind": "string",
+      "line": 1075,
+      "text": "Скопировать номер заявки",
+      "id": "320a94312725ef25"
     },
     {
       "file": "apps/web/data/devices.ts",

@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { getTradeQuote, TradeApiError, validateTradeExchangeSelection } from "@/lib/trade-server";
+import { isTradeQaRequest } from "@/lib/trade-qa";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -88,6 +89,7 @@ type StoredLead = {
   utm_content: string;
   utm_term: string;
   user_agent: string;
+  is_test: boolean;
 };
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -302,6 +304,7 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       utm_content: optionalText(lead.utm_content),
       utm_term: optionalText(lead.utm_term),
       user_agent: optionalText(lead.user_agent),
+      is_test: lead.is_test,
     };
     let response = await postPayload(directusLead);
     if (response?.ok) return true;
@@ -311,7 +314,7 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
         .text()
         .catch(() => "");
       if (/reference_code|leads_reference_code_unique/i.test(failure)) {
-        lead.reference_code = tradeReference();
+        lead.reference_code = tradeReference(lead.is_test);
         directusLead.reference_code = lead.reference_code;
         response = await postPayload(directusLead);
         if (response?.ok) return true;
@@ -363,6 +366,7 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       utm_campaign: optionalText(lead.utm_campaign),
       utm_content: optionalText(lead.utm_content),
       utm_term: optionalText(lead.utm_term),
+      is_test: lead.is_test,
     });
 
     return Boolean(legacyResponse?.ok);
@@ -385,12 +389,13 @@ function directusConnection() {
   };
 }
 
-async function existingTradeReference(idempotencyKey: string): Promise<string> {
+async function existingTradeReference(idempotencyKey: string, isTest: boolean): Promise<string> {
   if (!idempotencyKey) return "";
   const directus = directusConnection();
   if (!directus.url || !directus.token) return "";
   const params = new URLSearchParams({
     "filter[idempotency_key][_eq]": idempotencyKey,
+    "filter[is_test][_eq]": String(isTest),
     fields: "reference_code",
     limit: "1",
   });
@@ -407,7 +412,7 @@ async function existingTradeReference(idempotencyKey: string): Promise<string> {
   }
 }
 
-function tradeReference(now = new Date()): string {
+function tradeReference(isTest: boolean, now = new Date()): string {
   const moscow = new Date(now.getTime() + 3 * 60 * 60 * 1000);
   const date = [
     String(moscow.getUTCFullYear()).slice(-2),
@@ -415,7 +420,7 @@ function tradeReference(now = new Date()): string {
     String(moscow.getUTCDate()).padStart(2, "0"),
   ].join("");
   const suffix = String(Math.floor(100 + Math.random() * 900));
-  return `TR-${date}-${suffix}`;
+  return `${isTest ? "QA" : "TR"}-${date}-${suffix}`;
 }
 
 function validVisitDate(value: string): boolean {
@@ -428,12 +433,13 @@ async function validateTradeSubmission(input: {
   productId: string;
   offerId: string;
   storeId: string;
+  isTest: boolean;
 }): Promise<string | null> {
   if (!TRADE_SCENARIOS.has(input.scenario)) return "validation_error";
   if (["manual_evaluation", "stock_notification"].includes(input.scenario)) return null;
   if (!input.quoteId) return "validation_error";
   try {
-    await getTradeQuote(input.quoteId);
+    await getTradeQuote(input.quoteId, { testMode: input.isTest ? "only" : "exclude" });
     if (input.scenario === "exchange") {
       if (!input.productId || !input.offerId) return "product_unavailable";
       const available = await validateTradeExchangeSelection(
@@ -441,6 +447,7 @@ async function validateTradeSubmission(input: {
         input.productId,
         input.offerId,
         input.storeId || undefined,
+        { allowDraft: input.isTest },
       );
       if (!available) return "product_unavailable";
     }
@@ -479,13 +486,14 @@ export async function POST(request: NextRequest) {
   const sourceUrl = text(body.source_url, 800) || text(request.headers.get("referer"), 800);
   const kind = inferKind(text(body.kind, 64), scenario);
   const idempotencyKey = text(body.idempotency_key, 120);
+  const isTest = kind === "trade" && isTradeQaRequest(request);
 
   if (!contact) {
     return NextResponse.json({ ok: false, error: "contact_required" }, { status: 400 });
   }
 
   if (kind === "trade" && idempotencyKey) {
-    const existingReference = await existingTradeReference(idempotencyKey);
+    const existingReference = await existingTradeReference(idempotencyKey, isTest);
     if (existingReference) {
       return NextResponse.json({
         ok: true,
@@ -516,6 +524,7 @@ export async function POST(request: NextRequest) {
       productId: targetProductId,
       offerId: targetOfferId,
       storeId: storeLocationId,
+      isTest,
     });
     if (tradeError) {
       const status =
@@ -558,7 +567,7 @@ export async function POST(request: NextRequest) {
     preferred_visit_date: preferredVisitDate,
     preferred_visit_period: preferredVisitPeriod,
     idempotency_key: idempotencyKey,
-    reference_code: tradeReference(),
+    reference_code: tradeReference(isTest),
     club_offer: clubOffer,
     club_plan: text(body.club_plan, 255),
     club_term_months: text(body.club_term_months, 32),
@@ -579,11 +588,12 @@ export async function POST(request: NextRequest) {
     utm_content: text(body.utm_content, 128),
     utm_term: text(body.utm_term, 128),
     user_agent: text(request.headers.get("user-agent"), 800),
+    is_test: isTest,
   };
 
   let savedToDirectus = await postToDirectus(lead);
   if (!savedToDirectus && idempotencyKey) {
-    const existingReference = await existingTradeReference(idempotencyKey);
+    const existingReference = await existingTradeReference(idempotencyKey, isTest);
     if (existingReference) {
       lead.reference_code = existingReference;
       savedToDirectus = true;

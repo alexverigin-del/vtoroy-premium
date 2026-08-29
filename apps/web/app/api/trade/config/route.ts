@@ -27,10 +27,9 @@ function response(body: Record<string, unknown>, status: number) {
   return protectedHeaders(NextResponse.json(body, { status }));
 }
 
-function redirect(request: NextRequest, error?: string) {
-  const url = new URL("/trade/qa", request.url);
-  if (error) url.searchParams.set("error", error);
-  return protectedHeaders(NextResponse.redirect(url, 303));
+function redirect(error?: string) {
+  const location = error ? `/trade/qa?error=${encodeURIComponent(error)}` : "/trade/qa";
+  return protectedHeaders(new NextResponse(null, { status: 303, headers: { Location: location } }));
 }
 
 function clearSession(result: NextResponse): NextResponse {
@@ -73,26 +72,24 @@ export async function POST(request: NextRequest) {
     ? Object.fromEntries(await request.formData())
     : ((await request.json().catch(() => ({}))) as Record<string, unknown>);
   if (body.intent === "logout") {
-    return clearSession(formRequest ? redirect(request) : response({ ok: true }, 200));
+    return clearSession(formRequest ? redirect() : response({ ok: true }, 200));
   }
   if (!tradeQaEnabled()) {
-    return formRequest
-      ? redirect(request, "not_found")
-      : response({ ok: false, error: "not_found" }, 404);
+    return formRequest ? redirect("not_found") : response({ ok: false, error: "not_found" }, 404);
   }
   if (limited(request)) {
     return formRequest
-      ? redirect(request, "rate_limited")
+      ? redirect("rate_limited")
       : response({ ok: false, error: "rate_limited" }, 429);
   }
   const candidate = typeof body.secret === "string" ? body.secret : "";
   if (!authenticateTradeQaSecret(candidate)) {
     return formRequest
-      ? redirect(request, "unauthorized")
+      ? redirect("unauthorized")
       : response({ ok: false, error: "unauthorized" }, 401);
   }
 
-  const result = formRequest ? redirect(request) : response({ ok: true }, 200);
+  const result = formRequest ? redirect() : response({ ok: true }, 200);
   result.cookies.set(TRADE_QA_COOKIE, issueTradeQaSession(), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

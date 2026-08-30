@@ -144,7 +144,7 @@ async function main() {
       contact_channel: "phone",
       contact: "+7 900 000-00-00",
       device: "QA phone validation smoke",
-      idempotency_key: "trade-qa-valid-phone-smoke-v1",
+      idempotency_key: "trade-qa-valid-phone-smoke-v2",
       source: "/trade/qa",
       trade_consent_accepted: true,
       trade_consent_version: config.legal.consentVersion,

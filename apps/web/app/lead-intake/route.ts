@@ -513,17 +513,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "contact_required" }, { status: 400 });
   }
 
-  if (kind === "trade" && idempotencyKey) {
-    const existingReference = await existingTradeReference(idempotencyKey, isTest);
-    if (existingReference) {
-      return NextResponse.json({
-        ok: true,
-        storage: "directus",
-        reference_code: existingReference,
-      });
-    }
-  }
-
   const quoteId = text(body.quote_id, 80);
   const targetProductId = text(body.target_product_id, 255);
   const targetOfferId = text(body.target_offer_id, 80);
@@ -547,6 +536,26 @@ export async function POST(request: NextRequest) {
   }
   let tradeConsent: Awaited<ReturnType<typeof getTradeConsentRecord>> = null;
   if (kind === "trade") {
+    if (!accepted(body.trade_consent_accepted)) {
+      return NextResponse.json({ ok: false, error: "trade_consent_required" }, { status: 400 });
+    }
+    tradeConsent = await getTradeConsentRecord({ allowDraft: isTest });
+    if (!tradeConsent) {
+      return NextResponse.json({ ok: false, error: "legal_unavailable" }, { status: 503 });
+    }
+    if (text(body.trade_consent_version, 120) !== tradeConsent.version) {
+      return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
+    }
+    if (idempotencyKey) {
+      const existingReference = await existingTradeReference(idempotencyKey, isTest);
+      if (existingReference) {
+        return NextResponse.json({
+          ok: true,
+          storage: "directus",
+          reference_code: existingReference,
+        });
+      }
+    }
     const tradeError = await validateTradeSubmission({
       scenario,
       quoteId,
@@ -559,16 +568,6 @@ export async function POST(request: NextRequest) {
       const status =
         tradeError === "quote_expired" || tradeError === "product_unavailable" ? 409 : 400;
       return NextResponse.json({ ok: false, error: tradeError }, { status });
-    }
-    if (!accepted(body.trade_consent_accepted)) {
-      return NextResponse.json({ ok: false, error: "trade_consent_required" }, { status: 400 });
-    }
-    tradeConsent = await getTradeConsentRecord({ allowDraft: isTest });
-    if (!tradeConsent) {
-      return NextResponse.json({ ok: false, error: "legal_unavailable" }, { status: 503 });
-    }
-    if (text(body.trade_consent_version, 120) !== tradeConsent.version) {
-      return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
     }
   }
 

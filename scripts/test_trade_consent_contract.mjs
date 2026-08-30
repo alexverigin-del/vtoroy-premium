@@ -31,6 +31,18 @@ assert(!route.includes("appendLeadLog"), "lead route must not write a local PII 
 assert(!envExample.includes("LEADS_LOG_PATH"), "fallback PII log setting must be retired");
 assert(tradeServer.includes('createHash("sha256")'), "consent snapshot must have SHA-256 evidence");
 
+const postHandler = route.indexOf("export async function POST");
+const consentGuard = route.indexOf("if (!accepted(body.trade_consent_accepted))", postHandler);
+const idempotencyReplay = route.indexOf(
+  "const existingReference = await existingTradeReference(idempotencyKey, isTest)",
+  postHandler,
+);
+assert(consentGuard >= 0, "Trade-in consent guard must exist in POST");
+assert(
+  idempotencyReplay > consentGuard,
+  "Trade-in consent must be validated before idempotency replay",
+);
+
 for (const component of [finalCta, wizard]) {
   assert(component.includes('type="checkbox"'), "both Trade-in forms must use a checkbox");
   assert(component.includes("trade_consent_accepted"), "both Trade-in forms must submit consent");

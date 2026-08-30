@@ -6,6 +6,10 @@ import {
   marketingExampleDevice,
   marketingProductFacts,
 } from "../apps/web/lib/marketing-products.ts";
+import {
+  clubPrimaryCtaForRuntime,
+  tradePrimaryCtaForRuntime,
+} from "../apps/web/lib/marketing-cta.ts";
 
 function product(overrides = {}) {
   return {
@@ -44,6 +48,13 @@ assert.deepEqual(marketingProductFacts(product()), [
   "Гарантия 90 дней",
   "В наличии",
 ]);
+
+assert.equal(tradePrimaryCtaForRuntime("#trade-calculator", false), "#final");
+assert.equal(tradePrimaryCtaForRuntime("#trade-calculator", true), "#trade-calculator");
+assert.equal(tradePrimaryCtaForRuntime("/trade#trade-calculator", false), "#final");
+assert.equal(clubPrimaryCtaForRuntime("/#final"), "#club-request");
+assert.equal(clubPrimaryCtaForRuntime("/club#final"), "#club-request");
+assert.equal(clubPrimaryCtaForRuntime("https://isvoi.ru/#final"), "https://isvoi.ru/#final");
 
 const sourceFiles = await Promise.all(
   [

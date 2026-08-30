@@ -8,6 +8,7 @@ import {
   marketingProductDescriptor,
   marketingProductFacts,
 } from "@/lib/marketing-products";
+import { clubPrimaryCtaForRuntime } from "@/lib/marketing-cta";
 import { ProductCard } from "./ProductCard";
 import { RichText } from "./RichText";
 import { cn } from "../lib/cn";
@@ -784,9 +785,17 @@ function MarketingLiveExampleSection({
       : mode === "club"
         ? "Узнать условия пилота"
         : "Смотреть Passport");
-  const primaryUrl =
+  const configuredPrimaryUrl =
     section.primaryCtaUrl ||
-    (mode === "trade" ? "/trade#final" : mode === "club" ? "/club#final" : `/product/${device.id}`);
+    (mode === "trade"
+      ? "/trade#final"
+      : mode === "club"
+        ? "#club-request"
+        : `/product/${device.id}`);
+  const primaryUrl =
+    mode === "club"
+      ? clubPrimaryCtaForRuntime(configuredPrimaryUrl) || "#club-request"
+      : configuredPrimaryUrl;
   const secondaryLabel = section.secondaryCtaLabel || "Открыть карточку";
   const secondaryUrl = section.secondaryCtaUrl || `/product/${device.id}`;
 

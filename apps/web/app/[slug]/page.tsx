@@ -19,6 +19,7 @@ import { CityHubPage } from "@/components/CityHubPage";
 import { getTradePublicConfig } from "@/lib/trade-server";
 import { FinalCtaSection } from "@/components/FinalCtaSection";
 import { isTradeManagedSection, TradePageSection } from "@/components/TradePageSection";
+import { tradePrimaryCtaForRuntime } from "@/lib/marketing-cta";
 
 export const revalidate = 300;
 
@@ -118,9 +119,20 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
   ]);
   if (isInfoSlug(slug) && !page) notFound();
   const chrome = siteChrome(settings, navigation);
-  const sections = isMarketingSlug(slug)
+  const sourceSections = isMarketingSlug(slug)
     ? marketingSectionsForPage(slug, page?.sections)
     : (page?.sections ?? []).filter((section) => section.isActive);
+  const sections = sourceSections.map((section) =>
+    slug === "trade"
+      ? {
+          ...section,
+          primaryCtaUrl: tradePrimaryCtaForRuntime(
+            section.primaryCtaUrl,
+            tradeConfig?.active === true,
+          ),
+        }
+      : section,
+  );
   const currentPage = page ?? (isMarketingSlug(slug) ? getFallbackMarketingPage(slug) : null);
   if (!currentPage) notFound();
   const firstVisualBandSection = sections.find((section) => section.variant === "visual.band");

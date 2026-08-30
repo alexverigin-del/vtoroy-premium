@@ -548,6 +548,14 @@ const auditDefinitions = {
       "trade_legal.exchange_card_missing_listing_file",
     ],
   },
+  "trade-runtime": {
+    script: "scripts/audit_directus_trade_runtime_permissions_sql.mjs",
+    zero: [
+      "trade_runtime.settings_read_fields_missing",
+      "trade_runtime.store_read_fields_missing",
+      "trade_runtime.service_policy_assignment_missing",
+    ],
+  },
   "trade-studio": {
     script: "scripts/audit_directus_trade_studio_sql.mjs",
     zero: [

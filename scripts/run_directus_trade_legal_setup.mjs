@@ -64,6 +64,7 @@ if (apply) {
     path.join(root, "scripts", "run_directus_sql_audit.mjs"),
     "trade-governance",
     "trade-legal",
+    "trade-runtime",
     "trade-mvp",
   ]);
 }

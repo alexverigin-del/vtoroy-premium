@@ -240,6 +240,18 @@ DO $$ DECLARE permission_row record; extra_fields text := 'economics_status,prep
   END LOOP;
 END $$;
 
+UPDATE directus_permissions permission SET
+  fields='id,status,active_pricing_version,quote_validity_days,default_store,economics_status,preparation_cost_rub,warranty_reserve_pct,warranty_reserve_min_rub,markdown_reserve_pct,sales_cost_pct,operations_cost_rub,tax_reserve_pct,tax_treatment_confirmed,tax_regime,vat_mode,primary_document_mode,kkt_mode,payout_cash_enabled,payout_transfer_enabled,exchange_offset_enabled,primary_document_status,kkt_workflow_status,minimum_contribution_margin_pct,target_contribution_margin_pct,economics_approved_by,economics_approved_at,economics_approval_note,legal_status,quote_disclaimer_short,quote_disclaimer_full,consent_label,consent_text,consent_version,consent_url,privacy_url,safety_notice,counteroffer_notice,legal_approved_by,legal_approved_at,legal_approval_note'
+FROM directus_policies policy
+WHERE permission.policy=policy.id AND policy.name='ISVOI Trade Service'
+  AND permission.collection='trade_settings' AND permission.action='read';
+
+UPDATE directus_permissions permission SET
+  fields='id,slug,status,name,city,sort,intercity_delivery_enabled'
+FROM directus_policies policy
+WHERE permission.policy=policy.id AND policy.name='ISVOI Trade Service'
+  AND permission.collection='store_locations' AND permission.action='read';
+
 COMMIT;
 
 SELECT 'trade_governance.settings_fields',count(*)::text FROM information_schema.columns

@@ -44,9 +44,9 @@ JOIN trade_pricing_versions version ON version.id=settings.active_pricing_versio
 WHERE version.version=${sqlText(TRADE_PRICING_VERSION_V2)} AND settings.status<>'draft'
 UNION ALL
 SELECT 'trade_pricing_v2.published_rows',
-  ((SELECT count(*) FROM trade_pricing_versions WHERE status='published')
-   +(SELECT count(*) FROM trade_device_configs WHERE status='published')
-   +(SELECT count(*) FROM trade_condition_rules WHERE status='published'))::text
+  ((SELECT count(*) FROM trade_pricing_versions WHERE version=${sqlText(TRADE_PRICING_VERSION_V2)} AND status='published')
+   +(SELECT count(*) FROM trade_device_configs config JOIN trade_pricing_versions version ON version.id=config.pricing_version WHERE version.version=${sqlText(TRADE_PRICING_VERSION_V2)} AND config.status='published')
+   +(SELECT count(*) FROM trade_condition_rules rule JOIN trade_pricing_versions version ON version.id=rule.pricing_version WHERE version.version=${sqlText(TRADE_PRICING_VERSION_V2)} AND rule.status='published'))::text
 UNION ALL
 SELECT 'trade_pricing_v2.previous_draft_invalid',
   CASE WHEN

@@ -33,7 +33,6 @@ upsert_env() {
 }
 
 upsert_env "DIRECTUS_TRADE_TOKEN" "${trade_token}"
-upsert_env "TRADE_WIZARD_ENABLED" "0"
 
 echo "DIRECTUS_TRADE_TOKEN: configured"
-echo "TRADE_WIZARD_ENABLED: disabled"
+echo "TRADE_WIZARD_ENABLED: preserved"

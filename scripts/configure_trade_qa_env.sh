@@ -33,8 +33,7 @@ upsert_env() {
 
 upsert_env "TRADE_QA_SECRET" "${qa_secret}"
 upsert_env "TRADE_QA_ENABLED" "1"
-upsert_env "TRADE_WIZARD_ENABLED" "0"
 
 echo "TRADE_QA_SECRET: configured"
 echo "TRADE_QA_ENABLED: enabled"
-echo "TRADE_WIZARD_ENABLED: disabled"
+echo "TRADE_WIZARD_ENABLED: preserved"

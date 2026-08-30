@@ -44,7 +44,7 @@ export default async function TradeQaPage({
                 Внутренняя приёмка
               </h1>
               <p className="mt-3 text-sm leading-6 text-muted">
-                Введите отдельный QA-код. Клиентский калькулятор останется выключенным.
+                Введите отдельный QA-код. Тестовые оценки и заявки не смешиваются с клиентскими.
               </p>
               <form className="mt-6" method="post" action="/api/trade/config">
                 <label className="block">
@@ -83,7 +83,9 @@ export default async function TradeQaPage({
         <div className="border-b border-warning/30 bg-warning/10 px-6 py-3">
           <div className="mx-auto flex max-w-form items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-label text-carbon">QA · Draft</p>
+              <p className="text-xs font-bold uppercase tracking-label text-carbon">
+                QA · Trade-in
+              </p>
               <p className="mt-1 text-xs leading-5 text-muted">
                 Тестовые оценки и заявки отделены от клиентских данных.
               </p>
@@ -103,9 +105,9 @@ export default async function TradeQaPage({
           <TradeInWizard config={config} mode="qa" />
         ) : (
           <section className="px-6 py-20 text-center">
-            <h1 className="text-3xl font-bold text-carbon">Draft пока недоступен</h1>
+            <h1 className="text-3xl font-bold text-carbon">Контур Trade-in недоступен</h1>
             <p className="mx-auto mt-3 max-w-copy text-sm leading-6 text-muted">
-              Проверьте активную draft-версию, 19 конфигураций и 21 правило в Directus.
+              Проверьте активную версию, 24 конфигурации и 21 правило в Directus.
             </p>
           </section>
         )}

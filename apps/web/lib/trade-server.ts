@@ -173,10 +173,9 @@ export async function getTradeConsentRecord(
 }
 
 async function loadTradeContext(options: TradeContextOptions = {}): Promise<TradeContext | null> {
-  const allowDraft = options.allowDraft === true && tradeQaEnabled();
-  if (options.allowDraft && !allowDraft) return null;
-  if (!allowDraft && !tradeFeatureEnabled()) return null;
-  const expectedStatus = allowDraft ? "draft" : "published";
+  const qaAccess = options.allowDraft === true && tradeQaEnabled();
+  if (options.allowDraft && !qaAccess) return null;
+  if (!qaAccess && !tradeFeatureEnabled()) return null;
 
   const settingsResponse = await directusRequest<DirectusResponse<Row>>(
     "/items/trade_settings/1?fields=id,status,quote_validity_days,economics_status,tax_treatment_confirmed,primary_document_status,kkt_workflow_status,economics_approved_by,economics_approved_at,legal_status,quote_disclaimer_short,quote_disclaimer_full,consent_label,consent_text,consent_version,consent_url,privacy_url,safety_notice,counteroffer_notice,legal_approved_by,legal_approved_at,active_pricing_version.id,active_pricing_version.version,active_pricing_version.status,default_store.id,default_store.slug,default_store.name,default_store.city",
@@ -184,7 +183,9 @@ async function loadTradeContext(options: TradeContextOptions = {}): Promise<Trad
   const settings = record(settingsResponse?.data);
   const pricingVersion = relation(settings.active_pricing_version);
   const pricingVersionId = text(pricingVersion.id);
+  const expectedStatus = qaAccess ? text(settings.status) : "published";
   if (
+    !["draft", "published"].includes(expectedStatus) ||
     text(settings.status) !== expectedStatus ||
     text(pricingVersion.status) !== expectedStatus ||
     !pricingVersionId
@@ -308,7 +309,7 @@ async function loadTradeContext(options: TradeContextOptions = {}): Promise<Trad
     active:
       configs.size > 0 &&
       questionMap.size === QUESTION_KEYS.size &&
-      (allowDraft || (economicsReady && legalReady)) &&
+      (qaAccess || (economicsReady && legalReady)) &&
       [...questionMap.values()].every(
         (question) =>
           question.options.length === ANSWER_VALUES.size &&

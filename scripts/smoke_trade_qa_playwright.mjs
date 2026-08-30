@@ -5,6 +5,7 @@ import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs"
 
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://isvoi.ru").replace(/\/+$/, "");
 const secret = (process.env.TRADE_QA_SECRET || "").trim();
+const expectPublicEnabled = process.env.TRADE_EXPECT_PUBLIC_ENABLED === "1";
 if (secret.length < 32) throw new Error("TRADE_QA_SECRET with at least 32 characters is required.");
 
 function assert(condition, message) {
@@ -17,18 +18,27 @@ async function main() {
     const publicContext = await browser.newContext();
     const publicPage = await publicContext.newPage();
     const publicConfig = await publicPage.request.get(`${baseUrl}/api/trade/config`);
-    assert(
-      publicConfig.status() === 503,
-      `public config must stay closed, got ${publicConfig.status()}`,
-    );
-    assert(
-      (await publicConfig.json()).active === false,
-      "public config unexpectedly became active",
-    );
+    const publicConfigPayload = await publicConfig.json();
+    if (expectPublicEnabled) {
+      assert(publicConfig.ok(), `public config failed with ${publicConfig.status()}`);
+      assert(publicConfigPayload.active === true, "public config is inactive");
+      assert(
+        publicConfigPayload.pricingVersion === "trade-pricing-v3-draft" &&
+          publicConfigPayload.devices.length === 24,
+        "public config does not expose the approved v3 snapshot",
+      );
+    } else {
+      assert(
+        publicConfig.status() === 503,
+        `public config must stay closed, got ${publicConfig.status()}`,
+      );
+      assert(publicConfigPayload.active === false, "public config unexpectedly became active");
+    }
     await publicPage.goto(`${baseUrl}/trade`, { waitUntil: "load" });
+    const publicWizardCount = await publicPage.locator("#trade-calculator").count();
     assert(
-      (await publicPage.locator("#trade-calculator").count()) === 0,
-      "public wizard is visible",
+      expectPublicEnabled ? publicWizardCount === 1 : publicWizardCount === 0,
+      expectPublicEnabled ? "public wizard is missing" : "public wizard is visible",
     );
     await publicContext.close();
 

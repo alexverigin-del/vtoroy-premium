@@ -128,6 +128,8 @@
     "directus:seed:trade-pricing-v3": "node scripts/seed_directus_trade_pricing_v3_sql.mjs",
     "directus:setup:trade-pricing-v3:rehearse": "node scripts/run_directus_trade_pricing_v3_setup.mjs",
     "directus:setup:trade-pricing-v3:apply": "node scripts/run_directus_trade_pricing_v3_setup.mjs --apply --confirm-production",
+    "directus:publish:trade-pricing-v3:rehearse": "node scripts/run_directus_trade_pricing_v3_publish.mjs",
+    "directus:publish:trade-pricing-v3:apply": "node scripts/run_directus_trade_pricing_v3_publish.mjs --apply --confirm-production",
     "directus:setup:city-page-copy": "node scripts/setup_directus_city_page_copy_sql.mjs",
     "directus:setup:location-footer": "node scripts/setup_directus_location_footer_sql.mjs",
     "directus:setup:faq-editor": "node scripts/setup_directus_faq_editor_sql.mjs",

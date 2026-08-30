@@ -48,28 +48,29 @@ LEFT JOIN directus_policies policy ON policy.id=access.policy
 WHERE users.email='trade-service@service.isvoi'
   AND policy.name IS DISTINCT FROM 'ISVOI Trade Service'
 UNION ALL
-SELECT 'trade_mvp.draft_pilot_models_missing',(9-count(*))::text
+SELECT 'trade_mvp.supported_models_missing',(9-count(*))::text
 FROM device_models WHERE is_active=true
   AND slug IN ('iphone-13-pro','iphone-14-pro','iphone-14-pro-max','iphone-15-pro','iphone-16-pro','iphone-16-pro-max','samsung-galaxy-s22-ultra','samsung-galaxy-s23-ultra','samsung-galaxy-s24-ultra')
 UNION ALL
-SELECT 'trade_mvp.draft_configs_invalid',
-  CASE WHEN count(*)=24 AND count(*) FILTER(WHERE c.status='draft' AND c.base_min>0 AND c.base_max>=c.base_min)=24 THEN '0' ELSE '1' END
+SELECT 'trade_mvp.active_configs_invalid',
+  CASE WHEN count(*)=24 AND count(*) FILTER(WHERE c.status='published' AND c.base_min>0 AND c.base_max>=c.base_min)=24 THEN '0' ELSE '1' END
 FROM trade_device_configs c
 JOIN trade_pricing_versions v ON v.id=c.pricing_version
-WHERE v.version='trade-pricing-v3-draft' AND v.status='draft'
+WHERE v.version='trade-pricing-v3-draft' AND v.status='published'
 UNION ALL
-SELECT 'trade_mvp.draft_rules_invalid',
-  CASE WHEN count(*)=21 AND count(*) FILTER(WHERE r.status='draft')=21 THEN '0' ELSE '1' END
+SELECT 'trade_mvp.active_rules_invalid',
+  CASE WHEN count(*)=21 AND count(*) FILTER(WHERE r.status='published')=21 THEN '0' ELSE '1' END
 FROM trade_condition_rules r
 JOIN trade_pricing_versions v ON v.id=r.pricing_version
-WHERE v.version='trade-pricing-v3-draft' AND v.status='draft'
+WHERE v.version='trade-pricing-v3-draft' AND v.status='published'
 UNION ALL
-SELECT 'trade_mvp.draft_settings_invalid',(1-count(*))::text
+SELECT 'trade_mvp.active_settings_invalid',(1-count(*))::text
 FROM trade_settings settings
 JOIN trade_pricing_versions version ON version.id=settings.active_pricing_version
 JOIN store_locations store ON store.id=settings.default_store
-WHERE settings.id=1 AND settings.status='draft' AND settings.quote_validity_days=7
-  AND version.version='trade-pricing-v3-draft' AND version.status='draft'
+WHERE settings.id=1 AND settings.status='published' AND settings.quote_validity_days=7
+  AND version.version='trade-pricing-v3-draft' AND version.status='published'
+  AND settings.economics_status='approved' AND settings.legal_status='approved'
   AND store.slug='belgorod' AND store.status='published'
 UNION ALL
 SELECT 'trade_mvp.qa_fields_missing',(3-count(*))::text

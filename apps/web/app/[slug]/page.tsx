@@ -17,6 +17,8 @@ import { getStoreLocation } from "@/lib/store-locations";
 import { getAllPublishedV3ProductCards, getPublishedProducts } from "@/lib/product-catalog";
 import { CityHubPage } from "@/components/CityHubPage";
 import { getTradePublicConfig } from "@/lib/trade-server";
+import { FinalCtaSection } from "@/components/FinalCtaSection";
+import { isTradeManagedSection, TradePageSection } from "@/components/TradePageSection";
 
 export const revalidate = 300;
 
@@ -138,14 +140,28 @@ export default async function MarketingPage({ params }: MarketingPageProps) {
           }}
         />
         {sections.map((section) =>
-          isMarketingSlug(slug) ? (
+          isMarketingSlug(slug) && slug === "trade" && isTradeManagedSection(section) ? (
+            <TradePageSection
+              key={section.id || section.sectionKey}
+              section={section}
+              products={products}
+              tradeConfig={tradeConfig}
+            />
+          ) : isMarketingSlug(slug) &&
+            slug === "trade" &&
+            (section.variant === "page.cta" || section.sectionKey === "final_cta") ? (
+            <FinalCtaSection
+              key={section.id || section.sectionKey}
+              section={section}
+              source="trade_page"
+            />
+          ) : isMarketingSlug(slug) ? (
             <MarketingSectionRenderer
               key={section.id || section.sectionKey}
               section={section}
               slug={slug}
               products={products}
               priorityVisual={section === firstVisualBandSection}
-              tradeConfig={tradeConfig}
             />
           ) : (
             <InfoPageSectionRenderer key={section.id || section.sectionKey} section={section} />

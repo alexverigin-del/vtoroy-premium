@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { PageSection, ProductCardData, TradePublicConfig } from "@vtoroy/shared";
+import type { PageSection, ProductCardData } from "@vtoroy/shared";
 import type { MarketingSlug } from "@/lib/site-content";
 import {
   marketingExampleDevice,
@@ -9,13 +9,11 @@ import {
   marketingProductFacts,
 } from "@/lib/marketing-products";
 import { ProductCard } from "./ProductCard";
-import { FinalCtaSection } from "./FinalCtaSection";
 import { RichText } from "./RichText";
 import { cn } from "../lib/cn";
 import { isCriticalLocalImageSrc, priorityImageSrc } from "../lib/critical-images";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { isPassportManagedSection, PassportPageSection } from "./PassportPageSection";
-import { isTradeManagedSection, TradePageSection } from "./TradePageSection";
 import {
   brandZoneEyebrowClass,
   primaryPillCtaClass,
@@ -28,7 +26,6 @@ type MarketingSectionRendererProps = {
   slug: MarketingSlug;
   products?: ProductCardData[];
   priorityVisual?: boolean;
-  tradeConfig?: TradePublicConfig;
 };
 
 type MarketingCard = {
@@ -1382,14 +1379,11 @@ export function MarketingSectionRenderer({
   slug,
   products = [],
   priorityVisual = false,
-  tradeConfig,
 }: MarketingSectionRendererProps) {
   const renderedSection = isHeroSection(section) ? (
     <MarketingHeroSection section={section} slug={slug} />
   ) : slug === "passport" && isPassportManagedSection(section) ? (
     <PassportPageSection section={section} />
-  ) : slug === "trade" && isTradeManagedSection(section) ? (
-    <TradePageSection section={section} products={products} tradeConfig={tradeConfig} />
   ) : isVisualBandSection(section) ? (
     <MarketingVisualBandSection section={section} priority={priorityVisual} />
   ) : isCompareSection(section) ? (
@@ -1416,8 +1410,6 @@ export function MarketingSectionRenderer({
     <MarketingStepsSection section={section} />
   ) : isFaqSection(section) ? (
     <MarketingFaqSection section={section} />
-  ) : slug === "trade" && isPageCtaSection(section) ? (
-    <FinalCtaSection section={section} source="trade_page" />
   ) : isPageCtaSection(section) ? (
     <MarketingPageCtaSection section={section} />
   ) : null;

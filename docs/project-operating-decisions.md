@@ -3506,3 +3506,13 @@ Next content-editing priorities:
 - Consent validation must run before idempotency replay. After consent and version pass, an existing successful key is returned before volatile quote/stock revalidation, preserving the approved replay contract.
 - The public calculator remains fail-closed: draft pricing and `TRADE_WIZARD_ENABLED=0` were not changed. The exchange audit still sees 17 eligible current cards, with zero product-summary exclusions and zero missing listing images.
 - Post-release `npm audit --omit=dev` reports 4 high and 1 moderate vulnerable production packages in the Next/PostCSS/Sharp/Nanoid/Sanitize HTML dependency chain. Do not run an unreviewed forced audit fix; handle this as a separate dependency-hardening release with full regression and visual/performance gates before calculator launch.
+
+## 2026-08-30 · Dependency hardening and current-card QA
+
+- The dependency debt above is closed by `ce5290a`: Next.js `15.5.21`, Sanitize HTML `2.17.7`, PostCSS `8.5.26`, Nanoid `3.3.18`, Sharp `0.35.4`, plus patched dev-only Brace Expansion and JS-YAML lock entries. No `--force` or major framework upgrade was used.
+- A clean `npm ci` and both full and `--omit=dev` audits return `0 vulnerabilities` on production. The remaining install output contains deprecation notices for the legacy ESLint 8 toolchain and an unapproved dev-only `unrs-resolver` postinstall; neither is a reported npm vulnerability, and the script is not to be approved without a separate supply-chain review.
+- `4a7372d` fixes two stable link defects found by the release QA: when the Trade calculator is gated off, `#trade-calculator` falls back to the existing Trade `#final` form; legacy Club `/#final` and `/club#final` targets resolve to `#club-request` on `club.isvoi.ru`. Contract tests cover active and gated states.
+- `7e1fd8b` removes retired demo product slugs from the public consistency audit. It discovers up to four current `/product/*` routes from the live Catalog V3 page and verifies the currently published cards instead of stale fallback devices.
+- Production `web:verify`, bundle budget, route/copy/link/consistency, desktop/mobile visual and performance smokes passed. Performance LCP stayed between 244 ms and 668 ms across the checked routes, below the 4.5 s desktop and 6.5 s mobile budgets.
+- Closed Trade-in QA still passes 19 configurations, 7 questions, 10 calculations, phone and consent validation. `trade-runtime`, `trade-governance` and `trade-legal` pass; 17 exchange cards remain eligible.
+- Dependency hardening did not change Directus data, pricing publication or product records. `trade_settings.status=draft`, `TRADE_WIZARD_ENABLED=0` and public Trade config `503` remain mandatory until a separate enablement decision.

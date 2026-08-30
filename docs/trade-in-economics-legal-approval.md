@@ -218,7 +218,9 @@ ISVOI не автоматизирует бухгалтерское оформл�
 - Финальные permissions применены с backup `/opt/isvoi/backups/directus/20260830T182244Z`; после адресного сброса 19 ключей `permissions:*` Directus вернул health `ok`, а `trade-runtime`, `trade-governance` и `trade-legal` прошли.
 - Аудит каталога видит 17 актуальных карточек обмена, ноль ошибочных исключений по сводному остатку и ноль карточек без листингового изображения.
 - Калькулятор остаётся выключенным: `trade_settings.status=draft`, `TRADE_WIZARD_ENABLED=0`. Включение требует отдельного решения владельца и повторного release gate.
-- `npm audit --omit=dev` выявляет 4 high и 1 moderate уязвимости production-зависимостей. Их исправление вынесено в отдельный dependency-hardening релиз без автоматического `--force`.
+- Dependency hardening выполнен в `ce5290a`: полный и production-only `npm audit` возвращают `0 vulnerabilities`; Next.js, Sanitize HTML, PostCSS, Nanoid и Sharp обновлены без `--force` и без major-upgrade фреймворка.
+- Regression `4a7372d` не даёт CTA вести на скрытый Trade‑in калькулятор и сохраняет доступ к ручной форме `#final`; Club CTA исправлен на действующую форму `#club-request`. Аудит `7e1fd8b` использует актуальные опубликованные карточки.
+- После релиза прошли `web:verify`, bundle, route/copy/link/consistency, desktop/mobile visual и performance smokes, закрытый Trade‑in QA и Directus-аудиты. Калькулятор остаётся выключенным.
 
 ## 11. Источники
 

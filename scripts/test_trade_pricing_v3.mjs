@@ -2,6 +2,7 @@
 
 import assert from "node:assert/strict";
 import { calculateTradeRange } from "../apps/web/lib/trade-calculation.ts";
+import { TRADE_SUPPORTED_MODELS } from "../apps/web/lib/trade-supported-models.ts";
 import { tradePricingConfigsV2 } from "./trade_pricing_v2_data.mjs";
 import { tradeConditionRules, tradePricingConfigsV3 } from "./trade_pricing_v3_data.mjs";
 
@@ -37,6 +38,11 @@ assert.equal(
   24,
 );
 assert.equal(new Set(tradePricingConfigsV3.map((item) => item.modelSlug)).size, 9);
+assert.deepEqual(
+  new Set(tradePricingConfigsV3.map((item) => item.modelSlug)),
+  TRADE_SUPPORTED_MODELS,
+  "server model allowlist must cover the complete pricing draft",
+);
 for (const item of tradePricingConfigsV3) {
   assert.ok(item.baseMin > 0 && item.baseMax >= item.baseMin);
   assert.equal(item.baseMin % 500, 0);

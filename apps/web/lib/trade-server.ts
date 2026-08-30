@@ -24,6 +24,7 @@ import {
   type TradePricingRule,
 } from "./trade-calculation";
 import { tradeQaEnabled } from "./trade-qa";
+import { TRADE_SUPPORTED_MODELS } from "./trade-supported-models";
 
 type Row = Record<string, unknown>;
 type DirectusResponse<T> = { data: T };
@@ -45,13 +46,6 @@ const QUESTION_KEYS = new Set<TradeQuestionKey>([
   "account_removed",
 ]);
 const ANSWER_VALUES = new Set<TradeAnswerValue>(["yes", "no", "unknown"]);
-const PILOT_MODEL_SLUGS = new Set([
-  "iphone-13-pro",
-  "iphone-14-pro",
-  "iphone-14-pro-max",
-  "iphone-16-pro",
-  "iphone-16-pro-max",
-]);
 const DRAFT_LEGAL_COPY = {
   quoteDisclaimerShort:
     "Предварительная оценка не является офертой. Итоговая сумма зависит от диагностики и подтверждается до сделки.",
@@ -231,7 +225,7 @@ async function loadTradeContext(options: TradeContextOptions = {}): Promise<Trad
       !config.deviceModelId ||
       !config.modelName ||
       !config.storage ||
-      !PILOT_MODEL_SLUGS.has(config.modelSlug)
+      !TRADE_SUPPORTED_MODELS.has(config.modelSlug)
     )
       continue;
     configs.set(config.id, {

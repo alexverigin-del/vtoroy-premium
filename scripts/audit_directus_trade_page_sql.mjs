@@ -19,7 +19,13 @@ function sqlJson(value) {
 const expectedCopyRows = trade.sections
   .map((section) => {
     const content = structuredClone(section.content ?? {});
-    if (section.sectionKey === "final_cta") delete content.closing;
+    if (section.sectionKey === "final_cta") {
+      delete content.closing;
+      // Legal copy has a separately approved version and audit.
+      for (const key of ["consent_note", "consent_label", "consent_version", "consent_url"])
+        delete content.form[key];
+    }
+    if (section.sectionKey === "trade_live_example") delete content.emptyState;
     return `(${[
       sqlLiteral(section.sectionKey),
       sqlLiteral(section.eyebrow ?? ""),
@@ -43,8 +49,8 @@ WITH expected(section_key, sort_order) AS (
     ('trade_hero', 10),
     ('trade_calculator_intro', 15),
     ('trade_paths', 20),
-    ('trade_live_example', 30),
-    ('trade_steps', 40),
+    ('trade_steps', 30),
+    ('trade_live_example', 40),
     ('trade_compare', 50),
     ('final_cta', 60)
 ), expected_copy(
@@ -96,17 +102,17 @@ WHERE ps.eyebrow IS DISTINCT FROM e.eyebrow
    OR ps.secondary_cta_url IS DISTINCT FROM e.secondary_cta_url
    OR ps.sort_order IS DISTINCT FROM e.sort_order
    OR ps.is_active IS DISTINCT FROM e.is_active
-   OR ps.content::jsonb IS DISTINCT FROM e.content
+   OR NOT (coalesce(ps.content::jsonb, '{}'::jsonb) @> e.content)
 UNION ALL
 SELECT 'trade_page.hero.contract_invalid', count(*)::text
 FROM trade_sections
 WHERE section_key = 'trade_hero'
   AND (
     eyebrow <> 'I СВОИ · Trade'
-    OR headline <> 'Продайте, обменяйте или передайте технику на комиссию.'
+    OR headline <> 'Продайте или обменяйте свою технику'
     OR primary_cta_url <> '#trade-calculator'
     OR secondary_cta_url <> '/catalog'
-    OR jsonb_array_length(coalesce(content::jsonb -> 'highlights', '[]'::jsonb)) <> 3
+    OR jsonb_array_length(coalesce(content::jsonb -> 'highlights', '[]'::jsonb)) <> 0
     OR nullif(content::jsonb ->> 'note', '') IS NULL
   )
 UNION ALL
@@ -115,13 +121,12 @@ FROM trade_sections
 WHERE section_key = 'trade_paths'
   AND (
     jsonb_array_length(coalesce(content::jsonb -> 'items', '[]'::jsonb)) <> 3
-    OR nullif(content::jsonb ->> 'note', '') IS NULL
     OR EXISTS (
       SELECT 1
       FROM jsonb_array_elements(coalesce(content::jsonb -> 'items', '[]'::jsonb)) item
       WHERE nullif(item ->> 'heading', '') IS NULL
          OR nullif(item ->> 'label', '') IS NULL
-         OR item ->> 'url' <> '#final'
+         OR item ->> 'url' IS DISTINCT FROM CASE WHEN item ->> 'intent' = 'commission_consultation' THEN '#final' ELSE '#trade-calculator' END
     )
   )
 UNION ALL
@@ -129,10 +134,11 @@ SELECT 'trade_page.live_example.contract_invalid', count(*)::text
 FROM trade_sections
 WHERE section_key = 'trade_live_example'
   AND (
-    primary_cta_url <> '#final'
+    primary_cta_url <> '#trade-calculator'
     OR nullif(secondary_cta_label, '') IS NULL
     OR nullif(content::jsonb #>> '{valuation,heading}', '') IS NULL
-    OR nullif(content::jsonb #>> '{valuation,amount}', '') IS NULL
+    OR nullif(content::jsonb #>> '{valuation,formula}', '') IS NULL
+    OR nullif(content::jsonb #>> '{valuation,amount}', '') IS NOT NULL
     OR nullif(content::jsonb #>> '{valuation,from_note}', '') IS NULL
     OR nullif(content::jsonb ->> 'disclaimer', '') IS NULL
     OR nullif(content::jsonb ->> 'grade_label', '') IS NULL
@@ -157,11 +163,10 @@ SELECT 'trade_page.compare.contract_invalid', count(*)::text
 FROM trade_sections
 WHERE section_key = 'trade_compare'
   AND (
-    jsonb_array_length(coalesce(content::jsonb #> '{comparison,rows}', '[]'::jsonb)) <> 5
+    jsonb_array_length(coalesce(content::jsonb #> '{comparison,rows}', '[]'::jsonb)) <> 3
     OR content::jsonb #>> '{comparison,bad_header}' <> 'Самостоятельно'
     OR content::jsonb #>> '{comparison,good_header}' <> 'I СВОИ Trade'
-    OR nullif(content::jsonb ->> 'note', '') IS NULL
-    OR nullif(content::jsonb ->> 'disclaimer', '') IS NULL
+    OR nullif(content::jsonb ->> 'details_label', '') IS NULL
   )
 UNION ALL
 SELECT 'trade_page.form.contract_invalid', count(*)::text
@@ -171,11 +176,9 @@ WHERE section_key = 'final_cta'
     jsonb_array_length(coalesce(content::jsonb #> '{form,scenario_options}', '[]'::jsonb)) <> 3
     OR nullif(content::jsonb #>> '{form,device_label}', '') IS NULL
     OR nullif(content::jsonb #>> '{form,contact_label}', '') IS NULL
-    OR nullif(content::jsonb #>> '{form,consent_note}', '') IS NULL
-    OR nullif(closing_headline, '') IS NULL
-    OR nullif(closing_body, '') IS NULL
-    OR closing_primary_cta_url <> '#final'
-    OR closing_secondary_cta_url <> '/catalog'
+    OR nullif(content::jsonb #>> '{form,consent_version}', '') IS NULL
+    OR nullif(content::jsonb #>> '{form,consent_label}', '') IS NULL
+    OR content::jsonb #>> '{form,consent_url}' IS DISTINCT FROM '/privacy#trade-in-consent'
   )
 UNION ALL
 SELECT 'trade_page.legacy_copy', count(*)::text

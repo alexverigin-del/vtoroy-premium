@@ -7,3 +7,5 @@ directus/uploads
 var
 .venv
 venv
+# Generated photo-import manifests are not source files (also excluded by Git).
+apps/web/public/assets/products/**/manifest.json

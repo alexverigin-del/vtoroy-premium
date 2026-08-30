@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import type { PageSection, RichTextNode } from "@vtoroy/shared";
 import { cn } from "../lib/cn";
@@ -169,7 +169,10 @@ export function FinalCtaSection({
       ? proof
       : ["варианты под задачу", "без агрессивных продаж", "сначала проверка - потом решение"];
   const form = finalCtaFormContent(section.content.form);
-  const closing = managedClosingContent(section) ?? closingContent(section.content.closing);
+  const closing =
+    source === "trade_page"
+      ? null
+      : (managedClosingContent(section) ?? closingContent(section.content.closing));
   const footerNote =
     typeof section.content.footerNote === "string"
       ? section.content.footerNote
@@ -190,6 +193,16 @@ export function FinalCtaSection({
   const statusId = useId();
   const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
     useLeadIntake();
+
+  useEffect(() => {
+    if (!isTradePage) return;
+    const onHelp = () => {
+      const commission = form.scenarioOptions.find((option) => /комисси/iu.test(option));
+      if (commission) setScenario(commission);
+    };
+    window.addEventListener("isvoi:trade-help", onHelp);
+    return () => window.removeEventListener("isvoi:trade-help", onHelp);
+  }, [isTradePage, form.scenarioOptions]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -219,7 +232,11 @@ export function FinalCtaSection({
   }
 
   return (
-    <section className="bg-frost py-14 md:py-20" id="final" data-component="FinalCtaSection">
+    <section
+      className="scroll-mt-24 bg-frost py-14 md:py-20"
+      id="final"
+      data-component="FinalCtaSection"
+    >
       <div className="mx-auto max-w-page px-4 md:px-6">
         <HomeSectionIntro section={section} align="split" />
         <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-10">

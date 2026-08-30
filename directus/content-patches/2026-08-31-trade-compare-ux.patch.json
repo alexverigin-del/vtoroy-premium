@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "id": "2026-08-31-trade-compare-ux",
+  "description": "Trade-in approved UX structure: trade_compare",
+  "collection": "page_sections",
+  "selector": {
+    "page": "48562035-16be-4cc1-88b8-ba9b66558fcc",
+    "section_key": "trade_compare"
+  },
+  "changes": {
+    "headline": "Trade-in или самостоятельная продажа?",
+    "body": "<p>Сравните время на поиск покупателя, обсуждение цены и проверку устройства.</p>",
+    "content.comparison": {
+      "label_header": "Что сравниваем",
+      "bad_header": "Самостоятельно",
+      "good_header": "I СВОИ Trade",
+      "rows": [
+        {
+          "label": "Поиск покупателя",
+          "bad": "Создать объявление, отвечать на сообщения и ждать подходящего покупателя.",
+          "good": "Получить предложение после диагностики."
+        },
+        {
+          "label": "Цена",
+          "bad": "Назначить цену, торговаться и самостоятельно понимать, сколько устройство стоит сейчас.",
+          "good": "Получить итоговую оценку после осмотра и диагностики."
+        },
+        {
+          "label": "Проверка",
+          "bad": "Объяснять состояние каждому потенциальному покупателю и снова обсуждать найденные нюансы.",
+          "good": "Состояние фиксируем во время диагностики."
+        }
+      ]
+    },
+    "content.note": "",
+    "content.disclaimer": "",
+    "content.details_label": "Сравнить время, переговоры и проверку"
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "32cebf6c3f6c37a5fb72c324b0c47dd8812c095c1650c291c079a3720a018e4f"
+  }
+}

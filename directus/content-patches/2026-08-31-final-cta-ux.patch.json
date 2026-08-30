@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "id": "2026-08-31-final-cta-ux",
+  "description": "Trade-in approved UX structure: final_cta",
+  "collection": "page_sections",
+  "selector": {
+    "page": "48562035-16be-4cc1-88b8-ba9b66558fcc",
+    "section_key": "final_cta"
+  },
+  "changes": {
+    "headline": "Не нашли модель? Поможем с оценкой",
+    "eyebrow": "Ручная оценка и консультация",
+    "body": "<p>Опишите устройство или задайте вопрос о комиссии. Менеджер ответит по указанному контакту. Итоговую сумму подтвердим после диагностики.</p>",
+    "content.proof": [
+      "Модели вне калькулятора",
+      "Помощь с состоянием устройства",
+      "Консультация по комиссии"
+    ],
+    "content.form.submit_label": "Связаться с менеджером",
+    "content.closing": {}
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "77326def6435e6ac12955024ca176ddc0f284d8c7a3d897826b56d741478a9df"
+  }
+}

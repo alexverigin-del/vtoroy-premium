@@ -11,9 +11,10 @@ import type {
   TradeScenario,
   TradeVisitPeriod,
 } from "@vtoroy/shared";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { isValidPhoneNumber, sanitizePhoneInput } from "@/lib/phone";
+import type { tradeDeviceGroups } from "@/lib/trade-device-groups";
 import { useLeadIntake } from "./useLeadIntake";
 
 type Step =
@@ -66,7 +67,6 @@ const tradeTextareaClass =
   "mt-2 min-h-32 w-full resize-none rounded-input border border-hairline bg-white p-3 text-sm leading-6 text-carbon outline-none focus:border-link-blue focus:ring-2 focus:ring-link-blue/15";
 
 function readPersistedState(key: string): Partial<PersistedState> {
-  if (typeof window === "undefined") return {};
   try {
     return JSON.parse(window.sessionStorage.getItem(key) ?? "{}") as Partial<PersistedState>;
   } catch {
@@ -74,12 +74,14 @@ function readPersistedState(key: string): Partial<PersistedState> {
   }
 }
 
+const rubFormatter = new Intl.NumberFormat("ru-RU");
+
 function formatRub(value: number): string {
-  return `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
+  return `${rubFormatter.format(value)} ₽`;
 }
 
 function quoteAmount(quote: TradeQuote): string {
-  return `${new Intl.NumberFormat("ru-RU").format(quote.range.min)}–${new Intl.NumberFormat("ru-RU").format(quote.range.max)} ₽`;
+  return `${rubFormatter.format(quote.range.min)}–${rubFormatter.format(quote.range.max)} ₽`;
 }
 
 function expiryLabel(value: string): string {
@@ -145,7 +147,23 @@ function Progress({ step }: { step: 1 | 2 | 3 | 4 }) {
 }
 
 function WizardHeading({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-3xl font-bold leading-tight text-carbon md:text-4xl">{children}</h2>;
+  return (
+    <h3
+      tabIndex={-1}
+      className="focus-ring scroll-mt-24 text-2xl font-bold leading-tight text-carbon md:text-3xl"
+    >
+      {children}
+    </h3>
+  );
+}
+
+function SummaryRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex justify-between gap-4 border-b border-hairline py-3 last:border-0">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right font-semibold text-carbon">{children}</dd>
+    </div>
+  );
 }
 
 function StickyAction({
@@ -195,6 +213,7 @@ function SegmentedControl<T extends string>({
   options: Array<{ value: T; label: string }>;
   onChange: (value: T) => void;
 }) {
+  const groupName = useId();
   return (
     <fieldset>
       <legend className="mb-2 text-xs font-medium leading-5 text-carbon">{label}</legend>
@@ -211,6 +230,7 @@ function SegmentedControl<T extends string>({
           >
             <input
               type="radio"
+              name={groupName}
               className="sr-only"
               checked={value === option.value}
               onChange={() => onChange(option.value)}
@@ -310,23 +330,25 @@ function TradeConsent({
 
 export function TradeInWizard({
   config,
+  deviceGroups,
   mode = "public",
+  embedded = false,
 }: {
   config: TradePublicConfig;
+  deviceGroups: ReturnType<typeof tradeDeviceGroups>;
   mode?: TradeWizardMode;
+  embedded?: boolean;
 }) {
   const wizardStorageKey = mode === "qa" ? "isvoi.trade.qa.v1" : "isvoi.trade.v1";
-  const restored = useMemo(() => readPersistedState(wizardStorageKey), [wizardStorageKey]);
-  const [step, setStep] = useState<Step>(restored.step ?? "device");
-  const [deviceModelId, setDeviceModelId] = useState(restored.deviceModelId ?? "");
-  const [configurationId, setConfigurationId] = useState(restored.configurationId ?? "");
-  const [answers, setAnswers] = useState<TradeAnswers>(restored.answers ?? {});
-  const [quote, setQuote] = useState<TradeQuote | undefined>(restored.quote);
-  const [scenario, setScenario] = useState<TradeScenario | undefined>(restored.scenario);
+  const [restored, setRestored] = useState(false);
+  const [step, setStep] = useState<Step>("device");
+  const [deviceModelId, setDeviceModelId] = useState("");
+  const [configurationId, setConfigurationId] = useState("");
+  const [answers, setAnswers] = useState<TradeAnswers>({});
+  const [quote, setQuote] = useState<TradeQuote>();
+  const [scenario, setScenario] = useState<TradeScenario>();
   const [offers, setOffers] = useState<TradeExchangeOffer[]>([]);
-  const [selectedOffer, setSelectedOffer] = useState<TradeExchangeOffer | undefined>(
-    restored.selectedOffer,
-  );
+  const [selectedOffer, setSelectedOffer] = useState<TradeExchangeOffer>();
   const [manualDescription, setManualDescription] = useState("");
   const [contactChannel, setContactChannel] = useState<TradeContactChannel>("phone");
   const [contact, setContact] = useState("");
@@ -340,6 +362,7 @@ export function TradeInWizard({
   const [loading, setLoading] = useState(false);
   const [startedAt] = useState(() => Date.now());
   const headingRef = useRef<HTMLDivElement>(null);
+  const previousStep = useRef(step);
   const idempotencyKey = useRef("");
   const started = useRef(false);
   const {
@@ -350,15 +373,9 @@ export function TradeInWizard({
     turnstileRequired,
   } = useLeadIntake();
 
-  const deviceGroups = useMemo(() => {
-    const groups = new Map<string, { id: string; name: string }>();
-    for (const device of config.devices) {
-      groups.set(device.deviceModelId, { id: device.deviceModelId, name: device.modelName });
-    }
-    return [...groups.values()];
-  }, [config.devices]);
   const configurations = config.devices.filter((device) => device.deviceModelId === deviceModelId);
   const selectedConfiguration = config.devices.find((item) => item.id === configurationId);
+  const selectedStore = config.stores.find((store) => store.id === storeId);
   const completeAnswers = config.questions.every((question) => Boolean(answers[question.key]));
 
   const navigate = useCallback((next: Step, replace = false) => {
@@ -376,6 +393,21 @@ export function TradeInWizard({
   }, [mode]);
 
   useEffect(() => {
+    const saved = readPersistedState(wizardStorageKey);
+    const nextStep = saved.step === "submitted" ? "device" : (saved.step ?? "device");
+    previousStep.current = nextStep;
+    setStep(nextStep);
+    setDeviceModelId(saved.deviceModelId ?? "");
+    setConfigurationId(saved.configurationId ?? "");
+    setAnswers(saved.answers ?? {});
+    setQuote(saved.quote);
+    setScenario(saved.scenario);
+    setSelectedOffer(saved.selectedOffer);
+    setRestored(true);
+  }, [wizardStorageKey]);
+
+  useEffect(() => {
+    if (!restored) return;
     const state: PersistedState = {
       step,
       deviceModelId,
@@ -385,7 +417,11 @@ export function TradeInWizard({
       scenario,
       selectedOffer,
     };
-    window.sessionStorage.setItem(wizardStorageKey, JSON.stringify(state));
+    try {
+      window.sessionStorage.setItem(wizardStorageKey, JSON.stringify(state));
+    } catch {
+      // Storage can be unavailable in private browsing; keep the on-screen state.
+    }
     window.history.replaceState({ ...(window.history.state ?? {}), tradeStep: step }, "");
   }, [
     answers,
@@ -396,6 +432,7 @@ export function TradeInWizard({
     selectedOffer,
     step,
     wizardStorageKey,
+    restored,
   ]);
 
   useEffect(() => {
@@ -408,9 +445,18 @@ export function TradeInWizard({
   }, []);
 
   useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
-    headingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [step]);
+    if (!restored) return;
+    if (previousStep.current === step) return;
+    previousStep.current = step;
+    const heading = headingRef.current?.querySelector("h3");
+    heading?.focus({ preventScroll: true });
+    heading?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+      block: "start",
+    });
+  }, [step, restored]);
 
   async function requestQuote() {
     if (!deviceModelId || !configurationId || !completeAnswers) {
@@ -554,56 +600,48 @@ export function TradeInWizard({
           : 4;
 
   return (
-    <section id="trade-calculator" className="scroll-mt-24 bg-white py-10 md:py-16">
-      <div className="mx-auto max-w-form px-6">
-        <div ref={headingRef} tabIndex={-1} className="outline-none">
-          <Progress step={stepNumber} />
-        </div>
+    <section
+      id={embedded ? undefined : "trade-calculator"}
+      aria-label="Онлайн-оценка устройства"
+      className={cn("scroll-mt-24 bg-white", embedded ? "pb-6 pt-8" : "py-10 md:py-16")}
+    >
+      <div ref={headingRef} className="mx-auto max-w-form px-6">
+        <Progress step={stepNumber} />
 
         {step === "device" ? (
           <>
-            <WizardHeading>Что вы хотите оценить?</WizardHeading>
+            <WizardHeading>Какой смартфон вы хотите оценить?</WizardHeading>
             <p className="mt-2 text-sm leading-5 text-muted">
               Выберите точную конфигурацию — от неё зависит диапазон.
             </p>
             <div className="mt-5 grid gap-3">
               <label>
-                <span className="text-xs font-medium text-muted">Категория</span>
-                <input
-                  value="Смартфон"
-                  readOnly
-                  className="mt-2 h-16 w-full rounded-input border border-hairline bg-white px-3 text-base text-carbon"
-                />
-              </label>
-              <label>
-                <span className="text-xs font-medium text-muted">Бренд</span>
-                <input
-                  value="Apple"
-                  readOnly
-                  className="mt-2 h-16 w-full rounded-input border border-hairline bg-white px-3 text-base text-carbon"
-                />
-              </label>
-              <label>
                 <span className="text-xs font-medium text-muted">Модель</span>
                 <select
+                  aria-label="Модель"
                   value={deviceModelId}
                   onChange={(event) => {
                     setDeviceModelId(event.target.value);
                     setConfigurationId("");
                   }}
-                  className="mt-2 h-16 w-full rounded-input border border-hairline bg-white px-3 text-base text-carbon outline-none focus:border-link-blue focus:ring-2 focus:ring-link-blue/15"
+                  className={tradeSelectClass}
                 >
                   <option value="">Выберите модель</option>
-                  {deviceGroups.map((device) => (
-                    <option key={device.id} value={device.id}>
-                      {device.name}
-                    </option>
+                  {deviceGroups.map((group) => (
+                    <optgroup key={group.brand} label={group.brand}>
+                      {group.models.map((device) => (
+                        <option key={device.id} value={device.id}>
+                          {device.name}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </label>
               <label>
                 <span className="text-xs font-medium text-muted">Память</span>
                 <select
+                  aria-label="Память"
                   value={configurationId}
                   onChange={(event) => setConfigurationId(event.target.value)}
                   disabled={!deviceModelId}
@@ -625,7 +663,7 @@ export function TradeInWizard({
                 }}
                 className="focus-ring min-h-11 text-left text-sm font-semibold text-link-blue"
               >
-                Не знаю точную модель
+                Не нашли свою модель?
               </button>
             </div>
             <StickyAction
@@ -707,7 +745,7 @@ export function TradeInWizard({
               <button
                 type="button"
                 onClick={() => navigate("device")}
-                className="focus-ring text-link-blue"
+                className="focus-ring min-h-11 px-2 text-link-blue"
               >
                 Изменить
               </button>
@@ -1114,38 +1152,17 @@ export function TradeInWizard({
             <p className="mt-3 text-sm text-muted">Номер заявки</p>
             <p className="mt-2 text-3xl font-bold text-carbon">{referenceCode}</p>
             <dl className="mt-4 rounded-card bg-surface p-4 text-sm">
-              <div className="flex justify-between gap-4 border-b border-hairline py-3">
-                <dt className="text-muted">Сценарий</dt>
-                <dd className="text-right font-semibold text-carbon">
-                  {scenario ? SCENARIO_LABELS[scenario] : "Trade‑in"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-4 border-b border-hairline py-3">
-                <dt className="text-muted">Устройство</dt>
-                <dd className="text-right font-semibold text-carbon">
-                  {quote?.deviceLabel || manualDescription || "Уточнит менеджер"}
-                </dd>
-              </div>
-              {quote ? (
-                <div className="flex justify-between gap-4 border-b border-hairline py-3">
-                  <dt className="text-muted">Оценка</dt>
-                  <dd className="text-right font-semibold text-carbon">{quoteAmount(quote)}</dd>
-                </div>
-              ) : null}
-              {config.stores.find((store) => store.id === storeId) ? (
-                <div className="flex justify-between gap-4 border-b border-hairline py-3">
-                  <dt className="text-muted">Магазин</dt>
-                  <dd className="text-right font-semibold text-carbon">
-                    {config.stores.find((store) => store.id === storeId)?.name}
-                  </dd>
-                </div>
-              ) : null}
-              <div className="flex justify-between gap-4 py-3">
-                <dt className="text-muted">Связь</dt>
-                <dd className="text-right font-semibold text-carbon">
-                  {contactChannel === "phone" ? "Телефон" : "Telegram"} · {contact}
-                </dd>
-              </div>
+              <SummaryRow label="Сценарий">
+                {scenario ? SCENARIO_LABELS[scenario] : "Trade‑in"}
+              </SummaryRow>
+              <SummaryRow label="Устройство">
+                {quote?.deviceLabel || manualDescription || "Уточнит менеджер"}
+              </SummaryRow>
+              {quote ? <SummaryRow label="Оценка">{quoteAmount(quote)}</SummaryRow> : null}
+              {selectedStore ? <SummaryRow label="Магазин">{selectedStore.name}</SummaryRow> : null}
+              <SummaryRow label="Связь">
+                {contactChannel === "phone" ? "Телефон" : "Telegram"} · {contact}
+              </SummaryRow>
             </dl>
             <p className="mt-4 text-sm leading-5 text-carbon">
               Менеджер подтвердит детали по выбранному каналу. Пожелание по времени пока не является

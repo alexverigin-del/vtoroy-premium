@@ -95,8 +95,13 @@ WHERE table_schema = 'public'
   )
 UNION ALL
 SELECT 'lead_hardening.final_cta_consent_copy_missing', count(*)::text
-FROM page_sections
-WHERE section_key = 'final_cta'
-  AND COALESCE(is_active, false) = true
-  AND NULLIF(content::jsonb #>> '{form,consent_note}', '') IS NULL;
+FROM page_sections section
+JOIN site_pages page ON page.id = section.page
+WHERE section.section_key = 'final_cta'
+  AND COALESCE(section.is_active, false) = true
+  AND CASE WHEN page.slug = 'trade' THEN (
+    NULLIF(section.content::jsonb #>> '{form,consent_label}', '') IS NULL
+    OR section.content::jsonb #>> '{form,consent_version}' IS DISTINCT FROM 'trade-consent-v1-2026-08-30'
+    OR section.content::jsonb #>> '{form,consent_url}' IS DISTINCT FROM '/privacy#trade-in-consent'
+  ) ELSE NULLIF(section.content::jsonb #>> '{form,consent_note}', '') IS NULL END;
 `);

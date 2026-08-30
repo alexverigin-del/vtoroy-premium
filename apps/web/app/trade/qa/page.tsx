@@ -7,6 +7,7 @@ import { getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 import { TRADE_QA_COOKIE, tradeQaEnabled, validateTradeQaSession } from "@/lib/trade-qa";
 import { getTradePublicConfig } from "@/lib/trade-server";
+import { tradeDeviceGroups } from "@/lib/trade-device-groups";
 
 export const dynamic = "force-dynamic";
 
@@ -102,7 +103,11 @@ export default async function TradeQaPage({
           </div>
         </div>
         {config.active ? (
-          <TradeInWizard config={config} mode="qa" />
+          <TradeInWizard
+            config={config}
+            deviceGroups={tradeDeviceGroups(config.devices)}
+            mode="qa"
+          />
         ) : (
           <section className="px-6 py-20 text-center">
             <h1 className="text-3xl font-bold text-carbon">Контур Trade-in недоступен</h1>

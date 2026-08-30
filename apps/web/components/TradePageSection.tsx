@@ -9,6 +9,9 @@ import {
 import { ProductImage, productImageSrc } from "./ProductImage";
 import { RichText } from "./RichText";
 import { TradeInWizard } from "./TradeInWizard";
+import { TradeAnchor } from "./TradeAnchor";
+import { tradePrimaryCtaForRuntime } from "@/lib/marketing-cta";
+import { tradeDeviceGroups } from "@/lib/trade-device-groups";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
@@ -20,6 +23,7 @@ type TradeCard = {
   note: string;
   label: string;
   url: string;
+  intent: string;
 };
 
 type TradeStep = {
@@ -35,6 +39,7 @@ type TradeComparisonRow = {
 };
 
 const managedSectionKeys = new Set([
+  "trade_hero",
   "trade_calculator_intro",
   "trade_paths",
   "trade_live_example",
@@ -51,14 +56,40 @@ function TradeCalculatorSection({
 }) {
   if (!config?.active) return null;
   return (
-    <>
-      <TradeInWizard config={config} />
+    <section
+      id="trade-calculator"
+      aria-labelledby="trade-calculator-heading"
+      className="scroll-mt-24 border-y border-hairline bg-white pt-10 md:pt-14"
+    >
+      <div className="mx-auto max-w-form px-6">
+        {section.eyebrow ? (
+          <p className="text-sm font-semibold text-link-blue">{section.eyebrow}</p>
+        ) : null}
+        <h2
+          id="trade-calculator-heading"
+          tabIndex={-1}
+          className="focus-ring mt-3 text-3xl font-semibold leading-tight text-carbon md:text-4xl"
+        >
+          {section.headline}
+        </h2>
+        {section.body ? (
+          <RichText
+            className="mt-4 text-base leading-relaxed text-graphite"
+            html={section.body}
+            nodes={section.bodyRichText}
+          />
+        ) : null}
+        {section.content.note ? (
+          <p className="mt-3 text-sm text-muted">{String(section.content.note)}</p>
+        ) : null}
+      </div>
+      <TradeInWizard config={config} deviceGroups={tradeDeviceGroups(config.devices)} embedded />
       {section.content.disclaimer ? (
         <div className="bg-white px-6 pb-10 text-center text-xs leading-relaxed text-muted md:pb-14">
           <p className="mx-auto max-w-copy">{String(section.content.disclaimer)}</p>
         </div>
       ) : null}
-    </>
+    </section>
   );
 }
 
@@ -86,6 +117,7 @@ function tradeCards(value: unknown): TradeCard[] {
       note: stringField(record, "note"),
       label: stringField(record, "label"),
       url: stringField(record, "url"),
+      intent: stringField(record, "intent"),
     };
     return card.title || card.heading || card.text ? [card] : [];
   });
@@ -154,7 +186,53 @@ function TradeSectionHeader({ section }: { section: PageSection }) {
   );
 }
 
-function TradePathsSection({ section }: { section: PageSection }) {
+function TradeHeroSection({ section }: { section: PageSection }) {
+  return (
+    <section className="mx-auto max-w-page px-4 py-10 text-center md:px-6 md:py-14">
+      {section.eyebrow ? (
+        <p className="text-sm font-semibold text-link-blue">{section.eyebrow}</p>
+      ) : null}
+      <h1 className="mx-auto mt-4 max-w-copy text-4xl font-semibold leading-tight text-carbon md:text-6xl">
+        {section.headline}
+      </h1>
+      {section.body ? (
+        <RichText
+          className="mx-auto mt-5 max-w-copy text-lg leading-relaxed text-graphite"
+          html={section.body}
+          nodes={section.bodyRichText}
+        />
+      ) : null}
+      <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+        {section.primaryCtaLabel ? (
+          <TradeAnchor href={section.primaryCtaUrl || "#final"} className={primaryPillCtaClass}>
+            {section.primaryCtaLabel}
+          </TradeAnchor>
+        ) : null}
+        {section.secondaryCtaLabel ? (
+          <Link
+            href={normalizeSiteUrl(section.secondaryCtaUrl || "/catalog")}
+            className="focus-ring inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold text-link-blue underline underline-offset-4"
+          >
+            {section.secondaryCtaLabel}
+          </Link>
+        ) : null}
+      </div>
+      {section.content.note ? (
+        <p className="mx-auto mt-5 max-w-copy text-sm leading-relaxed text-muted">
+          {String(section.content.note)}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function TradePathsSection({
+  section,
+  calculatorActive,
+}: {
+  section: PageSection;
+  calculatorActive: boolean;
+}) {
   const cards = tradeCards(section.content.items ?? section.content.cards);
   if (cards.length === 0) return null;
 
@@ -188,13 +266,16 @@ function TradePathsSection({ section }: { section: PageSection }) {
                 </p>
               ) : null}
               {card.label && card.url ? (
-                <Link
-                  href={normalizeSiteUrl(card.url)}
+                <TradeAnchor
+                  intent={card.intent}
+                  href={normalizeSiteUrl(
+                    tradePrimaryCtaForRuntime(card.url, calculatorActive) || "#final",
+                  )}
                   className="focus-ring mt-auto inline-flex items-center gap-2 pt-7 text-sm font-semibold text-link-blue transition hover:text-action"
                 >
                   {card.label}
                   <span aria-hidden="true">→</span>
-                </Link>
+                </TradeAnchor>
               ) : null}
             </article>
           ))}
@@ -221,7 +302,9 @@ function TradeLiveExampleSection({
 
   const valuation = contentRecord(section.content.valuation);
   const valuationHeading = stringField(valuation, "heading");
-  const valuationAmount = stringField(valuation, "amount");
+  // CMS examples are not a user's quote. Never render legacy valuation.amount.
+  const valuationFormula =
+    stringField(valuation, "formula") || "Цена выбранного устройства − оценка вашего = доплата";
   const valuationNote = stringField(valuation, "from_note");
   const disclaimerLabel = String(section.content.note_label || "").trim();
   const deviceHref = device.detailHref;
@@ -277,22 +360,20 @@ function TradeLiveExampleSection({
               {valuationHeading ? (
                 <p className="text-sm font-semibold text-link-blue">{valuationHeading}</p>
               ) : null}
-              {valuationAmount ? (
-                <h3 className="mt-5 text-3xl font-semibold leading-tight text-carbon">
-                  {valuationAmount}
-                </h3>
-              ) : null}
+              <h3 className="mt-5 text-2xl font-semibold leading-snug text-carbon">
+                {valuationFormula}
+              </h3>
               {valuationNote ? (
                 <div className="mt-6 grid gap-4">{textParagraphs(valuationNote)}</div>
               ) : null}
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 {section.primaryCtaLabel ? (
-                  <Link
+                  <TradeAnchor
                     href={normalizeSiteUrl(section.primaryCtaUrl || "#final")}
                     className={primaryPillCtaClass}
                   >
                     {section.primaryCtaLabel}
-                  </Link>
+                  </TradeAnchor>
                 ) : null}
                 {section.secondaryCtaLabel ? (
                   <Link href={deviceHref} className={secondaryPillCtaClass}>
@@ -370,7 +451,10 @@ function TradeCompareSection({ section }: { section: PageSection }) {
     <section className="bg-frost py-14 md:py-20">
       <div className="mx-auto max-w-page px-4 md:px-6">
         <TradeSectionHeader section={section} />
-        <div className="mx-auto mt-10 max-w-content overflow-hidden rounded-card border border-hairline bg-white">
+        <details className="mx-auto mt-8 max-w-content overflow-hidden rounded-card border border-hairline bg-white">
+          <summary className="focus-ring cursor-pointer px-5 py-5 text-base font-semibold text-link-blue">
+            {String(section.content.details_label || "Сравнить способы продажи")}
+          </summary>
           <div className="hidden grid-cols-compare border-b border-hairline bg-ice text-sm font-semibold text-carbon md:grid">
             <div className="border-r border-hairline p-4">{labelHeader}</div>
             <div className="border-r border-hairline p-4">{badHeader}</div>
@@ -396,7 +480,7 @@ function TradeCompareSection({ section }: { section: PageSection }) {
               </div>
             </div>
           ))}
-        </div>
+        </details>
         {section.content.note ? (
           <div className="mx-auto mt-8 max-w-copy text-center">
             <h3 className="text-2xl font-semibold leading-tight text-carbon md:text-3xl">
@@ -427,10 +511,12 @@ export function TradePageSection({
   products: ProductCardData[];
   tradeConfig?: TradePublicConfig;
 }) {
+  if (section.sectionKey === "trade_hero") return <TradeHeroSection section={section} />;
   if (section.sectionKey === "trade_calculator_intro") {
     return <TradeCalculatorSection section={section} config={tradeConfig} />;
   }
-  if (section.sectionKey === "trade_paths") return <TradePathsSection section={section} />;
+  if (section.sectionKey === "trade_paths")
+    return <TradePathsSection section={section} calculatorActive={tradeConfig?.active === true} />;
   if (section.sectionKey === "trade_live_example") {
     return <TradeLiveExampleSection section={section} products={products} />;
   }

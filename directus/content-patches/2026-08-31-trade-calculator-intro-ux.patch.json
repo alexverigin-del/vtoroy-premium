@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "2026-08-31-trade-calculator-intro-ux",
+  "description": "Trade-in approved UX structure: trade_calculator_intro",
+  "collection": "page_sections",
+  "selector": {
+    "page": "48562035-16be-4cc1-88b8-ba9b66558fcc",
+    "section_key": "trade_calculator_intro"
+  },
+  "changes": {
+    "headline": "Оцените свой смартфон онлайн",
+    "eyebrow": "Калькулятор Trade-in",
+    "body": "<p>Выберите модель и ответьте на вопросы — покажем предварительный диапазон стоимости. Итоговую сумму подтвердим после диагностики.</p>"
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "9304ecbaa0db2619b2f3896c96c2790dec776f0abe0721360b9eee2c30fdc703"
+  }
+}

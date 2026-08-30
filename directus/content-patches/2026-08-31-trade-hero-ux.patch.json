@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "2026-08-31-trade-hero-ux",
+  "description": "Trade-in approved UX structure: trade_hero",
+  "collection": "page_sections",
+  "selector": {
+    "page": "48562035-16be-4cc1-88b8-ba9b66558fcc",
+    "section_key": "trade_hero"
+  },
+  "changes": {
+    "headline": "Продайте или обменяйте свою технику",
+    "body": "<p>Узнайте предварительную стоимость смартфона онлайн. Продажа, обмен или консультация по комиссии — решение за вами.</p>",
+    "primary_cta_label": "Оценить смартфон",
+    "secondary_cta_label": "Смотреть каталог",
+    "content.highlights": [],
+    "content.note": "Итоговую сумму подтвердим после диагностики. Без обязательств принять предложение."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "ecc5889a96ce22530fa8a872331bbb45a074e9cc1cfda1155b809ec1c211539e"
+  }
+}

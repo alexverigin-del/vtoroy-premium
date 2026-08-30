@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "id": "2026-08-31-trade-live-example-ux",
+  "description": "Trade-in approved UX structure: trade_live_example",
+  "collection": "page_sections",
+  "selector": {
+    "page": "48562035-16be-4cc1-88b8-ba9b66558fcc",
+    "section_key": "trade_live_example"
+  },
+  "changes": {
+    "headline": "Как считается доплата при обмене",
+    "eyebrow": "Обмен без сложных расчётов",
+    "body": "<p>Сначала оцениваем ваш смартфон, затем выбираем следующее устройство.</p>",
+    "primary_cta_label": "Рассчитать доплату",
+    "primary_cta_url": "#trade-calculator",
+    "sort_order": 40,
+    "content.label": "Одно из устройств в каталоге",
+    "content.valuation.formula": "Цена выбранного устройства − оценка вашего = доплата",
+    "content.valuation.heading": "Принцип расчёта",
+    "content.valuation.from_note": "Доплата не может быть меньше нуля. Персональный диапазон появится в калькуляторе после оценки и выбора доступного устройства."
+  },
+  "remove": ["content.valuation.amount"],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "5422f1317c45ee200fa23d3fd813894bdfa2631c02d71114976c8f9c86d29e74"
+  }
+}

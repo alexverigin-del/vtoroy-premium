@@ -61,4 +61,21 @@ assert(legalContent.includes(approvedVersion), "Directus legal content must use 
 assert(legalContent.includes("/privacy#trade-in-consent"), "consent must link to its own section");
 assert(legalContent.includes("'published'"), "privacy page must be published");
 
+const leadsAudit = read("scripts/audit_directus_leads_sql.mjs");
+assert(
+  leadsAudit.includes("CASE WHEN page.slug = 'trade'"),
+  "Trade consent has its own audit contract",
+);
+for (const field of ["consent_label", "consent_version", "consent_url"])
+  assert(leadsAudit.includes(`{form,${field}}`), `Lead audit must check ${field}`);
+assert(
+  leadsAudit.includes(approvedVersion),
+  "Lead audit must require the approved consent version",
+);
+assert(leadsAudit.includes("/privacy#trade-in-consent"), "Lead audit must require the consent URL");
+assert(
+  leadsAudit.includes("ELSE NULLIF(section.content::jsonb #>> '{form,consent_note}'"),
+  "Other forms retain their existing audit",
+);
+
 console.log("Trade-in consent contract passed");

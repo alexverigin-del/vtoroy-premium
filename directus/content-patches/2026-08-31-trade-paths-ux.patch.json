@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "id": "2026-08-31-trade-paths-ux",
+  "description": "Trade-in approved UX structure: trade_paths",
+  "collection": "page_sections",
+  "selector": {
+    "page": "48562035-16be-4cc1-88b8-ba9b66558fcc",
+    "section_key": "trade_paths"
+  },
+  "changes": {
+    "body": "<p>Продайте устройство, зачтите его стоимость при обмене или обсудите комиссию с менеджером.</p>",
+    "content.items": [
+      {
+        "badge": "01",
+        "title": "Продать",
+        "heading": "Получить деньги за технику",
+        "text": "Получите предложение после диагностики и решите, подходит ли вам сумма.",
+        "url": "#trade-calculator",
+        "label": "Получить оценку",
+        "intent": "sale"
+      },
+      {
+        "badge": "02",
+        "title": "Передать на комиссию",
+        "heading": "Обсудить продажу через магазин",
+        "text": "Менеджер расскажет об условиях и сроках. Автоматического расчёта комиссии нет.",
+        "url": "#final",
+        "label": "Обсудить комиссию",
+        "intent": "commission_consultation"
+      },
+      {
+        "badge": "03",
+        "title": "Обменять",
+        "heading": "Зачесть стоимость в покупку",
+        "text": "Сначала оцените свой смартфон, затем выберите доступное устройство и узнайте диапазон доплаты.",
+        "url": "#trade-calculator",
+        "label": "Рассчитать доплату",
+        "intent": "exchange"
+      }
+    ],
+    "content.note": ""
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "b33941b038567272feec25783b1427e92defb426cc6a30430645a8b839cb0e6c"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-30T17:57:11.920Z",
+  "updatedAt": "2026-08-30T19:56:46.437Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -97,21 +97,21 @@
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 49,
+      "line": 52,
       "text": "I СВОИ · ${location.city}: локальное наличие техники и аксессуаров, самовывоз и доставка из других магазинов сети.",
       "id": "f526d2db8c1e4fe8"
     },
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 51,
+      "line": 54,
       "text": "${location.name} — техника и аксессуары",
       "id": "667084361bef8b34"
     },
     {
       "file": "apps/web/app/[slug]/page.tsx",
       "kind": "string",
-      "line": 134,
+      "line": 148,
       "text": "Главная",
       "id": "36a04f938a572876"
     },
@@ -636,7 +636,7 @@
     {
       "file": "apps/web/app/lead-intake/route.ts",
       "kind": "string",
-      "line": 624,
+      "line": 623,
       "text": "Исходный сценарий формы: ${requestedScenario}",
       "id": "c20ebb2625335bc2"
     },
@@ -1008,8 +1008,8 @@
       "file": "apps/web/app/trade/qa/page.tsx",
       "kind": "jsx-text",
       "line": 46,
-      "text": "Введите отдельный QA-код. Клиентский калькулятор останется выключенным.",
-      "id": "9c6a9d83b3c8cfdd"
+      "text": "Введите отдельный QA-код. Тестовые оценки и заявки не смешиваются с клиентскими.",
+      "id": "f94a3549443c54f8"
     },
     {
       "file": "apps/web/app/trade/qa/page.tsx",
@@ -1042,30 +1042,30 @@
     {
       "file": "apps/web/app/trade/qa/page.tsx",
       "kind": "jsx-text",
-      "line": 87,
+      "line": 89,
       "text": "Тестовые оценки и заявки отделены от клиентских данных.",
       "id": "65f801922c4819a7"
     },
     {
       "file": "apps/web/app/trade/qa/page.tsx",
       "kind": "jsx-text",
-      "line": 96,
+      "line": 98,
       "text": "Завершить QA",
       "id": "3e7b0980182245e8"
     },
     {
       "file": "apps/web/app/trade/qa/page.tsx",
       "kind": "jsx-text",
-      "line": 106,
-      "text": "Draft пока недоступен",
-      "id": "5ccdc08aeb981d27"
+      "line": 108,
+      "text": "Контур Trade-in недоступен",
+      "id": "7713443f8de9c9a0"
     },
     {
       "file": "apps/web/app/trade/qa/page.tsx",
       "kind": "jsx-text",
-      "line": 107,
-      "text": "Проверьте активную draft-версию, 19 конфигураций и 21 правило в Directus.",
-      "id": "18ef9cb7f7528369"
+      "line": 109,
+      "text": "Проверьте активную версию, 24 конфигурации и 21 правило в Directus.",
+      "id": "59862c4dbfa7e90d"
     },
     {
       "file": "apps/web/components/BlogListing.tsx",
@@ -2477,420 +2477,420 @@
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 91,
+      "line": 89,
       "text": "Витрина",
       "id": "86ff7270336aaacc"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 92,
+      "line": 90,
       "text": "проверенные вещи",
       "id": "5e4a1ed8fa452740"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 93,
+      "line": 91,
       "text": "Карточки показывают грейд, наличие, гарантию и известную историю до решения.",
       "id": "248765d9502b91b2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 96,
+      "line": 94,
       "text": "Проверка",
       "id": "7685c798bf8586e5"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 97,
+      "line": 95,
       "text": "при вас",
       "id": "d9aebca3d45f86a9"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 98,
+      "line": 96,
       "text": "Состояние устройства фиксируется открыто, без обещаний со слов продавца.",
       "id": "49c0e9200f8bc7f6"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 101,
+      "line": 99,
       "text": "После покупки",
       "id": "e6fc4472c1e3b648"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 102,
+      "line": 100,
       "text": "Passport + гарантия",
       "id": "80c02878475084d1"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 103,
+      "line": 101,
       "text": "Покупатель получает понятную историю вещи и письменные условия.",
       "id": "8d459353a24592ac"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 108,
+      "line": 106,
       "text": "Маршрут",
       "id": "7fb0e8d62a221f3a"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 109,
+      "line": 107,
       "text": "выкуп / комиссия / обновление",
       "id": "e23906435299d221"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 110,
+      "line": 108,
       "text": "После оценки вы выбираете сценарий, а не торгуетесь в переписках.",
       "id": "18ac6156f83e2d38"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 113,
+      "line": 111,
       "text": "Оценка",
       "id": "da8a873ce4f845d1"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 114,
+      "line": 112,
       "text": "после диагностики",
       "id": "04eb36fa2628f878"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 115,
+      "line": 113,
       "text": "Цена опирается на состояние, комплектацию и понятный спрос внутри круга.",
       "id": "64477128ff3b336f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 118,
+      "line": 116,
       "text": "Безопасность",
       "id": "b1cbd5adc8e6af51"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 119,
+      "line": 117,
       "text": "без случайных встреч",
       "id": "421bc003be90519b"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 120,
+      "line": 118,
       "text": "Вещь проходит через Store и дальше уходит с зафиксированной историей.",
       "id": "ec696e8d93afc846"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 125,
+      "line": 123,
       "text": "Состояние",
       "id": "a42ee73f753648f4"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 126,
+      "line": 124,
       "text": "зафиксировано",
       "id": "cd7f2ca835e4694b"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 127,
+      "line": 125,
       "text": "Экран, корпус, аккумулятор, ремонты и следы влаги не остаются словами.",
       "id": "9a58d080d0451b5f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 130,
+      "line": 128,
       "text": "Покупка",
       "id": "bf6aa79ccdfe526f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 131,
+      "line": 129,
       "text": "без тумана",
       "id": "9b591366b22eda8f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 132,
+      "line": 130,
       "text": "Покупатель видит нюансы до решения, а не узнаёт их после сделки.",
       "id": "0b67dca19d0b9cfd"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 135,
+      "line": 133,
       "text": "Обновление",
       "id": "1e5f52a1d3f82d14"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 136,
+      "line": 134,
       "text": "предварительная стоимость",
       "id": "dca5afc58b9026a6"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 137,
+      "line": 135,
       "text": "Расчёт подтверждается после повторной диагностики устройства.",
       "id": "0071a23a954c2e3f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 142,
+      "line": 140,
       "text": "Формат",
       "id": "32711b62f00dca62"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 143,
+      "line": 141,
       "text": "пилот",
       "id": "8f9b77630b6dcad2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 144,
+      "line": 142,
       "text": "Условия обсуждаются только вокруг конкретного устройства.",
       "id": "a5e289f0488960ad"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 148,
+      "line": 146,
       "text": "без лишнего шума",
       "id": "2643cff7d194cb9a"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 149,
+      "line": 147,
       "text": "Trade и Store помогают перейти на следующую вещь без объявлений и торга.",
       "id": "55fb59f39e9e542c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 152,
+      "line": 150,
       "text": "Расчёт",
       "id": "c9735831ba167455"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 153,
+      "line": 151,
       "text": "до участия",
       "id": "de873d2a68f8d8b2"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 154,
+      "line": 152,
       "text": "Стоимость и обязательства подтверждаются отдельно до решения.",
       "id": "ff16aa4ac50afd1c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 160,
+      "line": 158,
       "text": "I СВОИ · Store",
       "id": "e1e249557a3e6282"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 161,
+      "line": 159,
       "text": "I СВОИ · Trade",
       "id": "c1ae936c0bb96530"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 162,
+      "line": 160,
       "text": "I СВОИ · Passport",
       "id": "4bdb551d9b8d57b4"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 163,
+      "line": 161,
       "text": "I СВОИ · Club — пилот",
       "id": "d906dc731785dad9"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 264,
+      "line": 262,
       "text": "Сравнение сценариев I СВОИ",
       "id": "c1853b9f701d6fd5"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 265,
+      "line": 263,
       "text": "Что сравниваем",
       "id": "79f6850bc052b811"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 266,
+      "line": 264,
       "text": "Случайный рынок",
       "id": "beafdfe016b4b640"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 267,
+      "line": 265,
       "text": "I СВОИ",
       "id": "74bd562a5c8c000f"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 298,
+      "line": 296,
       "text": "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
       "id": "5a3f93619e162a3c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 300,
+      "line": 298,
       "text": "Store как точка доверия.",
       "id": "82862ce609cbccd5"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 305,
+      "line": 303,
       "text": "Чистая витрина, видимая ответственность и спокойная консультация без давления.",
       "id": "0ea8261c06718896"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 475,
+      "line": 473,
       "text": "Оставить заявку",
       "id": "ef737fe8481b98fd"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 477,
+      "line": 475,
       "text": "Смотреть каталог",
       "id": "4565768e6690b658"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 786,
+      "line": 784,
       "text": "Получить предварительную оценку",
       "id": "bdfce1eada61830a"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 788,
+      "line": 786,
       "text": "Узнать условия пилота",
       "id": "a271fa9afc130902"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 789,
+      "line": 787,
       "text": "Смотреть Passport",
       "id": "c069db7ac62c1e1c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 793,
+      "line": 799,
       "text": "Открыть карточку",
       "id": "2fe62ce71fe56e92"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 799,
+      "line": 805,
       "text": "Пример Trade-логики",
       "id": "fcebb269821f0a34"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 801,
+      "line": 807,
       "text": "Пример Club-сценария",
       "id": "1b844f04ce846ea6"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 802,
+      "line": 808,
       "text": "Фрагмент Passport",
       "id": "70e86a76780ca799"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 806,
+      "line": 812,
       "text": "Берём реальное устройство из Store как цель обновления: цена и состояние известны, а стоимость вашей техники уточняется после диагностики.",
       "id": "abf7a8fc5f727704"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 808,
+      "line": 814,
       "text": "Passport фиксирует состояние устройства, а условия пилота и будущего обновления подтверждаются отдельно до участия.",
       "id": "866116e9246992ed"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "string",
-      "line": 809,
+      "line": 815,
       "text": "Так выглядит сжатый смысл Passport: не абстрактное обещание, а несколько проверенных фактов до решения.",
       "id": "7306747342230b14"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "jsx-text",
-      "line": 1137,
+      "line": 1143,
       "text": "Как выбрать вещь",
       "id": "5291ff247855a43c"
     },
     {
       "file": "apps/web/components/MarketingSectionRenderer.tsx",
       "kind": "jsx-text",
-      "line": 1140,
+      "line": 1146,
       "text": "Сначала задача и горизонт владения, потом состояние, бюджет и сценарий выхода.",
       "id": "9c723e516fb4f259"
     },
@@ -7412,35 +7412,35 @@
     {
       "file": "apps/web/lib/trade-server.ts",
       "kind": "string",
-      "line": 57,
+      "line": 51,
       "text": "Предварительная оценка не является офертой. Итоговая сумма зависит от диагностики и подтверждается до сделки.",
       "id": "a446622173ce296d"
     },
     {
       "file": "apps/web/lib/trade-server.ts",
       "kind": "string",
-      "line": 59,
+      "line": 53,
       "text": "Предварительная оценка, не оферта. Диапазон действует до {date}. Итоговую сумму подтвердим после очной диагностики, проверки комплектации, серийного номера, блокировок и права распоряжаться устройством. Если состояние отличается от ответов, предложим новую сумму — вы сможете принять её или отказаться.",
       "id": "584e9ca943617141"
     },
     {
       "file": "apps/web/lib/trade-server.ts",
       "kind": "string",
-      "line": 61,
+      "line": 55,
       "text": "Я даю согласие на обработку телефона или Telegram для ответа по заявке Trade-in и ознакомлен с Политикой обработки персональных данных.",
       "id": "245d8e95b0f1dd86"
     },
     {
       "file": "apps/web/lib/trade-server.ts",
       "kind": "string",
-      "line": 65,
+      "line": 59,
       "text": "Не заряжайте и не пересылайте устройство. Выключите его, если это можно сделать без давления на корпус, не вскрывайте и свяжитесь с магазином.",
       "id": "6fe7964feeb44368"
     },
     {
       "file": "apps/web/lib/trade-server.ts",
       "kind": "string",
-      "line": 67,
+      "line": 61,
       "text": "После диагностики сумма изменилась: {reason}. Новое предложение — {amount}. Вы можете принять его или забрать устройство без сделки.",
       "id": "e8a866a42391bcbe"
     }

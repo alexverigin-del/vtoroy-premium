@@ -188,7 +188,7 @@ async function main() {
     await qaPage.getByRole("button", { name: "Завершить QA" }).click();
     await qaPage.getByText("Внутренняя приёмка", { exact: true }).waitFor();
     console.log(
-      `Trade QA smoke passed for ${baseUrl}: 19 configs, 7 questions, 10 control calculations, phone and consent validation`,
+      `Trade QA smoke passed for ${baseUrl}: ${config.devices.length} configs, ${config.questions.length} questions, ${controls.length} control calculations, phone and consent validation`,
     );
     await qaContext.close();
   } finally {

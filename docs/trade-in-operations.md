@@ -86,7 +86,9 @@ Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_set
 - White Titanium и другие `unmatched/not_applicable` не получают фиктивный `matched`: gate принимает их только по документированному `verified + eligible + operator override` без причины блокировки.
 - iPhone 14 Pro Max Gold остаётся `draft/blocked` до повторной диагностики и не входит в public gate.
 - Подтверждённые расходы и quote max заполнены для всех 17 кейсов. Результат: release-ready 17/17, gross headroom 17/17, contribution margin не ниже 15% — 17/17, Trade Desk approval 17/17; gate `PASSED`.
-- Rehearsal `trade-pricing-v3-draft` выполнен с `ROLLBACK`. До production apply и отдельного решения о публикации `TRADE_WIZARD_ENABLED=0`, `trade_settings.status=draft` и публичный config `503` сохраняются.
+- Rehearsal `trade-pricing-v3-draft` выполнен с `ROLLBACK`, затем draft применён после backup `/opt/isvoi/backups/directus/20260830T193503Z`. Коммиты `153a19e` и `33baaa1` развёрнуты в production.
+- Post-apply audits `trade-pricing-v2`, `trade-pricing-v3`, `trade-mvp`, `trade-studio` и `trade-legal` прошли. Закрытый QA подтвердил 24 конфигурации, 7 вопросов, 15 серверных расчётов, телефон, согласие и идемпотентность; public config остаётся закрыт с `503`.
+- До отдельного решения о публикации `TRADE_WIZARD_ENABLED=0`, `trade_settings.status=draft` и публичный config `503` сохраняются.
 
 Статус `PASSED` является обязательным условием перед публикацией pricing version. Сам по себе он не включает калькулятор: для этого по-прежнему требуется отдельное решение об изменении `trade_settings.status` и `TRADE_WIZARD_ENABLED`.
 

@@ -109,6 +109,18 @@ Trade-in разделён на два уровня доступа:
 
 Контентная граница: заголовок, видимость и disclaimer секции управляются из `page_sections`; модели, память, вопросы, варианты ответов и факторы — из Trade-in коллекций. Служебные тексты кнопок, ошибок и safety-сценария остаются частью версии интерфейса и меняются через разработку, чтобы редактор не мог нарушить контракт формы.
 
+## Production launch v3 — 30 августа 2026
+
+- Владелец проекта дал отдельное разрешение на публикацию v3 и включение feature flag. Перед переключением catalog-complete gate повторно прошёл для 17/17 карточек и 8/8 представленных моделей.
+- Публикация выполнена forward-only скриптом `directus:publish:trade-pricing-v3:apply` после успешной rehearsal с `ROLLBACK`. Pre-publish backup: `/opt/isvoi/backups/directus/20260830T195900Z`.
+- Активное состояние Directus: `trade-pricing-v3-draft` имеет статус `published`; опубликованы ровно 24 конфигурации и 21 правило; `trade_settings.status=published`, срок оценки — 7 дней. v1 и v2 сохранены как исторические draft-версии.
+- `TRADE_WIZARD_ENABLED=1` установлен через `scripts/configure_trade_public_env.sh`; env backup: `/opt/isvoi/apps/web/.env.local.trade-wizard.20260830T200107Z.bak`. Сайт пересобран после изменения env и `isvoi-web` перезапущен с `--update-env`.
+- Публичный `/api/trade/config` возвращает `200`, `active=true`, 24 конфигурации и 7 вопросов. `/trade` показывает калькулятор; существующие информационные секции сохранены ниже него.
+- Финальная приёмка прошла: production build и bundle budget; семь Directus-аудитов; основной, links, desktop/mobile visual и performance smoke; закрытый QA на опубликованной версии — 15 расчётов, phone validation, обязательное согласие и idempotency. Проверенные LCP — 164–704 мс при бюджетах 4,5/6,5 с.
+- Release-коммиты: `50f2f76` — атомарная публикация, live-aware QA и безопасное управление флагом; `b10d878` — reviewed baseline служебного QA-текста.
+
+Быстрый rollback интерфейса: `bash scripts/configure_trade_public_env.sh disable`, затем `npm run web:build` и `pm2 restart isvoi-web --update-env`. Опубликованный неизменяемый pricing snapshot при этом остаётся в Directus для аудита, а публичные config/quote снова закрываются флагом. При проблеме именно с pricing дополнительно перевести singleton `trade_settings` в `paused` через Administrator и повторить smoke.
+
 ## Юридический контур и актуальные карточки — 30 августа 2026
 
 - В production Directus применена версия согласия `trade-consent-v1-2026-08-30`, опубликованы `/privacy` и отдельный раздел `/privacy#trade-in-consent`, добавлены серверный снимок текста, SHA-256, версия, время и источник согласия в карточку Trade-in лида.

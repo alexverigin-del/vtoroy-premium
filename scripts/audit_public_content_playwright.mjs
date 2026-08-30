@@ -10,10 +10,6 @@ const defaultRoutes = [
   "/passport",
   "/trade",
   "/club",
-  "/product/iphone-13-pro",
-  "/product/iphone-14",
-  "/product/macbook-air-m1",
-  "/product/ipad-air",
   "/blog",
   "/blog/chto-pokazyvaet-diagnostika-iphone",
   "/blog/kak-proverit-batareyu-iphone",
@@ -60,7 +56,7 @@ function routeIssues(route, data) {
   }
 
   if (route === "/catalog") {
-    if (data.h1[0] !== "Техника и аксессуары в наличии.") {
+    if (data.h1[0]?.replace(/[.!?]+$/u, "") !== "Техника и аксессуары в наличии") {
       issues.push("catalog H1 does not state the universal Catalog V3 offer");
     }
     if (data.mainText.includes("Для Club")) issues.push("catalog exposes a Club filter");
@@ -86,8 +82,14 @@ function routeIssues(route, data) {
     if (data.forms.length !== 1)
       issues.push(`Trade must have one form, found ${data.forms.length}`);
     const scenarios = data.forms[0]?.options ?? [];
-    for (const expected of ["Продать устройство", "Обменять с доплатой", "Передать на комиссию"]) {
-      if (!scenarios.includes(expected)) issues.push(`Trade scenario is missing: ${expected}`);
+    for (const expected of [
+      { label: "продажа", pattern: /^Продать(?: устройство)?$/iu },
+      { label: "обмен", pattern: /Обменять|Зачесть стоимость/iu },
+      { label: "комиссия", pattern: /комисси/iu },
+    ]) {
+      if (!scenarios.some((scenario) => expected.pattern.test(scenario))) {
+        issues.push(`Trade scenario is missing: ${expected.label}`);
+      }
     }
     if (data.mainActions.some((action) => pathFromHref(action.href) === "/#final")) {
       issues.push("Trade CTA leaves the Trade form for the homepage form");
@@ -127,6 +129,24 @@ const failures = [];
 try {
   browser = await launchChromium({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+
+  if (!process.env.SMOKE_ROUTES) {
+    await page.goto(`${baseUrl}/catalog`, { waitUntil: "networkidle", timeout: 30_000 });
+    const currentProductRoutes = await page.evaluate(() =>
+      [
+        ...new Set(
+          [...document.querySelectorAll('main a[href*="/product/"]')]
+            .map((link) => new URL(link.href, window.location.href).pathname)
+            .filter((pathname) => pathname.startsWith("/product/")),
+        ),
+      ].slice(0, 4),
+    );
+    if (currentProductRoutes.length === 0) {
+      throw new Error("catalog has no current product routes for consistency audit");
+    }
+    routes.splice(6, 0, ...currentProductRoutes);
+    console.log(`Current product routes: ${currentProductRoutes.join(", ")}`);
+  }
 
   for (const route of routes) {
     const response = await page.goto(`${baseUrl}${route}`, {

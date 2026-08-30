@@ -49,10 +49,10 @@ async function main() {
     assert(config.active === true, "QA config is inactive");
     assert(config.contractVersion === 2, `expected contract v2, got ${config.contractVersion}`);
     assert(
-      config.pricingVersion === "trade-pricing-v2-draft",
-      `expected trade-pricing-v2-draft, got ${config.pricingVersion}`,
+      config.pricingVersion === "trade-pricing-v3-draft",
+      `expected trade-pricing-v3-draft, got ${config.pricingVersion}`,
     );
-    assert(config.devices.length === 19, `expected 19 QA configs, got ${config.devices.length}`);
+    assert(config.devices.length === 24, `expected 24 QA configs, got ${config.devices.length}`);
     assert(
       config.questions.length === 7,
       `expected 7 QA questions, got ${config.questions.length}`,
@@ -79,6 +79,11 @@ async function main() {
       ["iphone-16-pro", "512 ГБ", { was_repaired: "unknown" }, "manual_evaluation_required"],
       ["iphone-16-pro-max", "512 ГБ", { battery_risk: "yes" }, "safety_stop"],
       ["iphone-13-pro", "256 ГБ", { account_removed: "no" }, [19_500, 22_000]],
+      ["iphone-15-pro", "256 ГБ", {}, [31_000, 34_500]],
+      ["iphone-15-pro", "512 ГБ", {}, [35_000, 39_000]],
+      ["samsung-galaxy-s22-ultra", "256 ГБ", {}, [20_500, 23_000]],
+      ["samsung-galaxy-s23-ultra", "256 ГБ", {}, [26_500, 29_500]],
+      ["samsung-galaxy-s24-ultra", "256 ГБ", {}, [30_500, 34_000]],
     ];
 
     for (const [modelSlug, storage, answerOverrides, expected] of controls) {

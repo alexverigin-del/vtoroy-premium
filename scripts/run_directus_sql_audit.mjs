@@ -520,6 +520,17 @@ const auditDefinitions = {
       "trade_pricing_v2.previous_draft_invalid",
     ],
   },
+  "trade-pricing-v3": {
+    script: "scripts/audit_directus_trade_pricing_v3_sql.mjs",
+    zero: [
+      "trade_pricing_v3.version_missing",
+      "trade_pricing_v3.config_mismatches",
+      "trade_pricing_v3.rules_invalid",
+      "trade_pricing_v3.settings_invalid",
+      "trade_pricing_v3.published_rows",
+      "trade_pricing_v3.previous_v2_invalid",
+    ],
+  },
   "trade-governance": {
     script: "scripts/audit_directus_trade_governance_sql.mjs",
     zero: [

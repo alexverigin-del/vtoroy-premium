@@ -8,6 +8,7 @@ import {
   evaluateRealDeviceCandidate,
   evaluateTradeDeskGate,
   mergeTradeDeskAcceptance,
+  applyConfirmedTradeDeskApproval,
 } from "./trade_pricing_real_device_validation.mjs";
 
 const root = process.cwd();
@@ -19,13 +20,15 @@ const remoteCommand =
   process.env.DIRECTUS_AUDIT_REMOTE_PSQL ||
   "cd /opt/isvoi/infra/directus-beget && docker compose exec -T database psql -U isvoi -d isvoi -v ON_ERROR_STOP=1 -qAt -F '|'";
 const enforce = process.argv.includes("--enforce");
+const approveConfirmedCosts = process.argv.includes("--approve-confirmed-cost-policy");
 
 const sqlResult = spawnSync(
   process.execPath,
   [path.join(root, "scripts", "query_trade_pricing_validation_run_sql.mjs")],
   { cwd: root, encoding: "utf8" },
 );
-if (sqlResult.status !== 0) throw new Error(sqlResult.stderr || "Could not generate validation SQL");
+if (sqlResult.status !== 0)
+  throw new Error(sqlResult.stderr || "Could not generate validation SQL");
 
 const queryResult = spawnSync("ssh", ["-i", sshKey, sshTarget, remoteCommand], {
   cwd: root,
@@ -33,12 +36,33 @@ const queryResult = spawnSync("ssh", ["-i", sshKey, sshTarget, remoteCommand], {
   encoding: "utf8",
   maxBuffer: 4 * 1024 * 1024,
 });
-if (queryResult.status !== 0) throw new Error(queryResult.stderr || "Production candidate query failed");
+if (queryResult.status !== 0)
+  throw new Error(queryResult.stderr || "Production candidate query failed");
 
 const columns = [
-  "candidate_key", "candidate_source", "model_slug", "storage", "grade", "battery_text",
-  "diagnostic_date", "diagnostics_status", "repair", "water", "product_status", "stock_status",
-  "quantity", "listing_price", "purchase_price", "eligibility_status", "identity_status",
+  "candidate_key",
+  "candidate_source",
+  "model_slug",
+  "storage",
+  "grade",
+  "battery_text",
+  "diagnostic_date",
+  "diagnostics_status",
+  "repair",
+  "water",
+  "product_status",
+  "content_status",
+  "stock_status",
+  "quantity",
+  "listing_price",
+  "purchase_price",
+  "eligibility_status",
+  "identity_status",
+  "authenticity_status",
+  "review_override",
+  "review_note_present",
+  "block_reason",
+  "offer_ready",
   "diagnostics_complete",
 ];
 
@@ -53,7 +77,14 @@ const rawCandidates = queryResult.stdout
     }
     const candidate = Object.fromEntries(columns.map((column, index) => [column, values[index]]));
     candidate.quantity = Number(candidate.quantity);
-    candidate.diagnostics_complete = candidate.diagnostics_complete === "t";
+    for (const field of [
+      "review_override",
+      "review_note_present",
+      "offer_ready",
+      "diagnostics_complete",
+    ]) {
+      candidate[field] = candidate[field] === "t";
+    }
     return candidate;
   });
 
@@ -64,16 +95,33 @@ let existingAcceptance = {};
 if (fs.existsSync(acceptancePath)) {
   existingAcceptance = JSON.parse(fs.readFileSync(acceptancePath, "utf8"));
 }
-const acceptance = mergeTradeDeskAcceptance(evaluated, existingAcceptance);
+let acceptance = mergeTradeDeskAcceptance(evaluated, existingAcceptance);
+if (approveConfirmedCosts) acceptance = applyConfirmedTradeDeskApproval(acceptance);
 const gate = evaluateTradeDeskGate(acceptance);
 acceptance.candidates = gate.candidates;
 fs.writeFileSync(acceptancePath, `${JSON.stringify(acceptance, null, 2)}\n`, "utf8");
 
 const csvColumns = [
-  "candidate_key", "candidate_source", "model_slug", "storage", "grade", "battery_text",
-  "diagnostics_status", "eligibility_status", "listing_price", "historical_purchase_price",
-  "quote_min", "quote_max", "actual_gross_margin_pct", "projected_gross_margin_pct",
-  "gross_headroom_pass", "diagnostics_complete",
+  "candidate_key",
+  "candidate_source",
+  "model_slug",
+  "storage",
+  "grade",
+  "battery_text",
+  "diagnostics_status",
+  "eligibility_status",
+  "identity_status",
+  "identity_override_accepted",
+  "release_ready",
+  "listing_price",
+  "historical_purchase_price",
+  "quote_min",
+  "quote_max",
+  "actual_gross_margin_pct",
+  "projected_gross_margin_pct",
+  "policy_contribution_margin_pct",
+  "gross_headroom_pass",
+  "diagnostics_complete",
 ];
 const csvValue = (value) => {
   const text = value == null ? "" : String(value);
@@ -81,57 +129,76 @@ const csvValue = (value) => {
 };
 const csv = [
   csvColumns.join(","),
-  ...evaluated.map((candidate) => csvColumns.map((column) => csvValue(candidate[column])).join(",")),
+  ...gate.candidates.map((candidate) => {
+    const row = {
+      ...candidate,
+      policy_contribution_margin_pct:
+        candidate.policy_scenario_at_quote_max?.contribution_margin_pct ?? "",
+    };
+    return csvColumns.map((column) => csvValue(row[column])).join(",");
+  }),
 ].join("\n");
 fs.writeFileSync(path.join(outputDir, "real_device_candidates.csv"), `\uFEFF${csv}\n`, "utf8");
 
-const margins = evaluated.map((candidate) => candidate.projected_gross_margin_pct).sort((a, b) => a - b);
-const actualMargins = evaluated.map((candidate) => candidate.actual_gross_margin_pct).sort((a, b) => a - b);
+const margins = evaluated
+  .map((candidate) => candidate.projected_gross_margin_pct)
+  .sort((a, b) => a - b);
+const actualMargins = evaluated
+  .map((candidate) => candidate.actual_gross_margin_pct)
+  .sort((a, b) => a - b);
 const money = (value) => `${Number(value).toLocaleString("ru-RU")} ₽`;
 const status = gate.passed ? "PASSED" : "BLOCKED";
-const rows = evaluated.map((candidate) =>
-  `| ${candidate.candidate_key.slice(0, 18)} | ${candidate.model_slug} | ${candidate.storage} | ${candidate.grade || "—"} | ${money(candidate.listing_price)} | ${money(candidate.historical_purchase_price)} | ${money(candidate.quote_min)}–${money(candidate.quote_max)} | ${candidate.actual_gross_margin_pct}% | ${candidate.projected_gross_margin_pct}% | ${candidate.diagnostics_complete ? "готово" : "нужно"} |`,
+const rows = gate.candidates.map(
+  (candidate) =>
+    `| ${candidate.candidate_key.slice(0, 18)} | ${candidate.model_slug} | ${candidate.storage} | ${candidate.grade || "—"} | ${money(candidate.listing_price)} | ${money(candidate.historical_purchase_price)} | ${money(candidate.quote_min)}–${money(candidate.quote_max)} | ${candidate.actual_gross_margin_pct}% | ${candidate.projected_gross_margin_pct}% | ${candidate.policy_scenario_at_quote_max?.contribution_margin_pct ?? "—"}% | ${candidate.diagnostics_complete ? "готово" : "нужно"} |`,
 );
 
-const report = `# Trade-in pricing v2: проверка на реальных устройствах
+const report = `# Trade-in pricing v3: проверка всего публичного ассортимента
 
-Дата: 29 августа 2026 года. Версия: \`trade-pricing-v2-draft\`. Gate: **${status}**.
+Дата: 30 августа 2026 года. Версия: \`${acceptance.pricing_version}\`. Gate: **${status}**.
 
 ## Результат
 
 - Активированных inventory-кандидатов: **${gate.candidate_count}/${gate.target}**.
+- Покрыто моделей: **${gate.model_count}/${gate.target_model_count}**.
 - Завершённая диагностика/Passport: **${gate.diagnostics_ready}/${gate.target}**.
+- Готовая identity-сверка или документированный operator override: **${gate.identity_ready}/${gate.target}**.
+- Полная release-ready выборка: **${gate.release_ready}/${gate.target}**.
 - Запас не меньше 25% при верхней границе quote: **${gate.gross_headroom_ready}/${gate.target}**.
 - Фактическая валовая маржа текущих закупок: **${actualMargins[0]}–${actualMargins.at(-1)}%**.
-- Расчётная валовая маржа при v2 quote max: **${margins[0]}–${margins.at(-1)}%**.
+- Расчётная валовая маржа при v3 quote max: **${margins[0]}–${margins.at(-1)}%**.
 - Заполнены подготовка и гарантийный резерв: **${gate.cost_inputs_ready}/${gate.target}**.
+- Статус коммерческой cost policy: **${acceptance.cost_policy.status}**; налоговый режим: **УСН «Доходы» ${acceptance.cost_policy.tax_reserve_pct}%, без НДС**; модель подтверждена: **${acceptance.cost_policy.tax_treatment_confirmed ? "да" : "нет"}**.
+- Contribution margin не ниже ${acceptance.cost_policy.minimum_contribution_margin_pct}%: **${gate.contribution_margin_ready}/${gate.target}** подтверждённых кейсов.
 - Одобрено Trade Desk: **${gate.approved_candidates}/${gate.target}**; общее подтверждение: **${gate.approval_complete ? "да" : "нет"}**.
 
-Матрица v2 проходит защитный gross-headroom на **${gate.gross_headroom_ready}/${gate.candidate_count}** активированных складских позициях. Неактивированные строки загрузки остатков намеренно не входят в контрольную выборку до создания товарной карточки, загрузки фото и завершения Passport. Поэтому Trade Desk gate остаётся закрытым до появления десяти активированных кандидатов и завершения их диагностики.
+Матрица v3 проверяет все опубликованные б/у устройства с готовым контентом, реальным остатком и опубликованным offer. Draft/blocked-карточки, включая iPhone 14 Pro Max Gold на повторной диагностике, в выборку не входят. Статусы \`unmatched\` и \`not_applicable\` принимаются только вместе с \`verified/not_required\`, \`eligible\`, явным operator override, заметкой и отсутствием причины блокировки.
 
 ## Контрольные устройства
 
-| Кандидат | Модель | Память | Грейд | Розница | Фактическая закупка | Quote v2 | Факт. gross margin | Gross margin v2 | Диагностика |
-| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Кандидат | Модель | Память | Грейд | Розница | Фактическая закупка | Quote v3 | Факт. gross margin | Gross margin v3 | Contribution с налоговым резервом | Диагностика |
+| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 ${rows.join("\n")}
 
-## Что требуется для снятия блокировки
+## Release gate
 
-1. Завершить повторную диагностику iPhone 14 Pro Max 256 ГБ Gold.
-2. После штатной активации новых устройств с фото и Passport повторно собрать выборку до 10 единиц.
-3. В \`trade_desk_acceptance.json\` заполнить для всех десяти устройств подтверждённый offer, стоимость подготовки и гарантийный резерв.
-4. Trade Desk задаёт минимальную net margin, одобряет каждый кейс и заполняет общее подтверждение.
-5. Выполнить \`npm run trade:validate:real-devices:gate\`; только статус PASSED разрешает обсуждать публикацию pricing version.
+1. Gate обязан охватывать все 17 текущих публичных карточек и все 8 моделей без случайного \`LIMIT\`.
+2. Подтверждённый offer в каждом кейсе равен верхней границе quote: так проверяется наиболее рискованный сценарий выплаты.
+3. Внешний процесс магазина обеспечивает печать договора по факту сделки и формирование чеков на кассовом терминале; эти документы не создаются и не хранятся в ISVOI.
+4. Выполнить \`npm run trade:validate:real-devices:gate\`; только статус PASSED разрешает отдельно обсуждать публикацию pricing version.
 
 ## Ограничения
 
-Проверка использует обезличенные production inventory и Passport: серийные номера и IMEI не выгружаются. Текущая розничная цена не доказывает фактическую продажу по этой цене, а gross margin не учитывает подготовку, гарантию, налоги и другие переменные расходы, пока Trade Desk не заполнит acceptance.
+Проверка использует обезличенные production inventory и Passport: серийные номера и IMEI не выгружаются. Текущая розничная цена не доказывает фактическую продажу по этой цене. Показанный contribution включает подтверждённый резерв ${acceptance.cost_policy.tax_reserve_pct}% для УСН «Доходы», без НДС. Договор и кассовые чеки находятся вне контура ISVOI.
 `;
 fs.writeFileSync(path.join(outputDir, "README.md"), report, "utf8");
 
 console.log(`Trade pricing real-device gate: ${status}`);
 console.log(`- candidates: ${gate.candidate_count}/${gate.target}`);
+console.log(`- models: ${gate.model_count}/${gate.target_model_count}`);
 console.log(`- diagnostics: ${gate.diagnostics_ready}/${gate.target}`);
+console.log(`- identity: ${gate.identity_ready}/${gate.target}`);
+console.log(`- release ready: ${gate.release_ready}/${gate.target}`);
 console.log(`- gross headroom: ${gate.gross_headroom_ready}/${gate.target}`);
 console.log(`- cost inputs: ${gate.cost_inputs_ready}/${gate.target}`);
 console.log(`- approvals: ${gate.approved_candidates}/${gate.target}`);

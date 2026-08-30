@@ -15,15 +15,19 @@
 
 ## 2. Заполнение реальных цен
 
-Первоначальный draft `trade-mvp-2026-08-29-draft` сохранён как историческая версия. Текущий рабочий draft — `trade-pricing-v2-draft`; методика, источники и 19 диапазонов зафиксированы в `trade-in-pricing-recommendation-2026-08-29.md`. Seed v2 добавляет отдельную forward-only версию, 19 конфигураций и 21 правило идемпотентно, не изменяет v1 и ничего не публикует.
+Первоначальный draft `trade-mvp-2026-08-29-draft` и v2 сохранены как исторические версии. Текущий рабочий draft — `trade-pricing-v3-draft`; методика и новые диапазоны зафиксированы в `trade-in-pricing-recommendation-2026-08-30-v3.md`. Seed v3 добавляет отдельную forward-only версию, 24 конфигурации и 21 правило идемпотентно, не изменяет прежние версии и ничего не публикует.
 
 1. Создать draft в `trade_pricing_versions`.
 2. Добавить конфигурации памяти в `trade_device_configs` только для:
    - iPhone 13 Pro;
    - iPhone 14 Pro;
    - iPhone 14 Pro Max;
+   - iPhone 15 Pro;
    - iPhone 16 Pro;
-   - iPhone 16 Pro Max.
+   - iPhone 16 Pro Max;
+   - Samsung Galaxy S22 Ultra;
+   - Samsung Galaxy S23 Ultra;
+   - Samsung Galaxy S24 Ultra.
 3. Заполнить реальные `base_min` и `base_max`. Демонстрационные цены публиковать нельзя.
 4. Для каждого вопроса создать три правила `yes/no/unknown` с одной версией цен:
    - `powers_on` — «Включается и загружается?»;
@@ -51,7 +55,7 @@
 
 Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_settings` в `paused`. Существующая страница Trade остаётся доступной без калькулятора.
 
-## Состояние production на 29 августа 2026
+## Историческое состояние production на 29 августа 2026
 
 - Аддитивная миграция схемы применена после успешного rollback-rehearsal.
 - Backup перед миграцией схемы: `/opt/isvoi/backups/directus/20260829T152005Z`. Backup перед загрузкой v1: `/opt/isvoi/backups/directus/20260829T161229Z`. Backup перед загрузкой v2: `/opt/isvoi/backups/directus/20260829T181145Z`. PostgreSQL и uploads прошли проверку контрольных сумм.
@@ -74,6 +78,15 @@ Rollback: снять `TRADE_WIZARD_ENABLED` или перевести `trade_set
 - форма подтверждения: `analysis/trade-in-pricing-validation-2026-08-29/trade_desk_acceptance.json`.
 
 Состояние на 29 августа 2026 года: активировано 8 подходящих складских кандидатов, 8/8 проходят минимальный валовой запас 25% при верхней границе v2 quote, диагностика завершена для 7/8. Расчётная валовая маржа v2 составляет 30,7–44,8%. Неактивированные строки загрузки остатков не входят в выборку до появления товарной карточки, фото и Passport. Gate остаётся `BLOCKED`, пока выборка не достигнет 10 активированных устройств, не завершена их диагностика, не заполнены offer/подготовка/гарантийный резерв и Trade Desk не утвердил минимальную net margin и каждый кейс.
+
+## Catalog-complete gate и draft v3 — 30 августа 2026
+
+- Выборка больше не ограничивается первым десятком строк: она охватывает все 17 опубликованных, готовых и доступных б/у карточек с реальным offer и остатком.
+- Автооценка расширена до девяти моделей и 24 конфигураций. В текущем публичном каталоге представлены восемь моделей; iPhone 13 Pro остаётся поддерживаемой моделью приёма.
+- White Titanium и другие `unmatched/not_applicable` не получают фиктивный `matched`: gate принимает их только по документированному `verified + eligible + operator override` без причины блокировки.
+- iPhone 14 Pro Max Gold остаётся `draft/blocked` до повторной диагностики и не входит в public gate.
+- Подтверждённые расходы и quote max заполнены для всех 17 кейсов. Результат: release-ready 17/17, gross headroom 17/17, contribution margin не ниже 15% — 17/17, Trade Desk approval 17/17; gate `PASSED`.
+- Rehearsal `trade-pricing-v3-draft` выполнен с `ROLLBACK`. До production apply и отдельного решения о публикации `TRADE_WIZARD_ENABLED=0`, `trade_settings.status=draft` и публичный config `503` сохраняются.
 
 Статус `PASSED` является обязательным условием перед публикацией pricing version. Сам по себе он не включает калькулятор: для этого по-прежнему требуется отдельное решение об изменении `trade_settings.status` и `TRADE_WIZARD_ENABLED`.
 

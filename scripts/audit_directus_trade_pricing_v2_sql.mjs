@@ -38,13 +38,10 @@ FROM trade_condition_rules rule
 JOIN trade_pricing_versions version ON version.id=rule.pricing_version
 WHERE version.version=${sqlText(TRADE_PRICING_VERSION_V2)} AND version.status='draft'
 UNION ALL
-SELECT 'trade_pricing_v2.settings_invalid',(1-count(*))::text
+SELECT 'trade_pricing_v2.settings_invalid',count(*)::text
 FROM trade_settings settings
 JOIN trade_pricing_versions version ON version.id=settings.active_pricing_version
-JOIN store_locations store ON store.id=settings.default_store
-WHERE settings.id=1 AND settings.status='draft' AND settings.quote_validity_days=7
-  AND version.version=${sqlText(TRADE_PRICING_VERSION_V2)} AND version.status='draft'
-  AND store.status='published'
+WHERE version.version=${sqlText(TRADE_PRICING_VERSION_V2)} AND settings.status<>'draft'
 UNION ALL
 SELECT 'trade_pricing_v2.published_rows',
   ((SELECT count(*) FROM trade_pricing_versions WHERE status='published')

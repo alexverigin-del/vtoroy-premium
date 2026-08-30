@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
+
 import type {
   TradeAnswerOption,
   TradeAnswerValue,
@@ -50,6 +52,29 @@ const PILOT_MODEL_SLUGS = new Set([
   "iphone-16-pro",
   "iphone-16-pro-max",
 ]);
+const DRAFT_LEGAL_COPY = {
+  quoteDisclaimerShort:
+    "Предварительная оценка не является офертой. Итоговая сумма зависит от диагностики и подтверждается до сделки.",
+  quoteDisclaimerFull:
+    "Предварительная оценка, не оферта. Диапазон действует до {date}. Итоговую сумму подтвердим после очной диагностики, проверки комплектации, серийного номера, блокировок и права распоряжаться устройством. Если состояние отличается от ответов, предложим новую сумму — вы сможете принять её или отказаться.",
+  consentLabel:
+    "Я даю согласие на обработку телефона или Telegram для ответа по заявке Trade-in и ознакомлен с Политикой обработки персональных данных.",
+  consentVersion: "trade-consent-v1-draft",
+  consentUrl: "/privacy#trade-in-consent",
+  safetyNotice:
+    "Не заряжайте и не пересылайте устройство. Выключите его, если это можно сделать без давления на корпус, не вскрывайте и свяжитесь с магазином.",
+  counterofferNotice:
+    "После диагностики сумма изменилась: {reason}. Новое предложение — {amount}. Вы можете принять его или забрать устройство без сделки.",
+} as const;
+
+export type TradeConsentRecord = {
+  label: string;
+  text: string;
+  version: string;
+  consentUrl: string;
+  privacyUrl: string;
+  textHash: string;
+};
 
 function record(value: unknown): Row {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Row) : {};
@@ -120,6 +145,39 @@ type TradeContext = {
 
 export type TradeContextOptions = { allowDraft?: boolean };
 
+export async function getTradeConsentRecord(
+  options: TradeContextOptions = {},
+): Promise<TradeConsentRecord | null> {
+  const allowDraft = options.allowDraft === true && tradeQaEnabled();
+  if (options.allowDraft && !allowDraft) return null;
+
+  const response = await directusRequest<DirectusResponse<Row>>(
+    "/items/trade_settings/1?fields=legal_status,consent_label,consent_text,consent_version,consent_url,privacy_url,legal_approved_by.id,legal_approved_at",
+  );
+  const settings = record(response?.data);
+  const label = text(settings.consent_label);
+  const consentText = text(settings.consent_text);
+  const version = text(settings.consent_version);
+  const consentUrl = text(settings.consent_url);
+  const privacyUrl = text(settings.privacy_url);
+  const approved =
+    allowDraft ||
+    (text(settings.legal_status) === "approved" &&
+      Boolean(text(relation(settings.legal_approved_by).id)) &&
+      Boolean(text(settings.legal_approved_at)));
+
+  if (!approved || !label || !consentText || !version || !consentUrl || !privacyUrl) return null;
+
+  return {
+    label,
+    text: consentText,
+    version,
+    consentUrl,
+    privacyUrl,
+    textHash: createHash("sha256").update(consentText, "utf8").digest("hex"),
+  };
+}
+
 async function loadTradeContext(options: TradeContextOptions = {}): Promise<TradeContext | null> {
   const allowDraft = options.allowDraft === true && tradeQaEnabled();
   if (options.allowDraft && !allowDraft) return null;
@@ -127,7 +185,7 @@ async function loadTradeContext(options: TradeContextOptions = {}): Promise<Trad
   const expectedStatus = allowDraft ? "draft" : "published";
 
   const settingsResponse = await directusRequest<DirectusResponse<Row>>(
-    "/items/trade_settings/1?fields=id,status,quote_validity_days,active_pricing_version.id,active_pricing_version.version,active_pricing_version.status,default_store.id,default_store.slug,default_store.name,default_store.city",
+    "/items/trade_settings/1?fields=id,status,quote_validity_days,economics_status,tax_treatment_confirmed,primary_document_status,kkt_workflow_status,economics_approved_by,economics_approved_at,legal_status,quote_disclaimer_short,quote_disclaimer_full,consent_label,consent_text,consent_version,consent_url,privacy_url,safety_notice,counteroffer_notice,legal_approved_by,legal_approved_at,active_pricing_version.id,active_pricing_version.version,active_pricing_version.status,default_store.id,default_store.slug,default_store.name,default_store.city",
   );
   const settings = record(settingsResponse?.data);
   const pricingVersion = relation(settings.active_pricing_version);
@@ -216,6 +274,24 @@ async function loadTradeContext(options: TradeContextOptions = {}): Promise<Trad
   }
 
   const defaultStore = relation(settings.default_store);
+  const economicsReady =
+    text(settings.economics_status) === "approved" &&
+    boolean(settings.tax_treatment_confirmed) &&
+    text(settings.primary_document_status) === "approved" &&
+    text(settings.kkt_workflow_status) === "approved" &&
+    Boolean(text(relation(settings.economics_approved_by).id)) &&
+    Boolean(text(settings.economics_approved_at));
+  const legalReady =
+    text(settings.legal_status) === "approved" &&
+    Boolean(text(relation(settings.legal_approved_by).id)) &&
+    Boolean(text(settings.legal_approved_at)) &&
+    Boolean(text(settings.quote_disclaimer_short)) &&
+    Boolean(text(settings.quote_disclaimer_full)) &&
+    Boolean(text(settings.consent_label)) &&
+    Boolean(text(settings.consent_text)) &&
+    Boolean(text(settings.consent_version)) &&
+    Boolean(text(settings.consent_url)) &&
+    Boolean(text(settings.privacy_url));
   const stores = (storeResponse?.data ?? []).map((item) => {
     const row = record(item);
     return {
@@ -238,18 +314,34 @@ async function loadTradeContext(options: TradeContextOptions = {}): Promise<Trad
     active:
       configs.size > 0 &&
       questionMap.size === QUESTION_KEYS.size &&
+      (allowDraft || (economicsReady && legalReady)) &&
       [...questionMap.values()].every(
         (question) =>
           question.options.length === ANSWER_VALUES.size &&
           question.options.every((option) => ANSWER_VALUES.has(option.value)),
       ),
-    contractVersion: 1,
+    contractVersion: 2,
     pricingVersion: text(pricingVersion.version),
     quoteValidityDays: Math.max(1, number(settings.quote_validity_days, 7)),
     devices: [...configs.values()].map((item) => item.public),
     questions: [...questionMap.values()],
     stores,
     defaultStoreId: text(defaultStore.id) || undefined,
+    legal: {
+      quoteDisclaimerShort: text(
+        settings.quote_disclaimer_short,
+        DRAFT_LEGAL_COPY.quoteDisclaimerShort,
+      ),
+      quoteDisclaimerFull: text(
+        settings.quote_disclaimer_full,
+        DRAFT_LEGAL_COPY.quoteDisclaimerFull,
+      ),
+      consentLabel: text(settings.consent_label, DRAFT_LEGAL_COPY.consentLabel),
+      consentVersion: text(settings.consent_version, DRAFT_LEGAL_COPY.consentVersion),
+      consentUrl: text(settings.consent_url, DRAFT_LEGAL_COPY.consentUrl),
+      safetyNotice: text(settings.safety_notice, DRAFT_LEGAL_COPY.safetyNotice),
+      counterofferNotice: text(settings.counteroffer_notice, DRAFT_LEGAL_COPY.counterofferNotice),
+    },
   };
   return config.active ? { config, pricingVersionId, configs, rules } : null;
 }
@@ -261,12 +353,13 @@ export async function getTradePublicConfig(
   return (
     context?.config ?? {
       active: false,
-      contractVersion: 1,
+      contractVersion: 2,
       pricingVersion: "",
       quoteValidityDays: 7,
       devices: [],
       questions: [],
       stores: [],
+      legal: DRAFT_LEGAL_COPY,
     }
   );
 }

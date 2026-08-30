@@ -29,7 +29,7 @@ export function InfoPageSectionRenderer({ section }: { section: PageSection }) {
 
   if (isFaq && sectionItems.length > 0) {
     return (
-      <section className="bg-frost py-14 md:py-20">
+      <section id={section.sectionKey} className="scroll-mt-24 bg-frost py-14 md:py-20">
         <div className="mx-auto max-w-copy px-4 md:px-6">
           {section.headline ? (
             <h2 className="text-3xl font-semibold leading-tight text-carbon md:text-5xl">
@@ -57,7 +57,13 @@ export function InfoPageSectionRenderer({ section }: { section: PageSection }) {
   }
 
   return (
-    <section className={cn("bg-white", isHero ? "py-16 text-center md:py-24" : "py-12 md:py-16")}>
+    <section
+      id={section.sectionKey}
+      className={cn(
+        "scroll-mt-24 bg-white",
+        isHero ? "py-16 text-center md:py-24" : "py-12 md:py-16",
+      )}
+    >
       <div className={cn("mx-auto px-4 md:px-6", isHero ? "max-w-page" : "max-w-copy")}>
         {section.eyebrow ? (
           <p className={isHero ? brandZoneEyebrowClass : homeSectionLabelClass}>

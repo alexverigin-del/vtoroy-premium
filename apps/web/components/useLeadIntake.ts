@@ -48,6 +48,8 @@ type LeadPayload = {
   club_device_request?: string;
   club_consent_accepted?: boolean;
   club_consent_version?: string;
+  trade_consent_accepted?: boolean;
+  trade_consent_version?: string;
   message?: string;
   source?: string;
   website?: string;
@@ -55,7 +57,7 @@ type LeadPayload = {
 
 export type LeadSubmitResult = {
   ok: true;
-  storage: "directus" | "log";
+  storage: "directus";
   reference_code?: string;
 };
 
@@ -146,8 +148,12 @@ export function useLeadIntake() {
 
       const result = (await response.json().catch(() => null)) as LeadSubmitResult | null;
       resetTurnstile();
+      if (!result?.ok) {
+        setState("error");
+        return null;
+      }
       setState("success");
-      return result?.ok ? result : { ok: true, storage: "log" };
+      return result;
     },
     [resetTurnstile, turnstileToken],
   );

@@ -1,8 +1,11 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { isValidPhoneNumber } from "@/lib/phone";
-import { getTradeQuote, TradeApiError, validateTradeExchangeSelection } from "@/lib/trade-server";
+import {
+  getTradeConsentRecord,
+  getTradeQuote,
+  TradeApiError,
+  validateTradeExchangeSelection,
+} from "@/lib/trade-server";
 import { isTradeQaRequest } from "@/lib/trade-qa";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +36,8 @@ type LeadRequest = {
   club_device_request?: unknown;
   club_consent_accepted?: unknown;
   club_consent_version?: unknown;
+  trade_consent_accepted?: unknown;
+  trade_consent_version?: unknown;
   message?: unknown;
   source?: unknown;
   source_path?: unknown;
@@ -77,6 +82,11 @@ type StoredLead = {
   club_device_request: string;
   club_consent_version: string;
   club_consent_at: string;
+  trade_consent_version: string;
+  trade_consent_at: string;
+  trade_consent_text_snapshot: string;
+  trade_consent_text_hash: string;
+  trade_consent_source_path: string;
   scenario: string;
   message: string;
   source: string;
@@ -292,6 +302,11 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       club_device_request: optionalText(lead.club_device_request),
       club_consent_version: optionalText(lead.club_consent_version),
       club_consent_at: optionalText(lead.club_consent_at),
+      trade_consent_version: optionalText(lead.trade_consent_version),
+      trade_consent_at: optionalText(lead.trade_consent_at),
+      trade_consent_text_snapshot: optionalText(lead.trade_consent_text_snapshot),
+      trade_consent_text_hash: optionalText(lead.trade_consent_text_hash),
+      trade_consent_source_path: optionalText(lead.trade_consent_source_path),
       scenario: optionalText(lead.scenario),
       message: optionalText(lead.message),
       source: lead.source,
@@ -339,6 +354,8 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       lead.club_budget_text ? `Club budget: ${lead.club_budget_text}` : "",
       lead.club_device_request ? `Club device request: ${lead.club_device_request}` : "",
       lead.club_consent_version ? `Club consent: ${lead.club_consent_version}` : "",
+      lead.trade_consent_version ? `Trade consent: ${lead.trade_consent_version}` : "",
+      lead.trade_consent_text_hash ? `Trade consent SHA-256: ${lead.trade_consent_text_hash}` : "",
       lead.source_url ? `URL: ${lead.source_url}` : "",
       lead.page_title ? `Page title: ${lead.page_title}` : "",
       lead.referrer ? `Referrer: ${lead.referrer}` : "",
@@ -350,6 +367,10 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
     ]
       .filter(Boolean)
       .join("\n");
+
+    // Trade-in submissions are accepted only through the current schema so the
+    // immutable consent snapshot and hash can never be dropped by compatibility fallback.
+    if (lead.kind === "trade") return false;
 
     const legacyResponse = await postPayload({
       kind: lead.kind,
@@ -459,12 +480,6 @@ async function validateTradeSubmission(input: {
   }
 }
 
-async function appendLeadLog(lead: StoredLead): Promise<void> {
-  const logPath = process.env.LEADS_LOG_PATH || path.join(process.cwd(), "var", "leads.jsonl");
-  await fs.mkdir(path.dirname(logPath), { recursive: true });
-  await fs.appendFile(logPath, `${JSON.stringify(lead)}\n`, "utf8");
-}
-
 export async function POST(request: NextRequest) {
   const body = await parseLeadRequest(request);
 
@@ -481,11 +496,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "turnstile_failed" }, { status: 400 });
   }
 
-  const scenario = text(body.scenario, 160);
+  const requestedScenario = text(body.scenario, 160);
   const contact = text(body.contact, 180);
   const sourcePath = text(body.source_path, 255) || text(body.source, 255) || "site";
   const sourceUrl = text(body.source_url, 800) || text(request.headers.get("referer"), 800);
-  const kind = inferKind(text(body.kind, 64), scenario);
+  const inferredKind = inferKind(text(body.kind, 64), requestedScenario);
+  const kind = sourcePath === "trade_page" || sourcePath === "/trade" ? "trade" : inferredKind;
+  const scenario =
+    kind === "trade" && !TRADE_SCENARIOS.has(requestedScenario)
+      ? "manual_evaluation"
+      : requestedScenario;
   const idempotencyKey = text(body.idempotency_key, 120);
   const isTest = kind === "trade" && isTradeQaRequest(request);
 
@@ -525,6 +545,7 @@ export async function POST(request: NextRequest) {
   if (preferredVisitPeriod && !["morning", "day", "evening"].includes(preferredVisitPeriod)) {
     return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
   }
+  let tradeConsent: Awaited<ReturnType<typeof getTradeConsentRecord>> = null;
   if (kind === "trade") {
     const tradeError = await validateTradeSubmission({
       scenario,
@@ -538,6 +559,16 @@ export async function POST(request: NextRequest) {
       const status =
         tradeError === "quote_expired" || tradeError === "product_unavailable" ? 409 : 400;
       return NextResponse.json({ ok: false, error: tradeError }, { status });
+    }
+    if (!accepted(body.trade_consent_accepted)) {
+      return NextResponse.json({ ok: false, error: "trade_consent_required" }, { status: 400 });
+    }
+    tradeConsent = await getTradeConsentRecord({ allowDraft: isTest });
+    if (!tradeConsent) {
+      return NextResponse.json({ ok: false, error: "legal_unavailable" }, { status: 503 });
+    }
+    if (text(body.trade_consent_version, 120) !== tradeConsent.version) {
+      return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
     }
   }
 
@@ -581,8 +612,19 @@ export async function POST(request: NextRequest) {
     club_device_request: clubDeviceRequest,
     club_consent_version: text(body.club_consent_version, 120),
     club_consent_at: kind === "club" ? new Date().toISOString() : "",
+    trade_consent_version: kind === "trade" ? text(body.trade_consent_version, 120) : "",
+    trade_consent_at: kind === "trade" ? new Date().toISOString() : "",
+    trade_consent_text_snapshot: kind === "trade" ? tradeConsent?.text || "" : "",
+    trade_consent_text_hash: kind === "trade" ? tradeConsent?.textHash || "" : "",
+    trade_consent_source_path: kind === "trade" ? sourcePath : "",
     scenario,
-    message: text(body.message, 2000),
+    message: text(
+      body.message ||
+        (kind === "trade" && requestedScenario !== scenario
+          ? `Исходный сценарий формы: ${requestedScenario}`
+          : ""),
+      2000,
+    ),
     source: sourcePath,
     source_path: sourcePath,
     source_url: sourceUrl,
@@ -606,12 +648,15 @@ export async function POST(request: NextRequest) {
     }
   }
   if (!savedToDirectus) {
-    await appendLeadLog(lead);
+    return NextResponse.json(
+      { ok: false, error: "lead_storage_unavailable" },
+      { status: 503, headers: { "Retry-After": "30" } },
+    );
   }
 
   return NextResponse.json({
     ok: true,
-    storage: savedToDirectus ? "directus" : "log",
+    storage: "directus",
     reference_code: lead.reference_code,
   });
 }

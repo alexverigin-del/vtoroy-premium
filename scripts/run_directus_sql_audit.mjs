@@ -520,6 +520,34 @@ const auditDefinitions = {
       "trade_pricing_v2.previous_draft_invalid",
     ],
   },
+  "trade-governance": {
+    script: "scripts/audit_directus_trade_governance_sql.mjs",
+    zero: [
+      "trade_governance.settings_fields_missing",
+      "trade_governance.settings_metadata_missing",
+      "trade_governance.lead_fields_missing",
+      "trade_governance.lead_metadata_missing",
+      "trade_governance.lead_consent_group_missing",
+      "trade_governance.lead_consent_grouping_invalid",
+      "trade_governance.service_read_missing",
+      "trade_governance.advanced_update_missing",
+      "trade_governance.lead_intake_consent_write_missing",
+      "trade_governance.public_exposure",
+    ],
+  },
+  "trade-legal": {
+    script: "scripts/audit_directus_trade_legal_sql.mjs",
+    zero: [
+      "trade_legal.privacy_page_missing",
+      "trade_legal.privacy_sections_missing",
+      "trade_legal.privacy_operator_copy_missing",
+      "trade_legal.site_privacy_link_missing",
+      "trade_legal.settings_not_approved",
+      "trade_legal.trade_form_consent_missing",
+      "trade_legal.exchange_offer_excluded_by_product_summary",
+      "trade_legal.exchange_card_missing_listing_file",
+    ],
+  },
   "trade-studio": {
     script: "scripts/audit_directus_trade_studio_sql.mjs",
     zero: [

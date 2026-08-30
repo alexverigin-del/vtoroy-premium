@@ -278,6 +278,36 @@ function ContactFields({
   );
 }
 
+function TradeConsent({
+  accepted,
+  onChange,
+  label,
+  consentUrl,
+}: {
+  accepted: boolean;
+  onChange: (accepted: boolean) => void;
+  label: string;
+  consentUrl: string;
+}) {
+  return (
+    <label className="flex min-h-11 gap-2 text-xs">
+      <input
+        type="checkbox"
+        required
+        checked={accepted}
+        onChange={(event) => onChange(event.target.checked)}
+        className="focus-ring mt-1 h-5 w-5"
+      />
+      <span>
+        {label}{" "}
+        <a href={consentUrl}>
+          <u>Подробнее</u>
+        </a>
+      </span>
+    </label>
+  );
+}
+
 export function TradeInWizard({
   config,
   mode = "public",
@@ -301,6 +331,7 @@ export function TradeInWizard({
   const [contactChannel, setContactChannel] = useState<TradeContactChannel>("phone");
   const [contact, setContact] = useState("");
   const [contactError, setContactError] = useState("");
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [storeId, setStoreId] = useState(config.defaultStoreId ?? config.stores[0]?.id ?? "");
   const [visitDate, setVisitDate] = useState("");
   const [visitPeriod, setVisitPeriod] = useState<TradeVisitPeriod>("day");
@@ -490,6 +521,8 @@ export function TradeInWizard({
       preferred_visit_date: manual ? undefined : visitDate || undefined,
       preferred_visit_period: manual ? undefined : visitPeriod,
       idempotency_key: idempotencyKey.current,
+      trade_consent_accepted: consentAccepted,
+      trade_consent_version: config.legal.consentVersion,
       message: manual
         ? "Запрос ручной оценки устройства"
         : "Пожелание по визиту. Точное время должен подтвердить менеджер.",
@@ -637,8 +670,14 @@ export function TradeInWizard({
                 error={contactError}
               />
               <p className="text-xs leading-5 text-muted">
-                Контакт нужен только для ответа менеджера. В расчёте он не используется.
+                Контакт нужен только для ответа менеджера.
               </p>
+              <TradeConsent
+                accepted={consentAccepted}
+                onChange={setConsentAccepted}
+                label={config.legal.consentLabel}
+                consentUrl={config.legal.consentUrl}
+              />
               {turnstileRequired ? <div ref={turnstileElementRef} /> : null}
             </div>
             {error ? (
@@ -648,7 +687,7 @@ export function TradeInWizard({
             ) : null}
             <StickyAction
               label={leadState === "submitting" ? "Отправляем…" : "Отправить на оценку"}
-              disabled={leadState === "submitting" || !turnstileReady}
+              disabled={leadState === "submitting" || !turnstileReady || !consentAccepted}
               onClick={() => void submitTradeLead(true)}
               secondaryLabel="Вернуться к моделям"
               onSecondary={() => navigate("device")}
@@ -729,7 +768,7 @@ export function TradeInWizard({
               ))}
             </ol>
             <p className="mt-3 text-xs font-medium leading-5 text-warning">
-              Расчёт и стандартная запись остановлены до безопасной передачи.
+              {config.legal.safetyNotice}
             </p>
             <StickyAction
               label="Связаться с магазином"
@@ -1038,6 +1077,12 @@ export function TradeInWizard({
               <p className="text-xs leading-5 text-muted">
                 Точное время подтвердит менеджер. При ошибке отправки введённые данные сохранятся.
               </p>
+              <TradeConsent
+                accepted={consentAccepted}
+                onChange={setConsentAccepted}
+                label={config.legal.consentLabel}
+                consentUrl={config.legal.consentUrl}
+              />
               {turnstileRequired ? <div ref={turnstileElementRef} /> : null}
             </div>
             {error ? (
@@ -1047,7 +1092,7 @@ export function TradeInWizard({
             ) : null}
             <StickyAction
               label={leadState === "submitting" ? "Отправляем…" : "Отправить заявку"}
-              disabled={leadState === "submitting" || !turnstileReady}
+              disabled={leadState === "submitting" || !turnstileReady || !consentAccepted}
               onClick={() => void submitTradeLead()}
               secondaryLabel="Изменить сценарий"
               onSecondary={() => navigate("scenario")}

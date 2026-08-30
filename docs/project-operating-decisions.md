@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-08-24.
+Last updated: 2026-08-30.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -1301,6 +1301,8 @@ nodelay` and returns 429 when the edge limit is exceeded.
   `docs/catalog-studio-editor-guide.md`,
   `docs/global-content-editor-guide.md`,
   `docs/leads-workflow-editor-guide.md`
+- Trade-in product and build decisions:
+  `docs/trade-in-product-decisions.md`, `docs/trade-in-build-spec.md`
 - Security and guardrails:
   `docs/directus-public-permissions.md`,
   `docs/directus-admin-guardrails.md`
@@ -2817,6 +2819,32 @@ Next content-editing priorities:
   `directus:audit-page-sections`, API policy, ops audit, functional smoke и
   desktop/mobile visual smoke `/trade`.
 
+### Trade-in: продуктовая база онлайн-оценщика (2026-08-29)
+
+- Для следующей версии `/trade` принят online-first сценарий: пользователь
+  получает предварительный диапазон до контакта, затем выбирает продажу,
+  комиссию или обмен. Финальная сумма подтверждается диагностикой.
+- Автоматический MVP ограничен смартфонами Apple и пятью пилотными моделями:
+  iPhone 13 Pro, iPhone 14 Pro, iPhone 14 Pro Max, iPhone 16 Pro и iPhone 16
+  Pro Max. Все остальные устройства переходят в ручную оценку без фиктивного
+  диапазона.
+- Бизнес-владелец pricing — роль Trade Desk Manager; публиковать versioned
+  матрицу может `ISVOI Advanced Editor` или Administrator. Разработка владеет
+  формулой и аудитом, но не назначает цены.
+- Предварительный quote действует 7 календарных дней. Комиссия в MVP остаётся
+  консультационным lead без автоматического fee/net/timeline.
+- Upgrade использует только опубликованные, готовые и доступные
+  `product_offers`. Диапазон доплаты вычисляется от обеих границ quote;
+  отрицательная доплата публично не показывается.
+- MVP принимает пожелание по дню и периоду визита, но не создаёт подтверждённый
+  календарный слот. Системой учёта остаются `leads` и Directus Studio; клиенту
+  отвечают вручную по выбранному телефону или Telegram. Автоматические
+  Telegram/SMS и личный кабинет остаются вне MVP.
+- Полная аргументация, формулы, launch inputs и последствия для UX/UI:
+  `docs/trade-in-product-decisions.md`. Сборочный сценарий и API-направление:
+  `docs/trade-in-build-spec.md`. Матрица 11 mobile-first макетов и связи
+  прототипа: `docs/trade-in-figma-screen-matrix.md`.
+
 ### Inventory, Catalog UX и staged Catalog V3 (2026-08-24)
 
 - Перед изменениями Directus создан и проверен локальный VPS backup
@@ -3460,3 +3488,14 @@ Next content-editing priorities:
   SHA-256, offsite copy пропущена согласно действующему отложенному решению.
   Временная QA identity и policy удалены, token возвращает `401`. Directus
   health, полный production/Studio/Catalog V3 audit и smoke сайта прошли.
+
+## 2026-08-30 · Trade-in consent evidence and privacy release
+
+- The owner confirmed the Roskomnadzor notification and FNS/tax treatment. The approved Trade-in consent version is `trade-consent-v1-2026-08-30`.
+- `/privacy` is the canonical published policy page; `/privacy#trade-in-consent` is a separate consent section linked from both the legacy Trade form and `TradeInWizard`.
+- Every Trade-in lead must contain the server-selected consent version, server timestamp, source path, immutable text snapshot and SHA-256. Lead Intake and editors cannot silently fall back to a reduced Trade lead payload.
+- Local PII fallback logging is retired. If Directus cannot persist a lead, `/lead-intake` returns `503 lead_storage_unavailable` with retry guidance and the client preserves entered data.
+- Exchange targets remain dynamic: newly released cards are included only through published, ready products with a published available offer and positive stock. Trade legal migrations never publish or alter product cards, offers, photos or Passports.
+- The Directus governance and legal-content migration was applied atomically after a successful rollback rehearsal. Pre-apply backup: `/opt/isvoi/backups/directus/20260830T175012Z`.
+- Post-apply `trade-governance`, `trade-legal` and `trade-mvp` audits passed. The card compatibility audit found 17 eligible exchange cards, zero offers incorrectly excluded by product stock summaries and zero cards without a listing image.
+- The migration did not publish pricing, change `trade_settings.status`, or enable `TRADE_WIZARD_ENABLED`; the public calculator remains off pending a separate release decision.

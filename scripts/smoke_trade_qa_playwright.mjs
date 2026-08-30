@@ -47,6 +47,7 @@ async function main() {
     assert(configResponse.ok(), `QA config failed with ${configResponse.status()}`);
     const config = await configResponse.json();
     assert(config.active === true, "QA config is inactive");
+    assert(config.contractVersion === 2, `expected contract v2, got ${config.contractVersion}`);
     assert(
       config.pricingVersion === "trade-pricing-v2-draft",
       `expected trade-pricing-v2-draft, got ${config.pricingVersion}`,
@@ -145,7 +146,18 @@ async function main() {
       device: "QA phone validation smoke",
       idempotency_key: "trade-qa-valid-phone-smoke-v1",
       source: "/trade/qa",
+      trade_consent_accepted: true,
+      trade_consent_version: config.legal.consentVersion,
     };
+    const missingConsentResponse = await qaPage.request.post(`${baseUrl}/lead-intake`, {
+      data: { ...validLeadData, trade_consent_accepted: false },
+    });
+    const missingConsentPayload = await missingConsentResponse.json();
+    assert(
+      missingConsentResponse.status() === 400 &&
+        missingConsentPayload.error === "trade_consent_required",
+      `missing Trade-in consent must be rejected, got ${missingConsentResponse.status()} ${missingConsentPayload.error}`,
+    );
     const validPhoneResponse = await qaPage.request.post(`${baseUrl}/lead-intake`, {
       data: validLeadData,
     });
@@ -171,7 +183,7 @@ async function main() {
     await qaPage.getByRole("button", { name: "Завершить QA" }).click();
     await qaPage.getByText("Внутренняя приёмка", { exact: true }).waitFor();
     console.log(
-      `Trade QA smoke passed for ${baseUrl}: 19 configs, 7 questions, 10 control calculations, phone lead validation`,
+      `Trade QA smoke passed for ${baseUrl}: 19 configs, 7 questions, 10 control calculations, phone and consent validation`,
     );
     await qaContext.close();
   } finally {

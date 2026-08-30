@@ -31,6 +31,9 @@ type FinalCtaForm = {
   successNote: string;
   errorNote: string;
   consentNote: string;
+  consentLabel: string;
+  consentVersion: string;
+  consentUrl: string;
   note: string;
 };
 
@@ -95,6 +98,13 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
       "consent_note",
       "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
     ),
+    consentLabel: text(
+      "consentLabel",
+      "consent_label",
+      "Я даю согласие на обработку телефона или Telegram для ответа по заявке Trade-in и ознакомлен с Политикой обработки персональных данных.",
+    ),
+    consentVersion: text("consentVersion", "consent_version", "trade-consent-v1-2026-08-30"),
+    consentUrl: text("consentUrl", "consent_url", "/privacy#trade-in-consent"),
     note,
   };
 }
@@ -167,13 +177,16 @@ export function FinalCtaSection({
         ? section.content.footer_note
         : "";
   const isHomepage = source === "home_final_cta";
+  const isTradePage = source === "trade_page";
 
   const [scenario, setScenario] = useState(form.scenarioOptions[0] ?? "");
   const [device, setDevice] = useState("");
   const [contact, setContact] = useState("");
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const scenarioId = useId();
   const deviceId = useId();
   const contactId = useId();
+  const consentId = useId();
   const statusId = useId();
   const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
     useLeadIntake();
@@ -182,22 +195,27 @@ export function FinalCtaSection({
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const website = String(formData.get("website") || "");
-    if (!contact.trim()) {
+    if (!contact.trim() || (isTradePage && !consentAccepted)) {
       markError();
       return;
     }
 
     const submitted = await submitLead({
-      scenario,
+      kind: isTradePage ? "trade" : undefined,
+      scenario: isTradePage ? "manual_evaluation" : scenario,
       device,
       contact,
       source,
       website,
+      trade_consent_accepted: isTradePage ? consentAccepted : undefined,
+      trade_consent_version: isTradePage ? form.consentVersion : undefined,
+      message: isTradePage ? `Выбранный сценарий: ${scenario}` : undefined,
     });
 
     if (!submitted) return;
     setDevice("");
     setContact("");
+    setConsentAccepted(false);
   }
 
   return (
@@ -319,14 +337,36 @@ export function FinalCtaSection({
               <div ref={turnstileElementRef} className="mt-4 min-h-turnstile" />
             ) : null}
 
-            {form.consentNote ? (
+            {isTradePage ? (
+              <label
+                className="mt-4 flex min-h-11 cursor-pointer gap-3 text-xs leading-relaxed text-ash"
+                htmlFor={consentId}
+              >
+                <input
+                  id={consentId}
+                  type="checkbox"
+                  required
+                  checked={consentAccepted}
+                  onChange={(event) => setConsentAccepted(event.target.checked)}
+                  className="focus-ring mt-0.5 h-5 w-5 shrink-0"
+                />
+                <span>
+                  {form.consentLabel}{" "}
+                  <Link className="font-medium text-link-blue underline" href={form.consentUrl}>
+                    Полный текст согласия
+                  </Link>
+                </span>
+              </label>
+            ) : form.consentNote ? (
               <p className="mt-3 text-xs leading-relaxed text-ash">{form.consentNote}</p>
             ) : null}
 
             <button
               className={submitButtonClass}
               type="submit"
-              disabled={state === "submitting" || !turnstileReady}
+              disabled={
+                state === "submitting" || !turnstileReady || (isTradePage && !consentAccepted)
+              }
             >
               {state === "submitting" ? form.submittingLabel : form.submitLabel}
             </button>

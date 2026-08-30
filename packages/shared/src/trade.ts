@@ -43,15 +43,26 @@ export interface TradeStoreOption {
   city: string;
 }
 
+export interface TradeLegalCopy {
+  quoteDisclaimerShort: string;
+  quoteDisclaimerFull: string;
+  consentLabel: string;
+  consentVersion: string;
+  consentUrl: string;
+  safetyNotice: string;
+  counterofferNotice: string;
+}
+
 export interface TradePublicConfig {
   active: boolean;
-  contractVersion: 1;
+  contractVersion: 2;
   pricingVersion: string;
   quoteValidityDays: number;
   devices: TradeDeviceConfiguration[];
   questions: TradeQuestion[];
   stores: TradeStoreOption[];
   defaultStoreId?: string;
+  legal: TradeLegalCopy;
 }
 
 export type TradeAnswers = Partial<Record<TradeQuestionKey, TradeAnswerValue>>;

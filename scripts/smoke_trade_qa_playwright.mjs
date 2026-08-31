@@ -137,6 +137,23 @@ async function main() {
       exchangeQuote ??= payload.quote;
     }
 
+    // Resume the new gate without replaying the four legacy lead requests in the same rate window.
+    if (process.env.TRADE_QA_EXCHANGE_ONLY === "1") {
+      await tradeExchangeProductionCases(qaPage, baseUrl, config, baselineAnswers, exchangeQuote, {
+        kind: "trade",
+        contact_channel: "phone",
+        contact: "+7 900 000-00-00",
+        source: "/trade/qa",
+        trade_consent_accepted: true,
+        trade_consent_version: config.legal.consentVersion,
+      });
+      await qaPage.getByRole("button", { name: "Завершить QA" }).click();
+      await qaPage.getByText("Внутренняя приёмка", { exact: true }).waitFor();
+      console.log("Trade QA exchange-only resume passed");
+      await qaContext.close();
+      return;
+    }
+
     const invalidPhoneResponse = await qaPage.request.post(`${baseUrl}/lead-intake`, {
       data: {
         kind: "trade",

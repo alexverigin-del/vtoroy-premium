@@ -53,13 +53,18 @@ export async function tradeExchangeProductionCases(
     device: "QA exchange pagination smoke",
     idempotency_key: `trade-qa-exchange-page-v1-${last.offerId}`,
   };
+  // Four legacy lead checks precede this suite. Respect nginx's small burst budget.
+  await new Promise((resolve) => setTimeout(resolve, 15000));
   const firstLead = await qaPage.request.post(`${base}/lead-intake`, { data: lead });
+  assert(firstLead.ok(), `QA second-page lead HTTP ${firstLead.status()}`);
   const saved = await firstLead.json();
   assert(
     firstLead.ok() && saved.ok && /^QA-\d{6}-\d{3}$/.test(saved.reference_code ?? ""),
     "QA second-page lead failed",
   );
+  await new Promise((resolve) => setTimeout(resolve, 15000));
   const replay = await qaPage.request.post(`${base}/lead-intake`, { data: lead });
+  assert(replay.ok(), `QA second-page replay HTTP ${replay.status()}`);
   assert.equal((await replay.json()).reference_code, saved.reference_code);
 
   const output = path.resolve("output/playwright/trade-exchange-production");

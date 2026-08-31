@@ -3664,6 +3664,11 @@ Next content-editing priorities:
   mobile LCP **2548 ms**. A targeted desktop trace measured the store visual as
   the LCP image at **3832 ms**, with the hero image resource starting at
   **2453 ms** and the first product-card image starting later at **3749 ms**.
+- `smoke:blog-preview` now keeps `BLOG_PREVIEW_SECRET` out of query strings, but
+  the full production smoke was not executed because the server env currently
+  has the secret only, without a stable `BLOG_PREVIEW_POST_ID` and
+  `BLOG_PREVIEW_VERSION`. Add those non-secret fixture values before treating
+  blog preview smoke as a normal release gate.
 - The initial `/store` HTML contains the expected image preload and
   `fetchPriority="high"` for the Directus-backed store hero. Product cards below
   the store visual remain lazy. This confirms the implemented fix removed

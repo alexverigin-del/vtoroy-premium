@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-08-30.
+Last updated: 2026-08-31.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -3580,3 +3580,13 @@ Next content-editing priorities:
 - `web:test:client-classes` guards the 31-module client graph and tests 26 compositions / 73 variants; it is part of `web:verify`. `web:smoke:client-styles` checks six CSS/default/override comparisons at 320/390/1280 px. Explicit checks retain the project’s 17 px `text-copy` with its color and Tailwind 3 focus outline, both previously misclassified by the generic merger.
 - Navigation smoke, 20 navigation units, existing calculation/pricing/QA-session/phone/consent/layout tests, runtime/catalog-guard/legacy/Tailwind/content-ownership audits, format check, lint, typecheck and build pass. The content baseline adds only 16 reviewed navigation/system strings and removes 2 retired wizard strings; no CMS copy was replaced. The Tailwind audit retains centralized helpers and narrowly allows the two reviewed CSS primitives.
 - Before/after screenshots are under `output/playwright/trade-layout-before-bundle/` and `output/playwright/trade-layout/`. Checks use loopback CMS/API fixtures and a Turnstile test double, not real production leads or physical-device accessibility testing. Local navigation is ready for a separately authorized push/deploy followed by production smoke; the live v3 calculator and catalog were not changed here.
+
+### Production release · 2026-08-31
+
+- The user's explicit `выкат` authorized the full release. `33fbbc9` is pushed to GitHub master and deployed at `/opt/isvoi`; full production `web:verify` passed before PM2 `isvoi-web` restart. This supersedes the local-only status above.
+- Pre-release database/uploads backup `/opt/isvoi/backups/directus/20260831T190700Z` passed checksums and archive validation. Offsite remains unconfigured/deferred. Previous compiled app is retained at `/opt/isvoi/backups/web/20260831T190700Z-trade-navigation/next`; prior source commit is `661ce74`.
+- Server bundle budgets pass unchanged: total **885.4 / 282.0 / 243.7 kB** raw/gzip/Brotli and largest route **439.4 kB raw**. Runtime remains Node 24.18.0, npm 11.16.0. No dependency, lockfile or env changes; before/after `.env.local` and lockfile hashes match.
+- Public navigation smoke passed on mobile/desktop with zero quote/lead writes and intercepted events: back preserves model/memory/answers, reset has safe focus/Escape, a new run rejects old history, reload does not retain free text/consent. New reusable runner: `scripts/smoke_trade_navigation_live.mjs`.
+- Closed `is_test` QA passed 24 configs, seven questions and 15 control cases, plus phone validation, consent and idempotent lead replay. General route/copy/visual smokes passed, with 17 catalog device links. Lab LCP for `/trade` was 440 ms desktop / 320 ms mobile; across home/catalog/store/trade it ranged 180–516 ms, not field p75 evidence.
+- Read-only Directus runtime/governance/legal/v3 audits pass, health is `ok`, and production git status is clean. Feature flag stays enabled, pricing v3 and all products/photos remain unchanged. Unrelated local photo scripts/assets and pre-existing photo-refresh notes were explicitly excluded from staging.
+- Live screenshots are in `output/playwright/trade-navigation-production/` on server and locally; complete route screenshots remain in server `output/playwright/visual-smoke/`. Real-device keyboard, VoiceOver/NVDA and real Turnstile challenge were not certified by automation. Release detail: `docs/trade-in-navigation-spec.md`.

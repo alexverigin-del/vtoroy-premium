@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import type { DeviceCardData } from "@/lib/device-card-data";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/cn-client";
 import { DeviceCard } from "./DeviceCard";
 import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 

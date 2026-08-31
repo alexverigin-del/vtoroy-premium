@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import type { PageSection, RichTextNode } from "@vtoroy/shared";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/cn-client";
 import { HomeSectionIntro } from "./HomeSectionIntro";
 import { RichText } from "./RichText";
 import { normalizeSiteUrl } from "./site-chrome-utils";
@@ -393,8 +393,11 @@ export function FinalCtaSection({
               aria-live="polite"
               className={cn(
                 "mt-3 text-sm leading-relaxed",
-                state === "success" ? "text-success" : "text-ash",
-                state === "error" ? "text-red-600" : "",
+                state === "error"
+                  ? "text-red-600"
+                  : state === "success"
+                    ? "text-success"
+                    : "text-ash",
               )}
             >
               {state === "success"

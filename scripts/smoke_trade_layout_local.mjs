@@ -1,11 +1,16 @@
 // Isolated local UI regression. All CMS data and API writes stay on loopback.
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 import fs from "node:fs";
 import path from "node:path";
 import { launchChromium } from "./playwright_browser.mjs";
 import { tradeConditionRules, tradePricingConfigsV3 } from "./trade_pricing_v3_data.mjs";
+import {
+  mockTradeTurnstile,
+  tradeNavigationBrowserCases,
+} from "./trade_navigation_browser_cases.mjs";
 
 const root = process.cwd();
 const output = path.join(root, "output/playwright/trade-layout");
@@ -101,17 +106,16 @@ const cmsUrl = `http://127.0.0.1:${cms.address().port}`;
 // Reserve a loopback port; never use production credentials or flags from the parent.
 const port = Number(process.env.TRADE_LAYOUT_TEST_PORT || 3417);
 const base = `http://127.0.0.1:${port}`;
+const portProbe = createServer();
+await new Promise((resolve, reject) => {
+  portProbe.once("error", reject);
+  portProbe.listen(port, "127.0.0.1", resolve);
+});
+await new Promise((resolve) => portProbe.close(resolve));
 const log = fs.openSync(path.join(output, "next.log"), "w");
 const app = spawn(
   process.execPath,
-  [
-    path.join(root, "node_modules/next/dist/bin/next"),
-    "dev",
-    "--hostname",
-    "127.0.0.1",
-    "--port",
-    String(port),
-  ],
+  [path.join(root, "scripts/trade_local_server.cjs"), String(port)],
   {
     cwd: path.join(root, "apps/web"),
     stdio: ["ignore", log, log],
@@ -126,7 +130,7 @@ const app = spawn(
       DIRECTUS_TRADE_TOKEN: "local-fixture",
       TRADE_WIZARD_ENABLED: "1",
       TRADE_QA_ENABLED: "0",
-      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "",
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "local-fixture-site-key",
       CATALOG_SOURCE: "v3",
     },
   },
@@ -136,17 +140,21 @@ try {
   for (let i = 0; i < 120; i++) {
     if (app.exitCode !== null) throw Error("Local Next server exited; inspect next.log");
     try {
-      if ((await fetch(base + "/trade")).ok) break;
+      const response = await fetch(base + "/trade", { signal: AbortSignal.timeout(15000) });
+      await response.arrayBuffer();
+      if (response.ok && app.exitCode === null) break;
     } catch {}
     if (i === 119) throw Error("Local server did not become ready");
     await new Promise((r) => setTimeout(r, 500));
   }
   browser = await launchChromium({ headless: true });
+  await tradeNavigationBrowserCases(browser, base, output);
   for (const [name, viewport] of [
     ["desktop", { width: 1280, height: 900 }],
     ["mobile", { width: 390, height: 844 }],
   ]) {
     const context = await browser.newContext({ viewport, reducedMotion: "reduce" });
+    await mockTradeTurnstile(context);
     const page = await context.newPage();
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
@@ -256,6 +264,7 @@ try {
   }
   active = false;
   const page = await browser.newPage();
+  await mockTradeTurnstile(page.context());
   await page.goto(base + "/trade", { waitUntil: "networkidle" });
   assert.equal(await page.locator("#trade-calculator").count(), 0);
   for (const name of ["Оценить смартфон", "Получить оценку"]) {
@@ -266,15 +275,22 @@ try {
   }
   assert.equal(await page.locator("#final form").count(), 1);
   console.log("Inactive settings: calculator absent, CTA fallback and legacy form OK");
+} catch (error) {
+  const failedPage = browser?.contexts().at(-1)?.pages().at(-1);
+  if (failedPage)
+    await failedPage
+      .screenshot({ path: path.join(output, "failure.png"), fullPage: true })
+      .catch(() => {});
+  throw error;
 } finally {
   await browser?.close();
-  if (process.platform === "win32")
-    spawnSync("taskkill", ["/pid", String(app.pid), "/t", "/f"], {
-      stdio: "ignore",
-      windowsHide: true,
-    });
-  else app.kill("SIGTERM");
+  if (app.exitCode === null) {
+    const exited = once(app, "exit");
+    app.kill("SIGTERM");
+    await exited;
+  }
   cms.close();
   cms.closeAllConnections();
   fs.closeSync(log);
+  console.log("Local fixture cleanup complete");
 }

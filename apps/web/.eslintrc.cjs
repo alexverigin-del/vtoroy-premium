@@ -23,6 +23,8 @@ module.exports = {
           "btn-pill",
           "card",
           "focus-ring",
+          "rich-text",
+          "home-intro-centered",
           "aspect-blog-cover",
           "leading-display",
           "leading-brand-caption",

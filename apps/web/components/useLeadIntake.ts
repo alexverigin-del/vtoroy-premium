@@ -15,6 +15,7 @@ type TurnstileApi = {
     },
   ) => string;
   reset: (widgetId?: string) => void;
+  remove?: (widgetId: string) => void;
 };
 
 declare global {
@@ -81,8 +82,13 @@ function trackingPayload() {
 export function useLeadIntake() {
   const [state, setState] = useState<LeadSubmitState>("idle");
   const [turnstileToken, setTurnstileToken] = useState("");
-  const turnstileElementRef = useRef<HTMLDivElement | null>(null);
+  const [turnstileElement, setTurnstileElement] = useState<HTMLDivElement | null>(null);
+  const turnstileElementRef = useCallback(
+    (element: HTMLDivElement | null) => setTurnstileElement(element),
+    [],
+  );
   const turnstileWidgetRef = useRef<string>();
+  const submitting = useRef(false);
   const turnstileRequired = Boolean(TURNSTILE_SITE_KEY);
 
   const resetTurnstile = useCallback(() => {
@@ -91,20 +97,26 @@ export function useLeadIntake() {
   }, []);
 
   useEffect(() => {
-    if (!TURNSTILE_SITE_KEY || !turnstileElementRef.current || turnstileWidgetRef.current) return;
+    if (!TURNSTILE_SITE_KEY || !turnstileElement) return;
 
     let attempts = 0;
     let cancelled = false;
     let timeoutId: number | undefined;
 
     function renderWidget() {
-      if (cancelled || !turnstileElementRef.current || turnstileWidgetRef.current) return;
+      if (cancelled || turnstileWidgetRef.current) return;
       if (window.turnstile) {
-        turnstileWidgetRef.current = window.turnstile.render(turnstileElementRef.current, {
+        turnstileWidgetRef.current = window.turnstile.render(turnstileElement!, {
           sitekey: TURNSTILE_SITE_KEY,
-          callback: setTurnstileToken,
-          "expired-callback": () => setTurnstileToken(""),
-          "error-callback": () => setTurnstileToken(""),
+          callback: (token) => {
+            if (!cancelled) setTurnstileToken(token);
+          },
+          "expired-callback": () => {
+            if (!cancelled) setTurnstileToken("");
+          },
+          "error-callback": () => {
+            if (!cancelled) setTurnstileToken("");
+          },
         });
         return;
       }
@@ -119,16 +131,24 @@ export function useLeadIntake() {
     return () => {
       cancelled = true;
       if (timeoutId) window.clearTimeout(timeoutId);
+      if (turnstileWidgetRef.current) window.turnstile?.remove?.(turnstileWidgetRef.current);
+      turnstileWidgetRef.current = undefined;
+      setTurnstileToken("");
     };
-  }, []);
+  }, [turnstileElement]);
 
   const submitLead = useCallback(
-    async (payload: LeadPayload): Promise<LeadSubmitResult | null> => {
+    async (
+      payload: LeadPayload,
+      onFailure?: (code: string) => void,
+    ): Promise<LeadSubmitResult | null> => {
+      if (submitting.current) return null;
       if (!payload.contact.trim() || (TURNSTILE_SITE_KEY && !turnstileToken)) {
         setState("error");
         return null;
       }
 
+      submitting.current = true;
       setState("submitting");
       const response = await fetch("/lead-intake", {
         method: "POST",
@@ -141,12 +161,16 @@ export function useLeadIntake() {
       }).catch(() => null);
 
       if (!response?.ok) {
+        const failure = await response?.json().catch(() => null);
+        onFailure?.(typeof failure?.error === "string" ? failure.error : "network_error");
+        submitting.current = false;
         resetTurnstile();
         setState("error");
         return null;
       }
 
       const result = (await response.json().catch(() => null)) as LeadSubmitResult | null;
+      submitting.current = false;
       resetTurnstile();
       if (!result?.ok) {
         setState("error");

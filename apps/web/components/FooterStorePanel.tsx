@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { SiteSettings, StoreLocation } from "@vtoroy/shared";
 
 import { applyCityTemplate } from "../lib/city-copy";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/cn-client";
 import { useCity } from "./CityContext";
 
 const contactLinkClass =

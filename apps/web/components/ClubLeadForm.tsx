@@ -2,7 +2,7 @@
 
 import { FormEvent, useId, useMemo, useState } from "react";
 import type { ClubOffer, ClubPageSettings, ClubPlan } from "@vtoroy/shared";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/cn-client";
 import {
   leadFieldClass,
   leadHoneypotClass,
@@ -284,8 +284,7 @@ export function ClubLeadForm({ settings, offers, plans, selectedOfferId }: ClubL
         aria-live="polite"
         className={cn(
           "mt-3 text-xs leading-relaxed",
-          state === "success" ? "text-success" : "text-muted",
-          state === "error" ? "text-red-600" : "",
+          state === "error" ? "text-red-600" : state === "success" ? "text-success" : "text-muted",
         )}
       >
         {state === "success"

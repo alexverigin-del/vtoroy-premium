@@ -20,6 +20,7 @@ const tailwindConfigs = [
 const rootLayout = path.join(webRoot, "app", "layout.tsx");
 const globalsCss = path.join(webRoot, "app", "globals.css");
 const classCompositionHelper = path.join(webRoot, "lib", "cn.ts");
+const clientClassCompositionHelper = path.join(webRoot, "lib", "cn-client.ts");
 const siteLogoComponent = path.join(webRoot, "components", "SiteLogo.tsx");
 const siteChromeUtils = path.join(webRoot, "components", "site-chrome-utils.ts");
 const productImageZoomUtils = path.join(webRoot, "components", "product-image-zoom-utils.ts");
@@ -48,7 +49,16 @@ const clientEnvPattern = /process\.env\.([A-Z0-9_]+)/g;
 const directDomStylePattern = /(?:\.style(?:\.|\s*=|\[)|\.setProperty\(|\.cssText\b)/g;
 const rawColorLiteralPattern = /(?:#[0-9a-fA-F]{3,8}\b|rgba?\([^)]+\)|hsla?\([^)]+\))/g;
 const longClassNameLiteralLimit = 180;
-const applyAllowed = new Set(["body", ".btn-pill", ".card", ".focus-ring"]);
+// Reviewed defaults moved out of JS; browser parity/override coverage lives in
+// smoke_client_styles.mjs. This is not a blanket allowance for component CSS.
+const applyAllowed = new Set([
+  "body",
+  ".btn-pill",
+  ".card",
+  ".focus-ring",
+  ".rich-text",
+  ".home-intro-centered",
+]);
 const cssVariableTokenMap = {
   "--color-ink": "ink",
   "--color-muted": "muted",
@@ -297,8 +307,9 @@ for (const file of scanRoots.flatMap(walk)) {
 
   if (file !== classCompositionHelper) {
     for (const match of source.matchAll(classComposerImportPattern)) {
+      if (file === clientClassCompositionHelper && !match[0].includes("tailwind-merge")) continue;
       errors.push(
-        `${rel(file)}:${lineNumber(source, match.index)} imports clsx/tailwind-merge directly; use apps/web/lib/cn.ts as the single class composition helper.`,
+        `${rel(file)}:${lineNumber(source, match.index)} imports clsx/tailwind-merge directly; use lib/cn.ts (server) or lib/cn-client.ts (client).`,
       );
     }
   }

@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import type { GalleryImage } from "@vtoroy/shared";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/cn-client";
 import { ProductImage, productImageSrc } from "./ProductImage";
 import { ProductImageViewer } from "./ProductImageViewer";
 import { productImageLensStyle } from "./product-image-zoom-utils";

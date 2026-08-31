@@ -2,7 +2,7 @@
 
 import { FormEvent, useId, useState } from "react";
 import type { DevicePageSettings, ProductLeadFormMode } from "@vtoroy/shared";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/cn-client";
 import {
   leadFieldClass,
   leadHoneypotClass,
@@ -226,8 +226,7 @@ export function ProductLeadForm({
         aria-live="polite"
         className={cn(
           "mt-3 text-xs",
-          state === "success" ? "text-success" : "text-muted",
-          state === "error" ? "text-red-600" : "",
+          state === "error" ? "text-red-600" : state === "success" ? "text-success" : "text-muted",
         )}
       >
         {state === "success"

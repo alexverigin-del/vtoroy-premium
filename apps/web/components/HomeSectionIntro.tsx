@@ -1,6 +1,6 @@
 import type { PageSection } from "@vtoroy/shared";
 
-import { cn } from "../lib/cn";
+import { cn } from "../lib/cn-client";
 import { RichText } from "./RichText";
 import { homeSectionLabelClass } from "./ui-classes";
 
@@ -15,10 +15,7 @@ export function HomeSectionIntro({ section, align = "split", className }: HomeSe
 
   if (align === "center") {
     return (
-      <div
-        className={cn("mx-auto max-w-copy text-center", className)}
-        data-component="HomeSectionIntro"
-      >
+      <div className={cn("home-intro-centered", className)} data-component="HomeSectionIntro">
         {section.eyebrow ? <div className={homeSectionLabelClass}>{section.eyebrow}</div> : null}
         {section.headline ? (
           <h2 className="mt-3 text-balance text-3xl font-semibold leading-tight tracking-normal text-carbon md:text-5xl">

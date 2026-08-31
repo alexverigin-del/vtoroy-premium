@@ -3,7 +3,7 @@
 import type { NavigationItem, SiteSettings } from "@vtoroy/shared";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/cn-client";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
 import { headerCtaClass } from "./ui-classes";

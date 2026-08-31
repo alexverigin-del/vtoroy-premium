@@ -2,6 +2,7 @@
 
 import process from "node:process";
 import { launchChromium, playwrightBrowserHint } from "./playwright_browser.mjs";
+import { tradeExchangeProductionCases } from "./trade_exchange_production_cases.mjs";
 
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://isvoi.ru").replace(/\/+$/, "");
 const secret = (process.env.TRADE_QA_SECRET || "").trim();
@@ -96,6 +97,7 @@ async function main() {
       ["samsung-galaxy-s24-ultra", "256 ГБ", {}, [30_500, 34_000]],
     ];
 
+    let exchangeQuote;
     for (const [modelSlug, storage, answerOverrides, expected] of controls) {
       const selected = config.devices.find(
         (device) => device.modelSlug === modelSlug && device.storage === storage,
@@ -132,6 +134,7 @@ async function main() {
         payload.quote.pricingVersion === config.pricingVersion,
         `${modelSlug} ${storage}: pricing version mismatch`,
       );
+      exchangeQuote ??= payload.quote;
     }
 
     const invalidPhoneResponse = await qaPage.request.post(`${baseUrl}/lead-intake`, {
@@ -194,6 +197,16 @@ async function main() {
         repeatedPhonePayload.reference_code === validPhonePayload.reference_code,
       "QA phone lead idempotency check failed",
     );
+
+    if (process.env.TRADE_EXPECT_EXCHANGE_OFFERS)
+      await tradeExchangeProductionCases(
+        qaPage,
+        baseUrl,
+        config,
+        baselineAnswers,
+        exchangeQuote,
+        validLeadData,
+      );
 
     await qaPage.getByRole("button", { name: "Завершить QA" }).click();
     await qaPage.getByText("Внутренняя приёмка", { exact: true }).waitFor();

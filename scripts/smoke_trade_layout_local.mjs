@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { launchChromium } from "./playwright_browser.mjs";
 import { tradeConditionRules, tradePricingConfigsV3 } from "./trade_pricing_v3_data.mjs";
+import { createTradeExchangeFixture, tradeExchangeApiCases } from "./trade_exchange_api_cases.mjs";
 import {
   mockTradeTurnstile,
   tradeNavigationBrowserCases,
@@ -54,9 +55,11 @@ const rules = tradeConditionRules.map((item, index) => ({
   id: `rule-${index}`,
   ...Object.fromEntries(Object.entries(item).map(([k, v]) => [snake(k), v])),
 }));
+const exchangeFixture = createTradeExchangeFixture();
 const cms = createServer((req, res) => {
   const url = new URL(req.url, "http://127.0.0.1");
   res.setHeader("Content-Type", "application/json");
+  if (exchangeFixture.handle(req, res, url)) return;
   if (req.method !== "GET") {
     res.writeHead(405);
     res.end('{"error":"fixture_is_read_only"}');
@@ -67,6 +70,8 @@ const cms = createServer((req, res) => {
     data = { ...settings, status: active ? "published" : "draft" };
   else if (url.pathname === "/items/trade_device_configs") data = configs;
   else if (url.pathname === "/items/trade_condition_rules") data = rules;
+  else if (url.pathname === "/items/store_locations")
+    data = [{ ...settings.default_store, status: "published", pickup_enabled: true }];
   else if (
     url.pathname === "/items/site_pages" &&
     url.searchParams.get("filter[slug][_eq]") === "trade"
@@ -128,6 +133,8 @@ const app = spawn(
       NEXT_PUBLIC_DIRECTUS_URL: cmsUrl,
       DIRECTUS_TOKEN: "local-fixture",
       DIRECTUS_TRADE_TOKEN: "local-fixture",
+      DIRECTUS_LEADS_TOKEN: "local-fixture",
+      TURNSTILE_SECRET_KEY: "",
       TRADE_WIZARD_ENABLED: "1",
       TRADE_QA_ENABLED: "0",
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: "local-fixture-site-key",
@@ -148,6 +155,7 @@ try {
     await new Promise((r) => setTimeout(r, 500));
   }
   browser = await launchChromium({ headless: true });
+  await tradeExchangeApiCases(base, exchangeFixture);
   await tradeNavigationBrowserCases(browser, base, output);
   for (const [name, viewport] of [
     ["desktop", { width: 1280, height: 900 }],

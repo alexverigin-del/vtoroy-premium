@@ -6,6 +6,7 @@ import type {
   TradeContactChannel,
   TradeEventName,
   TradeExchangeOffer,
+  TradeExchangePage,
   TradePublicConfig,
   TradeQuote,
   TradeScenario,
@@ -335,6 +336,13 @@ export function TradeInWizard({
   const [quoteInputKey, setQuoteInputKey] = useState<string>();
   const [scenario, setScenario] = useState<TradeScenario>();
   const [offers, setOffers] = useState<TradeExchangeOffer[]>([]);
+  const [exchangePage, setExchangePage] = useState<{ total: number; nextCursor: string | null }>({
+    total: 0,
+    nextCursor: null,
+  });
+  const exchangeList = useRef<HTMLDivElement>(null);
+  const appendedOffer = useRef<string>();
+  const exchangeRetryAppend = useRef(false);
   const [selectedOffer, setSelectedOffer] = useState<TradeExchangeOffer>();
   const [manualDescription, setManualDescription] = useState("");
   const [contactChannel, setContactChannel] = useState<TradeContactChannel>("phone");
@@ -472,6 +480,7 @@ export function TradeInWizard({
     setQuoteInputKey(undefined);
     setScenario(undefined);
     setOffers([]);
+    setExchangePage({ total: 0, nextCursor: null });
     setSelectedOffer(undefined);
     setError("");
     if (quote) setNotice("Данные изменились. Рассчитаем оценку заново.");
@@ -495,6 +504,7 @@ export function TradeInWizard({
     setQuoteInputKey(undefined);
     setScenario(undefined);
     setOffers([]);
+    setExchangePage({ total: 0, nextCursor: null });
     setSelectedOffer(undefined);
     setManualDescription("");
     setContactChannel("phone");
@@ -746,28 +756,47 @@ export function TradeInWizard({
     } else setError("Не удалось рассчитать оценку. Проверьте соединение и попробуйте ещё раз.");
   }
 
-  async function openExchange(replace = false) {
+  async function openExchange(replace = false, append = false) {
     if (!quote || request.current || submitting.current) return;
+    if (append && !exchangePage.nextCursor) return;
     if (tradeQuoteExpired(quote)) {
       navigate("expired");
       return;
     }
     const controller = new AbortController();
+    exchangeRetryAppend.current = append;
     request.current = controller;
     setLoading(true);
     setError("");
     const params = new URLSearchParams({ quote_id: quote.id });
     if (storeId) params.set("store_location_id", storeId);
+    if (append && exchangePage.nextCursor) params.set("cursor", exchangePage.nextCursor);
     const response = await fetch(`/api/trade/exchange?${params}`, {
       cache: "no-store",
       signal: controller.signal,
     }).catch(() => null);
     const payload = (await response?.json().catch(() => null)) as
-      { ok: true; offers: TradeExchangeOffer[] } | { ok: false; error: string } | null;
+      ({ ok: true } & TradeExchangePage) | { ok: false; error: string } | null;
     if (request.current !== controller || controller.signal.aborted) return;
     request.current = undefined;
     setLoading(false);
     if (payload?.ok) {
+      setExchangePage({
+        total: payload.total ?? payload.offers.length,
+        nextCursor: payload.nextCursor ?? null,
+      });
+      if (append) {
+        appendedOffer.current = payload.offers.find(
+          (item) => !offers.some((old) => old.offerId === item.offerId),
+        )?.offerId;
+        setOffers((current) => [
+          ...new Map([...current, ...payload.offers].map((item) => [item.offerId, item])).values(),
+        ]);
+        setSelectedOffer(
+          (current) => payload.offers.find((item) => item.offerId === current?.offerId) ?? current,
+        );
+        return;
+      }
       setOffers(payload.offers);
       if (payload.offers.length === 0) {
         setSelectedOffer(undefined);
@@ -865,6 +894,7 @@ export function TradeInWizard({
       if (submissionError === "product_unavailable") {
         setSelectedOffer(undefined);
         setOffers([]);
+        setExchangePage({ total: 0, nextCursor: null });
         setNotice(
           "Выбранное устройство больше недоступно. Выберите другое — ваши контакты сохранены на экране.",
         );
@@ -898,6 +928,16 @@ export function TradeInWizard({
     // openExchange is intentionally invoked only on entry, not on each loading update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restored, step]);
+
+  useEffect(() => {
+    if (!appendedOffer.current) return;
+    const button = [
+      ...(exchangeList.current?.querySelectorAll<HTMLButtonElement>("button[data-offer-id]") ?? []),
+    ].find((item) => item.dataset.offerId === appendedOffer.current);
+    button?.focus({ preventScroll: true });
+    button?.scrollIntoView({ block: "nearest", behavior: "instant" });
+    appendedOffer.current = undefined;
+  }, [offers]);
 
   const stepNumber: 1 | 2 | 3 | 4 =
     step === "device" || step === "manual"
@@ -1371,18 +1411,28 @@ export function TradeInWizard({
                   <button
                     type="button"
                     disabled={loading}
-                    onClick={() => void openExchange(true)}
+                    onClick={() => void openExchange(true, exchangeRetryAppend.current)}
                     className="focus-ring min-h-11 text-sm font-semibold text-link-blue"
                   >
                     Повторить загрузку каталога
                   </button>
                 </div>
               ) : null}
-              <div className="mt-3 grid max-h-trade-list gap-3 overflow-y-auto pr-1">
+              <p role="status" aria-live="polite" className="mt-3 text-sm text-muted">
+                Показано {offers.length} из {Math.max(offers.length, exchangePage.total)}
+              </p>
+              <div
+                ref={exchangeList}
+                aria-label="Устройства для обмена"
+                aria-busy={loading}
+                className="mt-3 grid max-h-trade-list gap-3 overflow-y-auto pr-1"
+              >
                 {offers.map((offer) => (
                   <button
                     key={offer.offerId}
                     type="button"
+                    data-offer-id={offer.offerId}
+                    aria-pressed={selectedOffer?.offerId === offer.offerId}
                     onClick={() => setSelectedOffer(offer)}
                     className={cn(
                       "focus-ring rounded-card border p-4 text-left",
@@ -1409,6 +1459,26 @@ export function TradeInWizard({
                     </span>
                   </button>
                 ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {exchangePage.nextCursor ? (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => void openExchange(false, true)}
+                    className="focus-ring min-h-11 rounded-pill border border-hairline px-5 text-sm font-semibold text-link-blue disabled:opacity-50"
+                  >
+                    {loading ? "Загружаем…" : "Показать ещё"}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void openExchange(true)}
+                  className="focus-ring min-h-11 text-sm font-semibold text-link-blue disabled:opacity-50"
+                >
+                  Обновить список
+                </button>
               </div>
               <StickyAction
                 label={loading ? "Проверяем…" : "Продолжить с этим устройством"}

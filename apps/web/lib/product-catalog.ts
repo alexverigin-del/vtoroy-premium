@@ -704,7 +704,9 @@ export async function getAllPublishedProductCards(): Promise<ProductCardData[]> 
   return products;
 }
 
-export async function getAllPublishedV3ProductCards(): Promise<ProductCardData[]> {
+export async function getAllPublishedV3ProductCards(
+  options: { noStore?: boolean } = {},
+): Promise<ProductCardData[]> {
   const products: ProductCardData[] = [];
   const pageSize = 48;
 
@@ -719,8 +721,11 @@ export async function getAllPublishedV3ProductCards(): Promise<ProductCardData[]
       offset: String((page - 1) * pageSize),
       sort: productSort(),
     });
-    const response = await directusRequest<Row[]>(`/items/products?${params}`);
-    if (!response) return [];
+    const response = await directusRequest<Row[]>(`/items/products?${params}`, options);
+    if (!response) {
+      if (options.noStore) throw new Error("Trade catalog unavailable");
+      return [];
+    }
 
     const pageProducts = response.data.map((row) => mapProductCard(row));
     products.push(...pageProducts);
@@ -728,6 +733,25 @@ export async function getAllPublishedV3ProductCards(): Promise<ProductCardData[]
   }
 
   return products;
+}
+
+// Submission checks must bypass the storefront cache and never depend on list pagination.
+export async function getPublishedV3ProductForTrade(
+  productId: string,
+): Promise<ProductCardData | null> {
+  const params = new URLSearchParams({
+    "filter[id][_eq]": productId,
+    "filter[status][_eq]": "published",
+    "filter[content_status][_eq]": "ready",
+    "filter[stock_status][_neq]": "hidden",
+    "filter[stock_quantity][_gt]": "0",
+    fields: PRODUCT_CARD_FIELDS,
+    limit: "1",
+  });
+  const response = await directusRequest<Row[]>(`/items/products?${params}`, { noStore: true });
+  if (!response) throw new Error("Trade catalog unavailable");
+  const row = response.data.find((item) => text(item.id) === productId);
+  return row ? mapProductCard(row) : null;
 }
 
 export const getProductCatalogFacets = cache(

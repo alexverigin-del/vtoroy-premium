@@ -111,6 +111,12 @@ export interface TradeExchangeOffer {
   };
 }
 
+export interface TradeExchangePage {
+  offers: TradeExchangeOffer[];
+  total: number;
+  nextCursor: string | null;
+}
+
 export type TradeEventName =
   | "trade_start"
   | "trade_model_selected"

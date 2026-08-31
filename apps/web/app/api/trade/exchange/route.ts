@@ -7,16 +7,22 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const quoteId = (request.nextUrl.searchParams.get("quote_id") ?? "").trim().slice(0, 80);
   const storeId = (request.nextUrl.searchParams.get("store_location_id") ?? "").trim().slice(0, 80);
-  if (!quoteId) {
+  const cursor = request.nextUrl.searchParams.get("cursor") ?? undefined;
+  if (!quoteId || (cursor !== undefined && (!cursor || cursor.length > 1024))) {
     return NextResponse.json({ ok: false, error: "validation_error" }, { status: 400 });
   }
 
   try {
-    const offers = await getTradeExchangeOffers(quoteId, storeId || undefined, {
-      allowDraft: isTradeQaRequest(request),
-    });
+    const page = await getTradeExchangeOffers(
+      quoteId,
+      storeId || undefined,
+      {
+        allowDraft: isTradeQaRequest(request),
+      },
+      cursor,
+    );
     return NextResponse.json(
-      { ok: true, offers },
+      { ok: true, ...page },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error) {

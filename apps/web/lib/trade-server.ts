@@ -16,7 +16,8 @@ import type {
   TradeQuoteRequest,
   TradeStoreOption,
 } from "@vtoroy/shared";
-import { getAllPublishedV3ProductCards } from "./product-catalog";
+import { getAllPublishedV3ProductCards, getPublishedV3ProductForTrade } from "./product-catalog";
+import { tradeExchangeOffer, tradeExchangePage } from "./trade-exchange";
 import {
   calculateTradeRange,
   isTradeQuoteExpired,
@@ -477,58 +478,29 @@ export async function getTradeExchangeOffers(
   quoteId: string,
   requestedStoreId?: string,
   options: TradeContextOptions = {},
-): Promise<TradeExchangeOffer[]> {
-  const [quote, config, products] = await Promise.all([
+  cursor?: string,
+) {
+  const [quote, config] = await Promise.all([
     getTradeQuote(quoteId, { testMode: options.allowDraft ? "only" : "exclude" }),
     getTradePublicConfig(options),
-    getAllPublishedV3ProductCards(),
   ]);
   const storeId = requestedStoreId || config.defaultStoreId;
+  if (storeId && !config.stores.some((store) => store.id === storeId))
+    throw new TradeApiError("validation_error", 400);
+  const products = await getAllPublishedV3ProductCards({ noStore: true });
   const offers: TradeExchangeOffer[] = [];
 
   for (const product of products) {
-    const available = product.offers.filter(
-      (offer) =>
-        offer.status === "published" &&
-        offer.stockStatus === "available" &&
-        offer.stockQuantity > 0,
-    );
-    const selected =
-      available.find((offer) => offer.location.id === storeId && offer.pickupEnabled) ??
-      available.find(
-        (offer) => offer.intercityDeliveryEnabled && offer.location.intercityDeliveryEnabled,
-      );
-    if (!selected) continue;
-    offers.push({
-      productId: product.id,
-      offerId: selected.id,
-      title: product.title,
-      detailHref: product.detailHref,
-      image: product.listingImage || undefined,
-      imageAlt: product.listingAlt || product.title,
-      price: selected.price,
-      priceText: selected.priceText,
-      location: {
-        id: selected.location.id,
-        slug: selected.location.slug,
-        name: selected.location.name,
-        city: selected.location.city,
-      },
-      fulfillment: selected.location.id === storeId ? "pickup" : "intercity_delivery",
-      deliveryEstimate: selected.deliveryEstimate,
-      topUpRange: {
-        from: Math.max(0, selected.price - quote.range.max),
-        to: Math.max(0, selected.price - quote.range.min),
-      },
-    });
+    const offer = tradeExchangeOffer(product, storeId, quote.range);
+    if (offer) offers.push(offer);
   }
 
-  return offers
-    .sort((a, b) => {
-      const local = Number(a.fulfillment !== "pickup") - Number(b.fulfillment !== "pickup");
-      return local || a.topUpRange.from - b.topUpRange.from || a.price - b.price;
-    })
-    .slice(0, 12);
+  try {
+    return tradeExchangePage(offers, `${quote.id}:${storeId ?? ""}`, cursor);
+  } catch (error) {
+    if (error instanceof RangeError) throw new TradeApiError("validation_error", 400);
+    throw error;
+  }
 }
 
 export async function validateTradeExchangeSelection(
@@ -538,8 +510,14 @@ export async function validateTradeExchangeSelection(
   storeId?: string,
   options: TradeContextOptions = {},
 ): Promise<boolean> {
-  const offers = await getTradeExchangeOffers(quoteId, storeId, options);
-  return offers.some((offer) => offer.productId === productId && offer.offerId === offerId);
+  const [quote, config, product] = await Promise.all([
+    getTradeQuote(quoteId, { testMode: options.allowDraft ? "only" : "exclude" }),
+    getTradePublicConfig(options),
+    getPublishedV3ProductForTrade(productId),
+  ]);
+  const destination = storeId || config.defaultStoreId;
+  if (destination && !config.stores.some((store) => store.id === destination)) return false;
+  return Boolean(product && tradeExchangeOffer(product, destination, quote.range, offerId));
 }
 
 export async function recordTradeEvent(event: {

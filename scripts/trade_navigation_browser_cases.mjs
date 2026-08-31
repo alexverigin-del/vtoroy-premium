@@ -44,7 +44,14 @@ export async function tradeNavigationBrowserCases(browser, base, output) {
     let quoteFailure,
       leadFailure,
       exchangeEmpty = false;
-    let holdQuote, releaseQuote, holdLead, releaseLead;
+    let holdQuote,
+      releaseQuote,
+      holdLead,
+      releaseLead,
+      holdExchange,
+      releaseExchange,
+      exchangeFailure;
+    const exchangeRequests = [];
     const offer = (id) => ({
       offerId: id,
       productId: `product-${id}`,
@@ -91,9 +98,39 @@ export async function tradeNavigationBrowserCases(browser, base, output) {
         })
         .catch(() => {});
     });
-    await page.route("**/api/trade/exchange?**", (r) =>
-      r.fulfill({ json: { ok: true, offers: exchangeEmpty ? [] : [offer("one"), offer("two")] } }),
-    );
+    await page.route("**/api/trade/exchange?**", async (r) => {
+      const cursor = new URL(r.request().url()).searchParams.get("cursor");
+      exchangeRequests.push(cursor);
+      if (holdExchange) {
+        holdExchange = false;
+        await new Promise((resolve) => {
+          releaseExchange = resolve;
+        });
+      }
+      if (exchangeFailure) {
+        exchangeFailure = false;
+        return r
+          .fulfill({ status: 503, json: { ok: false, error: "pricing_unavailable" } })
+          .catch(() => {});
+      }
+      const all = exchangeEmpty
+        ? []
+        : [
+            offer("one"),
+            offer("two"),
+            ...Array.from({ length: 15 }, (_, i) => offer(String(i + 3))),
+          ];
+      await r
+        .fulfill({
+          json: {
+            ok: true,
+            offers: cursor ? all.slice(12) : all.slice(0, 12),
+            total: all.length,
+            nextCursor: !cursor && all.length > 12 ? "page-two" : null,
+          },
+        })
+        .catch(() => {});
+    });
     await page.route("**/lead-intake", async (r) => {
       leadRequests.push(r.request().postDataJSON());
       const failure = leadFailure;
@@ -248,19 +285,65 @@ export async function tradeNavigationBrowserCases(browser, base, output) {
     await wizard.getByRole("button", { name: /^Обменять/ }).click();
     await heading("Выберите устройство для обмена");
     await wizard.getByRole("button", { name: /Тестовое устройство two/ }).click();
+    await wizard.getByText("Показано 12 из 17", { exact: true }).waitFor();
+    assert.equal(await wizard.locator("button[data-offer-id]").count(), 12);
+    exchangeFailure = true;
+    await button("Обновить список").click();
+    await wizard.getByRole("alert").waitFor();
+    await button("Повторить загрузку каталога").click();
+    await wizard.getByRole("alert").waitFor({ state: "detached" });
+    assert.equal(exchangeRequests.at(-1), null, "refresh retry must reload first page, not append");
+    assert.equal(await wizard.locator("button[data-offer-id]").count(), 12);
+    exchangeFailure = true;
+    await button("Показать ещё").click();
+    await wizard.getByRole("alert").waitFor();
+    assert.equal(
+      await wizard.locator("button[data-offer-id]").count(),
+      12,
+      "retry keeps loaded cards",
+    );
+    assert.equal(
+      await wizard.locator('button[data-offer-id="two"]').getAttribute("aria-pressed"),
+      "true",
+    );
+    holdExchange = true;
+    await button("Повторить загрузку каталога").click();
+    await waitForRequest(() => releaseExchange);
+    assert(await button("Загружаем…").isDisabled());
+    const requestCount = exchangeRequests.length;
+    await button("Загружаем…").evaluate((el) => el.click());
+    assert.equal(exchangeRequests.length, requestCount, "duplicate click blocked");
+    releaseExchange();
+    releaseExchange = undefined;
+    await wizard.getByText("Показано 17 из 17", { exact: true }).waitFor();
+    assert.equal(await wizard.locator("button[data-offer-id]").count(), 17);
+    assert.equal(await button("Показать ещё").count(), 0);
+    assert.equal(
+      await wizard.locator('button[data-offer-id="two"]').getAttribute("aria-pressed"),
+      "true",
+    );
+    assert(
+      await wizard
+        .locator('button[data-offer-id="13"]')
+        .evaluate((el) => el === document.activeElement),
+      "focus enters appended page",
+    );
+    await wizard.locator('button[data-offer-id="17"]').click();
+    await page.screenshot({ path: path.join(output, `exchange-${name}-all-17.png`) });
     await button("Продолжить с этим устройством").click();
     await heading("Запишитесь на диагностику");
     await fillContact();
     await button("← Назад").click();
     await heading("Выберите устройство для обмена");
     assert.match(
-      await wizard.getByRole("button", { name: /Тестовое устройство two/ }).innerText(),
+      await wizard.getByRole("button", { name: /Тестовое устройство 17/ }).innerText(),
       /Выбрано/i,
     );
     await button("Продолжить с этим устройством").click();
     await heading("Запишитесь на диагностику");
     leadFailure = "product_unavailable";
     await button("Отправить заявку").click();
+    assert.equal(leadRequests.at(-1).target_offer_id, "17", "lead retains second-page selection");
     await heading("Выберите устройство для обмена");
     await button("Продолжить с этим устройством").click();
     await heading("Запишитесь на диагностику");
@@ -341,6 +424,27 @@ export async function tradeNavigationBrowserCases(browser, base, output) {
     assert.equal(await wizard.locator('input[type="tel"]').inputValue(), "");
     assert(!(await wizard.getByRole("checkbox").isChecked()));
     await wizard.screenshot({ path: path.join(output, `navigation-${name}-contact.png`) });
+    await reset();
+    await chooseDevice();
+    await showQuote();
+    exchangeEmpty = false;
+    await button("Выбрать способ сделки").click();
+    await wizard.getByRole("button", { name: /^Обменять/ }).click();
+    await heading("Выберите устройство для обмена");
+    holdExchange = true;
+    await button("Показать ещё").click();
+    await waitForRequest(() => releaseExchange);
+    await reset();
+    releaseExchange();
+    releaseExchange = undefined;
+    await page.waitForTimeout(100);
+    await heading("Какой смартфон вы хотите оценить?");
+    assert.equal(
+      await wizard.locator("button[data-offer-id]").count(),
+      0,
+      "late page cannot restore reset state",
+    );
+    await chooseDevice();
     if (name === "mobile") {
       await page.setViewportSize({ width: 320, height: 568 });
       await button("Начать заново").click();
@@ -357,7 +461,7 @@ export async function tradeNavigationBrowserCases(browser, base, output) {
     );
     assert.deepEqual(errors, []);
     console.log(
-      `${name}: navigation, edit/invalidation, restore, reset/dialog/focus, stale history, late quote, exchange/empty/unavailable, expiry, retry, pending submit, new lead, manual/safety OK`,
+      `${name}: navigation, edit/invalidation, restore, reset/dialog/focus, stale history, late quote/page, exchange 12+5/retry/selection/focus/empty/unavailable, expiry, pending submit, new lead, manual/safety OK`,
     );
     await context.close();
   }

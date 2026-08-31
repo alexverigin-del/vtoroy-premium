@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-08-31.
+Last updated: 2026-09-01.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -3646,3 +3646,37 @@ Next content-editing priorities:
 - Operational follow-ups remain: complete real Inventory Manager confirmation
   for Avito cost profiles/category mappings and design a durable critical-media
   strategy beyond manual asset-id maps.
+
+### Store LCP production release · 2026-09-01
+
+- Release `251cc16` was committed, pushed to GitHub master and fast-forwarded on
+  Beget. The previous compiled app was saved at
+  `/opt/isvoi/backups/web/20260831T205601-store-lcp/next`; the latest verified
+  Directus PostgreSQL/uploads backup before release remains
+  `/opt/isvoi/backups/directus/20260831T194230Z`.
+- Beget `web:verify` passed before restarting `isvoi-web`. Server bundle
+  budgets passed unchanged: total client JS **887.1 / 282.4 / 244.0 kB**
+  raw/gzip/Brotli and largest route **441.2 / 132.1 / 112.2 kB**. PM2 is online
+  on `251cc16`; production checkout is clean.
+- Production smoke after deploy passed: functional, images, performance,
+  visual, internal links, public copy and public content consistency. `/store`
+  performance passed the current smoke budget with desktop LCP **3444 ms** and
+  mobile LCP **2548 ms**. A targeted desktop trace measured the store visual as
+  the LCP image at **3832 ms**, with the hero image resource starting at
+  **2453 ms** and the first product-card image starting later at **3749 ms**.
+- The initial `/store` HTML contains the expected image preload and
+  `fetchPriority="high"` for the Directus-backed store hero. Product cards below
+  the store visual remain lazy. This confirms the implemented fix removed
+  product-card competition but does not yet put desktop `/store` consistently in
+  the 2500 ms green target.
+- The next `/store` LCP step should not reintroduce manual Directus asset-id
+  maps or remove Studio ownership of `store_locations.hero_file`. To target
+  sub-2500 ms, use a durable CMS/asset pipeline: pre-generate/cache a critical
+  1200 px derivative for the current Studio hero, serve it directly or warm the
+  Next optimizer/CDN path, and revalidate it when the Studio image changes. A
+  visual alternative is to move the city photo into the first viewport only if a
+  design pass approves the layout change.
+- The 2 unconfirmed cost profiles and 13 unconfirmed Avito mappings were
+  inspected read-only on production and intentionally left unconfirmed. Their
+  notes require real Inventory Manager/official Avito template confirmation, so
+  they are not safe for automated technical closure.

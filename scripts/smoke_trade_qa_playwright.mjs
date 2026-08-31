@@ -7,10 +7,23 @@ import { tradeExchangeProductionCases } from "./trade_exchange_production_cases.
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://isvoi.ru").replace(/\/+$/, "");
 const secret = (process.env.TRADE_QA_SECRET || "").trim();
 const expectPublicEnabled = process.env.TRADE_EXPECT_PUBLIC_ENABLED === "1";
+const exchangeOnly = process.env.TRADE_QA_EXCHANGE_ONLY === "1";
 if (secret.length < 32) throw new Error("TRADE_QA_SECRET with at least 32 characters is required.");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+async function requestQuote(page, data) {
+  // A resumed gate can share the preceding run's 20-request/15-minute budget.
+  // Wait for its normal expiry; never reset or bypass production protection.
+  for (let attempt = 0; attempt <= 15; attempt++) {
+    const response = await page.request.post(`${baseUrl}/api/trade/quote`, { data });
+    if (response.status() !== 429 || attempt === 15) return response;
+    console.log("Quote rate limit: waiting 60 seconds before resuming QA");
+    await response.dispose();
+    await new Promise((resolve) => setTimeout(resolve, 60_000));
+  }
 }
 
 async function main() {
@@ -98,17 +111,16 @@ async function main() {
     ];
 
     let exchangeQuote;
-    for (const [modelSlug, storage, answerOverrides, expected] of controls) {
+    const requestedControls = exchangeOnly ? controls.slice(0, 1) : controls;
+    for (const [modelSlug, storage, answerOverrides, expected] of requestedControls) {
       const selected = config.devices.find(
         (device) => device.modelSlug === modelSlug && device.storage === storage,
       );
       assert(selected, `QA config is missing ${modelSlug} ${storage}`);
-      const quoteResponse = await qaPage.request.post(`${baseUrl}/api/trade/quote`, {
-        data: {
-          deviceModelId: selected.deviceModelId,
-          configurationId: selected.id,
-          answers: { ...baselineAnswers, ...answerOverrides },
-        },
+      const quoteResponse = await requestQuote(qaPage, {
+        deviceModelId: selected.deviceModelId,
+        configurationId: selected.id,
+        answers: { ...baselineAnswers, ...answerOverrides },
       });
       const payload = await quoteResponse.json();
       if (typeof expected === "string") {
@@ -137,8 +149,8 @@ async function main() {
       exchangeQuote ??= payload.quote;
     }
 
-    // Resume the new gate without replaying the four legacy lead requests in the same rate window.
-    if (process.env.TRADE_QA_EXCHANGE_ONLY === "1") {
+    // Resume only the new gate, with one quote and no repeated legacy lead/control requests.
+    if (exchangeOnly) {
       await tradeExchangeProductionCases(qaPage, baseUrl, config, baselineAnswers, exchangeQuote, {
         kind: "trade",
         contact_channel: "phone",

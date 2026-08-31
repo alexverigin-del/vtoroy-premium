@@ -78,8 +78,8 @@ function mapLocation(row: Row): StoreLocation {
     heroBody: cityCopy(row.hero_body, city),
     heroImage: heroFile
       ? directusAssetUrl(heroFile, {
-          width: 1600,
-          quality: 84,
+          width: 1200,
+          quality: 80,
           fit: "cover",
           format: "auto",
           withoutEnlargement: true,

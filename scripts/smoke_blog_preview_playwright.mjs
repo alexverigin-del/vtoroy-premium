@@ -30,6 +30,44 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function splitSetCookie(value) {
+  if (!value) return [];
+  return value.split(/,(?=\s*[^;,=]+=[^;,]+)/);
+}
+
+function previewCookies(response, url) {
+  const setCookie =
+    typeof response.headers.getSetCookie === "function"
+      ? response.headers.getSetCookie()
+      : splitSetCookie(response.headers.get("set-cookie"));
+  return setCookie.flatMap((header) => {
+    const [nameValue, ...attributes] = header.split(";");
+    const separator = nameValue.indexOf("=");
+    if (separator <= 0) return [];
+    const name = nameValue.slice(0, separator).trim();
+    const value = nameValue.slice(separator + 1).trim();
+    const cookie = { name, value, url };
+    for (const rawAttribute of attributes) {
+      const attribute = rawAttribute.trim();
+      const [rawKey, ...rawValue] = attribute.split("=");
+      const key = rawKey.toLowerCase();
+      const attrValue = rawValue.join("=");
+      if (key === "httponly") cookie.httpOnly = true;
+      if (key === "secure") cookie.secure = true;
+      if (key === "samesite") {
+        const sameSite = attrValue.toLowerCase();
+        cookie.sameSite =
+          sameSite === "strict" ? "Strict" : sameSite === "none" ? "None" : "Lax";
+      }
+      if (key === "expires") {
+        const expires = Date.parse(attrValue);
+        if (Number.isFinite(expires)) cookie.expires = Math.floor(expires / 1000);
+      }
+    }
+    return [cookie];
+  });
+}
+
 async function main() {
   await fs.mkdir(outputDir, { recursive: true });
   const browser = await launchChromium({ headless: true });
@@ -54,10 +92,25 @@ async function main() {
       });
       try {
         const previewUrl = new URL("/api/draft/blog", baseUrl);
-        previewUrl.searchParams.set("secret", secret);
         previewUrl.searchParams.set("id", postId);
         previewUrl.searchParams.set("version", version);
-        const response = await page.goto(previewUrl.toString(), {
+        const previewResponse = await fetch(previewUrl, {
+          headers: { "x-isvoi-preview-secret": secret },
+          redirect: "manual",
+        });
+        assert(
+          previewResponse.status >= 300 && previewResponse.status < 400,
+          `${viewport.name}: preview request failed with ${previewResponse.status}`,
+        );
+        const location = previewResponse.headers.get("location");
+        assert(location, `${viewport.name}: preview redirect is missing`);
+        assert(!location.includes("secret="), `${viewport.name}: secret leaked into redirect`);
+        const redirectUrl = new URL(location, baseUrl);
+        const cookies = previewCookies(previewResponse, redirectUrl.origin);
+        assert(cookies.length > 0, `${viewport.name}: Draft Mode cookies are missing`);
+        await context.addCookies(cookies);
+
+        const response = await page.goto(redirectUrl.toString(), {
           waitUntil: "networkidle",
           timeout: 45_000,
         });

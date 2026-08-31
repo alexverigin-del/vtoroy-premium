@@ -134,6 +134,8 @@ export function CityHubPage({
                   src={location.heroImage}
                   alt={location.heroTitle || location.name}
                   fill
+                  priority
+                  fetchPriority="high"
                   className="object-cover"
                   sizes="(min-width: 1180px) 1180px, 92vw"
                 />
@@ -166,9 +168,9 @@ export function CityHubPage({
 
           {products.length > 0 ? (
             <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {products.slice(0, 4).map((product, index) => (
+              {products.slice(0, 4).map((product) => (
                 <li key={product.id}>
-                  <ProductCard product={product} imagePriority={index < 2} />
+                  <ProductCard product={product} />
                 </li>
               ))}
             </ul>

@@ -1,7 +1,5 @@
 const CRITICAL_DIRECTUS_IMAGE_OVERRIDES = new Map<string, string>([
   ["cd194999-a3b9-456a-a724-55ef798e10c5", "/assets/critical-home-hero.webp"],
-  ["95cbc9d4-532d-4c5c-9bba-e9492416c75f", "/assets/critical-store-hero.webp"],
-  ["804cd671-561a-4f54-b274-d23d9119b3db", "/assets/critical-logo.webp"],
 ]);
 
 function directusAssetOverride(src: string): string {

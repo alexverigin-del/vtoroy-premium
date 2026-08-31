@@ -40,9 +40,13 @@ infra/directus-beget/extensions/
 .DS_Store
 
 # Local Codex work products
+.codex/
+.codex-audit/
 .codex-work/
+.pnpm-store/
 outputs/
 work/
+apps/web/public/assets/hero-checked-lineup-reference-v*.png
 
 # Private product-photo staging. Approved files are uploaded to Directus with
 # identifier-free titles; source folder names and manifests may contain serials.

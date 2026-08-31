@@ -19,7 +19,11 @@ function matchesSecret(candidate: string, expected: string): boolean {
 
 export async function GET(request: NextRequest) {
   const expectedSecret = (process.env.BLOG_PREVIEW_SECRET || "").trim();
-  const candidateSecret = (request.nextUrl.searchParams.get("secret") || "").trim();
+  const candidateSecret = (
+    request.headers.get("x-isvoi-preview-secret") ||
+    request.nextUrl.searchParams.get("secret") ||
+    ""
+  ).trim();
   const id = (request.nextUrl.searchParams.get("id") || "").trim();
   const requestedVersion = (request.nextUrl.searchParams.get("version") || "").trim();
   const version = requestedVersion && requestedVersion !== "main" ? requestedVersion : undefined;

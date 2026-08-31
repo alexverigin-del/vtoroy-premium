@@ -3540,6 +3540,17 @@ Next content-editing priorities:
 - Closed QA now follows the active snapshot whether it is draft or published while continuing to mark quotes, events and leads as test data. The QA and service-token setup scripts preserve the public feature flag instead of silently resetting it.
 - Emergency rollback is feature-first: disable the flag with `scripts/configure_trade_public_env.sh`, rebuild and restart `isvoi-web`. This restores the legacy Trade page and fail-closed API without deleting or mutating the published pricing audit trail.
 
+## 2026-08-30 · Titanium photo color refresh
+
+- The approved photo corrections from task `01a043d0-8b4c-75b2-bf80-bb7bb869875c` are now live for Desert Titanium SKUs `т25`, `т14`, `т7` and White Titanium SKUs `т26`, `т37`, `т10`. This is a photo refresh, not a change of product identity or the color field.
+- The source review covered 36 local images and corrected 28. The existing site uses five slots each for `т25` and `т26`, and six for each of the other four devices. All 34 existing slots were refreshed in their original order: 26 color-corrected images and eight byte-identical retained images. The two unused local views were not added to the catalog.
+- The sanitized bundle is `outputs/product-photo-refresh-2026-08-30-titanium/photo-refresh.json`. Public filenames contain only SKU and slot, never full serials. All images remain `2400x1800` WebP. New Directus file IDs invalidate browser/image-cache references without changing the gallery contract.
+- Before apply, every existing live photo matched the source review's previous SHA-256 and each SKU matched its linked inventory serial tail. After apply, all 34 anonymous Directus asset responses matched the approved output hashes. A database digest confirmed that prices, stock, grades, offers, Passport content and diagnostic reports did not change.
+- Pre-apply backup: `/opt/isvoi/backups/directus/20260830T203118Z`; PostgreSQL and uploads passed SHA-256 checks. Offsite remains deferred.
+- The attempted temporary combined-role creation was rejected before execution. The refresh instead used the already configured Catalog Import service with no new identity, token or permission grants. The existing token was held only in process memory and not written to disk or logs.
+- The existing photo-refresh and archive workflows moved 34 unreferenced prior images into `ISVOI Product Photo Archive`; rollback files were not deleted. Files audit reports zero review entries, duplicate ISVOI titles and orphan warnings; the product photo archive now contains 82 files.
+- Catalog V3, files and schema audits passed. Targeted browser QA decoded every gallery slot on desktop and mobile (68 checks), confirmed all six current listing images in `/catalog`, and found no horizontal overflow. Screenshots and results are in `output/playwright/titanium-refresh-2026-08-30`. No application build, PM2 restart, pricing publication or Avito activation was needed.
+
 ## 2026-08-31 · Trade page UX structure (local implementation, not deployed)
 
 - Implemented the approved Figma structure from file `cINpBQkJ5tuqHcD8jw3Ceo`, page `04 · Trade page · UX structure`, section `30:175`. The calculator has a permanent CMS-controlled H2, while wizard steps use H3. The existing site style and shell are retained.
@@ -3610,3 +3621,28 @@ Next content-editing priorities:
 - Initial full QA passed 15 controls and legacy phone/consent/idempotency checks, then encountered an unclassified HTML response. An immediate repeated control suite hit the application's confirmed 20-quotes/15-minute limit. Resume now runs one control quote, not all 15, respects normal expiry on 429, and spaces the extra test lead/replay requests. The resumed gate passed after natural expiry. Never bypass/reset production anti-spam or change source IP to force a test through.
 - Additional read-only audits `trade-studio`, `catalog-v3`, `multicity` and `leads` passed. The current device/memory selector covers every public catalog model/configuration; the defect fixed here was the exchange list's first-page cap, not a missing physical-device row in the model selector.
 - Release detail and remaining automated-QA boundaries: `docs/trade-in-navigation-spec.md`. Unrelated photo notes, assets, cleanup scripts and local tool directories remain excluded from this release.
+
+## 2026-08-31 · Deep audit implementation follow-up (local)
+
+- The follow-up implementation starts from the deep-audit recommendations: production remained on `c90db23` before local edits, while the workspace carried the uncommitted Titanium photo-refresh operating-memory entry and local tool artifacts.
+- `/store` LCP work is code-only and keeps Directus Studio as the source of truth. `store_locations.hero_file` still owns the city hero image; the app now requests a smaller `1200` / `quality=80` transform and marks only the city photo as high-priority. Product cards below the store photo no longer receive early image priority on the city hub.
+- Do not add new Directus asset IDs to `critical-images.ts` for this fix. The stale store/logo asset-id overrides were removed; store hero and uploaded logo updates must continue to work when an editor replaces the image in Studio, without a code change. The documented homepage hero override remains intentionally scoped to `home.hero`.
+- Repo hygiene: local `.codex/`, `.codex-audit/`, `.pnpm-store/` and temporary checked-lineup hero references are ignored. Ad hoc photo-cleanup scripts were moved under ignored `work/product-photo-cleanup-tools/` and remain local work products unless promoted through a separate release decision.
+- The blog-preview smoke now authenticates through the `x-isvoi-preview-secret` request header and keeps the secret out of the URL. The `/api/draft/blog` route remains backward-compatible with the existing query-secret Directus Studio preview URL until a separate Studio preview migration is approved.
+- Bundle headroom remains a follow-up track, not a dependency bump. A trial server-side dynamic import of the Trade section did not change the Next 15 App Router client output, so it was not retained. Next 16, React 19 and Tailwind 4 are still separate compatibility work, not quick maintenance changes.
+- Read-only production inspection showed that the two unconfirmed
+  `channel_cost_profiles` rows are the intentional starter rows `site` and
+  `avito`, with zero rates pending Inventory Manager approval. The 13
+  unconfirmed Avito category mappings are also intentionally empty and explicitly
+  say to fill them strictly from the official Avito template. Do not bulk-flip
+  `is_confirmed=true` or invent `external_category`/`template_version` values to
+  satisfy the audit counter; this remains an operations/Avito-pilot task, not a
+  technical data-cleanup task.
+- Bundle headroom remains a follow-up track. The current safe Store LCP release
+  should not simplify the managed homepage catalog preview or risk the live
+  Trade-in calculator. A durable 20-30 kB Brotli reduction likely needs a
+  dedicated split of Trade wizard/client catalog code plus full Trade, lead and
+  visual QA.
+- Operational follow-ups remain: complete real Inventory Manager confirmation
+  for Avito cost profiles/category mappings and design a durable critical-media
+  strategy beyond manual asset-id maps.

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-01T14:36:25.769Z",
+  "updatedAt": "2026-09-01T15:03:28.545Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -6999,7 +6999,7 @@
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 153,
+      "line": 148,
       "text": "Например, хочу похожий iPhone с таким же объёмом памяти",
       "id": "dfd2fd36011ad1c4"
     },
@@ -7525,8 +7525,8 @@
       "file": "apps/web/lib/site-integrations.ts",
       "kind": "string",
       "line": 19,
-      "text": "Мы используем необязательные сервисы только с вашего разрешения. Вы можете изменить выбор в любое время.",
-      "id": "e125f76724c1928d"
+      "text": "Мы используем необходимые cookie для работы сайта. С вашего согласия Яндекс Метрика будет собирать данные о посещениях, чтобы мы могли анализировать трафик и улучшать сайт. Вы можете разрешить аналитику или оставить только необходимые cookie. Подробнее — в Политике конфиденциальности.",
+      "id": "5997626ff8cc39fa"
     },
     {
       "file": "apps/web/lib/site-integrations.ts",
@@ -7741,7 +7741,7 @@
     {
       "file": "apps/web/lib/yandex-business-feed.ts",
       "kind": "string",
-      "line": 148,
+      "line": 153,
       "text": "Проверенное устройство с Passport.${grade ?",
       "id": "bc67420f51746079"
     },

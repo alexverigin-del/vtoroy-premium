@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "2026-09-01-integration-consent-metrika-copy",
+  "description": "Уточнить текст баннера согласия для Яндекс Метрики",
+  "collection": "integration_consent_settings",
+  "selector": {
+    "id": 1
+  },
+  "changes": {
+    "banner_body": "Мы используем необходимые cookie для работы сайта. С вашего согласия Яндекс Метрика будет собирать данные о посещениях, чтобы мы могли анализировать трафик и улучшать сайт. Вы можете разрешить аналитику или оставить только необходимые cookie. Подробнее — в Политике конфиденциальности."
+  },
+  "remove": [],
+  "revalidate": "site-content",
+  "lock": {
+    "snapshotHash": "ab460172907367766b9137cbb2a5bdee04e9a00aec9d8aa821ebc21592aaf103"
+  }
+}

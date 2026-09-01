@@ -346,8 +346,9 @@ COMMIT;
 SELECT 'site_integrations.tables' AS check_name,count(*)::text AS value
 FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('site_integrations','integration_consent_settings')
 UNION ALL
-SELECT 'site_integrations.draft_metrika_template',count(*)::text
-FROM site_integrations WHERE id='00000000-0000-4000-8000-000000000101' AND status='draft'
+SELECT 'site_integrations.metrika_template',count(*)::text
+FROM site_integrations
+WHERE id='00000000-0000-4000-8000-000000000101' AND provider='yandex_metrika'
 UNION ALL
 SELECT 'site_integrations.consent_singleton',count(*)::text
 FROM integration_consent_settings WHERE id=1;

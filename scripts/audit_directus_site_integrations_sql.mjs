@@ -14,12 +14,12 @@ SELECT 'site_integrations.consent_singleton_invalid',count(*)::text
 FROM (SELECT count(*) AS total FROM integration_consent_settings) value
 WHERE value.total<>1
 UNION ALL
-SELECT 'site_integrations.draft_metrika_template_missing',count(*)::text
+SELECT 'site_integrations.metrika_template_missing',count(*)::text
 FROM (VALUES(1)) value(marker)
 WHERE NOT EXISTS (
   SELECT 1 FROM site_integrations
   WHERE id='00000000-0000-4000-8000-000000000101'
-    AND status='draft' AND provider='yandex_metrika'
+    AND provider='yandex_metrika'
 )
 UNION ALL
 SELECT 'site_integrations.published_invalid',count(*)::text

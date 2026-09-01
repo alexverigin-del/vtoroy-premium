@@ -3807,3 +3807,23 @@ Next content-editing priorities:
   copy remained skipped because `OFFSITE_BACKUP_DEST` is still not configured.
   No Directus schema, catalog rows, prices, stock, permissions or media were
   changed by this release. Detailed operator notes: `docs/yandex-business-feed.md`.
+
+## 2026-09-01 · Metrika consent copy and template activation
+
+- The production consent singleton now explains that necessary cookies support
+  the site and that Yandex Metrika is enabled only with analytics consent. The
+  same approved copy is kept in the Next.js fallback, Directus setup seed and
+  reviewed content-ownership baseline.
+- The seeded Metrika record has been editorially promoted to `published`. It is
+  a valid `analytics` / `after_interactive` integration, applies site-wide and
+  excludes `/trade/qa`. The real counter ID remains private and is never
+  recorded in Git or operational output.
+- The integration audit now requires the stable managed Metrika record instead
+  of requiring that record to remain `draft` forever. Published rows are still
+  checked independently for a numeric counter ID, supported provider/category,
+  targeting arrays and safe load strategy. The targeted production audit passes.
+- Production backup: `/opt/isvoi/backups/directus/20260901T150919Z`. Previous
+  compiled web build: `/opt/isvoi/backups/web/20260901T151500Z-metrika-consent-copy/next`.
+  Full server `web:verify`, bundle budgets and the warmed production storefront
+  smoke passed; the first immediate smoke after PM2 restart hit a cold-cache
+  metadata race and passed unchanged after readiness/cache warm-up.

@@ -344,7 +344,7 @@ const auditDefinitions = {
       "site_integrations.tables_missing",
       "site_integrations.metadata_missing",
       "site_integrations.consent_singleton_invalid",
-      "site_integrations.draft_metrika_template_missing",
+      "site_integrations.metrika_template_missing",
       "site_integrations.published_invalid",
       "site_integrations.anonymous_exposure",
       "site_integrations.service_read_missing",

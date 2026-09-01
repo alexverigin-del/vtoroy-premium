@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-01T11:40:35.351Z",
+  "updatedAt": "2026-09-01T14:36:25.769Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -7723,6 +7723,55 @@
       "line": 62,
       "text": "После диагностики сумма изменилась: {reason}. Новое предложение — {amount}. Вы можете принять его или забрать устройство без сделки.",
       "id": "e8a866a42391bcbe"
+    },
+    {
+      "file": "apps/web/lib/yandex-business-feed.ts",
+      "kind": "string",
+      "line": 38,
+      "text": "iPhone с пробегом",
+      "id": "0e2276f91d8451fc"
+    },
+    {
+      "file": "apps/web/lib/yandex-business-feed.ts",
+      "kind": "string",
+      "line": 39,
+      "text": "Samsung Galaxy с пробегом",
+      "id": "71bc0b50cbf8a601"
+    },
+    {
+      "file": "apps/web/lib/yandex-business-feed.ts",
+      "kind": "string",
+      "line": 148,
+      "text": "Проверенное устройство с Passport.${grade ?",
+      "id": "bc67420f51746079"
+    },
+    {
+      "file": "apps/web/lib/yandex-business-feed.ts",
+      "kind": "string",
+      "line": 154,
+      "text": "Состояние: грейд ${grade}",
+      "id": "fe92ba93e36597ed"
+    },
+    {
+      "file": "apps/web/lib/yandex-business-feed.ts",
+      "kind": "string",
+      "line": 156,
+      "text": "Комплект: ${text(product.completeness)}",
+      "id": "a2508bb8ccbcc4e7"
+    },
+    {
+      "file": "apps/web/lib/yandex-business-feed.ts",
+      "kind": "string",
+      "line": 157,
+      "text": "Гарантия 90 дней",
+      "id": "e1f202f4314a00b1"
+    },
+    {
+      "file": "apps/web/lib/yandex-business-feed.ts",
+      "kind": "string",
+      "line": 158,
+      "text": "Фактическое состояние показано на фотографиях. Полный Passport устройства доступен в магазине.",
+      "id": "978f67ecde6c23ff"
     }
   ]
 }

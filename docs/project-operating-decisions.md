@@ -3729,3 +3729,46 @@ Next content-editing priorities:
   a separately authorized schema/application rollout with backup, Directus
   restart/cache handling, revalidation, API/permission audits and post-release
   browser verification.
+
+### Production release · 2026-09-01
+
+- The subsequent explicit `выкат` authorized the complete release. Feature
+  commit `1328833` and permission follow-up `ec8ea70` are pushed to
+  `origin/master` and fast-forwarded on production. PM2 `isvoi-web` is online on
+  the new build; Directus health is `ok`.
+- Verified Directus backup:
+  `/opt/isvoi/backups/directus/20260901T142236Z`. PostgreSQL, uploads, SHA256,
+  gzip and tar checks passed. Offsite remains unconfigured. The previous Next
+  build is retained at
+  `/opt/isvoi/backups/web/20260901T142236Z-site-integrations/next`.
+- The idempotent integration schema, Studio metadata, public/service/editor
+  permissions and site-content revalidation Flow were applied before the web
+  restart. Permission cache cleanup removed only `permissions:*`, restarted
+  Directus and passed health. Protected site-content revalidation then returned
+  `ok` with the new `directus:site-integrations` tag.
+- Production contains exactly one integration row:
+  `draft:yandex_metrika:<empty>`. There are zero published integrations, so no
+  analytics/chat request or consent banner is active. Consent settings are
+  `integrations-consent-v1` with 180-day retention. A real counter remains a
+  separate editorial/legal activation.
+- The first full Directus audit exposed one pre-existing ordering hazard:
+  rerunning the generic technical-permissions allowlist removed the Trade QA
+  `leads.is_test` read field. Follow-up `ec8ea70` permanently preserves that
+  field. The permission cache was cleared again; the targeted Trade audit and
+  the complete `directus:audit:prod` subsequently passed.
+- Server `web:verify` passed before PM2 restart. Bundle totals are
+  **896.4 / 285.8 / 246.8 kB** raw/gzip/Brotli; largest route is
+  **443.6 / 133.5 / 113.4 kB**, within unchanged budgets. Functional, images,
+  public copy, internal links, content consistency, desktop/mobile visual and
+  performance smokes all passed. Catalog remains at 17 product links; measured
+  LCP across sampled routes was 188–328 ms, a lab result rather than field p75.
+- The normal API schema snapshot export returned the expected 403 because the
+  least-privilege production service token cannot read Directus schema
+  metadata. No token was elevated and no temporary administrator identity was
+  created. The live schema is instead verified by the complete SQL, Studio,
+  permission and API audits; refresh the committed API snapshot only in a
+  separately controlled admin-token session.
+- The first revalidation request landed during the PM2 startup window and
+  returned 502; a bounded readiness check succeeded and the idempotent retry
+  returned `ok`. No rollback was needed. Concurrent local Yandex Business feed
+  work was excluded from all release commits and production.

@@ -306,6 +306,7 @@ const fields = {
     "utm_content",
     "utm_term",
     "user_agent",
+    "is_test",
     "comments",
   ].join(","),
   leadComments: "id,lead,created_at,updated_at,created_by,comment,outcome,next_action_at",

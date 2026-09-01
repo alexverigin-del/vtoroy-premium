@@ -3772,3 +3772,38 @@ Next content-editing priorities:
   returned 502; a bounded readiness check succeeded and the idempotent retry
   returned `ok`. No rollback was needed. Concurrent local Yandex Business feed
   work was excluded from all release commits and production.
+
+## 2026-09-01 · Yandex Business product feed production release
+
+- Release `016466e` adds the public YML endpoint
+  `https://isvoi.ru/integrations/yandex-business/feed.yml`. Production uses
+  `YANDEX_BUSINESS_FEED_ENABLED=1`; the endpoint stays fail-closed when the
+  flag is absent, Directus is unavailable, no eligible offers remain, or the
+  feed exceeds 10,000 offers / 15 MB.
+- The initial automated scope deliberately matches the XLSX accepted by Yandex
+  Business on 2026-09-01: published/ready used smartphones, positive product
+  stock, a published available Belgorod offer with positive stock and price,
+  and a public listing image. Accepted category IDs remain `101` (`iPhone с
+  пробегом`) and `102` (`Samsung Galaxy с пробегом`). Other brands/categories
+  require a separate checked Yandex rollout instead of automatic inclusion.
+- The feed contains stable product IDs, current offer prices, public Directus
+  image transforms and product URLs with `utm_source=yandex_business`. It never
+  includes purchase cost, margin, full serial/IMEI, private inventory notes or
+  private diagnostic certificates. It returns `X-Robots-Tag: noindex,
+  nofollow` and uses a five-minute shared cache.
+- Live comparison against the accepted XLSX snapshot passed for all 17 offers:
+  two categories, 17 unique IDs, no missing/extra rows, and no price, product
+  URL or image URL differences. All 17 product pages and JPEG image URLs
+  returned HTTP 200. Only after this comparison may the Yandex Business source
+  be switched from the uploaded XLSX to the feed URL; a new price list replaces
+  the previous one.
+- Local and Beget `web:verify` passed with the feed contract test included in
+  the normal gate. Production build, bundle budgets, general storefront smoke,
+  PM2 restart and Directus health passed. The production checkout was clean on
+  `016466e` after activation.
+- Verified pre-release Directus backup:
+  `/opt/isvoi/backups/directus/20260901T143939Z`. Previous compiled web build:
+  `/opt/isvoi/backups/web/20260901T144127Z-yandex-business-feed/next`. Offsite
+  copy remained skipped because `OFFSITE_BACKUP_DEST` is still not configured.
+  No Directus schema, catalog rows, prices, stock, permissions or media were
+  changed by this release. Detailed operator notes: `docs/yandex-business-feed.md`.

@@ -10,6 +10,7 @@ export const BLOG_TAXONOMY_CACHE_TAG = "directus:blog-taxonomy";
 export const PRODUCTS_CACHE_TAG = "directus:products";
 export const STORE_LOCATIONS_CACHE_TAG = "directus:store-locations";
 export const PRODUCT_OFFERS_CACHE_TAG = "directus:product-offers";
+export const SITE_INTEGRATIONS_CACHE_TAG = "directus:site-integrations";
 
 export const SITE_CONTENT_CACHE_TAGS = [
   SITE_SETTINGS_CACHE_TAG,
@@ -24,4 +25,5 @@ export const SITE_CONTENT_CACHE_TAGS = [
   PRODUCTS_CACHE_TAG,
   STORE_LOCATIONS_CACHE_TAG,
   PRODUCT_OFFERS_CACHE_TAG,
+  SITE_INTEGRATIONS_CACHE_TAG,
 ] as const;

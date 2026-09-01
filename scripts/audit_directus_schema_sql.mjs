@@ -32,6 +32,8 @@ WITH expected_tables(table_name) AS (
     ('site_pages'),
     ('page_sections'),
     ('site_settings'),
+    ('site_integrations'),
+    ('integration_consent_settings'),
     ('device_page_settings'),
     ('navigation_items'),
     ('faq_items'),
@@ -146,6 +148,16 @@ expected_fields(table_name, field_name) AS (
     ('site_settings', 'header_cta_label'),
     ('site_settings', 'header_cta_url'),
     ('site_settings', 'default_og_image'),
+    ('site_integrations', 'status'),
+    ('site_integrations', 'provider'),
+    ('site_integrations', 'consent_category'),
+    ('site_integrations', 'provider_settings'),
+    ('site_integrations', 'hostnames'),
+    ('site_integrations', 'include_paths'),
+    ('site_integrations', 'exclude_paths'),
+    ('integration_consent_settings', 'version'),
+    ('integration_consent_settings', 'retention_days'),
+    ('integration_consent_settings', 'banner_title'),
     ('device_page_settings', 'back_label'),
     ('device_page_settings', 'condition_title'),
     ('device_page_settings', 'warranty_title'),
@@ -471,6 +483,8 @@ WHERE NOT EXISTS (
     AND (f.options::jsonb -> 'scope') ? 'items.update'
     AND (f.options::jsonb -> 'scope') ? 'items.delete'
     AND (f.options::jsonb -> 'collections') ? 'site_settings'
+    AND (f.options::jsonb -> 'collections') ? 'site_integrations'
+    AND (f.options::jsonb -> 'collections') ? 'integration_consent_settings'
     AND (f.options::jsonb -> 'collections') ? 'site_pages'
     AND (f.options::jsonb -> 'collections') ? 'page_sections'
     AND (f.options::jsonb -> 'collections') ? 'navigation_items'

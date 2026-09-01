@@ -3,6 +3,7 @@ import { cn } from "../lib/cn";
 import { FooterStorePanel } from "./FooterStorePanel";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
+import { CookieSettingsButton } from "./CookieSettingsButton";
 
 const footerLinkClass =
   "inline-flex min-h-11 items-center text-sm text-ash outline-none transition hover:text-carbon focus-visible:shadow-focus";
@@ -129,6 +130,7 @@ export function SiteFooter({
               Обработка персональных данных
             </a>
           ) : null}
+          <CookieSettingsButton />
           {settings.footerLegal ? <span>{settings.footerLegal}</span> : null}
         </div>
       </div>

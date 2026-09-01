@@ -48,6 +48,42 @@ Global, site-wide values. Configure as a **singleton** in Directus.
 | `footer_copyright`  | string               | First line in footer legal row.                                                                            |
 | `maintenance_mode`  | boolean              | Optional kill-switch for the public site.                                                                  |
 
+## `site_integrations`
+
+Managed registry of third-party browser scripts. The public site reads only
+`status=published` rows through the server-side `ISVOI Public Read` token;
+anonymous Directus access remains disabled.
+
+| Field               | Type         | Notes                                                                |
+| ------------------- | ------------ | -------------------------------------------------------------------- |
+| `status`            | string enum  | `draft` / `published` / `archived`.                                  |
+| `name`              | string       | Internal operator-facing name.                                       |
+| `provider`          | string enum  | `yandex_metrika` / `custom`.                                         |
+| `consent_category`  | string enum  | `necessary` / `analytics` / `marketing` / `support`.                 |
+| `load_strategy`     | string enum  | `after_interactive` / `lazy_onload`.                                 |
+| `provider_settings` | JSON         | Typed provider settings; Metrika uses `counterId` and feature flags. |
+| `script_url`        | text         | Optional absolute HTTPS URL for trusted custom integrations.         |
+| `bootstrap_code`    | text         | Optional custom JavaScript, without HTML or `<script>` wrappers.     |
+| `cleanup_code`      | text         | Custom teardown; required when path targeting is used.               |
+| `hostnames`         | JSON strings | Exact hosts without protocol; empty means every host.                |
+| `include_paths`     | JSON strings | Included route prefixes; empty means every path.                     |
+| `exclude_paths`     | JSON strings | Excluded route prefixes; exclusions win.                             |
+| `sort`              | integer      | Initialization order.                                                |
+| `notes`             | text         | Private operator notes; not returned to the website.                 |
+
+Ordinary Editor permissions exclude executable custom fields and allow only
+the Yandex Metrika template. Custom JavaScript is limited to Administrator and
+ISVOI Advanced Editor. Invalid published rows fail closed in the Next.js
+normalizer and are logged without exposing the stored code.
+
+## `integration_consent_settings` (singleton)
+
+Versioned copy and retention settings for the privacy banner and category
+dialog. The default retention is 180 days and is constrained to 1–365 days.
+Changing `version` invalidates existing visitor choices. Category labels and
+descriptions, action labels and the footer settings label are editable; the
+canonical policy URL remains `site_settings.privacy_url`.
+
 ## `device_page_settings` (singleton)
 
 Shared product detail page copy. Product facts still come from `devices`,

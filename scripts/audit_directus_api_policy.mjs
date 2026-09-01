@@ -100,6 +100,16 @@ const checks = [
   { name: "health", path: "/server/health", expected: 200 },
   { name: "anonymous.devices", path: "/items/devices?limit=1", expected: 403 },
   { name: "anonymous.site_settings", path: "/items/site_settings?limit=1", expected: 403 },
+  {
+    name: "anonymous.site_integrations",
+    path: "/items/site_integrations?limit=1",
+    expected: 403,
+  },
+  {
+    name: "anonymous.integration_consent_settings",
+    path: "/items/integration_consent_settings?limit=1",
+    expected: 403,
+  },
   { name: "anonymous.navigation_items", path: "/items/navigation_items?limit=1", expected: 403 },
   { name: "anonymous.blog_posts", path: "/items/blog_posts?limit=1", expected: 403 },
   { name: "anonymous.system_users", path: "/items/directus_users?limit=1", expected: 403 },
@@ -120,6 +130,35 @@ for (const check of checks) {
 
 if (serviceToken) {
   const serviceChecks = [
+    {
+      name: "service.site_integrations",
+      path: "/items/site_integrations?fields=id,status,name,provider,consent_category,load_strategy,provider_settings,script_url,bootstrap_code,cleanup_code,hostnames,include_paths,exclude_paths,sort&filter[status][_eq]=published&limit=50",
+      validate(data) {
+        return (
+          Array.isArray(data) &&
+          data.every(
+            (integration) =>
+              integration?.id &&
+              integration.status === "published" &&
+              ["yandex_metrika", "custom"].includes(integration.provider),
+          )
+        );
+      },
+    },
+    {
+      name: "service.integration_consent_settings",
+      path: "/items/integration_consent_settings?fields=id,version,retention_days,banner_title,footer_link_label,privacy_link_label&limit=1",
+      validate(data) {
+        const settings = Array.isArray(data) ? data[0] : data;
+        return (
+          settings?.id === 1 &&
+          Boolean(settings.version) &&
+          Number(settings.retention_days) >= 1 &&
+          Boolean(settings.banner_title) &&
+          Boolean(settings.footer_link_label)
+        );
+      },
+    },
     {
       name: "service.homepage_closing",
       path: "/items/page_sections?fields=id,closing_headline,closing_body,closing_brand,closing_tagline,closing_primary_cta_label,closing_primary_cta_url,closing_secondary_cta_label,closing_secondary_cta_url&filter[section_key][_eq]=final_cta&filter[page][slug][_eq]=home&limit=1",

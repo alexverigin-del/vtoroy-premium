@@ -103,6 +103,8 @@ const themeExtend = {
   },
   maxHeight: {
     "trade-list": "420px",
+    dialog: "calc(100dvh - 1.5rem)",
+    "dialog-sm": "calc(100dvh - 3rem)",
   },
   spacing: {
     "safe-sticky": "calc(1rem + env(safe-area-inset-bottom))",

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-31T19:36:31.298Z",
+  "updatedAt": "2026-09-01T11:40:35.351Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -552,7 +552,7 @@
     {
       "file": "apps/web/app/layout.tsx",
       "kind": "string",
-      "line": 23,
+      "line": 29,
       "text": "I СВОИ",
       "id": "d7365c44279d3582"
     },
@@ -3884,14 +3884,14 @@
     {
       "file": "apps/web/components/SiteFooter.tsx",
       "kind": "string",
-      "line": 29,
+      "line": 30,
       "text": "Навигация",
       "id": "4ef0ccdc686c0b35"
     },
     {
       "file": "apps/web/components/SiteFooter.tsx",
       "kind": "jsx-text",
-      "line": 128,
+      "line": 129,
       "text": "Обработка персональных данных",
       "id": "35071395524e3527"
     },
@@ -6565,497 +6565,497 @@
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 51,
+      "line": 58,
       "text": "Главная",
       "id": "9e283de8775640ea"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 53,
+      "line": 60,
       "text": "Каталог",
       "id": "598145b1541ff403"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 55,
+      "line": 62,
       "text": "← Каталог",
       "id": "cc0811dbfdf14741"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 58,
+      "line": 65,
       "text": "грейд",
       "id": "722da9ae718c044d"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 59,
+      "line": 66,
       "text": "Обновлено",
       "id": "98c63944a0b1e380"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 60,
+      "line": 67,
       "text": "В наличии",
       "id": "5f5c5f49115c5a37"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 61,
+      "line": 68,
       "text": "Бронь",
       "id": "42a8523bc1c98e45"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 62,
+      "line": 69,
       "text": "Продано",
       "id": "20ae88c370f86bc3"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 63,
+      "line": 70,
       "text": "Цена и условия действуют после подтверждения наличия и финальной проверки в Store.",
       "id": "29391c9a3ef7ecd9"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 66,
+      "line": 73,
       "text": "Состояние и нюансы",
       "id": "32b6ea5102678e70"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 67,
+      "line": 74,
       "text": "История вещи",
       "id": "1ca3eb666bccb244"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 68,
+      "line": 75,
       "text": "Путь вещи",
       "id": "d24a7bbfaf610dfb"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 69,
+      "line": 76,
       "text": "Гарантия и условия обновления",
       "id": "47caca565fd0be41"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 70,
+      "line": 77,
       "text": "Срок гарантии",
       "id": "a61718d42614aa3b"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 71,
+      "line": 78,
       "text": "Предварительная стоимость при обновлении",
       "id": "88ccb10ba106f2e9"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 72,
+      "line": 79,
       "text": "Покрывается",
       "id": "8768981147902b87"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 73,
+      "line": 80,
       "text": "Не покрывается",
       "id": "198ad6a7fc655654"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 74,
+      "line": 81,
       "text": "Функциональные неисправности в рамках условий Store.",
       "id": "d9105506f12f9bc0"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 75,
+      "line": 82,
       "text": "Механические повреждения после покупки и следы влаги.",
       "id": "b3e89672152f2a1e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 76,
+      "line": 83,
       "text": "90 дней",
       "id": "666f67a0f6f17177"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 77,
+      "line": 84,
       "text": "Обновление через Trade",
       "id": "cd3a61cc1656db2d"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 78,
+      "line": 85,
       "text": "Предварительная оценка",
       "id": "5a2b70d48f10a0cb"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 79,
+      "line": 86,
       "text": "Получить предварительную оценку",
       "id": "88e0ad0875b447eb"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 81,
+      "line": 88,
       "text": "Еще в Store",
       "id": "12a117dabc705239"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 82,
+      "line": 89,
       "text": "Похожие устройства",
       "id": "1f3b3115fa913c69"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 83,
+      "line": 90,
       "text": "Весь каталог",
       "id": "ca3e007d279e64c6"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 85,
+      "line": 92,
       "text": "Больше вариантов в Store",
       "id": "7f02c372a6309d5e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 87,
+      "line": 94,
       "text": "Если эта вещь не подходит, проверьте соседние варианты по практичным параметрам.",
       "id": "bb38b43429e99046"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 88,
+      "line": 95,
       "text": "Открыть каталог",
       "id": "43d10c905d3ff649"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 90,
+      "line": 97,
       "text": "Бюджет",
       "id": "3d622c4614159634"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 90,
+      "line": 97,
       "text": "Память",
       "id": "2d4e222339796797"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 90,
+      "line": 97,
       "text": "Цвет",
       "id": "5eba0add8d89e4d0"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 93,
+      "line": 100,
       "text": "I СВОИ Passport",
       "id": "e518e065e58efe55"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 94,
+      "line": 101,
       "text": "Проверка вещи",
       "id": "7a2312797a6e9873"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 95,
+      "line": 102,
       "text": "Чеклист функций, которые были проверены перед публикацией.",
       "id": "9b8acb5e30fbb49e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 96,
+      "line": 103,
       "text": "Диагностика",
       "id": "8bde2b06ade79909"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 97,
+      "line": 104,
       "text": "Статус:",
       "id": "812684584b0a1ddb"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 98,
+      "line": 105,
       "text": "зафиксирована",
       "id": "bbdb8b463e1cd5b0"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 99,
+      "line": 106,
       "text": "Проверено",
       "id": "da30db57e99bbc6f"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 100,
+      "line": 107,
       "text": "Полный паспорт (сертификат) устройства доступен в магазине.",
       "id": "7ea51cbd53f80925"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 103,
+      "line": 110,
       "text": "Очередь",
       "id": "93e262deee7af9df"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 104,
+      "line": 111,
       "text": "Подобрать",
       "id": "5b2930814f125220"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 105,
+      "line": 112,
       "text": "Просмотр",
       "id": "8c4450d0036e4b2e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 107,
+      "line": 114,
       "text": "Действия по товару",
       "id": "0f42f7682c08e985"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 112,
+      "line": 119,
       "text": "Записаться на просмотр",
       "id": "18f1682233126806"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 113,
+      "line": 120,
       "text": "Проверить наличие и записаться",
       "id": "7dd567926d3de50e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 114,
+      "line": 121,
       "text": "Телефон или Telegram",
       "id": "3b70dfcaf499a9ea"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 115,
+      "line": 122,
       "text": "Например, хочу посмотреть сегодня после 18:00",
       "id": "142f0969267e635e"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 117,
+      "line": 124,
       "text": "Отправляем...",
       "id": "c484928bbc9ba421"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 118,
+      "line": 125,
       "text": "Заявка будет привязана к этой карточке и текущим условиям.",
       "id": "1f891995cb1fbdd8"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 119,
+      "line": 126,
       "text": "Заявка принята. Мы свяжемся и подтвердим наличие.",
       "id": "d5e8cf2aa6f9a8f0"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 120,
+      "line": 127,
       "text": "Оставьте контакт, пройдите проверку или попробуйте отправить ещё раз.",
       "id": "b9bdcbffcd91d82b"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 122,
+      "line": 129,
       "text": "Устройство сейчас доступно. После заявки мы подтвердим наличие и время просмотра.",
       "id": "9cd3825c44ab2cc1"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 123,
+      "line": 130,
       "text": "Нажимая кнопку, вы соглашаетесь на обработку контакта для ответа по заявке.",
       "id": "f52b98978741f53a"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 127,
+      "line": 134,
       "text": "Встать в лист ожидания по брони",
       "id": "b49e208b61f371ee"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 128,
+      "line": 135,
       "text": "Встать в лист ожидания",
       "id": "d12f25d7299b9e58"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 130,
+      "line": 137,
       "text": "Например, если бронь освободится, готов посмотреть сегодня",
       "id": "d6d8ca6cd66f01fb"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 133,
+      "line": 140,
       "text": "Заявка будет привязана к этой карточке и текущему статусу.",
       "id": "6e216883634d8e8f"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 135,
+      "line": 142,
       "text": "Заявка принята. Мы свяжемся, если бронь освободится или появится близкая альтернатива.",
       "id": "cb846af976f1cb17"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 138,
+      "line": 145,
       "text": "Устройство сейчас в брони. Мы не обещаем продажу, но можем поставить вас следующим в очередь.",
       "id": "7b6a72de0fafff28"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 143,
+      "line": 150,
       "text": "Подобрать похожее устройство",
       "id": "1204913b5480234f"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 144,
+      "line": 151,
       "text": "Подобрать альтернативу",
       "id": "7aec73a96eb5bf63"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 146,
+      "line": 153,
       "text": "Например, хочу похожий iPhone с таким же объёмом памяти",
       "id": "dfd2fd36011ad1c4"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 149,
+      "line": 156,
       "text": "Заявка сохранит контекст этой карточки, чтобы подбор был точнее.",
       "id": "f6585a87a369afb2"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 151,
+      "line": 158,
       "text": "Заявка принята. Мы предложим похожую вещь из круга или сообщим, когда она появится.",
       "id": "63d460dfba547434"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 153,
+      "line": 160,
       "text": "Эта вещь уже продана. Можно оставить заявку на похожую модель.",
       "id": "6e6843953cdf045d"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 461,
+      "line": 468,
       "text": "Скрыто",
       "id": "6dddacbd7768bc75"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 711,
+      "line": 718,
       "text": "Ремонт ${passport.repair}",
       "id": "fa3f4755a081ae2d"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 712,
+      "line": 719,
       "text": "Влага ${passport.water}",
       "id": "5224006e4611a949"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 714,
+      "line": 721,
       "text": "Состояние ${passport.condition.gradeText}",
       "id": "a87817f0d5dd13ce"
     },
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 1171,
+      "line": 1178,
       "text": "I СВОИ",
       "id": "f521cbebb0fe9445"
     },
@@ -7513,6 +7513,139 @@
       "line": 566,
       "text": "Club — аренда/подписка. Устройство остаётся собственностью I СВОИ до выкупа.",
       "id": "eed1f00922a396d0"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 17,
+      "text": "Настройки приватности",
+      "id": "26821aee78946ce6"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 19,
+      "text": "Мы используем необязательные сервисы только с вашего разрешения. Вы можете изменить выбор в любое время.",
+      "id": "e125f76724c1928d"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 20,
+      "text": "Принять все",
+      "id": "0139c87a01043806"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 21,
+      "text": "Только необходимые",
+      "id": "dc00cd3d9f06b649"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 22,
+      "text": "Настроить",
+      "id": "2e565f6de1c9bc1f"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 23,
+      "text": "Какие сервисы можно включить",
+      "id": "57bffcaf861ac8b9"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 25,
+      "text": "Необходимые функции работают всегда. Остальные категории можно включать независимо друг от друга.",
+      "id": "05c1a59e5a9bda6d"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 26,
+      "text": "Сохранить выбор",
+      "id": "ccddd6ce2726c176"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 27,
+      "text": "Закрыть",
+      "id": "91b8d4b1a955f9cd"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 28,
+      "text": "Настройки cookies",
+      "id": "ed413cbf3b503bf5"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 29,
+      "text": "Подробнее о данных",
+      "id": "ed77281742397e52"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 30,
+      "text": "Необходимые",
+      "id": "fd682344f421837f"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 31,
+      "text": "Нужны для базовой работы и безопасности сайта.",
+      "id": "99ae3b446ffbd59d"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 32,
+      "text": "Аналитика",
+      "id": "17416c9e87f1333c"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 33,
+      "text": "Помогает понять, какие страницы полезны и где сайт можно улучшить.",
+      "id": "ce6557280ec039f2"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 34,
+      "text": "Маркетинг",
+      "id": "bb89912cb4782f2e"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 35,
+      "text": "Используется для оценки рекламных кампаний и релевантности предложений.",
+      "id": "e82afe0ec2b384ef"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 36,
+      "text": "Поддержка и чаты",
+      "id": "0cbef7d337f02a69"
+    },
+    {
+      "file": "apps/web/lib/site-integrations.ts",
+      "kind": "string",
+      "line": 37,
+      "text": "Позволяет подключать онлайн-чат и другие сервисы помощи.",
+      "id": "44857921dca68678"
     },
     {
       "file": "apps/web/lib/store-locations.ts",

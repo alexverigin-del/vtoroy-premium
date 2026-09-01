@@ -28,6 +28,8 @@ const flowOptions = JSON.stringify({
   scope: ["items.create", "items.update", "items.delete"],
   collections: [
     "site_settings",
+    "site_integrations",
+    "integration_consent_settings",
     "site_pages",
     "page_sections",
     "navigation_items",

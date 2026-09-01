@@ -9,6 +9,8 @@ import type {
   FaqItem,
   TradeInfo,
   DevicePageSettings,
+  IntegrationConsentSettings,
+  SiteIntegration,
 } from "@vtoroy/shared";
 import { cache } from "react";
 
@@ -19,10 +21,15 @@ import {
   PAGE_SECTIONS_CACHE_TAG,
   SITE_PAGES_CACHE_TAG,
   SITE_SETTINGS_CACHE_TAG,
+  SITE_INTEGRATIONS_CACHE_TAG,
 } from "@/lib/cache-tags";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { prepareRichText, prepareSectionContentRichText } from "@/lib/rich-text";
 import { fallbackDevices } from "@/data/devices";
+import {
+  normalizeIntegrationConsentSettings,
+  normalizeSiteIntegration,
+} from "@/lib/site-integrations";
 
 // Directus client for the Catalog MVP.
 //
@@ -1426,6 +1433,35 @@ export const getSiteSettings = cache(
     );
     const row = Array.isArray(data) ? data[0] : data;
     return row ? mapSiteSettingsFromDirectus(row) : null;
+  },
+);
+
+/** Published third-party integrations. Invalid rows fail closed. */
+export const getSiteIntegrations = cache(async function getSiteIntegrations(): Promise<
+  SiteIntegration[]
+> {
+  const rows = await directusGet<Record<string, unknown>[]>(
+    "/items/site_integrations?filter[status][_eq]=published&fields=id,name,provider,consent_category,load_strategy,provider_settings,script_url,bootstrap_code,cleanup_code,hostnames,include_paths,exclude_paths,sort&sort=sort,name",
+    { tags: [SITE_INTEGRATIONS_CACHE_TAG] },
+  );
+  if (!rows) return [];
+  return rows.flatMap((row) => {
+    const result = normalizeSiteIntegration(row);
+    if (result.integration) return [result.integration];
+    console.warn(`[site-integrations] skipped ${String(row.id || "unknown")}: ${result.reason}`);
+    return [];
+  });
+});
+
+/** Editable copy and persistence policy for the consent experience. */
+export const getIntegrationConsentSettings = cache(
+  async function getIntegrationConsentSettings(): Promise<IntegrationConsentSettings> {
+    const data = await directusGet<Record<string, unknown> | Record<string, unknown>[]>(
+      "/items/integration_consent_settings?fields=id,version,retention_days,banner_title,banner_body,accept_all_label,reject_optional_label,customize_label,settings_title,settings_body,save_label,close_label,footer_link_label,privacy_link_label,necessary_label,necessary_description,analytics_label,analytics_description,marketing_label,marketing_description,support_label,support_description&limit=1",
+      { tags: [SITE_INTEGRATIONS_CACHE_TAG] },
+    );
+    const row = Array.isArray(data) ? data[0] : data;
+    return normalizeIntegrationConsentSettings(row);
   },
 );
 

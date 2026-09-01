@@ -44,6 +44,9 @@ Anonymous Public не должен читать `devices`, `device_images`, `sit
 - `faq_items`: только `is_active=true`.
 - `site_settings`: только публичные поля бренда, контактов и footer.
 - `device_page_settings`: публичные подписи шаблона товарной страницы.
+- `site_integrations`: только опубликованные настройки и исполняемые поля,
+  необходимые серверному Next.js-загрузчику; `notes` и audit-поля закрыты.
+- `integration_consent_settings`: тексты, версия и срок выбора категорий.
 - `directus_files`: только файлы из папок `ISVOI Device Photos`, `ISVOI Site Assets`, `ISVOI Editorial`.
 
 ## Что закрыто
@@ -52,6 +55,9 @@ Anonymous Public не должен читать `devices`, `device_images`, `sit
 - Внутренние поля фото: `source_path`, `import_batch`, `created_at`.
 - Любые файлы вне разрешённых папок.
 - Anonymous `/items/*` для контента.
+- Anonymous `/items/site_integrations` и
+  `/items/integration_consent_settings`; браузер получает только уже
+  нормализованные props от Next.js.
 - Запись в `directus_files` и любые system collections.
 
 ## Проверка после применения

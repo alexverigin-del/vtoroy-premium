@@ -113,6 +113,8 @@ BEGIN
   PERFORM isvoi_delete_permission('$t:public_label', 'device_page_settings', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'navigation_items', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'faq_items', 'read');
+  PERFORM isvoi_delete_permission('$t:public_label', 'site_integrations', 'read');
+  PERFORM isvoi_delete_permission('$t:public_label', 'integration_consent_settings', 'read');
   PERFORM isvoi_delete_permission('$t:public_label', 'directus_folders', 'read');
 
   PERFORM isvoi_upsert_permission(
@@ -242,6 +244,22 @@ BEGIN
     'read',
     'id,key,question,answer,page,category,sort,is_active',
     '{"is_active":{"_eq":true}}'::json
+  );
+
+  PERFORM isvoi_upsert_permission(
+    p_policy_name,
+    'site_integrations',
+    'read',
+    'id,status,name,provider,consent_category,load_strategy,provider_settings,script_url,bootstrap_code,cleanup_code,hostnames,include_paths,exclude_paths,sort',
+    '{"status":{"_eq":"published"}}'::json
+  );
+
+  PERFORM isvoi_upsert_permission(
+    p_policy_name,
+    'integration_consent_settings',
+    'read',
+    'id,version,retention_days,banner_title,banner_body,accept_all_label,reject_optional_label,customize_label,settings_title,settings_body,save_label,close_label,footer_link_label,privacy_link_label,necessary_label,necessary_description,analytics_label,analytics_description,marketing_label,marketing_description,support_label,support_description',
+    NULL
   );
 END;
 $$;

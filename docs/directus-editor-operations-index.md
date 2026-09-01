@@ -98,6 +98,22 @@ Use `Страницы сайта` (`site_pages`) first.
 Detailed guides: `docs/site-content-editor-guide.md` and
 `docs/site-pages-workflow.md`.
 
+## Third-party Integrations
+
+Use `Интеграции сайта` for analytics, chats and other reviewed browser
+services. Keep new rows in `draft` until consent category, hostname/path scope,
+privacy copy and runtime behavior have been checked.
+
+- Ordinary Editor manages the Yandex Metrika template and cannot read or write
+  executable custom fields.
+- Administrator and Advanced Editor may manage custom JavaScript; path-scoped
+  custom rows require cleanup code.
+- `Согласие на интеграции` owns the banner/category copy, 180-day default
+  retention and consent version.
+- Changing either collection triggers the shared site-content cache Flow.
+
+Detailed guide: `docs/site-integrations-editor-guide.md`.
+
 ## Menu, CTA And Logo
 
 Use global content collections.

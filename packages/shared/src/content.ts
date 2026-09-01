@@ -77,6 +77,58 @@ export interface SiteSettings {
   maintenanceMode?: boolean;
 }
 
+export type ConsentCategory = "necessary" | "analytics" | "marketing" | "support";
+export type IntegrationProvider = "yandex_metrika" | "custom";
+export type IntegrationLoadStrategy = "after_interactive" | "lazy_onload";
+
+export interface YandexMetrikaSettings {
+  counterId: string;
+  webvisor: boolean;
+  clickmap: boolean;
+  trackLinks: boolean;
+  accurateTrackBounce: boolean | number;
+}
+
+export interface SiteIntegration {
+  id: string;
+  name: string;
+  provider: IntegrationProvider;
+  consentCategory: ConsentCategory;
+  loadStrategy: IntegrationLoadStrategy;
+  providerSettings: YandexMetrikaSettings | Record<string, unknown>;
+  scriptUrl?: string;
+  bootstrapCode?: string;
+  cleanupCode?: string;
+  hostnames: string[];
+  includePaths: string[];
+  excludePaths: string[];
+  sort: number;
+}
+
+export interface IntegrationConsentSettings {
+  version: string;
+  retentionDays: number;
+  bannerTitle: string;
+  bannerBody: string;
+  acceptAllLabel: string;
+  rejectOptionalLabel: string;
+  customizeLabel: string;
+  settingsTitle: string;
+  settingsBody: string;
+  saveLabel: string;
+  closeLabel: string;
+  footerLinkLabel: string;
+  privacyLinkLabel: string;
+  necessaryLabel: string;
+  necessaryDescription: string;
+  analyticsLabel: string;
+  analyticsDescription: string;
+  marketingLabel: string;
+  marketingDescription: string;
+  supportLabel: string;
+  supportDescription: string;
+}
+
 export type NavLocation =
   "header" | "footer" | "mobile" | "utility" | "club_header" | "club_footer";
 export type NavLinkType = "page" | "section" | "external" | "custom";

@@ -3685,3 +3685,47 @@ Next content-editing priorities:
   inspected read-only on production and intentionally left unconfirmed. Their
   notes require real Inventory Manager/official Avito template confirmation, so
   they are not safe for automated technical closure.
+
+## 2026-09-01 · Managed third-party integrations (local, not deployed)
+
+- The local implementation adds Directus-managed `site_integrations` and the
+  `integration_consent_settings` singleton. The first seeded integration is a
+  disabled `draft` Yandex Metrika template with no counter ID. No real analytics
+  or chat vendor was configured, and no production schema, policy, content or
+  application process was changed.
+- Anonymous Directus access remains closed. `ISVOI Public Read` receives only
+  explicit read fields and published integrations. `ISVOI Editor` can manage
+  the Yandex template and non-executable fields; custom URL/bootstrap/cleanup
+  fields are restricted to Administrator and `ISVOI Advanced Editor`. Apply the
+  idempotent integration setup before the existing public/technical permission
+  and site-content revalidation setup, then run the new read-only audit.
+- The root layout fetches integrations server-side, but third-party code is not
+  emitted or requested before the relevant consent. The client manager checks
+  exact hostnames plus include/exclude path prefixes on every App Router change.
+  Exclusions win. Invalid/unknown published rows fail closed with a server
+  warning. Custom integrations accept one HTTPS script URL and/or trusted
+  JavaScript, never arbitrary HTML; page-scoped custom code requires cleanup.
+- Consent is versioned and stored without personal data in
+  `isvoi_integrations_consent_v1` for 180 days by default. Production writes use
+  `.isvoi.ru`, `Secure`, `SameSite=Lax` and `Path=/`; localhost omits Domain and
+  Secure only for isolated QA. Necessary cannot be disabled. Revoking a granted
+  category reloads the page after saving so previously active vendor code is
+  stopped deterministically.
+- The Metrika adapter initializes with SPA `defer`, sends one `hit` per allowed
+  route and calls `destruct` on deactivation. It deliberately has no `noscript`
+  pixel. The footer settings control is absent when no optional integrations
+  exist, preserving current public behavior when the registry is empty.
+- Added contract coverage for normalization, cookie version/expiry, targeting,
+  unsafe custom URLs and incomplete custom configurations. The isolated
+  loopback Playwright smoke covers no pre-consent requests, rejection, category
+  isolation, focus wrapping/Escape/labels, non-blocking main content, one SPA hit
+  per route, custom cleanup and consent revocation. No production requests or
+  leads are involved.
+- Local format, lint, typecheck, the complete `web:verify` unit/contract set,
+  production build and unchanged bundle limits pass. Final client output is
+  **902.4 / 289.0 / 249.7 kB** raw/gzip/Brotli; largest route is
+  **443.7 / 133.6 / 113.5 kB**. The content baseline adds only the reviewed
+  Directus fallback consent copy. Production remains at release `251cc16` until
+  a separately authorized schema/application rollout with backup, Directus
+  restart/cache handling, revalidation, API/permission audits and post-release
+  browser verification.

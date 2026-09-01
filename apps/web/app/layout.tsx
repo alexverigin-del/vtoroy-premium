@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Suspense } from "react";
 import {
   DEFAULT_SITE_DESCRIPTION,
   DEFAULT_SITE_TITLE,
   DEFAULT_SOCIAL_IMAGE,
 } from "./site-metadata";
 import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
-import { getSiteSettings } from "@/lib/directus";
+import {
+  getIntegrationConsentSettings,
+  getSiteIntegrations,
+  getSiteSettings,
+} from "@/lib/directus";
 import { getStoreLocations } from "@/lib/store-locations";
 import { CityProvider } from "@/components/CityContext";
+import { IntegrationManager } from "@/components/IntegrationManager";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -46,7 +52,12 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-  const [settings, locations] = await Promise.all([getSiteSettings(), getStoreLocations()]);
+  const [settings, locations, integrations, integrationConsentSettings] = await Promise.all([
+    getSiteSettings(),
+    getStoreLocations(),
+    getSiteIntegrations(),
+    getIntegrationConsentSettings(),
+  ]);
 
   return (
     <html lang="ru">
@@ -60,6 +71,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           dangerouslySetInnerHTML={{ __html: jsonLdScript(websiteJsonLd()) }}
         />
         <CityProvider locations={locations}>{children}</CityProvider>
+        <Suspense fallback={null}>
+          <IntegrationManager
+            integrations={integrations}
+            settings={integrationConsentSettings}
+            privacyUrl={settings?.privacyUrl}
+          />
+        </Suspense>
         {turnstileEnabled ? (
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"

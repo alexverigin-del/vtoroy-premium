@@ -18,6 +18,7 @@ const tailwindConfigs = [
   path.join(root, "tailwind.config.eslint.cjs"),
 ];
 const rootLayout = path.join(webRoot, "app", "layout.tsx");
+const integrationManager = path.join(webRoot, "components", "IntegrationManager.tsx");
 const globalsCss = path.join(webRoot, "app", "globals.css");
 const classCompositionHelper = path.join(webRoot, "lib", "cn.ts");
 const clientClassCompositionHelper = path.join(webRoot, "lib", "cn-client.ts");
@@ -293,6 +294,14 @@ for (const file of scanRoots.flatMap(walk)) {
     if (!reviewedJsonLdUsage(source, match.index)) {
       errors.push(
         `${rel(file)}:${lineNumber(source, match.index)} renders a raw <script>. Only reviewed JSON-LD via apps/web/lib/structured-data.ts is currently allowed.`,
+      );
+    }
+  }
+
+  for (const match of source.matchAll(/createElement\(\s*["']script["']\s*\)/g)) {
+    if (file !== integrationManager) {
+      errors.push(
+        `${rel(file)}:${lineNumber(source, match.index)} creates a runtime script outside the reviewed IntegrationManager.`,
       );
     }
   }

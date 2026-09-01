@@ -338,6 +338,22 @@ const auditDefinitions = {
       "blog.automation.schedule_revalidation_chain_invalid",
     ],
   },
+  "site-integrations": {
+    script: "scripts/audit_directus_site_integrations_sql.mjs",
+    zero: [
+      "site_integrations.tables_missing",
+      "site_integrations.metadata_missing",
+      "site_integrations.consent_singleton_invalid",
+      "site_integrations.draft_metrika_template_missing",
+      "site_integrations.published_invalid",
+      "site_integrations.anonymous_exposure",
+      "site_integrations.service_read_missing",
+      "site_integrations.editor_custom_write_access",
+      "site_integrations.editor_provider_guard_missing",
+      "site_integrations.advanced_write_missing",
+      "site_integrations.revalidation_scope_missing",
+    ],
+  },
   club: {
     script: "scripts/audit_directus_club_sql.mjs",
     zero: [

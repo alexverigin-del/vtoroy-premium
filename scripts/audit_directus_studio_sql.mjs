@@ -77,6 +77,8 @@ WITH expected_collections(collection) AS (
     ('site_pages'),
     ('page_sections'),
     ('site_settings'),
+    ('site_integrations'),
+    ('integration_consent_settings'),
     ('device_page_settings'),
     ('navigation_items'),
     ('faq_items'),

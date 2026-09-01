@@ -463,6 +463,16 @@ const fields = {
   navigationItems:
     "id,label,label_short,aria_label,link_type,page,section_anchor,custom_url,url,location,parent,children,sort,is_active,open_in_new,item_role,icon",
   faqItems: "id,key,question,answer,page,category,sort,is_active",
+  siteIntegrationsRead:
+    "id,status,name,provider,consent_category,load_strategy,provider_settings,hostnames,include_paths,exclude_paths,sort,notes,date_created,date_updated",
+  siteIntegrationsCreate:
+    "status,name,provider,consent_category,load_strategy,provider_settings,hostnames,include_paths,exclude_paths,sort,notes",
+  siteIntegrationsUpdate:
+    "status,name,consent_category,load_strategy,provider_settings,hostnames,include_paths,exclude_paths,sort,notes",
+  integrationConsentSettings:
+    "id,version,retention_days,banner_title,banner_body,accept_all_label,reject_optional_label,customize_label,settings_title,settings_body,save_label,close_label,footer_link_label,privacy_link_label,necessary_label,necessary_description,analytics_label,analytics_description,marketing_label,marketing_description,support_label,support_description,date_updated",
+  integrationConsentSettingsWrite:
+    "version,retention_days,banner_title,banner_body,accept_all_label,reject_optional_label,customize_label,settings_title,settings_body,save_label,close_label,footer_link_label,privacy_link_label,necessary_label,necessary_description,analytics_label,analytics_description,marketing_label,marketing_description,support_label,support_description",
   sitePages:
     "group_page,group_seo,group_sections,id,slug,template,status,title,meta_description,og_image,sections",
   pageSections: [
@@ -511,6 +521,16 @@ const updates = [
   ["ISVOI Editor", "trade_options", "update", fields.tradeOptionsWrite],
   ["ISVOI Editor", "directus_folders", "read", fields.directusFolders],
   ["ISVOI Editor", "faq_items", "read", fields.faqItems],
+  ["ISVOI Editor", "site_integrations", "read", fields.siteIntegrationsRead],
+  ["ISVOI Editor", "site_integrations", "create", fields.siteIntegrationsCreate],
+  ["ISVOI Editor", "site_integrations", "update", fields.siteIntegrationsUpdate],
+  ["ISVOI Editor", "integration_consent_settings", "read", fields.integrationConsentSettings],
+  [
+    "ISVOI Editor",
+    "integration_consent_settings",
+    "update",
+    fields.integrationConsentSettingsWrite,
+  ],
   ["ISVOI Editor", "lead_comments", "read", fields.leadComments],
   ["ISVOI Editor", "leads", "read", fields.leads],
   ["ISVOI Editor", "navigation_items", "read", fields.navigationItems],
@@ -666,7 +686,7 @@ lines.push(
   "FROM directus_permissions pe",
   "JOIN directus_policies p ON p.id = pe.policy",
   "WHERE p.name = 'ISVOI Editor'",
-  "  AND pe.collection IN ('devices', 'device_images', 'device_passports', 'trade_options', 'directus_folders', 'faq_items', 'lead_comments', 'leads', 'navigation_items', 'page_sections', 'site_pages', 'site_settings', 'device_page_settings', 'catalog_import_batches')",
+  "  AND pe.collection IN ('devices', 'device_images', 'device_passports', 'trade_options', 'directus_folders', 'faq_items', 'lead_comments', 'leads', 'navigation_items', 'page_sections', 'site_pages', 'site_settings', 'device_page_settings', 'catalog_import_batches', 'site_integrations', 'integration_consent_settings')",
   "  AND pe.fields <> '*';",
   "",
   "COMMIT;",

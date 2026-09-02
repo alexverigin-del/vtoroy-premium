@@ -26,8 +26,17 @@ Each backup contains:
 - `uploads.tar.gz`
 - `SHA256SUMS`
 - `RESTORE.md`
+- `indexnow-state.json` when IndexNow is initialized (public URL fingerprints,
+  without its key or lock files; included in `SHA256SUMS`)
 
 The script verifies gzip, tar and sha256 checksums before it exits.
+
+IndexNow state lives at `/opt/isvoi/var/indexnow/state.json`, outside the web
+build. Keep it across deployments. For a state restore, stop
+`isvoi-indexnow.timer` and ensure its service is no longer running; restore only
+the reviewed state file as `deploy` with mode `0600` in a `0700` directory.
+Run `npm run indexnow:preview` before resuming the timer. Do not restore a stale
+worker lock or overwrite the application env. See `docs/yandex-indexing.md`.
 
 ## Off-Server Copy
 

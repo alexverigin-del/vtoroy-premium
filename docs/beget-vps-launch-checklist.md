@@ -22,7 +22,7 @@ same origin, so the "api" and "admin" surfaces share **one** subdomain
 
 ---
 
-## Current ISVOI production snapshot (2026-07-18)
+## Current ISVOI production snapshot (2026-09-02)
 
 This repo is currently deployed on the Beget VPS below. Keep this section in
 sync when changing the live infrastructure.
@@ -39,6 +39,7 @@ sync when changing the live infrastructure.
 | Directus Studio           | `https://api.isvoi.ru/admin/`                                                                 |
 | Directus project branding | `ISVOI`, color `#1d1d1f`, logo `isvoi:site:favicon`, public favicon `isvoi:site:favicon-gold` |
 | Next.js process           | PM2 app `isvoi-web`                                                                           |
+| IndexNow worker           | `isvoi-indexnow.timer` → `isvoi-indexnow.service`; state `/opt/isvoi/var/indexnow`             |
 | Host Node.js runtime      | `24.18.0` LTS with npm `11.16.0`                                                              |
 | PM2 runtime               | `pm2@7.0.1`, managed by active `pm2-deploy.service`                                           |
 | Directus stack            | `/opt/isvoi/infra/directus-beget`                                                             |
@@ -82,11 +83,25 @@ NEXT_PUBLIC_DIRECTUS_URL=https://api.isvoi.ru
 DIRECTUS_TOKEN=<public-read static token, server-only>
 CLUB_SUBDOMAIN_ENABLED=1
 CLUB_INDEXING_ENABLED=0
+INDEXNOW_ENABLED=1
+INDEXNOW_STATE_DIR=/opt/isvoi/var/indexnow
+INDEXNOW_KEY=<dedicated ownership key, set privately>
 ```
 
 `CLUB_INDEXING_ENABLED=0` is the production-safe default. Club becomes
 indexable only when this environment gate is changed to `1` and the Directus
 singleton simultaneously has `publication_mode = public_index`.
+
+IndexNow is enabled only for the main site. It compares published page content
+against a persistent baseline; initialization does not submit existing URLs.
+See `docs/yandex-indexing.md` for safe activation, verification and rollback.
+Never delete its state directory as part of a web build cleanup.
+
+Keep staging builds separate from the running `.next` directory. On this 4 GB
+VPS, avoid concurrent heavy database rehearsals and builds. The 2026-09-02 release
+passed in a transient systemd build service with `MemoryHigh=1400M`,
+`MemoryMax=1800M`, `CPUQuota=150%` and `Nice=10` (measured peak 1.3 GB).
+Apply limits to the staging job, not to the live database or app process.
 
 Useful production checks:
 

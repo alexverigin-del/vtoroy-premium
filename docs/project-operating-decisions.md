@@ -3900,3 +3900,55 @@ Next content-editing priorities:
   Confirm staging install/build status, rerun release gates, then perform the
   documented cutover, baseline initialization, timer setup and live checks.
   Never describe this attempt as deployed or IndexNow as active.
+
+### Production release completed · 2026-09-02
+
+- The user's subsequent `продолжи` resumed the authorized rollout. Application
+  `debd370` is now deployed and PM2 `isvoi-web` is online. This completion entry
+  supersedes the paused release state above. Studio workspace changes remain
+  local and were not included in the release or applied to production.
+- Recovery diagnostics confirmed a kernel OOM event at 14:56:52 UTC: PostgreSQL
+  PID 2214822 was killed with about 2 GB anonymous RSS. The database recovered;
+  health returned `ok`, public pages returned 200 and no heavy query remained.
+  The specific SQL cause was not established here. The isolated Studio rehearsal
+  database seen during recovery was left to its owning task; no production data
+  was restored, deleted or modified by this release.
+- The candidate was rebuilt in `/opt/isvoi/var/releases/debd370`, isolated from
+  the live app, under a transient systemd job limited to 1800 MB memory and
+  150% CPU. Full `web:verify` and the disposable compiled-app SEO smoke passed;
+  measured peak was 1.3 GB. Future builds should remain bounded and must not run
+  alongside heavy database rehearsals. The production `.next` was replaced only
+  after verification; the old build was retained for rollback.
+- Backups: the post-recovery database/uploads snapshot
+  `/opt/isvoi/backups/directus/20260902T150000Z` passed all archive/checksum checks.
+  After initialization, `/opt/isvoi/backups/directus/20260902T150414Z` additionally
+  verified `indexnow-state.json`. Offsite remains unconfigured. Previous web
+  builds and private env are retained under
+  `/opt/isvoi/backups/web/20260902T144009Z-seo-indexnow`.
+- Production now has `INDEXNOW_ENABLED=1`, a dedicated privately generated key,
+  and `/opt/isvoi/var/indexnow` (directory 0700, state 0600). Public ownership
+  proof returned the exact key with HTTP 200/text/plain/noindex; Club returned
+  404. Baseline initialization inspected 35 pages and submitted zero URLs.
+  Preview returned no changes or pending removals.
+- `isvoi-indexnow.timer` is enabled and active. Its service passed systemd
+  verification and real execution with exit 0. A fresh authenticated cache
+  revalidation wrote a marker; the worker processed it, inspected 35 URLs,
+  recorded zero failures and submitted zero unchanged URLs. Real change delivery
+  awaits the next genuine editorial change; no test product/price mutation or
+  artificial batch was sent to Yandex.
+- Public SEO audit: all 35 Sitemap URLs return 200, have canonical and H1, are
+  indexable, and have no duplicate title/description. `/stores` and delivery
+  canonical are fixed, null coordinates are omitted and synthetic lastmod is
+  absent. Full production Directus/permissions/API/ops audits pass; anonymous
+  integrations remain 403. `npm audit --omit=dev` reports zero vulnerabilities.
+- Server bundle is **896.8 / 286.0 / 247.1 kB** raw/gzip/Brotli, largest route
+  **443.6 / 133.5 / 113.4 kB**, within unchanged limits. Production storefront
+  smoke passes, including 17 catalog links, images, product viewer, blog and
+  compatibility redirects. Browser checks confirmed zero Metrika scripts before
+  consent/after rejection, one after analytics consent, and zero after revocation
+  reload. Consent texts, counter configuration and public business content were
+  not changed. No leads were submitted and no Webmaster account settings changed.
+- Server HTTPS Git fetch still requires credentials; the release uses verified
+  Git bundles of the commits already pushed to GitHub. No Git credentials or
+  permissions were broadened. Infrastructure and backup notes were updated in
+  `docs/beget-vps-launch-checklist.md` and `docs/directus-backup-restore.md`.

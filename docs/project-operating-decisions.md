@@ -3999,3 +3999,51 @@ Next content-editing priorities:
   Git bundles of the commits already pushed to GitHub. No Git credentials or
   permissions were broadened. Infrastructure and backup notes were updated in
   `docs/beget-vps-launch-checklist.md` and `docs/directus-backup-restore.md`.
+
+### Studio UX Production Release · 2026-09-02
+
+- Explicit `выкат` authorized both UX waves. Application commit `b898e6b`
+  is pushed and deployed; both workspace and structured-content migrations
+  are applied. This supersedes earlier local-only Studio notes.
+- Backup: `/opt/isvoi/backups/directus/20260902T153052Z`, verified PostgreSQL,
+  uploads and IndexNow state, plus private `metadata.sql.gz`. Previous Next
+  output is retained there as `previous-next`; production env is unchanged.
+  Off-server backup remains unconfigured.
+- Built in `/opt/isvoi/var/releases/b898e6b` using a user systemd service with
+  `MemoryMax=1800M`, `CPUQuota=150%`, SSH held until completion. No concurrent
+  database rehearsal. Full `web:verify`, compiled SEO smoke and bundle gates
+  pass: **896.8 / 286.0 / 247.1 kB** raw/gzip/Brotli, unchanged from prior release.
+- Each migration transaction compared existing business rows and personal
+  presets before committing. Manual text, prices, documents, media, leads and
+  policy membership are unchanged; wave one permissions are unchanged. New
+  content fields are backfilled from live JSON only. No content seed ran.
+- An initial safety-wrapper dollar-quoting error stopped before writes and
+  rolled back. The wrapper was corrected; subsequent invariant checks passed.
+  Production content was never restored from a backup or canonical seed.
+- Browser QA found two native Directus 11.17.4 constraints absent from the
+  original SQL checks: internal presentation-links must omit `/admin`, and
+  Content collection routes do not consume `?filter=`. The final implementation
+  uses global page/status bookmarks on hidden `page_sections`, selected via
+  field conditions. The audit validates their exact filters and target IDs.
+  New pages need `studio-content` setup reconciliation before those two links
+  appear; the complete O2M list remains available in the meantime.
+- Directus/PM2 restarted; response-cache keys were cleared only in
+  `sets:namespace:isvoi-directus-:isvoi-directus-:*`, never `FLUSHALL`.
+  Authenticated site-content revalidation succeeded. IndexNow uses its normal
+  durable reconciliation; no artificial submissions or test leads were made.
+- Full production SQL/API/ops/permissions/content audits passed. Public
+  `smoke:prod`, `smoke:copy`, `smoke:images` and desktop/mobile `smoke:visual`
+  passed, including product Passport/history/gallery. Visual smoke now uses
+  the real "necessary only" consent button before measuring the page behind
+  the intentional cookie overlay; it does not hide UI or enable analytics.
+- Administrator browser QA at 1440/1280 px confirmed scenario navigation,
+  translated status values, ten active homepage blocks, native editable proof
+  list and grouped form. Personal table presets are deliberately preserved:
+  the current admin's main products view still has their old four columns.
+  Switching to the new default requires an intentional per-collection reset.
+  Older specialized bookmarks can still have their own column layouts.
+- Save/clear/reapply semantics were tested on an isolated database, not by
+  mutating production copy in the browser. Separate Editor/Advanced interactive
+  login checks remain manual; API field permissions are covered by audits.
+  Future page creation/bookmark reconciliation, personal-layout adoption and
+  Draft Preview/versioning remain distinct operational follow-ups.

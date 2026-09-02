@@ -29,12 +29,12 @@ CREATE TEMP TABLE ux_business_before AS SELECT c.collection,t.id,t.row FROM dire
 CROSS JOIN LATERAL (SELECT NULL::text id,NULL::jsonb row LIMIT 0) t WITH NO DATA;
 DO $$ DECLARE c record; BEGIN
 FOR c IN SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename NOT LIKE 'directus_%' LOOP
- EXECUTE format('INSERT INTO ux_business_before SELECT %L, to_jsonb(t)->>''id'', to_jsonb(t) FROM %I t',c.tablename,c.tablename);
+ EXECUTE format('INSERT INTO ux_business_before SELECT %L, to_jsonb(t)->>''id'', to_jsonb(t)-ARRAY[''editor_label'',''editor_note'',''editor_disclaimer'',''editor_steps'',''editor_proof''] FROM %I t',c.tablename,c.tablename);
 END LOOP; END $$;
 CREATE TEMP TABLE ux_personal_before AS SELECT to_jsonb(p) row FROM directus_presets p WHERE "user" IS NOT NULL;
 CREATE TEMP TABLE ux_permissions_before AS SELECT to_jsonb(p) row FROM directus_permissions p;
 CREATE TEMP TABLE ux_access_before AS SELECT to_jsonb(p) row FROM directus_access p;
-CREATE TEMP TABLE ux_content_before AS SELECT id,content::jsonb content FROM page_sections;
+CREATE TEMP TABLE ux_content_before AS SELECT id,${effectiveSectionContentSql("s")} content FROM page_sections s;
 `;
 const assertBusiness = `DO $$ DECLARE c record; bad boolean; BEGIN
 FOR c IN SELECT DISTINCT collection FROM ux_business_before LOOP

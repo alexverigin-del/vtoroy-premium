@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { literal as q, sqlJson as j } from "./lib/studio-ux.mjs";
+import { pageSectionViewsSql } from "./lib/studio-page-section-views.mjs";
 
 const statements = [
   String.raw`\set ON_ERROR_STOP on
@@ -119,24 +120,7 @@ field(
   "presentation-links",
   "group_workflow",
   1,
-  {
-    links: [
-      {
-        label: "Действующие блоки",
-        icon: "visibility",
-        type: "primary",
-        actionType: "url",
-        url: '/admin/content/page_sections?filter={"page":{"_eq":"{{id}}"},"is_active":{"_eq":true}}',
-      },
-      {
-        label: "Отключённые блоки",
-        icon: "visibility_off",
-        type: "normal",
-        actionType: "url",
-        url: '/admin/content/page_sections?filter={"page":{"_eq":"{{id}}"},"is_active":{"_eq":false}}',
-      },
-    ],
-  },
+  { links: [] },
   "alias,no-data",
   "Два отдельных списка текущей страницы. Для изменения порядка откройте «Все блоки и порядок».",
 );
@@ -468,5 +452,6 @@ IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conname='page_sections_editor_pr
 END IF;
 END $$;
 `);
+statements.push(pageSectionViewsSql);
 statements.push(process.argv.includes("--rehearse") ? "ROLLBACK;" : "COMMIT;");
 process.stdout.write(statements.join("\n"));

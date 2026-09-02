@@ -222,6 +222,16 @@ async function smokeRoute(page, baseUrl, route, viewport, outputDir) {
   await revealLazyImages(page);
   await waitForImages(page);
 
+  // Consent is a deliberate overlay. Use the real refusal control before
+  // measuring the underlying page; do not hide it with CSS or enable analytics.
+  const rejectOptional = page.getByRole("button", {
+    name: /^(Только необходимые|Отклонить необязательные)$/,
+  });
+  if (await rejectOptional.isVisible()) {
+    await rejectOptional.click();
+    await rejectOptional.waitFor({ state: "hidden" });
+  }
+
   const issues = await visualIssues(page);
   const screenshotPath = path.join(outputDir, safeName(route, viewport.name));
   await page.screenshot({ path: screenshotPath, fullPage: true });

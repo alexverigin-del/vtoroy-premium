@@ -74,6 +74,8 @@ for (const script of [
     assert.match(result.stdout, /IF NOT EXISTS\(SELECT 1 FROM information_schema.columns/);
     assert.match(result.stdout, /BEFORE UPDATE OF editor_proof/);
     assert.match(result.stdout, /isvoi_normalize_editor_clear\('editor_proof','\[\]'\)/);
+    assert.match(result.stdout, /\/content\/page_sections\?bookmark=/);
+    assert.doesNotMatch(result.stdout, /\/admin\/content\/page_sections|\/page_sections\?filter=/);
   }
 }
 const tradeAudit = fs.readFileSync("scripts/audit_directus_trade_page_sql.mjs", "utf8");

@@ -2,9 +2,9 @@
 
 This is the first page to open before changing content in Directus Studio.
 
-Studio UX update (local, not yet deployed): see
+Studio UX update deployed 2026-09-02: see
 `docs/directus-studio-ux-rollout.md` for the two-wave rollout and exact status.
-After rollout, top-level groups follow Site/content, Catalog, Stores, Sales,
+Top-level groups follow Site/content, Catalog, Stores, Sales,
 Trade-in, Blog, Club, Warehouse/import, Sales channels. Personal layouts are
 preserved; resetting a collection layout is an explicit user action.
 
@@ -85,6 +85,9 @@ npm run directus:audit-studio
 Use `Страницы сайта` (`site_pages`) first.
 
 - Open the page, then `Действующие блоки` or `Отключённые блоки`.
+  These are native bookmarks scoped to that page. After creating a new page,
+  operations must reconcile `directus:setup:studio-content` and refresh metadata
+  cache; until then use `Все блоки и порядок` inside the page.
   `Все блоки и порядок` keeps the complete relation list collapsed.
 - Internal names (`Название в Studio`) do not change SEO or public headings.
   Notes, disclaimers, steps and bullets move to `Примечания и списки`.

@@ -12,7 +12,16 @@ SELECT 'studio_content.internal_labels_missing',count(*)::text FROM (
 UNION ALL
 SELECT 'studio_content.section_selection_enabled',CASE WHEN EXISTS(SELECT 1 FROM directus_fields WHERE collection='site_pages' AND field='sections' AND options::jsonb @> '{"enableSelect":false,"enableCreate":false}') THEN '0' ELSE '1' END
 UNION ALL
-SELECT 'studio_content.section_views_missing',CASE WHEN EXISTS(SELECT 1 FROM directus_fields WHERE collection='site_pages' AND field='section_views' AND interface='presentation-links' AND jsonb_array_length(options::jsonb->'links')=2) THEN '0' ELSE '1' END
+SELECT 'studio_content.section_views_missing',count(*)::text FROM site_pages page CROSS JOIN (VALUES(true),(false)) state(active)
+WHERE NOT EXISTS(
+ SELECT 1 FROM directus_fields f CROSS JOIN LATERAL jsonb_array_elements(f.conditions::jsonb) c
+ CROSS JOIN LATERAL jsonb_array_elements(c->'options'->'links') l JOIN directus_presets preset
+ ON l->>'url'='/content/page_sections?bookmark='||preset.id
+ WHERE f.collection='site_pages' AND f.field='section_views' AND f.interface='presentation-links'
+ AND c->'rule'->'id'->>'_eq'=page.id::text AND c->>'hidden'='false'
+ AND preset.collection='page_sections' AND preset."user" IS NULL AND preset.role IS NULL
+ AND preset.filter::jsonb=jsonb_build_object('page',jsonb_build_object('_eq',page.id::text),'is_active',jsonb_build_object('_eq',state.active))
+ AND preset.layout_query::jsonb->'tabular'->'fields' @> '["editor_label","headline","is_active","sort_order"]'::jsonb)
 UNION ALL
 SELECT 'studio_content.unsafe_richtext',count(*)::text FROM directus_fields WHERE collection='page_sections' AND interface='input-rich-text-html' AND field IN ('body','closing_body','editor_note','editor_disclaimer')
 AND (options::jsonb->'toolbar' IS NULL OR options::jsonb->'toolbar' ?| ARRAY['code','image','media','h1','customLink','customImage'])

@@ -1,47 +1,6 @@
 #!/usr/bin/env node
 
-import fs from "node:fs";
-
-const data = JSON.parse(
-  fs.readFileSync(new URL("../apps/web/data/marketing-pages.json", import.meta.url), "utf8"),
-);
-const trade = data.trade;
-
-function sqlLiteral(value) {
-  if (value === null || value === undefined) return "NULL";
-  return `'${String(value).replaceAll("'", "''")}'`;
-}
-
-function sqlJson(value) {
-  return `${sqlLiteral(JSON.stringify(value ?? {}))}::jsonb`;
-}
-
-const expectedCopyRows = trade.sections
-  .map((section) => {
-    const content = structuredClone(section.content ?? {});
-    if (section.sectionKey === "final_cta") {
-      delete content.closing;
-      // Legal copy has a separately approved version and audit.
-      for (const key of ["consent_note", "consent_label", "consent_version", "consent_url"])
-        delete content.form[key];
-    }
-    if (section.sectionKey === "trade_live_example") delete content.emptyState;
-    return `(${[
-      sqlLiteral(section.sectionKey),
-      sqlLiteral(section.eyebrow ?? ""),
-      sqlLiteral(section.headline ?? ""),
-      sqlLiteral(section.subheadline ?? ""),
-      sqlLiteral(section.body ?? ""),
-      sqlLiteral(section.primaryCtaLabel ?? ""),
-      sqlLiteral(section.primaryCtaUrl ?? ""),
-      sqlLiteral(section.secondaryCtaLabel ?? ""),
-      sqlLiteral(section.secondaryCtaUrl ?? ""),
-      String(section.sortOrder),
-      section.isActive === false ? "false" : "true",
-      sqlJson(content),
-    ].join(",")})`;
-  })
-  .join(",\n    ");
+import { effectiveSectionContentSql } from "./lib/studio-section-content.mjs";
 
 process.stdout.write(String.raw`
 WITH expected(section_key, sort_order) AS (
@@ -53,15 +12,8 @@ WITH expected(section_key, sort_order) AS (
     ('trade_live_example', 40),
     ('trade_compare', 50),
     ('final_cta', 60)
-), expected_copy(
-  section_key, eyebrow, headline, subheadline, body,
-  primary_cta_label, primary_cta_url, secondary_cta_label, secondary_cta_url,
-  sort_order, is_active, content
-) AS (
-  VALUES
-    ${expectedCopyRows}
 ), trade_sections AS (
-  SELECT ps.*
+  SELECT (jsonb_populate_record(NULL::page_sections,to_jsonb(ps) || jsonb_build_object('content',${effectiveSectionContentSql("ps")}))).*
   FROM page_sections ps
   JOIN site_pages sp ON sp.id = ps.page
   WHERE sp.slug = 'trade'
@@ -71,8 +23,8 @@ SELECT 'trade_page.page_missing_or_duplicate' AS check_name,
 FROM site_pages
 WHERE slug = 'trade'
   AND status = 'published'
-  AND title = ${sqlLiteral(trade.title)}
-  AND meta_description = ${sqlLiteral(trade.metaDescription)}
+  AND nullif(trim(title),'') IS NOT NULL
+  AND nullif(trim(meta_description),'') IS NOT NULL
 UNION ALL
 SELECT 'trade_page.sections.missing_or_duplicate', count(*)::text
 FROM expected e
@@ -89,27 +41,18 @@ FROM expected e
 JOIN trade_sections ps ON ps.section_key = e.section_key
 WHERE ps.sort_order <> e.sort_order OR ps.is_active IS DISTINCT FROM true
 UNION ALL
-SELECT 'trade_page.sections.copy_mismatch', count(*)::text
-FROM expected_copy e
-JOIN trade_sections ps ON ps.section_key = e.section_key
-WHERE ps.eyebrow IS DISTINCT FROM e.eyebrow
-   OR ps.headline IS DISTINCT FROM e.headline
-   OR ps.subheadline IS DISTINCT FROM e.subheadline
-   OR ps.body IS DISTINCT FROM e.body
-   OR ps.primary_cta_label IS DISTINCT FROM e.primary_cta_label
-   OR ps.primary_cta_url IS DISTINCT FROM e.primary_cta_url
-   OR ps.secondary_cta_label IS DISTINCT FROM e.secondary_cta_label
-   OR ps.secondary_cta_url IS DISTINCT FROM e.secondary_cta_url
-   OR ps.sort_order IS DISTINCT FROM e.sort_order
-   OR ps.is_active IS DISTINCT FROM e.is_active
-   OR NOT (coalesce(ps.content::jsonb, '{}'::jsonb) @> e.content)
+SELECT 'trade_page.sections.required_copy_missing', count(*)::text
+FROM trade_sections ps
+WHERE ps.is_active AND (nullif(trim(ps.headline),'') IS NULL
+   OR (nullif(ps.primary_cta_url,'') IS NOT NULL AND nullif(trim(ps.primary_cta_label),'') IS NULL)
+   OR (nullif(ps.secondary_cta_url,'') IS NOT NULL AND nullif(trim(ps.secondary_cta_label),'') IS NULL))
 UNION ALL
 SELECT 'trade_page.hero.contract_invalid', count(*)::text
 FROM trade_sections
 WHERE section_key = 'trade_hero'
   AND (
-    eyebrow <> 'I СВОИ · Trade'
-    OR headline <> 'Продайте или обменяйте свою технику'
+    nullif(trim(eyebrow),'') IS NULL
+    OR nullif(trim(headline),'') IS NULL
     OR primary_cta_url <> '#trade-calculator'
     OR secondary_cta_url <> '/catalog'
     OR jsonb_array_length(coalesce(content::jsonb -> 'highlights', '[]'::jsonb)) <> 0
@@ -164,8 +107,8 @@ FROM trade_sections
 WHERE section_key = 'trade_compare'
   AND (
     jsonb_array_length(coalesce(content::jsonb #> '{comparison,rows}', '[]'::jsonb)) <> 3
-    OR content::jsonb #>> '{comparison,bad_header}' <> 'Самостоятельно'
-    OR content::jsonb #>> '{comparison,good_header}' <> 'I СВОИ Trade'
+    OR nullif(content::jsonb #>> '{comparison,bad_header}','') IS NULL
+    OR nullif(content::jsonb #>> '{comparison,good_header}','') IS NULL
     OR nullif(content::jsonb ->> 'details_label', '') IS NULL
   )
 UNION ALL

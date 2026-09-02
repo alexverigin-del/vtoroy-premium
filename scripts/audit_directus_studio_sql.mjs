@@ -10,7 +10,10 @@
  *   docker compose exec -T database psql -U "$DB_USER" -d "$DB_DATABASE" -v ON_ERROR_STOP=1 < /tmp/isvoi_studio_audit.sql
  */
 
+import { sectionAuditViewSql } from "./lib/studio-section-content.mjs";
+
 process.stdout.write(String.raw`
+${sectionAuditViewSql}
 CREATE OR REPLACE FUNCTION pg_temp.isvoi_json_string_values(p_value jsonb)
 RETURNS TABLE(value text)
 LANGUAGE sql
@@ -681,7 +684,7 @@ WHERE NOT EXISTS (
       expected.collection<>'isvoi_locations'
       OR EXISTS (
         SELECT 1 FROM jsonb_array_elements(coalesce(collection.translations,'[]'::json)::jsonb) translation
-        WHERE translation->>'language'='ru-RU' AND translation->>'translation'='Магазины, адреса и наличие'
+        WHERE translation->>'language'='ru-RU' AND translation->>'translation'='Магазины'
       )
     )
 )
@@ -762,6 +765,7 @@ FROM (
   WHERE preset."user" IS NULL AND preset.bookmark IS NOT NULL
     AND role.name IN ('ISVOI Editor','ISVOI Advanced Editor')
     AND preset.collection IN ('products','leads','product_offers','store_locations')
+    AND NOT jsonb_path_exists(coalesce(preset.filter::jsonb,'{}'), '$.**.is_test._eq ? (@ == true)')
   GROUP BY preset.role,preset.collection
   HAVING count(*)>CASE WHEN preset.collection='leads' THEN 13 ELSE 8 END
 ) excessive

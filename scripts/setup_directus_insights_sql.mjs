@@ -7,6 +7,8 @@
  *   npm run --silent directus:setup:insights -- --rollback > /tmp/isvoi_rollback_directus_insights.sql
  */
 
+import { workingLeadOptionsSql } from "./lib/studio-ux.mjs";
+
 const rollback = process.argv.includes("--rollback");
 
 if (rollback) {
@@ -62,6 +64,9 @@ CREATE OR REPLACE FUNCTION pg_temp.isvoi_upsert_insights_panel(
 LANGUAGE plpgsql
 AS $$
 BEGIN
+  IF p_options->>'collection'='leads' THEN
+    p_options := (${workingLeadOptionsSql("p_options")})::json;
+  END IF;
   INSERT INTO directus_panels (
     id, dashboard, name, icon, color, show_header, note, type,
     position_x, position_y, width, height, options, date_created, user_created

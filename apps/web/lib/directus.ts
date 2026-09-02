@@ -25,6 +25,7 @@ import {
 } from "@/lib/cache-tags";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { prepareRichText, prepareSectionContentRichText } from "@/lib/rich-text";
+import { mergeSectionEditorContent } from "@/lib/section-editor-content";
 import { fallbackDevices } from "@/data/devices";
 import {
   normalizeIntegrationConsentSettings,
@@ -1016,7 +1017,9 @@ export const getDeviceBySlug = cache(async function getDeviceBySlug(
 function mapPageSectionFromDirectus(row: Record<string, unknown>): PageSection {
   const body = prepareRichText(row.body);
   const closingBody = prepareRichText(row.closing_body);
-  const content = prepareSectionContentRichText(json(row.content, {}));
+  const content = prepareSectionContentRichText(
+    mergeSectionEditorContent(row, json(row.content, {})),
+  );
 
   return {
     id: str(row.id),

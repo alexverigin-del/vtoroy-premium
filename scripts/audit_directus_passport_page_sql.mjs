@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
+import { sectionAuditViewSql } from "./lib/studio-section-content.mjs";
+
 process.stdout.write(String.raw`
+${sectionAuditViewSql}
 WITH expected(section_key, sort_order) AS (
   VALUES
     ('passport_hero', 10),

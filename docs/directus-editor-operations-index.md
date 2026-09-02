@@ -2,6 +2,12 @@
 
 This is the first page to open before changing content in Directus Studio.
 
+Studio UX update (local, not yet deployed): see
+`docs/directus-studio-ux-rollout.md` for the two-wave rollout and exact status.
+After rollout, top-level groups follow Site/content, Catalog, Stores, Sales,
+Trade-in, Blog, Club, Warehouse/import, Sales channels. Personal layouts are
+preserved; resetting a collection layout is an explicit user action.
+
 Studio URL:
 
 ```text
@@ -10,7 +16,7 @@ https://api.isvoi.ru/admin/
 
 ## Catalog
 
-Use `Карточки сайта` -> `Товары` (`products`) as the only editor-facing Catalog
+Use `Каталог` -> `Карточки товаров` (`products`) after Studio UX rollout as the only editor-facing Catalog
 V3 entry point. `Страницы сайта` -> `catalog` edits the public page wrapper,
 not product data.
 
@@ -78,7 +84,11 @@ npm run directus:audit-studio
 
 Use `Страницы сайта` (`site_pages`) first.
 
-- Open the page, then edit its owned `Секции страницы`.
+- Open the page, then `Действующие блоки` or `Отключённые блоки`.
+  `Все блоки и порядок` keeps the complete relation list collapsed.
+- Internal names (`Название в Studio`) do not change SEO or public headings.
+  Notes, disclaimers, steps and bullets move to `Примечания и списки`.
+  Explicitly clearing a list removes it from the site, without restoring JSON.
 - Do not change `Ключ блока`, `Тип блока` or JSON settings without a developer
   review.
 - Homepage catalog empty-state and final-form submit/success/error copy live in
@@ -147,6 +157,8 @@ Detailed guide: `docs/global-content-editor-guide.md`.
 Use `Заявки` (`leads`).
 
 - Start from `Обработка заявок` or `Новые заявки`.
+- After Studio UX rollout, operational presets and Insights exclude test leads.
+  QA records remain in `Тестовые заявки`, with no deletion of lead history.
 - Move active work to `В работе` or `Ждем ответа`.
 - Keep manager notes in `Заметка менеджера` or `История обработки`.
 - Для Club-заявки поля предложения, тарифа, срока, бюджета, модели и согласия

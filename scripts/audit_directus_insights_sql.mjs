@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
+import { workingLeadOptionsSql } from "./lib/studio-ux.mjs";
+
 process.stdout.write(String.raw`
 WITH expected_dashboard(id, name) AS (
   VALUES (
     'f7a3e5bc-1c5b-4d72-8b91-0ea45c6f0100'::uuid,
     'Руководитель · Операционный обзор'::varchar
   )
-), expected_panels(id, name, type, position_x, position_y, width, height, options) AS (
+), expected_panels_raw(id, name, type, position_x, position_y, width, height, options) AS (
   VALUES
     ('f7a3e5bc-1c5b-4d72-8b91-0ea45c6f0101'::uuid,'Новые заявки'::varchar,'metric'::varchar,1,1,18,6,'{"collection":"leads","field":"id","function":"count","filter":{"status":{"_eq":"new"}},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#d97706"}]}'::json),
     ('f7a3e5bc-1c5b-4d72-8b91-0ea45c6f0102'::uuid,'Заявки требуют внимания'::varchar,'metric'::varchar,19,1,18,6,'{"collection":"leads","field":"id","function":"count","filter":{"_and":[{"status":{"_in":["new","in_progress","waiting"]}},{"_or":[{"assigned_to":{"id":{"_null":true}}},{"next_action_at":{"_lt":"$NOW"}}]}]},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"textAlign":"center","fontWeight":700,"fontStyle":"normal","fontSize":"auto","font":"sans-serif","conditionalFormatting":[{"operator":">","value":"0","color":"#dc2626"}]}'::json),
@@ -18,9 +20,13 @@ WITH expected_dashboard(id, name) AS (
     ('f7a3e5bc-1c5b-4d72-8b91-0ea45c6f0108'::uuid,'Последние блокеры'::varchar,'list'::varchar,1,49,36,12,'{"collection":"inventory_import_issues","limit":5,"sortField":"created_at","sortDirection":"desc","displayTemplate":"{{code}} · {{message}}","linkToItem":true,"filter":{"_and":[{"severity":{"_eq":"blocker"}},{"resolved":{"_eq":false}}]}}'::json),
     ('f7a3e5bc-1c5b-4d72-8b91-0ea45c6f0109'::uuid,'Заявки по типам'::varchar,'metric-list'::varchar,19,27,18,10,'{"collection":"leads","limit":8,"groupByField":"kind","aggregateField":"id","aggregateFunction":"count","sortDirection":"desc","filter":{"created_at":{"_gte":"$NOW(-90 days)"}},"numberStyle":"decimal","notation":"standard","minimumFractionDigits":0,"maximumFractionDigits":0,"conditionalFormatting":[{"operator":">","value":"0","color":"#6366f1"}]}'::json),
     ('f7a3e5bc-1c5b-4d72-8b91-0ea45c6f0110'::uuid,'Последние импорты'::varchar,'list'::varchar,1,61,36,12,'{"collection":"inventory_import_batches","limit":5,"sortField":"snapshot_at","sortDirection":"desc","displayTemplate":"{{snapshot_at}} · {{batch_name}} · {{status}} · {{blocker_count}} блокеров","linkToItem":true,"filter":{}}'::json)
+), expected_panels AS (
+  SELECT id,name,type,position_x,position_y,width,height,
+    CASE WHEN options->>'collection'='leads' THEN (${workingLeadOptionsSql("options")})::json ELSE options END AS options
+  FROM expected_panels_raw
 ), expected_fields(collection, field) AS (
   VALUES
-    ('leads','id'),('leads','status'),('leads','assigned_to'),
+    ('leads','id'),('leads','status'),('leads','assigned_to'),('leads','is_test'),
     ('leads','next_action_at'),('leads','created_at'),('leads','contact'),('leads','kind'),
     ('products','id'),('products','status'),('products','stock_status'),('products','content_status'),
     ('inventory_import_issues','id'),('inventory_import_issues','severity'),

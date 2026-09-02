@@ -3,7 +3,10 @@
  * Print SQL that audits page_sections.content variant contracts.
  */
 
+import { sectionAuditViewSql } from "./lib/studio-section-content.mjs";
+
 process.stdout.write(String.raw`
+${sectionAuditViewSql}
 CREATE OR REPLACE FUNCTION pg_temp.isvoi_json_string_values(p_value jsonb)
 RETURNS TABLE(value text)
 LANGUAGE sql

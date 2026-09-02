@@ -6,6 +6,7 @@ import {
   sqlJson,
   sqlLiteral,
 } from "./lib/homepage-copy.mjs";
+import { sectionAuditViewSql } from "./lib/studio-section-content.mjs";
 
 const copy = loadHomepageCopy();
 const sectionValues = copy.sections
@@ -22,6 +23,7 @@ const faqValues = copy.faq_items
   .join(",\n    ");
 
 process.stdout.write(String.raw`
+${sectionAuditViewSql}
 WITH expected_sections(
   section_key, variant, sort_order, eyebrow, headline, body,
   primary_cta_label, primary_cta_url, secondary_cta_label, secondary_cta_url, content

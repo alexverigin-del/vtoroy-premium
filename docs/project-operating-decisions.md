@@ -6,6 +6,53 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Studio UX Implementation (2026-09-02, Not Deployed)
+
+- Approved two-wave native Studio improvement is implemented locally; initial
+  audit baseline was `81a20ab`. On continuation, local and production are on
+  `c4d34a2` after the separate SEO/IndexNow release. Studio changes remain
+  uncommitted and unapplied; production apply/push was not requested here.
+- Wave 1: `directus:setup:studio-workspace` supplies role Defaults, named catalog
+  rows, Russian enum displays, scenario navigation, QA-free operational Insights
+  and lead presets. Personal layouts and permissions are preserved.
+- Wave 2: `directus:setup:studio-content` adds internal page/section names,
+  live-only initial backfill of note/disclaimer/steps/proof, native form groups,
+  Trade pricing-version inverse lists and additive access to new fields only.
+  Existing publication/integration permissions and policy membership stay intact.
+- Directus 11.17.4 repeater emits null on last-row deletion. Narrow update
+  triggers normalize an explicit clear to an empty value; the Next adapter and
+  session-local materialized SQL audit projection use those values before legacy JSON.
+  Repeated setup must never repopulate cleared/editor-owned fields.
+- Active/inactive sections use two native filtered entry links from the page.
+  The complete sortable O2M stays collapsed; selecting existing foreign sections
+  is disabled. Native O2M options.filter does NOT filter attached rows.
+- Trade marketing audit no longer compares editable copy to seed. Required
+  structure, CTA and consent remain checked; legal audit is unchanged.
+- Verification: unit tests and full web:verify passed. An isolated PostgreSQL
+  rehearsal passed all 23 production SQL audits (421 assertions) after two
+  applications of both migrations. It confirmed unchanged business content and
+  personal presets, unchanged wave-1 permissions, and native clear semantics.
+  Production browser QA at 1280/1440 and cache/smoke after apply remain rollout gates.
+- The initial expanded legacy audit stalled before the VPS outage. Recovery
+  notes below confirm a PostgreSQL OOM kill; the specific SQL cause remains
+  unproven. The composite SQL view was replaced by a session-local temp table,
+  with statement/lock timeouts and JIT disabled. The abandoned database
+  `isvoi_studio_ux_483de3ba3dc8` was verified idle and removed on continuation.
+- Rehearsal now uses a separate PostgreSQL 16 container, never another database
+  in the working PostgreSQL process: 512 MB RAM/no extra swap, 0.5 CPU, no
+  network/ports, tmpfs data, automatic cleanup. Same-production-host use still
+  requires an explicit flag and a non-overlapping maintenance window. All test
+  containers were removed; Directus health is `ok`, public copy smoke passed.
+- Studio audit now accepts the approved `Магазины` navigation label and counts
+  QA views separately from the working-bookmark budget. `web:verify` includes
+  `directus:studio-ux:test`; no heavy rehearsal runs as part of that local check.
+- Apply order: historical schema/setup first, then studio-workspace, then
+  studio-content last. Never use content seed to repair Studio metadata/cache.
+  Rollout, backup, rollback boundaries and remaining manual checks are documented
+  in `docs/directus-studio-ux-rollout.md`.
+- Skills used: directus-platform; native interface options verified against
+  Directus v11.17.4 source. No custom extension or Studio styling overrides.
+
 ## New Chat Handoff
 
 When starting work in a new Codex chat, read this file first, then use the

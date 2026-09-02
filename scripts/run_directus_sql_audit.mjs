@@ -23,6 +23,38 @@ const canRunLocalPsql =
     fs.existsSync("/opt/isvoi/infra/directus-beget/docker-compose.yml"));
 
 const auditDefinitions = {
+  "studio-workspace": {
+    script: "scripts/audit_directus_studio_workspace_sql.mjs",
+    zero: [
+      "groups_invalid",
+      "parents_invalid",
+      "defaults_missing",
+      "defaults_duplicate",
+      "insights_test_leak",
+      "lead_views_test_leak",
+      "test_view_missing",
+      "enum_display_missing",
+      "visible_collections_without_ru",
+      "visible_fields_without_ru",
+      "trade_relations_unreadable",
+      "project_descriptor",
+    ].map((key) => `studio_workspace.${key}`),
+  },
+  "studio-content": {
+    script: "scripts/audit_directus_studio_content_sql.mjs",
+    zero: [
+      "fields_missing",
+      "internal_labels_missing",
+      "section_selection_enabled",
+      "section_views_missing",
+      "unsafe_richtext",
+      "trade_inverse_missing",
+      "ungrouped_consent",
+      "new_fields_without_ru",
+      "clear_triggers_missing",
+      "service_fields_missing",
+    ].map((key) => `studio_content.${key}`),
+  },
   schema: {
     script: "scripts/audit_directus_schema_sql.mjs",
     zero: [
@@ -219,7 +251,7 @@ const auditDefinitions = {
       "trade_page.page_missing_or_duplicate",
       "trade_page.sections.missing_or_duplicate",
       "trade_page.sections.order_mismatch",
-      "trade_page.sections.copy_mismatch",
+      "trade_page.sections.required_copy_missing",
       "trade_page.hero.contract_invalid",
       "trade_page.paths.contract_invalid",
       "trade_page.live_example.contract_invalid",
@@ -677,6 +709,8 @@ const prodAuditOrder = [
   "multicity",
   "inventory",
   "insights",
+  "studio-workspace",
+  "studio-content",
 ];
 
 function selectedAudits() {
@@ -698,6 +732,7 @@ function runNodeScript(script) {
 }
 
 function runPsql(sql) {
+  sql = "SET statement_timeout='45s'; SET lock_timeout='3s'; SET jit=off;\n" + sql;
   const result = canRunLocalPsql
     ? spawnSync("bash", ["-lc", remoteCommand], {
         input: sql,
@@ -760,6 +795,11 @@ function assertAudit(name, definition, rows) {
   console.log(`Directus audit passed: ${name}`);
   for (const row of rows) console.log(`- ${row.checkName}: ${row.value}`);
   return true;
+}
+
+if (process.argv.includes("--describe")) {
+  console.log(JSON.stringify({ definitions: auditDefinitions, order: prodAuditOrder }));
+  process.exit(0);
 }
 
 let ok = true;

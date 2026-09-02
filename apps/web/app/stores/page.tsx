@@ -5,6 +5,9 @@ import { brandZoneEyebrowClass } from "@/components/ui-classes";
 import { getNavigationItems, getSiteSettings } from "@/lib/directus";
 import { siteChrome } from "@/lib/site-content";
 import { getStoreLocations } from "@/lib/store-locations";
+import { storesMetadata } from "@/lib/seo-metadata";
+
+export const metadata = storesMetadata;
 
 export const revalidate = 300;
 

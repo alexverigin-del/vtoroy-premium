@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-01T15:03:28.545Z",
+  "updatedAt": "2026-09-02T14:20:54.934Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -685,252 +685,245 @@
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 34,
+      "line": 35,
       "text": "Товар не найден — I СВОИ",
       "id": "b17c2eafccb153b4"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 37,
-      "text": "${product.brand.name} ${product.title}: характеристики, наличие и гарантия.",
-      "id": "9acad23a05c11573"
-    },
-    {
-      "file": "apps/web/app/product/[slug]/page.tsx",
-      "kind": "string",
-      "line": 39,
+      "line": 38,
       "text": "${product.title} — I СВОИ",
       "id": "ab05e7675b42d53e"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 125,
+      "line": 124,
       "text": "Память",
       "id": "b6a7296387a970f8"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 126,
+      "line": 125,
       "text": "Серийный номер",
       "id": "8a3f5c599cd96f02"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 128,
+      "line": 127,
       "text": "Модель",
       "id": "3945fad30bf92f4a"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 129,
+      "line": 128,
       "text": "Год / поколение",
       "id": "a431f14c76243f15"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 130,
+      "line": 129,
       "text": "Регион",
       "id": "7cecc2164ef99772"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 132,
+      "line": 131,
       "text": "Батарея",
       "id": "7d466cf147550d3b"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 133,
+      "line": 132,
       "text": "Циклы батареи",
       "id": "b05b44713cc0c2b4"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 134,
+      "line": 133,
       "text": "Дата диагностики",
       "id": "f4c22f6d31ff9cc8"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 137,
+      "line": 136,
       "text": "Комплект",
       "id": "8ebd6bc41b8bb51c"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 138,
+      "line": 137,
       "text": "Проверил",
       "id": "f800789d93f18507"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 147,
+      "line": 146,
       "text": "Универсальный аксессуар",
       "id": "f14950ccaeffe8fb"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 150,
+      "line": 149,
       "text": "Совместимость",
       "id": "a64350706687cc91"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 151,
+      "line": 150,
       "text": "Материал",
       "id": "eca0959793456e62"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 152,
+      "line": 151,
       "text": "Подключение",
       "id": "0c8ce4fe961d5ae0"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 221,
+      "line": 220,
       "text": "Новый аксессуар",
       "id": "1ab8a0170631a45c"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 223,
+      "line": 222,
       "text": "Новая техника",
       "id": "32ecd1449de5aac3"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 224,
+      "line": 223,
       "text": "С пробегом · Проверено",
       "id": "0a1d45b5e09db81b"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 235,
+      "line": 234,
       "text": "I СВОИ",
       "id": "a6e880ee3d1a0ac8"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 245,
+      "line": 244,
       "text": "Главная",
       "id": "6a3ffe45a8034a6e"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 246,
+      "line": 245,
       "text": "Каталог",
       "id": "22a25a668aa13ac7"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 254,
+      "line": 253,
       "text": "← Назад в каталог",
       "id": "9c74d366bca4f813"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 271,
+      "line": 270,
       "text": "О конкретном устройстве",
       "id": "ce501629a6e17054"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 299,
+      "line": 298,
       "text": "Модель",
       "id": "d1a8f6d3958c05aa"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 300,
+      "line": 299,
       "text": "Технические характеристики модели",
       "id": "f08eee49dcdfb203"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 316,
+      "line": 315,
       "text": "IP68 — заводская характеристика модели. Она не является гарантией влагозащиты конкретного устройства с пробегом.",
       "id": "841a76d49d4edc21"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 336,
+      "line": 335,
       "text": "Для этой техники с пробегом опубликованы диагностика и Passport. Состояние можно перепроверить при просмотре.",
       "id": "655707fcc75913e5"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 341,
+      "line": 340,
       "text": "До покупки можно уточнить точные характеристики, комплектность, совместимость и условия гарантии.",
       "id": "471671cdeadda671"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 357,
+      "line": 356,
       "text": "Гарантия и комплект",
       "id": "852777f530e11e29"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "jsx-text",
-      "line": 366,
+      "line": 365,
       "text": "Уточнить условия в магазине →",
       "id": "a666208f35900c38"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 377,
+      "line": 376,
       "text": "Есть в наличии",
       "id": "5d5a97636d450ae2"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 377,
+      "line": 376,
       "text": "Подойдут к этой модели",
       "id": "4bb0be4b5b7a0514"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 380,
+      "line": 379,
       "text": "Подходящая техника",
       "id": "851285e846fbb70e"
     },
     {
       "file": "apps/web/app/product/[slug]/page.tsx",
       "kind": "string",
-      "line": 380,
+      "line": 379,
       "text": "Совместимые аксессуары",
       "id": "a897c5423416413a"
     },
@@ -951,35 +944,35 @@
     {
       "file": "apps/web/app/stores/page.tsx",
       "kind": "jsx-text",
-      "line": 22,
+      "line": 25,
       "text": "I СВОИ · Магазины",
       "id": "d53ccda131427f49"
     },
     {
       "file": "apps/web/app/stores/page.tsx",
       "kind": "jsx-text",
-      "line": 23,
+      "line": 26,
       "text": "Выберите свой город.",
       "id": "a8fe1c8d9561943e"
     },
     {
       "file": "apps/web/app/stores/page.tsx",
       "kind": "jsx-text",
-      "line": 33,
+      "line": 36,
       "text": "Действующий магазин",
       "id": "b697cdb8c3d4e946"
     },
     {
       "file": "apps/web/app/stores/page.tsx",
       "kind": "string",
-      "line": 38,
+      "line": 41,
       "text": "Адрес уточняется перед визитом",
       "id": "e18d2e100b28e5ab"
     },
     {
       "file": "apps/web/app/stores/page.tsx",
       "kind": "jsx-text",
-      "line": 40,
+      "line": 43,
       "text": "Открыть город →",
       "id": "a51b913884a68002"
     },
@@ -6999,7 +6992,7 @@
     {
       "file": "apps/web/lib/directus.ts",
       "kind": "string",
-      "line": 148,
+      "line": 153,
       "text": "Например, хочу похожий iPhone с таким же объёмом памяти",
       "id": "dfd2fd36011ad1c4"
     },
@@ -7149,6 +7142,55 @@
       "line": 498,
       "text": "Записаться на просмотр",
       "id": "8828cf903958ac01"
+    },
+    {
+      "file": "apps/web/lib/seo-metadata.ts",
+      "kind": "string",
+      "line": 31,
+      "text": "Грейд ${details.grade}",
+      "id": "26295b3a30643884"
+    },
+    {
+      "file": "apps/web/lib/seo-metadata.ts",
+      "kind": "string",
+      "line": 33,
+      "text": "Гарантия: ${product.warrantyText}",
+      "id": "2e8d0d31d0d25f7c"
+    },
+    {
+      "file": "apps/web/lib/seo-metadata.ts",
+      "kind": "string",
+      "line": 44,
+      "text": "Магазины I СВОИ — адреса и города",
+      "id": "4b1ebcbb9168b7e9"
+    },
+    {
+      "file": "apps/web/lib/seo-metadata.ts",
+      "kind": "string",
+      "line": 45,
+      "text": "Магазины I СВОИ: адреса, часы работы, контакты и техника в наличии в вашем городе.",
+      "id": "a285faecadfebdb7"
+    },
+    {
+      "file": "apps/web/lib/seo-metadata.ts",
+      "kind": "string",
+      "line": 49,
+      "text": "Адреса, часы работы и контакты магазинов I СВОИ.",
+      "id": "81976ce201c101fd"
+    },
+    {
+      "file": "apps/web/lib/seo-metadata.ts",
+      "kind": "string",
+      "line": 55,
+      "text": "Получение и доставка — I СВОИ · ${location.city}",
+      "id": "e5be4dbd8422bb97"
+    },
+    {
+      "file": "apps/web/lib/seo-metadata.ts",
+      "kind": "string",
+      "line": 56,
+      "text": "Получение заказа в I СВОИ · ${location.city}: условия самовывоза и доступные способы доставки.",
+      "id": "0705e3b9e41d677c"
     },
     {
       "file": "apps/web/lib/site-content.ts",
@@ -7650,35 +7692,35 @@
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 23,
+      "line": 24,
       "text": "I СВОИ Белгород",
       "id": "672108ebf0d7c81c"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 24,
+      "line": 25,
       "text": "Белгород",
       "id": "2fd6e7d1e1e55ff7"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 28,
+      "line": 29,
       "text": "Белгород · Техника и аксессуары I СВОИ.",
       "id": "a58d8b06a42f3341"
     },
     {
       "file": "apps/web/lib/store-locations.ts",
       "kind": "string",
-      "line": 30,
+      "line": 31,
       "text": "Смотрите локальное наличие, бронируйте товары и выбирайте доставку из других магазинов сети.",
       "id": "6ebd38ee74b0509c"
     },
     {
       "file": "apps/web/lib/structured-data.ts",
       "kind": "string",
-      "line": 6,
+      "line": 7,
       "text": "I СВОИ",
       "id": "22a6eb1c7325131a"
     },
@@ -7748,28 +7790,28 @@
     {
       "file": "apps/web/lib/yandex-business-feed.ts",
       "kind": "string",
-      "line": 154,
+      "line": 159,
       "text": "Состояние: грейд ${grade}",
       "id": "fe92ba93e36597ed"
     },
     {
       "file": "apps/web/lib/yandex-business-feed.ts",
       "kind": "string",
-      "line": 156,
+      "line": 161,
       "text": "Комплект: ${text(product.completeness)}",
       "id": "a2508bb8ccbcc4e7"
     },
     {
       "file": "apps/web/lib/yandex-business-feed.ts",
       "kind": "string",
-      "line": 157,
+      "line": 162,
       "text": "Гарантия 90 дней",
       "id": "e1f202f4314a00b1"
     },
     {
       "file": "apps/web/lib/yandex-business-feed.ts",
       "kind": "string",
-      "line": 158,
+      "line": 163,
       "text": "Фактическое состояние показано на фотографиях. Полный Passport устройства доступен в магазине.",
       "id": "978f67ecde6c23ff"
     }

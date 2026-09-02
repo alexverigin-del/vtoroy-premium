@@ -8,6 +8,7 @@ STAMP="${STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
 TARGET_DIR="$BACKUP_DIR/$STAMP"
 OFFSITE_BACKUP_DEST="${OFFSITE_BACKUP_DEST:-}"
 OFFSITE_BACKUP_DRY_RUN="${OFFSITE_BACKUP_DRY_RUN:-0}"
+INDEXNOW_STATE_DIR="${INDEXNOW_STATE_DIR:-$REPO_ROOT/var/indexnow}"
 
 if [ ! -f "$STACK_DIR/docker-compose.yml" ]; then
   echo "Directus compose file not found: $STACK_DIR/docker-compose.yml" >&2
@@ -45,6 +46,14 @@ sha256sum \
   "$TARGET_DIR/uploads.tar.gz" \
   > "$TARGET_DIR/SHA256SUMS"
 
+# IndexNow stores public URL fingerprints outside the compiled app. Its state
+# file is replaced atomically, so copying it cannot capture a partial JSON write.
+# Never copy the worker lock, temporary files, application env or IndexNow key.
+if [ -f "$INDEXNOW_STATE_DIR/state.json" ]; then
+  cp "$INDEXNOW_STATE_DIR/state.json" "$TARGET_DIR/indexnow-state.json"
+  sha256sum "$TARGET_DIR/indexnow-state.json" >> "$TARGET_DIR/SHA256SUMS"
+fi
+
 gzip -t "$TARGET_DIR/postgres.sql.gz"
 tar -tzf "$TARGET_DIR/uploads.tar.gz" >/dev/null
 (cd "$TARGET_DIR" && sha256sum -c SHA256SUMS)
@@ -60,6 +69,7 @@ Files:
 - postgres.sql.gz
 - uploads.tar.gz
 - SHA256SUMS
+- indexnow-state.json (optional; present after IndexNow initialization)
 
 Verify:
 
@@ -73,6 +83,11 @@ tar -tzf uploads.tar.gz >/dev/null
 Restore rehearsal should be done on a separate host/container first. Do not
 pipe this dump into production unless you intentionally want to overwrite the
 current database state.
+
+If indexnow-state.json is present, preserve it with the backup. Restore it only
+with the IndexNow timer stopped, to the configured state directory as state.json
+owned by deploy (mode 0600). Do not restore worker.lock. Start with an IndexNow
+preview and verify changes before restarting the timer. No keys are in this file.
 EOF
 
 if [ -n "$OFFSITE_BACKUP_DEST" ]; then

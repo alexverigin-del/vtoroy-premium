@@ -4,6 +4,7 @@ import type { StoreLocation } from "@vtoroy/shared";
 import { STORE_LOCATIONS_CACHE_TAG } from "./cache-tags";
 import { applyCityTemplate } from "./city-copy";
 import { directusAssetUrl } from "./directus";
+import { optionalNumber as number } from "./seo-metadata";
 
 const DIRECTUS_URL = (
   process.env.DIRECTUS_URL ??
@@ -33,11 +34,6 @@ export const DEFAULT_LOCATION: StoreLocation = {
 
 function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function number(value: unknown): number | undefined {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function cityCopy(value: unknown, city: string): string | undefined {

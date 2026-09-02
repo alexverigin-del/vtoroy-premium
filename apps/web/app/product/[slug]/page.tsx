@@ -23,6 +23,7 @@ import { getDevicePageSettings, getNavigationItems, getSiteSettings } from "@/li
 import { getProductBySlug, getRelatedProducts } from "@/lib/product-catalog";
 import { siteChrome } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/structured-data";
+import { productSeoDescription } from "@/lib/seo-metadata";
 
 export const revalidate = 300;
 
@@ -32,9 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Товар не найден — I СВОИ" };
-  const description =
-    product.shortDescription ||
-    `${product.brand.name} ${product.title}: характеристики, наличие и гарантия.`;
+  const description = productSeoDescription(product);
   return {
     title: `${product.title} — I СВОИ`,
     description,

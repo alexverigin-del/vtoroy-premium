@@ -1,6 +1,7 @@
 import type { BlogPost, ProductCardData, SiteSettings, StoreLocation } from "@vtoroy/shared";
 
 import type { DeviceCardData } from "./device-card-data";
+import { validCoordinates } from "./seo-metadata";
 
 export const SITE_URL = "https://isvoi.ru";
 export const PUBLIC_BRAND_NAME = "I СВОИ";
@@ -76,7 +77,7 @@ export function localBusinessJsonLd(location: StoreLocation, settings?: SiteSett
           },
         }
       : {}),
-    ...(location.latitude !== undefined && location.longitude !== undefined
+    ...(validCoordinates(location.latitude, location.longitude)
       ? {
           geo: {
             "@type": "GeoCoordinates",

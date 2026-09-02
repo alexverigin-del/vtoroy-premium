@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 import { SITE_CONTENT_CACHE_TAGS } from "@/lib/cache-tags";
+import { markIndexNowDirty } from "@/lib/indexnow-queue";
 
 function matchesSecret(candidate: string, expected: string): boolean {
   const candidateBuffer = Buffer.from(candidate);
@@ -38,9 +39,22 @@ export async function handleSiteRevalidation(request: NextRequest) {
   for (const tag of SITE_CONTENT_CACHE_TAGS) revalidateTag(tag);
   revalidatePath("/", "layout");
 
+  // A durable signal only; external indexing never blocks an editor's save.
+  let indexing = "queued";
+  try {
+    await markIndexNowDirty();
+    if (process.env.INDEXNOW_ENABLED !== "1") indexing = "disabled";
+  } catch {
+    indexing = "queue_failed";
+    console.error(
+      "[IndexNow] Could not persist revalidation signal; scheduled reconciliation will retry.",
+    );
+  }
+
   return NextResponse.json({
     ok: true,
     scope: "site-content",
+    indexing,
     tags: SITE_CONTENT_CACHE_TAGS,
   });
 }

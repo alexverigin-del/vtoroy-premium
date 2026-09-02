@@ -43,6 +43,26 @@ export function middleware(request: NextRequest) {
   const host = hostWithoutPort(request);
   const { pathname, search } = request.nextUrl;
 
+  // Serve the ownership proof without a React route/client entry. Never expose
+  // it on Club or other subdomains. Loopback is allowed only for local QA.
+  if (pathname === "/indexnow-key.txt" && [MAIN_HOST, "localhost", "127.0.0.1"].includes(host)) {
+    const headers = {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Robots-Tag": "noindex",
+      Allow: "GET, HEAD",
+    };
+    if (!["GET", "HEAD"].includes(request.method)) {
+      return new NextResponse("Method not allowed", { status: 405, headers });
+    }
+    const enabled = process.env.INDEXNOW_ENABLED === "1";
+    const key = process.env.INDEXNOW_KEY || "";
+    const valid = /^[a-zA-Z0-9-]{8,128}$/.test(key);
+    const status = !enabled ? 404 : valid ? 200 : 503;
+    const body = !enabled ? "Not found" : valid ? key : "IndexNow is not configured";
+    return new NextResponse(request.method === "HEAD" ? null : body, { status, headers });
+  }
+
   if (host === CLUB_HOST) {
     if (pathname === "/robots.txt") {
       return clubResponse(NextResponse.rewrite(new URL("/club-robots.txt", request.url)));

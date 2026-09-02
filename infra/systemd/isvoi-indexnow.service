@@ -1,0 +1,17 @@
+[Unit]
+Description=ISVOI IndexNow change reconciliation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/opt/isvoi
+EnvironmentFile=/opt/isvoi/apps/web/.env.local
+ExecStart=/usr/bin/node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/run_indexnow.mjs --run
+TimeoutStartSec=10min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/isvoi/var/indexnow
+UMask=0077

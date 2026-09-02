@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-09-01.
+Last updated: 2026-09-02.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -3827,3 +3827,48 @@ Next content-editing priorities:
   Full server `web:verify`, bundle budgets and the warmed production storefront
   smoke passed; the first immediate smoke after PM2 restart hit a cold-cache
   metadata race and passed unchanged after readiness/cache warm-up.
+
+## 2026-09-02 · Yandex SEO and IndexNow (local implementation)
+
+- Following the read-only Yandex audit, local changes give `/stores` and
+  `/{city}/delivery` self-canonical metadata, stop publishing missing coordinates
+  as `0,0`, remove synthetic Sitemap `lastmod` values, and compose product SEO
+  descriptions from the full title and existing public device facts. Directus
+  remains the source of business copy, coordinates, product data and policies.
+- IndexNow is server-only and disabled by default. The existing authenticated
+  site-content revalidation handler adds a durable dirty marker after cache
+  invalidation. A single-host worker/timer compares public content fingerprints,
+  including hourly reconciliation for imports/SQL changes that bypass Flows.
+  Only changes since the explicit baseline are submitted; first initialization
+  does not bulk-submit existing pages. No schema or permissions are expanded.
+- Persistent state is `/opt/isvoi/var/indexnow` (outside build output). Keep it
+  across deploys; the normal Directus backup includes `indexnow-state.json`
+  when initialized, without locks or keys. Key endpoint `/indexnow-key.txt` is disabled
+  until env activation. Retry/backoff, key verification, CMS-health checks,
+  two-pass deletion confirmation and mass-removal/size guards are mandatory.
+- Club pilot, empty accessory categories and internal pages retain their
+  indexing exclusions. Metrika consent, counter settings and cookies are not
+  changed. Payment/return/warranty copy is not fabricated or auto-published.
+- `web:test:seo-indexnow` is included in `web:verify`. Operator instructions,
+  activation, limits and rollback: `docs/yandex-indexing.md`. This entry records
+  local implementation only, not a production release. Installation of the
+  systemd timer, env activation, push/deploy and Webmaster account changes
+  require a separately authorized release/account action.
+- Verification: unit/contract suites, lint, typecheck and production build pass.
+  The first bundle gate caught a 0.1 kB Brotli overage; moving the key response
+  into existing middleware removed the extra app/client entry without raising
+  budgets. Final measured client output: **902.8 / 289.3 / 249.9 kB**
+  raw/gzip/Brotli; largest route **443.7 / 133.6 / 113.5 kB**.
+- The compiled-app HTTP smoke uses a disposable copy of `.next` and loopback
+  CMS, never the working build's ISR cache. It verifies metadata, null/valid
+  coordinates, Sitemap, key GET/HEAD/405 and host separation, unauthorized
+  revalidation and durable authenticated signals. Worker tests mock all HTTP;
+  a separate read-only production scan found stable fingerprints on both reads
+  of all 35 URLs, with zero IndexNow submissions. Backup script syntax passes;
+  Linux timer installation/execution remains a release-time check.
+- `npm ci --ignore-scripts` restored local dependencies from the unchanged
+  lockfile. `npm audit --omit=dev` reports zero vulnerabilities. The full audit
+  currently reports one existing high-severity build dependency (`browserslist`,
+  GHSA-c83g-rgw3-j3cx / GHSA-73wf-gq98-2v4g); no unrelated dependency upgrade was
+  folded into this SEO change. Parallel Studio workspace scripts are outside
+  the scope of this implementation and must not be staged with it blindly.

@@ -3872,3 +3872,31 @@ Next content-editing priorities:
   GHSA-c83g-rgw3-j3cx / GHSA-73wf-gq98-2v4g); no unrelated dependency upgrade was
   folded into this SEO change. Parallel Studio workspace scripts are outside
   the scope of this implementation and must not be staged with it blindly.
+
+### Release attempt paused · 2026-09-02
+
+- Explicit `выкат` authorized release of SEO/IndexNow only. Commit `debd370`
+  was pushed to GitHub; unrelated Studio changes were excluded. Last confirmed
+  production checkout is `81a20ab`, with the old application still selected.
+- Fresh database/uploads backup `/opt/isvoi/backups/directus/20260902T144009Z`
+  passed gzip, tar and SHA-256 checks. Offsite remains unconfigured. The prior
+  build and private env copy are retained under
+  `/opt/isvoi/backups/web/20260902T144009Z-seo-indexnow` (`next`, `web.env`).
+- Production HTTPS Git fetch requested credentials. Without changing server
+  credentials, the exact published commit was transferred as a verified Git
+  bundle and fetched into a detached staging worktree:
+  `/opt/isvoi/var/releases/debd370`. Its private env has a new IndexNow key and
+  enabled configuration for the candidate build only; production env is unchanged.
+- Staging `npm ci --ignore-scripts` started, then server SSH and HTTPS stopped
+  responding. Other internet access still worked. The parallel Studio task also
+  reported a stalled temporary-database audit; causality is unconfirmed pending
+  host/process/database diagnostics. Do not assume either job completed.
+- No application cutover, production env change, PM2 restart, IndexNow baseline,
+  systemd installation or IndexNow submission was performed. The preparation
+  script only installs/tests the candidate and cannot activate it automatically.
+- Resume with Beget console/SSH recovery and read-only host/resource/process checks.
+  Coordinate with the Studio task before further heavy jobs; inspect its temporary
+  audit database/session rather than restarting or deleting production data.
+  Confirm staging install/build status, rerun release gates, then perform the
+  documented cutover, baseline initialization, timer setup and live checks.
+  Never describe this attempt as deployed or IndexNow as active.

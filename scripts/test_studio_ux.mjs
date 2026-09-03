@@ -48,6 +48,8 @@ const blocked = spawnSync(process.execPath, ["scripts/rehearse_directus_studio_u
 });
 assert.equal(blocked.status, 1);
 assert.match(blocked.stderr, /staging host/);
+const rehearsal = fs.readFileSync("scripts/rehearse_directus_studio_ux.mjs", "utf8");
+assert.match(rehearsal, /pg_isready -h 127\.0\.0\.1 -U isvoi -d isvoi/);
 
 for (const script of [
   "setup_directus_studio_workspace_sql.mjs",

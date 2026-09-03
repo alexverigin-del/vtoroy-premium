@@ -78,8 +78,8 @@ function visualContent(value: unknown): VisualContent {
 
 export function StorePreviewSection({ section }: { section: PageSection }) {
   const visual = visualContent(section.content.visual);
-  const steps = stepList(section.content.steps);
-  const renderedSteps = steps.length > 0 ? steps : DEFAULT_STEPS;
+  const renderedSteps =
+    section.content.steps == null ? DEFAULT_STEPS : stepList(section.content.steps);
   const imageSrc = section.image || "/assets/store-real-premium-hero.webp";
   const note = typeof section.content.note === "string" ? section.content.note : "";
 
@@ -112,31 +112,33 @@ export function StorePreviewSection({ section }: { section: PageSection }) {
           ) : null}
         </div>
 
-        <ol className="mt-8 grid border-y border-hairline md:grid-cols-2 lg:grid-cols-4">
-          {renderedSteps.map((step, index) => {
-            const number = String(index + 1).padStart(2, "0");
-            return (
-              <li
-                key={`${step.title}-${step.text}`}
-                className={cn(
-                  "py-5",
-                  index > 0 ? "border-t border-hairline" : "",
-                  index === 1 ? "md:border-t-0 md:pl-6" : "",
-                  index % 2 === 1 ? "md:border-l md:border-hairline" : "md:pr-6",
-                  index > 1 ? "md:border-t md:border-hairline lg:border-t-0" : "",
-                  index > 0 ? "lg:border-l lg:border-hairline lg:pl-6" : "",
-                  index < renderedSteps.length - 1 ? "lg:pr-6" : "",
-                )}
-              >
-                <div className="text-sm font-semibold text-link-blue">{number}</div>
-                <div className="mt-4 text-lg font-semibold leading-tight text-carbon">
-                  {step.title}
-                </div>
-                <div className="mt-3 text-sm leading-relaxed text-graphite">{step.text}</div>
-              </li>
-            );
-          })}
-        </ol>
+        {renderedSteps.length > 0 ? (
+          <ol className="mt-8 grid border-y border-hairline md:grid-cols-2 lg:grid-cols-4">
+            {renderedSteps.map((step, index) => {
+              const number = String(index + 1).padStart(2, "0");
+              return (
+                <li
+                  key={`${step.title}-${step.text}`}
+                  className={cn(
+                    "py-5",
+                    index > 0 ? "border-t border-hairline" : "",
+                    index === 1 ? "md:border-t-0 md:pl-6" : "",
+                    index % 2 === 1 ? "md:border-l md:border-hairline" : "md:pr-6",
+                    index > 1 ? "md:border-t md:border-hairline lg:border-t-0" : "",
+                    index > 0 ? "lg:border-l lg:border-hairline lg:pl-6" : "",
+                    index < renderedSteps.length - 1 ? "lg:pr-6" : "",
+                  )}
+                >
+                  <div className="text-sm font-semibold text-link-blue">{number}</div>
+                  <div className="mt-4 text-lg font-semibold leading-tight text-carbon">
+                    {step.title}
+                  </div>
+                  <div className="mt-3 text-sm leading-relaxed text-graphite">{step.text}</div>
+                </li>
+              );
+            })}
+          </ol>
+        ) : null}
 
         {note ? (
           <RichText

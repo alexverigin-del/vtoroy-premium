@@ -98,7 +98,8 @@ trap cleanup EXIT HUP INT TERM
 docker run --pull=never --rm -d --name ${container} --network none --memory=512m --memory-swap=512m --cpus=0.5 --pids-limit=128 --tmpfs /var/lib/postgresql/data:rw,size=256m -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=isvoi -e POSTGRES_DB=isvoi postgres:16-alpine postgres -c shared_buffers=32MB -c work_mem=4MB -c jit=off -c statement_timeout=45000 -c max_parallel_workers_per_gather=0 </dev/null >/dev/null
 ready=0
 for attempt in $(seq 1 30); do
-  if docker exec ${container} pg_isready -U isvoi -d isvoi </dev/null >/dev/null 2>&1; then ready=1; break; fi
+  # The bootstrap server accepts Unix sockets before initdb finishes; wait for the final TCP listener.
+  if docker exec ${container} pg_isready -h 127.0.0.1 -U isvoi -d isvoi </dev/null >/dev/null 2>&1; then ready=1; break; fi
   sleep 1
 done
 test "$ready" -eq 1

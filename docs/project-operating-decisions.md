@@ -4047,3 +4047,73 @@ Next content-editing priorities:
   login checks remain manual; API field permissions are covered by audits.
   Future page creation/bookmark reconciliation, personal-layout adoption and
   Draft Preview/versioning remain distinct operational follow-ups.
+
+### Studio Post-Update Functional Audit · 2026-09-02
+
+- Audited deployed `9534334` (Next build `b898e6b`). This was a read-only
+  production check, not another rollout. No content seed, production save,
+  permission change, test lead, cache purge or service restart was performed.
+- Fresh `directus:audit:prod` passed, including authenticated service reads,
+  anonymous fail-closed API, schema, permissions, Files, inventory, Club,
+  Trade and operations checks. Directus health is `ok`; PostgreSQL and Redis
+  are running. The full public `smoke:prod` passed again, including product
+  Passport/history/gallery, catalog, blog, forms and compatibility redirects.
+- Administrator browser checks confirmed working page/block links, translated
+  product statuses and all ten Insights panels without visible API errors.
+  The admin's personal products table still shows only four status columns;
+  it intentionally overrides the new role Default. Adopting the new layout
+  requires an explicit per-collection reset, not deletion of all user presets.
+- The isolated PostgreSQL rehearsal passed all **23 SQL audits / 421 checks**,
+  including repeated setup, business-content/personal-preset preservation and
+  explicit clear persistence. A startup race initially confused the temporary
+  bootstrap socket with final readiness. The local rehearsal script now waits
+  for TCP `127.0.0.1`; its regression guard and the repeated rehearsal pass.
+  The resource-limited, networkless copy was removed; production was not changed.
+  Background: the official PostgreSQL image starts a temporary socket-only
+  initialization server before the final server (see
+  [entrypoint source](https://github.com/docker-library/postgres/blob/master/docker-entrypoint.sh)).
+- **Open frontend regression in the new clear workflow:** the adapter and DB
+  preserve `[]`, but `FinalCtaSection` still falls back on `proof.length === 0`,
+  and `StorePreviewSection` still falls back on `steps.length === 0`. A local
+  static render of the actual components with empty arrays (unrelated child
+  UI mocked) produced three default bullets and four default store steps.
+  The store fallback includes old 90-day-warranty and predetermined exit-price
+  wording. This affects clearing homepage bullets/store steps and Trade form
+  bullets, not the currently populated production lists. Do not call end-to-end
+  clear semantics complete solely because the adapter/SQL tests pass.
+- Next correction: distinguish absent content from an explicitly empty array
+  in both components, hide empty list surfaces, and add component-level render
+  regression tests. No frontend correction has been deployed by this audit.
+- New-section creation disabled inside `site_pages.sections` predates this
+  update (`setup_directus_site_pages_workflow_sql.mjs`); it is not a newly
+  introduced regression. New-page bookmark reconciliation remains manual.
+- Limits: no real editor save/Flow/cache-invalidation round trip and no lead
+  submission were performed against production. Separate Editor/Advanced
+  browser logins remain a manual check; metadata/API field permissions and
+  isolated DB write semantics were verified. Only the rehearsal fix, its
+  test and this audit documentation are local changes, not yet committed/deployed.
+
+### Empty Studio Lists: Local Frontend Correction · 2026-09-03
+
+- Implemented the requested follow-up in `FinalCtaSection` and
+  `StorePreviewSection`. An explicit empty array now removes the list and its
+  border/wrapper; malformed non-null values cannot restore fallback copy.
+  Absent/null source values retain the existing emergency fallback. Populated
+  lists, form/consent markup, images, links and all CMS text are unchanged.
+- Added `scripts/test_studio_content_render.mjs`: in-memory TSX compilation,
+  real React/Next components and dependencies, static HTML parsed with
+  `htmlparser2`, no child mocks or network writes. It first reproduced the
+  original bug and now passes 18 deletion cases across homepage, Trade and
+  store, plus populated/migrated/legacy/mixed-value cases. Checks assert the
+  absence of empty list surfaces and unchanged forms, images and links.
+- `npm run web:test:studio-content-render` is part of
+  `directus:studio-ux:test`, hence runs in `web:verify`. No new dependencies,
+  schema changes, permission changes or content migration are required.
+- Full local `web:verify` passed on Node 24.18.0, including the HTML tests,
+  ownership/Tailwind audits, formatting, lint, typecheck, Next build and bundle
+  budgets. Local total client JS is 902.8 / 289.3 / 249.9 kB raw/gzip/Brotli;
+  Brotli is close to the unchanged 250 kB cap. Recheck the production build's
+  budget at rollout; do not raise the limit to accommodate an unmeasured change.
+- This supersedes the previous entry's open frontend correction locally only.
+  No commit, push or deployment was requested or performed. The earlier local
+  rehearsal-readiness fix and audit notes were preserved.

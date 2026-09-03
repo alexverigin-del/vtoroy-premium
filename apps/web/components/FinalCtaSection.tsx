@@ -163,11 +163,10 @@ export function FinalCtaSection({
   section: PageSection;
   source?: string;
 }) {
-  const proof = stringList(section.content.proof);
   const renderedProof =
-    proof.length > 0
-      ? proof
-      : ["варианты под задачу", "без агрессивных продаж", "сначала проверка - потом решение"];
+    section.content.proof == null
+      ? ["варианты под задачу", "без агрессивных продаж", "сначала проверка - потом решение"]
+      : stringList(section.content.proof);
   const form = finalCtaFormContent(section.content.form);
   const closing =
     source === "trade_page"
@@ -240,46 +239,48 @@ export function FinalCtaSection({
       <div className="mx-auto max-w-page px-4 md:px-6">
         <HomeSectionIntro section={section} align="split" />
         <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-10">
-          <div className="lg:col-span-6 lg:h-full">
-            <ul
-              className={cn(
-                isHomepage
-                  ? "grid grid-cols-2 border-y border-hairline"
-                  : "grid h-full grid-rows-3 border-y border-hairline",
-              )}
-            >
-              {renderedProof.map((item, index) => (
-                <li
-                  key={item}
-                  className={cn(
-                    isHomepage
-                      ? "flex min-h-28 flex-col justify-between gap-5 py-5 text-base font-semibold leading-snug text-carbon sm:min-h-32 sm:py-6 sm:text-xl"
-                      : "grid min-h-28 grid-cols-grade items-center border-b border-hairline py-5 text-lg font-semibold leading-snug text-carbon last:border-b-0 sm:min-h-32 sm:text-xl",
-                    isHomepage && index % 2 === 0 && "border-r border-hairline pr-4 sm:pr-6",
-                    isHomepage && index % 2 === 1 && "pl-4 sm:pl-6",
-                    isHomepage && index < 2 && "border-b border-hairline",
-                  )}
-                >
-                  {isHomepage ? (
-                    <>
-                      <span className="text-sm font-semibold text-link-blue" aria-hidden="true">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span className="max-w-56 text-balance">{item}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span
-                        className="h-3 w-3 justify-self-center rounded-full bg-success"
-                        aria-hidden="true"
-                      />
-                      <span className="max-w-80 text-balance">{item}</span>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {renderedProof.length > 0 ? (
+            <div className="lg:col-span-6 lg:h-full">
+              <ul
+                className={cn(
+                  isHomepage
+                    ? "grid grid-cols-2 border-y border-hairline"
+                    : "grid h-full grid-rows-3 border-y border-hairline",
+                )}
+              >
+                {renderedProof.map((item, index) => (
+                  <li
+                    key={item}
+                    className={cn(
+                      isHomepage
+                        ? "flex min-h-28 flex-col justify-between gap-5 py-5 text-base font-semibold leading-snug text-carbon sm:min-h-32 sm:py-6 sm:text-xl"
+                        : "grid min-h-28 grid-cols-grade items-center border-b border-hairline py-5 text-lg font-semibold leading-snug text-carbon last:border-b-0 sm:min-h-32 sm:text-xl",
+                      isHomepage && index % 2 === 0 && "border-r border-hairline pr-4 sm:pr-6",
+                      isHomepage && index % 2 === 1 && "pl-4 sm:pl-6",
+                      isHomepage && index < 2 && "border-b border-hairline",
+                    )}
+                  >
+                    {isHomepage ? (
+                      <>
+                        <span className="text-sm font-semibold text-link-blue" aria-hidden="true">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <span className="max-w-56 text-balance">{item}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className="h-3 w-3 justify-self-center rounded-full bg-success"
+                          aria-hidden="true"
+                        />
+                        <span className="max-w-80 text-balance">{item}</span>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           <form
             onSubmit={handleSubmit}

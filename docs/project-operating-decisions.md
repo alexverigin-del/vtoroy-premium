@@ -4117,3 +4117,33 @@ Next content-editing priorities:
 - This supersedes the previous entry's open frontend correction locally only.
   No commit, push or deployment was requested or performed. The earlier local
   rehearsal-readiness fix and audit notes were preserved.
+
+### Empty Studio Lists: Production Release · 2026-09-03
+
+- Explicit `выкат` authorized this release. Application commit `c35ae75`
+  is committed, pushed and deployed. It includes both list-render corrections,
+  HTML regression tests, the isolated-rehearsal readiness fix and audit notes.
+  This supersedes the local-only status above.
+- Backup `/opt/isvoi/backups/directus/20260903T131947Z` passed PostgreSQL gzip,
+  uploads archive and SHA-256 checks, including IndexNow state. `previous-next`
+  holds the old production build; `web.env` is a private mode-0600 rollback
+  copy. Off-server copying remains unconfigured.
+- Built separately in `/opt/isvoi/var/releases/c35ae75` with the documented
+  systemd memory/CPU limits, without a concurrent DB rehearsal. Server
+  `web:verify` and the disposable compiled-app SEO smoke passed. Client JS:
+  **896.8 / 286.0 / 247.0 kB** raw/gzip/Brotli, within unchanged budgets.
+- Production switched only after the gates passed. PM2 `isvoi-web` is online;
+  active build ID `fDZDS2fgIXogOph2XvpT3` matches the tested release. Authenticated
+  site-content revalidation succeeded and queued the normal IndexNow marker.
+  No Directus restart, Redis flush, SQL migration, permission change, content
+  seed or test lead was performed; manual texts and data remain authoritative.
+- Fresh `directus:audit:prod`, `smoke:prod`, `smoke:copy` and `smoke:images`
+  passed. Desktop/mobile `smoke:visual` passed for `/`, `/trade`, `/belgorod`.
+  The empty-list cases are covered by real-component static HTML tests; no
+  production section was cleared for testing. Logs: `build.log` and
+  `production-audit.log` in the backup directory; visual captures under
+  `/opt/isvoi/output/playwright/visual-smoke`.
+- Normal authenticated Git fetch on the VPS worked for this release; the
+  earlier Git-bundle workaround was not needed. No credentials were changed.
+  New-page bookmark reconciliation and adoption of the admin's table Default
+  remain separate follow-ups, not changes included in this rollout.

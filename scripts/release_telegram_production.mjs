@@ -1,5 +1,6 @@
 // Reviewed first-install release only. The bot token arrives via SSH stdin, never argv.
 import { spawnSync } from 'node:child_process';
+import { openSync, closeSync } from 'node:fs';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { readFile, writeFile, mkdir, copyFile, rmdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
@@ -17,10 +18,13 @@ const expectedBase='f8bd33216a250cf3aa6161e9a1483be2f233a59a';
 const lock=resolve(root,'var/telegram-release-lock');
 const statePath=resolve(root,'var/telegram-release-state.json');
 const action=process.argv[2] || 'install';
-function cmd(program,args,{cwd=root,input,binary=false}={}) {
-  const result=spawnSync(program,args,{cwd,input,encoding:binary?undefined:'utf8',timeout:180000,maxBuffer:64*1024*1024});
-  if(result.error || result.status!==0) throw new Error('RELEASE_COMMAND_FAILED');
-  return binary?result.stdout:result.stdout.trim();
+function cmd(program,args,{cwd=root,input,inputFile,binary=false}={}) {
+  const fd=inputFile?openSync(inputFile,'r'):null;
+  try {
+    const result=spawnSync(program,args,{cwd,input,stdio:fd===null?undefined:[fd,'pipe','pipe'],encoding:binary?undefined:'utf8',timeout:180000,maxBuffer:64*1024*1024});
+    if(result.error || result.status!==0) throw new Error('RELEASE_COMMAND_FAILED');
+    return binary?result.stdout:result.stdout.trim();
+  } finally {if(fd!==null)closeSync(fd);}
 }
 const sql = query => cmd('docker',['compose','exec','-T','database','psql','-U','isvoi','-d','isvoi','-v','ON_ERROR_STOP=1','-At'],{cwd:stack,input:query});
 async function writeEnv(path,values) {
@@ -69,7 +73,9 @@ try {
       phase='BACKUP';
       const dump=cmd('docker',['compose','exec','-T','database','pg_dump','-U','isvoi','-d','isvoi','-Fc'],{cwd:stack,binary:true});
       await writeFile(resolve(backup,'postgres.dump'),dump,{mode:0o600});
-      cmd('docker',['compose','exec','-T','database','pg_restore','--list'],{cwd:stack,input:dump});
+      // pg_restore --list exits after the archive TOC. Reading a file descriptor
+      // avoids a false Node EPIPE when it intentionally leaves data unread.
+      cmd('docker',['compose','exec','-T','database','pg_restore','--list'],{cwd:stack,inputFile:resolve(backup,'postgres.dump')});
       await copyFile(resolve(stack,'.env'),resolve(backup,'directus.env'));
       await copyFile(resolve(stack,'docker-compose.yml'),resolve(backup,'docker-compose.yml'));
       phase='CODE';

@@ -1165,6 +1165,17 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
 
 ## Lead Workflow Decisions
 
+- Telegram stage 1 verified in an isolated live pilot on 2026-09-04: transactional notification
+  queue, an opt-in Directus endpoint, a separate polling worker, per-lead forum
+  topics and atomic staff assignment through the mapped user's ItemsService
+  permissions. The owner claimed a test lead through Telegram; assignment,
+  staff audit identity and card refresh passed. Production release is prepared.
+  Bot: `isvoi_help_bot`; Belgorod chat ID: `-1004317825276` (from the owner's
+  message link and confirmed through API). Credentials stay outside Git.
+  The extension/worker are disabled by default. PostgreSQL, native Directus
+  permissions and live pilot evidence: `docs/telegram-leads-stage1.md`.
+  Client conversation remains the next stage in `docs/telegram-leads-design.md`.
+
 - Public product forms post to `/lead-intake`, not directly to Directus from the
   browser.
 - Leads record source path, source URL, referrer, UTM fields, user agent,
@@ -1179,8 +1190,8 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   - `available` creates a purchase/reservation-style lead.
   - `reserved` creates a waitlist lead.
   - `sold` creates a similar-device selection lead.
-- Telegram notifications are intentionally deferred; the workflow must remain
-  useful through the Studio table without Telegram.
+- Telegram notifications remain disabled in production while stage 1 is being
+  verified; the workflow must remain useful through the Studio table alone.
 
 ## Media Decisions
 

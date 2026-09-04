@@ -1,0 +1,13 @@
+{
+  "name": "directus-extension-isvoi-telegram",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Scoped Telegram lead delivery and staff assignment endpoint; disabled by default.",
+  "files": ["dist", "src"],
+  "directus:extension": {
+    "type": "endpoint",
+    "path": "dist/index.js",
+    "source": "src/index.js",
+    "host": "^11.17.4"
+  }
+}

@@ -60,6 +60,12 @@ services:
       # Public URL Directus advertises (used for links, assets, OAuth, etc.).
       PUBLIC_URL: ${PUBLIC_URL}
 
+      # Optional Telegram endpoint. The separate worker owns the Telegram token.
+      ISVOI_TELEGRAM_ENABLED: ${ISVOI_TELEGRAM_ENABLED:-false}
+      ISVOI_TELEGRAM_BOT_ID: ${ISVOI_TELEGRAM_BOT_ID:-}
+      ISVOI_TELEGRAM_WORKER_USER_ID: ${ISVOI_TELEGRAM_WORKER_USER_ID:-}
+      ISVOI_TELEGRAM_MODE: ${ISVOI_TELEGRAM_MODE:-test}
+
       # Realtime / WebSockets.
       WEBSOCKETS_ENABLED: ${WEBSOCKETS_ENABLED}
 

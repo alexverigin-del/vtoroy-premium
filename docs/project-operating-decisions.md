@@ -4181,3 +4181,29 @@ Next content-editing priorities:
   changes, not committed/pushed/deployed. Frontend code did not change, so no
   Next rebuild was run. Unrelated in-progress Telegram work is preserved.
   Editor procedure and sources: `docs/device-model-specifications.md`.
+
+### Model Specification Release · 2026-09-04
+
+- Explicit `коммит и выкат` authorized release `b0f0e34`. The seven scoped
+  files are committed, pushed and fast-forwarded on Beget. Unfinished Telegram
+  code, infrastructure and operating-memory changes remain local and were not
+  included. This supersedes the local-only script/documentation status above.
+- Fresh backup `/opt/isvoi/backups/directus/20260904T151012Z` passed database,
+  uploads, IndexNow state and SHA-256 verification. No content insert was rerun:
+  the 28 specification rows were already live and passed the deployed audit.
+- Full local `web:verify` passed: tests, formatting, ESLint, typecheck, Next
+  build and unchanged budgets (902.8 / 289.3 / 249.9 kB raw/gzip/Brotli total).
+  The release has no diff in `apps/web`, dependency manifests or `infra`.
+  Therefore production retains its tested `c35ae75` Next build
+  `fDZDS2fgIXogOph2XvpT3`; no production rebuild, PM2/Directus restart, cache
+  flush, schema migration, permission or business-content change was needed.
+- After pull, full production `directus:audit:prod` and `smoke:prod` passed.
+  The new model-specification smoke passed all 34 checks on the VPS: every
+  one of 17 published cards at 1366/390 px has seven filled specification rows,
+  one heading, the disclaimer and no horizontal overflow. Directus health is
+  `ok`, PM2 is running, and the Yandex Business feed responds HTTP 200.
+- Logs are `model-specs-audit.log`, `model-specs-smoke.log` and
+  `model-specs-responsive.log` in the release backup directory. The existing
+  eight screenshots and JSON result convention is under
+  `output/playwright/model-specifications` on the server. These are verification
+  artifacts, not tracked content or another deployment.

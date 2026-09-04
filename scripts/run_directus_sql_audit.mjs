@@ -491,6 +491,7 @@ const auditDefinitions = {
       "product_passports_v8.permissions.original_exposure",
       "product_passports_v8.permissions.public_missing",
       "product_passports_v8.models.specifications_missing",
+      "product_passports_v8.publication.model_specifications_missing",
       "product_passports_v8.data.invalid_identifier_tails",
       "product_passports_v8.publication.current_report_missing",
       "product_passports_v8.publication.original_in_public_folder",

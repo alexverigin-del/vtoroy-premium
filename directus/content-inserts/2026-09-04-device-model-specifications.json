@@ -1,0 +1,69 @@
+{
+  "checkedAt": "2026-09-04",
+  "models": [
+    {
+      "id": "69363809-9672-472e-9c11-ab435255b167",
+      "slug": "iphone-15-pro",
+      "source": "https://support.apple.com/en-us/111829",
+      "values": [
+        "6,1 дюйма, OLED Super Retina XDR, 2556×1179, ProMotion до 120 Гц",
+        "A17 Pro",
+        "48 Мп основная, 12 Мп сверхширокоугольная, 12 Мп телефото 3×",
+        "USB-C (USB 3); MagSafe до 15 Вт; Qi2 до 15 Вт",
+        "5G, Wi-Fi 6E, Bluetooth 5.3, NFC, Ultra Wideband",
+        "IP68: до 6 м на 30 минут по IEC 60529",
+        "146,6×70,6×8,25 мм; 187 г"
+      ]
+    },
+    {
+      "id": "f2573cdf-9003-4b1b-a98f-4dd5aeb90312",
+      "slug": "samsung-galaxy-s22-ultra",
+      "source": "https://news.samsung.com/global/samsung-galaxy-s22-ultra-offers-the-ultimate-and-most-premium-s-series-experience-yet",
+      "supportingSources": [
+        "https://www.samsung.com/sk/support/mobile-devices/porovnavanie-galaxy-s22-a-s22-plus-a-s22-ultra/",
+        "https://news.samsung.com/in/samsung-galaxy-s22-series-to-be-powered-by-snapdragon-8-gen-1-in-india"
+      ],
+      "values": [
+        "6,8 дюйма, Dynamic AMOLED 2X, QHD+, 1–120 Гц",
+        "Exynos 2200 или Snapdragon 8 Gen 1, в зависимости от региональной версии",
+        "108 Мп основная, 12 Мп сверхширокоугольная, два телефото по 10 Мп: 3× и 10×",
+        "USB-C; проводная зарядка до 45 Вт; беспроводная до 15 Вт",
+        "5G, Wi-Fi 6E, Bluetooth 5.2, Ultra Wideband",
+        "IP68: до 1,5 м на 30 минут в лабораторных условиях",
+        "163,3×77,9×8,9 мм; около 229 г, зависит от версии"
+      ],
+      "sourceOverrides": {
+        "1": "https://www.samsung.com/sk/support/mobile-devices/porovnavanie-galaxy-s22-a-s22-plus-a-s22-ultra/",
+        "3": "https://www.samsung.com/sk/support/mobile-devices/porovnavanie-galaxy-s22-a-s22-plus-a-s22-ultra/"
+      }
+    },
+    {
+      "id": "99b05162-7adc-437c-af2d-a21db2c29dc3",
+      "slug": "samsung-galaxy-s23-ultra",
+      "source": "https://news.samsung.com/global/take-your-passions-further-with-the-new-samsung-galaxy-s23-series-designed-for-a-premium-experience-today-and-beyond",
+      "values": [
+        "6,8 дюйма, Dynamic AMOLED 2X, QHD+, 1–120 Гц",
+        "Snapdragon 8 Gen 2 for Galaxy",
+        "200 Мп основная, 12 Мп сверхширокоугольная, два телефото по 10 Мп: 3× и 10×",
+        "USB-C; проводная зарядка до 45 Вт; Fast Wireless Charging 2.0",
+        "5G, Wi-Fi 6E, Bluetooth 5.3",
+        "IP68: до 1,5 м пресной воды на 30 минут в лабораторных условиях",
+        "163,4×78,1×8,9 мм; около 234 г, зависит от версии"
+      ]
+    },
+    {
+      "id": "857570f6-06d1-442e-9676-2cdacbf1c76b",
+      "slug": "samsung-galaxy-s24-ultra",
+      "source": "https://news.samsung.com/global/enter-the-new-era-of-mobile-ai-with-samsung-galaxy-s24-series",
+      "values": [
+        "6,8 дюйма, Dynamic AMOLED 2X, QHD+, 1–120 Гц",
+        "Snapdragon 8 Gen 3 for Galaxy",
+        "200 Мп основная, 12 Мп сверхширокоугольная, телефото 50 Мп 5× и 10 Мп 3×",
+        "USB-C; проводная зарядка до 45 Вт; Fast Wireless Charging 2.0",
+        "5G, Wi-Fi 7, Bluetooth 5.3",
+        "IP68: до 1,5 м пресной воды на 30 минут в лабораторных условиях",
+        "162,3×79×8,6 мм; 232–233 г, зависит от версии"
+      ]
+    }
+  ]
+}

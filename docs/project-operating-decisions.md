@@ -4147,3 +4147,37 @@ Next content-editing priorities:
   earlier Git-bundle workaround was not needed. No credentials were changed.
   New-page bookmark reconciliation and adoption of the admin's table Default
   remain separate follow-ups, not changes included in this rollout.
+
+### Model Specification Completion · 2026-09-04
+
+- Requested content completion is live on existing application `c35ae75`
+  (production Git `8f480af`). No application deployment, schema/permission
+  migration, product publication or service restart was needed.
+- Initial audit: 7 of 17 published devices lacked the model specification block.
+  The model relations and frontend were correct; iPhone 15 Pro and Samsung
+  Galaxy S22/S23/S24 Ultra had no specification rows. Added 28 source-backed
+  active rows, seven per model. Existing iPhone 14/16 data was preserved.
+- Backup `/opt/isvoi/backups/directus/20260904T150100Z` passed gzip/archive and
+  SHA-256 checks. Offsite copy is still unconfigured. The insert-only SQL passed
+  rollback preview, live apply and repeat preview (28 / 28 / 0 inserted rows).
+  UUID/slug guards and before/after snapshots protected existing specifications
+  and products. Prices, stock, photos, diagnostic reports and publication states
+  were not edited; Gold t38 remains draft, archive/demo/QA rows remain excluded.
+- Sources and checked date are stored on every new specification. S22 Ultra's
+  actual chipset is not established without the regional model identifier:
+  shared model text explicitly lists Exynos 2200 / Snapdragon 8 Gen 1 variants.
+  Samsung weight variation is qualified; regional SIM claims were not added.
+  Model IP68 does not promise water resistance for an individual used device.
+- Cleared Directus response-cache entries only, then authenticated site-content
+  revalidation succeeded; Directus health is `ok`. No session/rate-limit flush.
+  A trailing CR from the Windows shell caused a shell error after the successful
+  health output, not a failed content write or failed revalidation.
+- Production Passport/permissions audit passes. The new coverage assertion
+  reproduced seven missing blocks before apply and zero afterwards. Live browser
+  checks pass for all 17 cards at 1366 and 390 px (34 cases): seven populated
+  specifications, one heading, disclaimer and no horizontal text overflow.
+  Eight sample captures and results are in `output/playwright/model-specifications`.
+- Manifest, insert generator, expanded audit and snapshot smoke are local repo
+  changes, not committed/pushed/deployed. Frontend code did not change, so no
+  Next rebuild was run. Unrelated in-progress Telegram work is preserved.
+  Editor procedure and sources: `docs/device-model-specifications.md`.

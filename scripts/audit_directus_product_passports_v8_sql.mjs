@@ -75,6 +75,15 @@ WHERE NOT EXISTS(
   GROUP BY model.id HAVING count(*)>=7
 )
 UNION ALL
+SELECT 'product_passports_v8.publication.model_specifications_missing',count(*)::text
+FROM products product
+WHERE product.status='published' AND product.product_type='device'
+  AND NOT EXISTS (
+    SELECT 1 FROM device_model_specifications specification
+    WHERE specification.device_model=product.device_model AND specification.is_active=true
+      AND btrim(specification.label)<>'' AND btrim(specification.value)<>''
+  )
+UNION ALL
 SELECT 'product_passports_v8.data.invalid_identifier_tails',count(*)::text
 FROM device_details
 WHERE (imei_primary_last4 IS NOT NULL AND imei_primary_last4 !~ '^[0-9]{4}$')

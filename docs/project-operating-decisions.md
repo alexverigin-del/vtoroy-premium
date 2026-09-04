@@ -1169,7 +1169,10 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   queue, an opt-in Directus endpoint, a separate polling worker, per-lead forum
   topics and atomic staff assignment through the mapped user's ItemsService
   permissions. The owner claimed a test lead through Telegram; assignment,
-  staff audit identity and card refresh passed. Production release is prepared.
+  staff audit identity and card refresh passed. Production enabled on 2026-09-04
+  with runtime commit `ab134c1`: one PM2 worker, new Belgorod/unscoped leads only,
+  no historical backfill. A controlled `/lead-intake` submission was delivered,
+  then closed and marked test. Backup and release details are in the runbook.
   Bot: `isvoi_help_bot`; Belgorod chat ID: `-1004317825276` (from the owner's
   message link and confirmed through API). Credentials stay outside Git.
   The extension/worker are disabled by default. PostgreSQL, native Directus
@@ -1190,8 +1193,8 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   - `available` creates a purchase/reservation-style lead.
   - `reserved` creates a waitlist lead.
   - `sold` creates a similar-device selection lead.
-- Telegram notifications remain disabled in production while stage 1 is being
-  verified; the workflow must remain useful through the Studio table alone.
+- Telegram notifications are enabled for new production leads. Studio remains
+  the primary record; client conversations through the bot remain a next stage.
 
 ## Media Decisions
 

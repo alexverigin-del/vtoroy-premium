@@ -7821,6 +7821,20 @@
       "line": 163,
       "text": "Фактическое состояние показано на фотографиях. Полный Passport устройства доступен в магазине.",
       "id": "978f67ecde6c23ff"
+    },
+    {
+      "file": "apps/web/components/FinalCtaSection.tsx",
+      "kind": "string",
+      "line": 98,
+      "text": "Заявка принята. Менеджер свяжется с вами по указанному контакту.",
+      "id": "61ea354077637eee"
+    },
+    {
+      "file": "apps/web/components/FinalCtaSection.tsx",
+      "kind": "string",
+      "line": 103,
+      "text": "Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.",
+      "id": "bbc8850eb2d432b9"
     }
   ]
 }

@@ -92,8 +92,16 @@ function finalCtaFormContent(value: unknown): FinalCtaForm {
     contactPlaceholder: text("contactPlaceholder", "contact_placeholder", "Телефон или Telegram"),
     submitLabel,
     submittingLabel: text("submittingLabel", "submitting_label", submitLabel),
-    successNote: text("successNote", "success_note", note),
-    errorNote: text("errorNote", "error_note", note),
+    successNote: text(
+      "successNote",
+      "success_note",
+      "Заявка принята. Менеджер свяжется с вами по указанному контакту.",
+    ),
+    errorNote: text(
+      "errorNote",
+      "error_note",
+      "Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.",
+    ),
     consentNote: text(
       "consentNote",
       "consent_note",

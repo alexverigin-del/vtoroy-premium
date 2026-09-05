@@ -147,7 +147,7 @@ export async function getTradeConsentRecord(
   if (options.allowDraft && !allowDraft) return null;
 
   const response = await directusRequest<DirectusResponse<Row>>(
-    "/items/trade_settings/1?fields=legal_status,consent_label,consent_text,consent_version,consent_url,privacy_url,legal_approved_by.id,legal_approved_at",
+    "/items/trade_settings/1?fields=legal_status,consent_label,consent_text,consent_version,consent_url,privacy_url,legal_approved_by,legal_approved_at",
   );
   const settings = record(response?.data);
   const label = text(settings.consent_label);

@@ -30,6 +30,18 @@ assert(route.includes('error: "lead_storage_unavailable"'), "storage failure mus
 assert(!route.includes("appendLeadLog"), "lead route must not write a local PII fallback log");
 assert(!envExample.includes("LEADS_LOG_PATH"), "fallback PII log setting must be retired");
 assert(tradeServer.includes('createHash("sha256")'), "consent snapshot must have SHA-256 evidence");
+assert(
+  tradeServer.includes("legal_approved_by,legal_approved_at"),
+  "consent approval must read the relation key without expanding protected user data",
+);
+assert(
+  !tradeServer.includes("legal_approved_by.id"),
+  "consent checks must not require read access to Directus users",
+);
+assert(
+  finalCta.includes("Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз."),
+  "the compact Trade-in form must show an explicit submission error",
+);
 
 const postHandler = route.indexOf("export async function POST");
 const consentGuard = route.indexOf("if (!accepted(body.trade_consent_accepted))", postHandler);

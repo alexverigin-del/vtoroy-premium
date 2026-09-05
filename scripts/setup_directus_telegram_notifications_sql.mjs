@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS telegram_bot_settings (
   bot_id bigint PRIMARY KEY CHECK(bot_id>0), public_username varchar(32) NOT NULL DEFAULT 'isvoi_help_bot',
   profile_description text NOT NULL DEFAULT ${q(profileDescription)}, short_description varchar(120) NOT NULL DEFAULT 'Заявки, поддержка и новости I СВОИ',
   welcome_text text NOT NULL DEFAULT 'Здравствуйте! Это бот I СВОИ. Здесь можно подобрать устройство, продать или обменять технику, задать вопрос менеджеру и продолжить действующую заявку.',
+  welcome_photo_file uuid REFERENCES directus_files(id) ON DELETE SET NULL,
   help_text text NOT NULL DEFAULT 'Бот передаёт обращения менеджерам I СВОИ и сохраняет переписку в заявке. Подписками можно управлять командой /news.',
   privacy_url text NOT NULL DEFAULT 'https://isvoi.ru/privacy', consent_version varchar(40) NOT NULL DEFAULT 'pilot-2026-09',
   consent_text text NOT NULL DEFAULT ${q(consentText)}, notifications_enabled boolean NOT NULL DEFAULT false,
@@ -66,6 +67,7 @@ END IF; END $$;
 
 ALTER TABLE telegram_client_sessions ADD COLUMN IF NOT EXISTS entry_source varchar(64);
 ALTER TABLE telegram_client_sessions ADD COLUMN IF NOT EXISTS subscription_draft jsonb;
+ALTER TABLE telegram_bot_settings ADD COLUMN IF NOT EXISTS welcome_photo_file uuid REFERENCES directus_files(id) ON DELETE SET NULL;
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS campaign_id uuid REFERENCES telegram_campaigns(id) ON DELETE RESTRICT;
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS subscription_id uuid REFERENCES telegram_subscriptions(id) ON DELETE SET NULL;
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
@@ -187,6 +189,7 @@ SELECT isvoi_notify_field('telegram_campaigns','latency_p95_ms','input',NULL,NUL
 SELECT isvoi_notify_field('telegram_subscriptions','status','select-dropdown','labels',NULL,'half',1,'Текущее состояние.',NULL,true,false,'Статус');
 SELECT isvoi_notify_field('telegram_subscription_events','event','select-dropdown','labels',NULL,'half',1,'Согласие, отказ или блокировка.',NULL,true,false,'Событие');
 SELECT isvoi_notify_field('telegram_bot_settings','welcome_text','input-multiline',NULL,NULL,'full',1,'Приветствие /start.',NULL,false,false,'Приветствие');
+SELECT isvoi_notify_field('telegram_bot_settings','welcome_photo_file','file-image','file',NULL,'full',1,'Брендовое изображение отправляется вместе с приветствием после /start. SVG не поддерживается; используйте PNG, JPEG или WebP.','file',false,false,'Изображение приветствия');
 SELECT isvoi_notify_field('telegram_bot_settings','profile_description','input-multiline',NULL,NULL,'full',1,'Полное описание Telegram.',NULL,false,false,'Описание профиля');
 SELECT isvoi_notify_field('telegram_bot_settings','short_description','input',NULL,NULL,'full',1,'Короткое описание Telegram.',NULL,false,false,'Короткое описание');
 SELECT isvoi_notify_field('telegram_bot_settings','consent_text','input-multiline',NULL,NULL,'full',2,'До публичного запуска требуется юридическое утверждение.',NULL,false,false,'Текст согласия');
@@ -222,6 +225,7 @@ CREATE OR REPLACE FUNCTION isvoi_notify_relation(mc varchar,mf varchar,oc varcha
 END $$;
 SELECT isvoi_notify_relation('telegram_campaigns','topic_key','telegram_notification_topics',NULL,'nullify');
 SELECT isvoi_notify_relation('telegram_campaigns','photo_file','directus_files',NULL,'nullify');
+SELECT isvoi_notify_relation('telegram_bot_settings','welcome_photo_file','directus_files',NULL,'nullify');
 DO $$ BEGIN IF to_regclass('public.products') IS NOT NULL THEN PERFORM isvoi_notify_relation('telegram_campaigns','product_id','products',NULL,'nullify'); END IF; END $$;
 SELECT isvoi_notify_relation('telegram_subscriptions','session_id','telegram_client_sessions',NULL,'delete');
 SELECT isvoi_notify_relation('telegram_subscriptions','topic_key','telegram_notification_topics',NULL,'nullify');

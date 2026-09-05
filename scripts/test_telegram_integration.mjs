@@ -285,6 +285,15 @@ test('notification schema exposes delivery timestamps and p50/p95 metrics', asyn
   assert.match(schema,/ALTER TABLE telegram_deliveries ADD COLUMN IF NOT EXISTS sent_at/);
   assert.match(schema,/CREATE TABLE IF NOT EXISTS telegram_delivery_metrics/);
   assert.match(schema,/isvoi_refresh_telegram_delivery_metrics/);
+  assert.match(schema,/welcome_photo_file uuid REFERENCES directus_files/);
+  assert.match(schema,/Изображение приветствия/);
+});
+
+test('welcome message uses a managed Directus raster image', async () => {
+  const source=await readFile(new URL('../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/notifications.js',import.meta.url),'utf8');
+  assert.match(source,/purpose:'welcome'/);
+  assert.match(source,/\{photo,caption:text,reply_markup:mainKeyboard\}/);
+  assert.match(source,/file\.type!==\'image\/svg\+xml\'/);
 });
 
 test('explicit pilot test delivery bypasses marketing quiet hours', async () => {

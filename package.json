@@ -15,6 +15,7 @@
     "telegram:preflight": "node scripts/telegram_preflight.mjs",
     "telegram:profile:check": "node scripts/configure_telegram_bot_profile.mjs",
     "telegram:profile:apply": "node scripts/configure_telegram_bot_profile.mjs --apply",
+    "telegram:brand:install": "node scripts/install_telegram_brand_assets.mjs",
     "telegram:release:conversations:prepare": "node scripts/prepare_telegram_conversations_release.mjs",
     "telegram:release:notifications:prepare": "node scripts/prepare_telegram_notifications_release.mjs",
     "telegram:worker": "node scripts/run_telegram_worker.mjs",

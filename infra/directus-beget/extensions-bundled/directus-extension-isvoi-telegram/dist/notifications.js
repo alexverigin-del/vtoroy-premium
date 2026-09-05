@@ -41,6 +41,18 @@ export function campaignPayload(campaign, photoFile) {
 export function createNotifications({ env, botId, queue, tell, edit }) {
   const runtimeEnabled = enabledFlag(env.ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED);
 
+  async function directusImage(trx, fileId, errorCode) {
+    if (!fileId) return null;
+    const file=await trx('directus_files').where({id:fileId}).first('id','type');
+    const valid=file && String(file.type || '').startsWith('image/') && file.type!=='image/svg+xml';
+    const base=String(env.PUBLIC_URL || '').replace(/\/+$/,'');
+    if(!valid || !/^https:\/\/[^/?#]+$/.test(base)) {
+      if(errorCode) throw new Error(errorCode);
+      return null;
+    }
+    return `${base}/assets/${file.id}`;
+  }
+
   async function getSettings(trx) {
     if (!runtimeEnabled) return null;
     return trx('telegram_bot_settings').where({bot_id:botId}).first();
@@ -55,7 +67,10 @@ export function createNotifications({ env, botId, queue, tell, edit }) {
   async function welcome(trx, session, source = null) {
     if (source) await trx('telegram_client_sessions').where({id:session.id}).update({entry_source:String(source).slice(0,64)});
     const settings = await getSettings(trx);
-    await tell(trx, session, settings?.welcome_text || DEFAULT_WELCOME, mainKeyboard);
+    const text=settings?.welcome_text || DEFAULT_WELCOME;
+    const photo=await directusImage(trx,settings?.welcome_photo_file);
+    if(photo) await queue(trx,{session_id:session.id,destination:'client',purpose:'welcome'},{photo,caption:text,reply_markup:mainKeyboard});
+    else await tell(trx, session, text, mainKeyboard);
   }
 
   async function help(trx, session) {
@@ -146,12 +161,7 @@ export function createNotifications({ env, botId, queue, tell, edit }) {
   }
 
   async function resolvePhoto(trx, campaign) {
-    if (!campaign.photo_file) return null;
-    const file=await trx('directus_files').where({id:campaign.photo_file}).first('id','type');
-    if (!file || !String(file.type || '').startsWith('image/')) throw new Error('CAMPAIGN_PHOTO_INVALID');
-    const base=String(env.PUBLIC_URL || '').replace(/\/+$/,'');
-    if(!/^https:\/\/[^/?#]+$/.test(base)) throw new Error('PUBLIC_URL_INVALID');
-    return `${base}/assets/${file.id}`;
+    return directusImage(trx,campaign.photo_file,'CAMPAIGN_PHOTO_INVALID');
   }
 
   async function prepareTest(trx, settings) {

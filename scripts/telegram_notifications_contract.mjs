@@ -5,6 +5,7 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const outboxState=await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_message_outbox',column_name:'state'}).first('character_maximum_length');
   assert.equal(Number(outboxState.character_maximum_length),32);
   for(const column of ['sent_at','delivery_latency_ms','edit_message_id']) assert.ok(await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_message_outbox',column_name:column}).first());
+  assert.ok(await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_bot_settings',column_name:'welcome_photo_file'}).first());
   for(const column of ['sent_at','delivery_latency_ms']) assert.ok(await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_deliveries',column_name:column}).first());
   assert.ok(await db('information_schema.tables').where({table_schema:'public',table_name:'telegram_delivery_metrics'}).first());
   const privateMessage=(text,extra={})=>({update_id:++sequenceState.update,message:{message_id:++sequenceState.message,chat:{type:'private',id:client},from:{id:client,is_bot:false},text,...extra}});
@@ -21,8 +22,18 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   assert.equal(support.kind,'support');
   assert.equal((await db('lead_messages').whereIn('conversation_id',db('lead_conversations').where({lead_id:support.id}).select('id')).first()).text,'Вопрос без выбора категории');
 
-  await db('telegram_bot_settings').insert({bot_id:p.botId,notifications_enabled:true,pilot_mode:true,pilot_user_ids:JSON.stringify([client]),quiet_start:'00:00',quiet_end:'23:59',weekly_limit:2});
+  const welcomeFile='77777777-7777-4777-8777-000000000099';
+  await db('directus_files').insert({id:welcomeFile,storage:'local',filename_disk:'telegram-welcome.png',filename_download:'telegram-welcome.png',title:'Telegram welcome contract fixture',type:'image/png'});
+  await db('telegram_bot_settings').insert({bot_id:p.botId,notifications_enabled:true,pilot_mode:true,pilot_user_ids:JSON.stringify([client]),quiet_start:'00:00',quiet_end:'23:59',weekly_limit:2,welcome_photo_file:welcomeFile});
   while(true){const job=await next();if(!job)break;await complete(job);}
+  assert.equal((await apply(privateMessage('/start'))).result,'selected');
+  const brandedWelcome=await next();
+  assert.equal(brandedWelcome.method,'sendPhoto');
+  assert.equal(brandedWelcome.purpose,'welcome');
+  assert.equal(brandedWelcome.payload.photo,`https://api.example.test/assets/${welcomeFile}`);
+  assert.match(brandedWelcome.payload.caption,/Это бот I СВОИ/);
+  assert.deepEqual(brandedWelcome.payload.reply_markup.inline_keyboard.flat().map(button=>button.callback_data),['kind:selection','kind:trade','kind:support','dialogs','news']);
+  await complete(brandedWelcome);
   assert.equal((await apply(privateMessage('/news'))).result,'selected');
   while(true){const job=await next();if(!job)break;await complete(job);}
   session=await db('telegram_client_sessions').where({bot_id:p.botId,user_id:client}).first();

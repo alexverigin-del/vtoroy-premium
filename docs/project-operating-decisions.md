@@ -1,10 +1,61 @@
 # Project Operating Decisions
 
-Last updated: 2026-09-02.
+Last updated: 2026-09-05.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Telegram Leads And Client Conversations (2026-09-05, Production)
+
+- Telegram stage 1 and client conversations are enabled in production through
+  `@isvoi_help_bot` and the Belgorod group `-1004317825276`. The current runtime
+  behavior described below was deployed by commit
+  `08dc6eadd534f7cba1f015755a6112f3317a5798`.
+- A lead created on the site can be linked to Telegram with a one-use 15-minute
+  link. A client can also create a new `selection`, `trade` or `support` lead
+  through `/new`. `/dialogs` selects an active conversation.
+- Client session binding, conversation history, inbound/outbound messages,
+  deduplication receipts and delivery jobs are durable PostgreSQL records in
+  `telegram_client_sessions`, `lead_conversations`, `lead_messages`,
+  `telegram_receipts` and `telegram_message_outbox`. Do not introduce process
+  memory as a source of truth. Incoming processing, session rebinding, message
+  persistence, delivery queuing, receipt creation and update-offset advancement
+  share the database transaction.
+- If a client writes after the bound lead has entered `won` or `closed`, keep the
+  old lead closed and create a new `support` lead from that same message. Bind
+  the session to the new conversation, persist and forward the message, and
+  tell the client that it does not need to be sent again. Duplicate Telegram
+  updates must not create duplicate leads.
+- A client message sets `leads.telegram_unread=true` and updates
+  `telegram_last_message_at`; a successfully delivered manager reply clears the
+  unread flag. Directus exposes the related conversation and its messages in the
+  lead card. Studio remains the system of record.
+- Manager replies use a fresh inline action in the topic. After a successful
+  reply, the latest service message includes `Написать ещё`, so the manager does
+  not need to find an older button. A reply remains an explicit draft, preview
+  and confirmation flow; ordinary group messages are internal.
+- Conversation/message/photo metadata retention is six months after closure.
+  Reopening stops the closure timer. Maintenance deletes expired conversations
+  and their dependent technical records, while preserving aggregate cleanup
+  counters.
+- Production verification for `08dc6ea`: all 16 Telegram unit tests and the full
+  isolated PostgreSQL 16 / Directus 11.17.4 production contract passed; the live
+  Directus ping, site HTTP 200, PM2 worker and database lease passed. The five
+  conversation tables are permanent PostgreSQL tables on the persisted database
+  mount; the live audit found zero orphan session/message/outbox relations.
+- Latest rollback backup:
+  `/opt/isvoi/backups/telegram-closed-continuation-08dc6ea-20260905`. The release
+  state is `/opt/isvoi/var/telegram-release-state.json` and must match the exact
+  deployed commit.
+- Before restarting `isvoi-telegram`, stop that PM2 process and release its
+  current `telegram_runtime.lease_until` in PostgreSQL (or wait for the 90-second
+  lease to expire), then start exactly one worker and require a new live lease.
+  Starting a worker immediately under a different worker id while the old lease
+  is active causes `DIRECTUS_HTTP_409` and a PM2 restart loop.
+- Figma documentation of the manager flow is intentionally deferred until the
+  Telegram workflow stops changing. Repository behavior and contract tests are
+  the current source for implementation details.
 
 ## Studio UX Implementation (2026-09-02, Not Deployed)
 
@@ -1177,7 +1228,9 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   message link and confirmed through API). Credentials stay outside Git.
   The extension/worker are disabled by default. PostgreSQL, native Directus
   permissions and live pilot evidence: `docs/telegram-leads-stage1.md`.
-  Client conversation remains the next stage in `docs/telegram-leads-design.md`.
+  Client conversations were deployed on 2026-09-05; the current production
+  behavior and operational rules are recorded at the top of this document and
+  in `docs/telegram-client-conversations.md`.
 
 - Public product forms post to `/lead-intake`, not directly to Directus from the
   browser.
@@ -1193,8 +1246,8 @@ Strengthen ISVOI audit v1 positioning`. It added the homepage
   - `available` creates a purchase/reservation-style lead.
   - `reserved` creates a waitlist lead.
   - `sold` creates a similar-device selection lead.
-- Telegram notifications are enabled for new production leads. Studio remains
-  the primary record; client conversations through the bot remain a next stage.
+- Telegram notifications and client conversations are enabled for production
+  leads. Studio remains the primary record.
 
 ## Media Decisions
 

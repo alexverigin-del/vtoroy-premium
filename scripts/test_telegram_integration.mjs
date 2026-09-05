@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { workerConfig, createClients, workerTick, runWorker } from './lib/telegram-worker.mjs';
+import { workerConfig, createClients, workerTick, runWorker, deliveryDelayMs } from './lib/telegram-worker.mjs';
 import { inspectTelegram } from './telegram_preflight.mjs';
 import endpoint, { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
 import { parseUpdate, routeMatches, renderCard, deliveryFailure, nextOperation } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/protocol.js';
@@ -22,10 +22,17 @@ test('private destinations require an explicit conversation job; photos cannot f
   await assert.rejects(client.telegram('sendMessage',{chat_id:'123',text:'private'}),/DESTINATION_MISMATCH/);
   await assert.rejects(client.telegram('sendMessage',{chat_id:'-999',text:'other group'},{channel:'conversation',destination:'client'}),/DESTINATION_MISMATCH/);
   await client.telegram('sendMessage',{chat_id:'123',text:'explicit private reply'},{channel:'conversation',destination:'client'});
-  assert.equal(calls,1);
+  await client.telegram('editMessageText',{chat_id:'123',message_id:1,text:'updated menu'},{channel:'conversation',destination:'client'});
+  assert.equal(calls,2);
   assert.equal(messageContent({photo:[{file_id:'https://example.test/private'}]}),null);
   assert.equal(messageContent({caption:'Caption',document:{file_id:'file'}}),null);
   assert.equal(messageContent({text:'a'.repeat(3501)}),null);
+});
+
+test('service messages drain quickly while campaigns keep conservative pacing', () => {
+  assert.equal(deliveryDelayMs('service'),1100);
+  assert.equal(deliveryDelayMs('campaign'),3200);
+  assert.equal(deliveryDelayMs(null),1000);
 });
 
 test('campaign payload accepts one verified photo and only a first-party CTA', () => {
@@ -246,4 +253,25 @@ test('notification release gates schema, pilot activation, profile and rollback'
   assert.match(release,/pilot_user_ids='\[\\"65092546\\"\]'::jsonb/);
   assert.match(release,/state='cancelled',error_code='NOTIFICATIONS_DISABLED'/);
   assert.match(compose,/ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED: \$\{ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED:-false\}/);
+});
+
+test('notification schema exposes delivery timestamps and p50/p95 metrics', async () => {
+  const schema=await readFile(new URL('./setup_directus_telegram_notifications_sql.mjs',import.meta.url),'utf8');
+  assert.match(schema,/ADD COLUMN IF NOT EXISTS sent_at timestamptz/);
+  assert.match(schema,/ADD COLUMN IF NOT EXISTS delivery_latency_ms integer/);
+  assert.match(schema,/ALTER TABLE telegram_deliveries ADD COLUMN IF NOT EXISTS sent_at/);
+  assert.match(schema,/CREATE TABLE IF NOT EXISTS telegram_delivery_metrics/);
+  assert.match(schema,/isvoi_refresh_telegram_delivery_metrics/);
+});
+
+test('speed release is pinned, backed up, rehearsed and reversible', async () => {
+  const release=await readFile(new URL('./release_telegram_speed_production.mjs',import.meta.url),'utf8');
+  const prepare=await readFile(new URL('./prepare_telegram_speed_release.mjs',import.meta.url),'utf8');
+  assert.match(release,/expectedBase='94d44f7799b7e8e640859ffab2909f15db84055c'/);
+  assert.match(prepare,/RELEASE_BASE_NOT_ANCESTOR/);
+  assert.match(release,/pg_restore','--list/);
+  assert.ok(release.indexOf("pm2',['stop','isvoi-telegram'") < release.indexOf("sql(notificationsSql)"));
+  assert.ok(release.indexOf("rehearse_telegram.mjs','--production") < release.indexOf("sql(notificationsSql)"));
+  assert.match(release,/git',\['reset','--hard',expectedBase\]/);
+  assert.match(release,/serviceDelayMs:1100,campaignDelayMs:3200/);
 });

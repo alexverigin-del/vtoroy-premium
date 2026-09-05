@@ -38,7 +38,7 @@ export function campaignPayload(campaign, photoFile) {
   return payload;
 }
 
-export function createNotifications({ env, botId, queue, tell }) {
+export function createNotifications({ env, botId, queue, tell, edit }) {
   const runtimeEnabled = enabledFlag(env.ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED);
 
   async function getSettings(trx) {
@@ -63,10 +63,10 @@ export function createNotifications({ env, botId, queue, tell }) {
     await tell(trx, session, settings?.help_text || DEFAULT_HELP, mainKeyboard);
   }
 
-  async function renderNews(trx, session, notice = '') {
+  async function renderNews(trx, session, notice = '', editMessageId = null) {
     const settings = await getSettings(trx);
     if (!pilotAllowed(settings, session.user_id)) {
-      await tell(trx, session, 'Подписки пока работают в закрытом пилоте. Обращения и переписка с менеджером доступны без ограничений.', mainKeyboard);
+      await (editMessageId?edit(trx,session,editMessageId,'Подписки пока работают в закрытом пилоте. Обращения и переписка с менеджером доступны без ограничений.',mainKeyboard):tell(trx, session, 'Подписки пока работают в закрытом пилоте. Обращения и переписка с менеджером доступны без ограничений.', mainKeyboard));
       return 'unavailable';
     }
     const topics = await trx('telegram_notification_topics').where({active:true}).orderBy('sort');
@@ -80,7 +80,8 @@ export function createNotifications({ env, botId, queue, tell }) {
     rows.push([{text:'Отключить всё',callback_data:'news:off'}]);
     rows.push([{text:'Главное меню',callback_data:'main'}]);
     const state = topics.map(topic => `${draft.includes(topic.key) ? '✓' : '○'} ${topic.label}`).join('\n');
-    await tell(trx,session,`${notice ? `${notice}\n\n` : ''}Выберите темы:\n${state}\n\n${settings.consent_text}\nВерсия согласия: ${settings.consent_version}.`,{inline_keyboard:rows});
+    const text=`${notice ? `${notice}\n\n` : ''}Выберите темы:\n${state}\n\n${settings.consent_text}\nВерсия согласия: ${settings.consent_version}.`;
+    await (editMessageId?edit(trx,session,editMessageId,text,{inline_keyboard:rows}):tell(trx,session,text,{inline_keyboard:rows}));
     return 'shown';
   }
 
@@ -110,26 +111,26 @@ export function createNotifications({ env, botId, queue, tell }) {
     return 'saved';
   }
 
-  async function callback(trx, session, data) {
-    if (data === 'news') { await renderNews(trx,session); return 'selected'; }
+  async function callback(trx, session, data, messageId = null) {
+    if (data === 'news') { await renderNews(trx,session,'',messageId); return 'selected'; }
     if (data === 'main') { await welcome(trx,session); return 'selected'; }
     const toggle = /^news:toggle:([a-z][a-z0-9_]{1,48})$/.exec(data || '');
     if (toggle) {
-      const settings=await getSettings(trx); if(!pilotAllowed(settings,session.user_id)) {await renderNews(trx,session);return 'selected';}
+      const settings=await getSettings(trx); if(!pilotAllowed(settings,session.user_id)) {await renderNews(trx,session,'',messageId);return 'selected';}
       const exists=await trx('telegram_notification_topics').where({key:toggle[1],active:true}).first(); if(!exists) return 'stale';
       let draft=Array.isArray(session.subscription_draft)?session.subscription_draft:await trx('telegram_subscriptions').where({bot_id:botId,session_id:session.id,status:'active'}).pluck('topic_key');
       draft=draft.includes(toggle[1])?draft.filter(key=>key!==toggle[1]):[...draft,toggle[1]];
       await trx('telegram_client_sessions').where({id:session.id}).update({subscription_draft:JSON.stringify(draft)});
-      await renderNews(trx,{...session,subscription_draft:draft}); return 'selected';
+      await renderNews(trx,{...session,subscription_draft:draft},'',messageId); return 'selected';
     }
     if (data === 'news:save') {
       const draft=Array.isArray(session.subscription_draft)?session.subscription_draft:[];
       await recordChoice(trx,session,draft,'bot_menu');
-      await renderNews(trx,{...session,subscription_draft:null},'Подписки сохранены. Изменения применяются сразу.'); return 'selected';
+      await renderNews(trx,{...session,subscription_draft:null},'Подписки сохранены. Изменения применяются сразу.',messageId); return 'selected';
     }
     if (data === 'news:off') {
       await recordChoice(trx,session,[],'bot_menu');
-      await renderNews(trx,{...session,subscription_draft:null},'Все подписки отключены. Неотправленные сообщения отменены.'); return 'selected';
+      await renderNews(trx,{...session,subscription_draft:null},'Все подписки отключены. Неотправленные сообщения отменены.',messageId); return 'selected';
     }
     return null;
   }
@@ -203,9 +204,10 @@ export function createNotifications({ env, botId, queue, tell }) {
       }
     }
     const counts=await trx('telegram_message_outbox').where({campaign_id:row.campaign_id,is_test:false}).select('state').count('* as n').groupBy('state');
+    const latency=(await trx.raw("select round(percentile_cont(0.5) within group(order by delivery_latency_ms))::int p50,round(percentile_cont(0.95) within group(order by delivery_latency_ms))::int p95 from telegram_message_outbox where campaign_id=? and is_test=false and state='done' and delivery_latency_ms is not null",[row.campaign_id])).rows[0];
     const values=Object.fromEntries(counts.map(item=>[item.state,Number(item.n)]));
     const active=(values.pending||0)+(values.in_flight||0);
-    await trx('telegram_campaigns').where({id:row.campaign_id}).update({delivered_count:values.done||0,blocked_count:values.blocked||0,failed_count:(values.failed||0)+(values.uncertain||0),suppressed_count:values.suppressed_frequency||0,...(!active?{status:'completed',completed_at:trx.fn.now()}:{})});
+    await trx('telegram_campaigns').where({id:row.campaign_id}).update({delivered_count:values.done||0,blocked_count:values.blocked||0,failed_count:(values.failed||0)+(values.uncertain||0),suppressed_count:values.suppressed_frequency||0,latency_p50_ms:latency.p50,latency_p95_ms:latency.p95,...(!active?{status:'completed',completed_at:trx.fn.now()}:{})});
   }
 
   return {enabled:runtimeEnabled,welcome,help,news:renderNews,callback,prepare,allowDelivery,completed};

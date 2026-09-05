@@ -40,7 +40,7 @@ export function createClients(config, fetchImpl = fetch) {
   async function telegram(method, payload, destination) {
     if (!telegramMethods.has(method)) throw new Error('INVALID_TELEGRAM_OPERATION');
     const privateDelivery = destination?.channel === 'conversation' && destination?.destination === 'client' &&
-      ['sendMessage','sendPhoto'].includes(method) && /^[1-9][0-9]{0,15}$/.test(String(payload.chat_id)) && !payload.message_thread_id;
+      ['sendMessage','sendPhoto','editMessageText'].includes(method) && /^[1-9][0-9]{0,15}$/.test(String(payload.chat_id)) && !payload.message_thread_id;
     if (['createForumTopic', 'sendMessage', 'sendPhoto', 'editMessageText'].includes(method) && String(payload.chat_id) !== config.chatId && !privateDelivery) {
       throw new Error('TELEGRAM_DESTINATION_MISMATCH');
     }
@@ -99,8 +99,10 @@ export async function workerTick({ clients, identity, offset, conversations = fa
     }
     if (!recorded) throw new Error('DELIVERY_ACKNOWLEDGEMENT_PENDING');
   }
-  return { offset: nextOffset, delivered: Boolean(job) };
+  return { offset: nextOffset, delivered: Boolean(job), deliveryClass:job?.campaign_id?'campaign':job?'service':null };
 }
+
+export const deliveryDelayMs=deliveryClass=>deliveryClass==='campaign'?3200:deliveryClass==='service'?1100:1000;
 
 export async function runWorker(env, { once = false, fetchImpl = fetch, sleep = pause, signal, log = console.log } = {}) {
   const config = workerConfig(env);
@@ -110,11 +112,13 @@ export async function runWorker(env, { once = false, fetchImpl = fetch, sleep = 
   const clients = createClients(config, fetchImpl);
   const identity = { bot_id: config.botId, worker_id: randomUUID() };
   log(`Telegram worker starting (${config.mode}); message content and credentials are not logged.`);
+  let drainQueue=false;
   do {
     // Acquire/refresh before polling. A different worker cannot poll concurrently while leased.
     const session = await clients.directus('session', identity);
     if (session.mode !== config.mode) throw new Error('TELEGRAM_MODE_MISMATCH');
-    await workerTick({ clients, identity, offset: session.update_offset, conversations: session.conversations === true, sleep, pollTimeout: once ? 0 : 2 });
-    if (!once && !signal?.aborted) await sleep(1000);
+    const tick=await workerTick({ clients, identity, offset: session.update_offset, conversations: session.conversations === true, sleep, pollTimeout: once||drainQueue?0:2 });
+    drainQueue=tick.delivered;
+    if (!once && !signal?.aborted) await sleep(deliveryDelayMs(tick.deliveryClass));
   } while (!once && !signal?.aborted);
 }

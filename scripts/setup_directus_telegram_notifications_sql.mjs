@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS telegram_campaigns (
   approved_by uuid REFERENCES directus_users(id) ON DELETE SET NULL, approved_at timestamptz,
   content_snapshot jsonb, recipient_snapshot_at timestamptz, recipient_count integer NOT NULL DEFAULT 0,
   delivered_count integer NOT NULL DEFAULT 0, blocked_count integer NOT NULL DEFAULT 0, failed_count integer NOT NULL DEFAULT 0, suppressed_count integer NOT NULL DEFAULT 0,
+  latency_p50_ms integer CHECK(latency_p50_ms>=0), latency_p95_ms integer CHECK(latency_p95_ms>=0),
   started_at timestamptz, completed_at timestamptz, last_error varchar(160), created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
   CHECK(length(message_text) BETWEEN 1 AND 3500), CHECK(destination_type<>'channel' OR status IN ('draft','review','failed','cancelled'))
 );
@@ -68,12 +69,50 @@ ALTER TABLE telegram_client_sessions ADD COLUMN IF NOT EXISTS subscription_draft
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS campaign_id uuid REFERENCES telegram_campaigns(id) ON DELETE RESTRICT;
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS subscription_id uuid REFERENCES telegram_subscriptions(id) ON DELETE SET NULL;
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
+ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS edit_message_id bigint CHECK(edit_message_id>0);
+ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS sent_at timestamptz;
+ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS delivery_latency_ms integer CHECK(delivery_latency_ms>=0);
+ALTER TABLE telegram_deliveries ADD COLUMN IF NOT EXISTS sent_at timestamptz;
+ALTER TABLE telegram_deliveries ADD COLUMN IF NOT EXISTS delivery_latency_ms integer CHECK(delivery_latency_ms>=0);
+ALTER TABLE telegram_campaigns ADD COLUMN IF NOT EXISTS latency_p50_ms integer CHECK(latency_p50_ms>=0);
+ALTER TABLE telegram_campaigns ADD COLUMN IF NOT EXISTS latency_p95_ms integer CHECK(latency_p95_ms>=0);
 ALTER TABLE telegram_message_outbox ALTER COLUMN state TYPE varchar(32);
 ALTER TABLE telegram_message_outbox DROP CONSTRAINT IF EXISTS telegram_message_outbox_state_check;
 ALTER TABLE telegram_message_outbox ADD CONSTRAINT telegram_message_outbox_state_check CHECK(state IN ('pending','in_flight','done','blocked','failed','uncertain','suppressed_frequency','cancelled'));
 CREATE UNIQUE INDEX IF NOT EXISTS telegram_campaign_session_once ON telegram_message_outbox(campaign_id,session_id) WHERE campaign_id IS NOT NULL AND is_test=false;
 CREATE INDEX IF NOT EXISTS telegram_campaign_queue ON telegram_message_outbox(campaign_id,state,created_at) WHERE campaign_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS telegram_subscription_active ON telegram_subscriptions(bot_id,topic_key,session_id) WHERE status='active';
+CREATE UNIQUE INDEX IF NOT EXISTS telegram_pending_menu_edit_once ON telegram_message_outbox(session_id,edit_message_id) WHERE purpose='menu_edit' AND state='pending';
+CREATE INDEX IF NOT EXISTS telegram_outbox_latency_window ON telegram_message_outbox(bot_id,sent_at) WHERE state='done' AND delivery_latency_ms IS NOT NULL;
+CREATE INDEX IF NOT EXISTS telegram_delivery_latency_window ON telegram_deliveries(route_id,sent_at) WHERE state='done' AND delivery_latency_ms IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS telegram_delivery_metrics (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), bot_id bigint NOT NULL CHECK(bot_id>0),
+  delivery_class varchar(16) NOT NULL CHECK(delivery_class IN ('service','campaign')),
+  window_hours integer NOT NULL DEFAULT 24 CHECK(window_hours BETWEEN 1 AND 168), sample_count integer NOT NULL DEFAULT 0 CHECK(sample_count>=0),
+  latency_p50_ms integer CHECK(latency_p50_ms>=0), latency_p95_ms integer CHECK(latency_p95_ms>=0), latency_max_ms integer CHECK(latency_max_ms>=0),
+  updated_at timestamptz NOT NULL DEFAULT now(), UNIQUE(bot_id,delivery_class)
+);
+
+CREATE OR REPLACE FUNCTION isvoi_refresh_telegram_delivery_metrics(p_bot_id bigint) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  INSERT INTO telegram_delivery_metrics(bot_id,delivery_class) VALUES(p_bot_id,'service'),(p_bot_id,'campaign') ON CONFLICT(bot_id,delivery_class) DO NOTHING;
+  UPDATE telegram_delivery_metrics SET sample_count=0,latency_p50_ms=NULL,latency_p95_ms=NULL,latency_max_ms=NULL,updated_at=now() WHERE bot_id=p_bot_id;
+  INSERT INTO telegram_delivery_metrics(bot_id,delivery_class,window_hours,sample_count,latency_p50_ms,latency_p95_ms,latency_max_ms,updated_at)
+  SELECT p_bot_id,delivery_class,24,count(*)::int,
+    round(percentile_cont(0.5) WITHIN GROUP(ORDER BY delivery_latency_ms))::int,
+    round(percentile_cont(0.95) WITHIN GROUP(ORDER BY delivery_latency_ms))::int,max(delivery_latency_ms),now()
+  FROM (
+    SELECT CASE WHEN campaign_id IS NULL THEN 'service' ELSE 'campaign' END delivery_class,delivery_latency_ms
+    FROM telegram_message_outbox WHERE bot_id=p_bot_id AND state='done' AND sent_at>=now()-interval '24 hours' AND delivery_latency_ms IS NOT NULL
+    UNION ALL
+    SELECT 'service',d.delivery_latency_ms FROM telegram_deliveries d JOIN telegram_routes r ON r.id=d.route_id
+    WHERE r.bot_id=p_bot_id AND d.state='done' AND d.sent_at>=now()-interval '24 hours' AND d.delivery_latency_ms IS NOT NULL
+  ) samples GROUP BY delivery_class
+  ON CONFLICT(bot_id,delivery_class) DO UPDATE SET window_hours=excluded.window_hours,sample_count=excluded.sample_count,
+    latency_p50_ms=excluded.latency_p50_ms,latency_p95_ms=excluded.latency_p95_ms,latency_max_ms=excluded.latency_max_ms,updated_at=excluded.updated_at;
+END $$;
+SELECT isvoi_refresh_telegram_delivery_metrics(8694946838);
 
 CREATE OR REPLACE FUNCTION isvoi_telegram_campaign_recipient_guard() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
  IF OLD.campaign_id IS NOT NULL AND (NEW.campaign_id IS DISTINCT FROM OLD.campaign_id OR NEW.session_id IS DISTINCT FROM OLD.session_id OR NEW.subscription_id IS DISTINCT FROM OLD.subscription_id OR NEW.payload IS DISTINCT FROM OLD.payload OR NEW.is_test IS DISTINCT FROM OLD.is_test) THEN
@@ -116,7 +155,8 @@ INSERT INTO directus_collections(collection,icon,note,hidden,singleton,accountab
  ('telegram_notification_topics','notifications','Темы подписок Telegram.',false,false,'all'),
  ('telegram_subscriptions','subscriptions','Текущее состояние подписок. Public доступа не имеет.',false,false,'all'),
  ('telegram_subscription_events','history','Неизменяемый журнал согласий и отказов.',false,false,'all'),
- ('telegram_campaigns','campaign','Кампании Telegram: редактор готовит, администратор подтверждает.',false,false,'all')
+ ('telegram_campaigns','campaign','Кампании Telegram: редактор готовит, администратор подтверждает.',false,false,'all'),
+ ('telegram_delivery_metrics','speed','Фактические p50/p95 задержки доставки Telegram за последние 24 часа.',false,false,'all')
 ON CONFLICT(collection) DO UPDATE SET note=excluded.note,hidden=excluded.hidden,singleton=excluded.singleton;
 
 CREATE OR REPLACE FUNCTION isvoi_notify_field(c varchar,f varchar,i varchar,d varchar,o json,w varchar,s integer,n text,sp varchar,ro boolean,h boolean,t text) RETURNS void LANGUAGE plpgsql AS $$
@@ -142,6 +182,8 @@ SELECT isvoi_notify_field('telegram_campaigns','delivered_count','input',NULL,NU
 SELECT isvoi_notify_field('telegram_campaigns','blocked_count','input',NULL,NULL,'half',23,'Пользователи заблокировали бот.',NULL,true,false,'Блокировок');
 SELECT isvoi_notify_field('telegram_campaigns','failed_count','input',NULL,NULL,'half',24,'Ошибки и неопределённые результаты.',NULL,true,false,'Ошибок');
 SELECT isvoi_notify_field('telegram_campaigns','suppressed_count','input',NULL,NULL,'half',25,'Исключено недельным лимитом.',NULL,true,false,'По лимиту');
+SELECT isvoi_notify_field('telegram_campaigns','latency_p50_ms','input',NULL,NULL,'half',26,'Медианная задержка доставки кампании.',NULL,true,false,'Задержка p50, мс');
+SELECT isvoi_notify_field('telegram_campaigns','latency_p95_ms','input',NULL,NULL,'half',27,'95-й перцентиль задержки доставки кампании.',NULL,true,false,'Задержка p95, мс');
 SELECT isvoi_notify_field('telegram_subscriptions','status','select-dropdown','labels',NULL,'half',1,'Текущее состояние.',NULL,true,false,'Статус');
 SELECT isvoi_notify_field('telegram_subscription_events','event','select-dropdown','labels',NULL,'half',1,'Согласие, отказ или блокировка.',NULL,true,false,'Событие');
 SELECT isvoi_notify_field('telegram_bot_settings','welcome_text','input-multiline',NULL,NULL,'full',1,'Приветствие /start.',NULL,false,false,'Приветствие');
@@ -159,6 +201,15 @@ SELECT isvoi_notify_field('telegram_bot_settings','quiet_end','datetime',NULL,'{
 SELECT isvoi_notify_field('telegram_bot_settings','weekly_limit','input',NULL,NULL,'half',8,'Маркетинговых сообщений за скользящие 7 дней.',NULL,false,false,'Недельный лимит');
 SELECT isvoi_notify_field('telegram_bot_settings','channel_enabled','boolean','boolean',NULL,'half',9,'Зарезервировано; оставлять выключенным. Канал не подключён.',NULL,true,false,'Канал включён');
 SELECT isvoi_notify_field('telegram_message_outbox','state','select-dropdown','labels',${json({choices:[{text:'Ожидает',value:'pending'},{text:'Отправляется',value:'in_flight'},{text:'Принято Telegram',value:'done'},{text:'Бот заблокирован',value:'blocked'},{text:'Ошибка',value:'failed'},{text:'Результат неизвестен',value:'uncertain'},{text:'Лимит частоты',value:'suppressed_frequency'},{text:'Отменено',value:'cancelled'}]})},'half',4,'done означает принятие Telegram, но не прочтение.',NULL,true,false,'Состояние');
+SELECT isvoi_notify_field('telegram_message_outbox','sent_at','datetime',NULL,NULL,'half',5,'Точное время подтверждённой отправки Telegram.',NULL,true,false,'Отправлено');
+SELECT isvoi_notify_field('telegram_message_outbox','delivery_latency_ms','input',NULL,NULL,'half',6,'Время от постановки в очередь до подтверждения Telegram.',NULL,true,false,'Задержка, мс');
+SELECT isvoi_notify_field('telegram_message_outbox','edit_message_id','input',NULL,NULL,'half',7,'Сообщение Telegram, которое обновляется без создания нового.',NULL,true,true,'Редактируемое сообщение');
+SELECT isvoi_notify_field('telegram_delivery_metrics','delivery_class','select-dropdown','labels',${json({choices:[{text:'Меню и поддержка',value:'service'},{text:'Рассылки',value:'campaign'}]})},'half',1,'Класс очереди.',NULL,true,false,'Тип сообщений');
+SELECT isvoi_notify_field('telegram_delivery_metrics','sample_count','input',NULL,NULL,'half',2,'Количество успешных отправок в окне.',NULL,true,false,'Замеров');
+SELECT isvoi_notify_field('telegram_delivery_metrics','latency_p50_ms','input',NULL,NULL,'half',3,'Медианная задержка.',NULL,true,false,'p50, мс');
+SELECT isvoi_notify_field('telegram_delivery_metrics','latency_p95_ms','input',NULL,NULL,'half',4,'95-й перцентиль задержки.',NULL,true,false,'p95, мс');
+SELECT isvoi_notify_field('telegram_delivery_metrics','latency_max_ms','input',NULL,NULL,'half',5,'Максимальная задержка.',NULL,true,false,'Максимум, мс');
+SELECT isvoi_notify_field('telegram_delivery_metrics','updated_at','datetime',NULL,NULL,'half',6,'Время последнего пересчёта.',NULL,true,false,'Обновлено');
 DO $$ BEGIN IF to_regclass('public.site_settings') IS NOT NULL THEN
  PERFORM isvoi_notify_field('site_settings','support_telegram_url','input',NULL,NULL,'full',90,'Общая ссылка на бот; одноразовые ссылки форм не меняет.',NULL,false,false,'Telegram для заявок');
  PERFORM isvoi_notify_field('site_settings','support_telegram_label','input',NULL,NULL,'full',91,'Подпись ссылки в контактах и футере.',NULL,false,false,'Подпись Telegram');
@@ -188,7 +239,8 @@ SELECT isvoi_notify_permission('ISVOI Editor','telegram_campaigns','update','int
 SELECT isvoi_notify_permission('ISVOI Editor','telegram_notification_topics','read','*');
 SELECT isvoi_notify_permission('ISVOI Editor','telegram_subscriptions','read','*');
 SELECT isvoi_notify_permission('ISVOI Editor','telegram_subscription_events','read','*');
-SELECT isvoi_notify_permission('ISVOI Editor','telegram_message_outbox','read','id,campaign_id,session_id,purpose,state,error_code,created_at,telegram_message_id');
+SELECT isvoi_notify_permission('ISVOI Editor','telegram_message_outbox','read','id,campaign_id,session_id,purpose,state,error_code,created_at,sent_at,delivery_latency_ms,telegram_message_id,edit_message_id');
+SELECT isvoi_notify_permission('ISVOI Editor','telegram_delivery_metrics','read','*');
 DROP FUNCTION isvoi_notify_permission(text,varchar,varchar,text,json,json);
 
 CREATE OR REPLACE FUNCTION isvoi_notify_preset(p_collection varchar,p_bookmark text,p_filter json,p_icon varchar,p_color varchar,p_query json) RETURNS void LANGUAGE plpgsql AS $$ BEGIN
@@ -202,6 +254,7 @@ SELECT isvoi_notify_preset('telegram_campaigns','Завершены','{"status":
 SELECT isvoi_notify_preset('telegram_campaigns','Ошибки доставки','{"_or":[{"status":{"_eq":"failed"}},{"failed_count":{"_gt":0}},{"blocked_count":{"_gt":0}}]}'::json,'error','#ef4444','{"tabular":{"fields":["internal_title","status","last_error","blocked_count","failed_count","completed_at"]}}'::json);
 SELECT isvoi_notify_preset('telegram_subscriptions','Активные подписки','{"status":{"_eq":"active"}}'::json,'notifications_active','#16a34a','{"tabular":{"fields":["topic_key","status","consented_at","source"]}}'::json);
 SELECT isvoi_notify_preset('telegram_subscriptions','Отказы и блокировки','{"status":{"_in":["unsubscribed","blocked"]}}'::json,'notifications_off','#ef4444','{"tabular":{"fields":["topic_key","status","revoked_at","source"]}}'::json);
+SELECT isvoi_notify_preset('telegram_delivery_metrics','Скорость за 24 часа','{}'::json,'speed','#2563eb','{"tabular":{"fields":["delivery_class","sample_count","latency_p50_ms","latency_p95_ms","latency_max_ms","updated_at"]}}'::json);
 DROP FUNCTION isvoi_notify_preset(varchar,text,json,varchar,varchar,json);
 
 CREATE OR REPLACE FUNCTION isvoi_notify_flow(p_name text,p_icon text,p_color text,p_description text,p_key text,p_payload json) RETURNS void LANGUAGE plpgsql AS $$

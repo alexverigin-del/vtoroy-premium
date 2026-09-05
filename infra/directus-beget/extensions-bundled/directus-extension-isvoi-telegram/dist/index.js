@@ -52,7 +52,7 @@ export function createHandlers({ database, services, getSchema, env }) {
       .where('d.due_at', '<=', trx.fn.now()).orderBy('d.created_at').select('d.*').forUpdate('d').skipLocked().first();
     if (!delivery) {
       const job = await conversations.next(trx);
-      if (job) await trx('telegram_runtime').where({bot_id:botId}).update({send_after:trx.raw("now()+interval '3.2 seconds'")});
+      if (job) await trx('telegram_runtime').where({bot_id:botId}).update({send_after:trx.raw("now()+(?*interval '1 second')",[job.campaign_id?3.2:1.1])});
       return { job, update_offset: Number(runtime.update_offset) };
     }
     const route = await trx('telegram_routes as r').join('store_locations as s', 's.id', 'r.store_id').where('r.id', delivery.route_id).select('r.*', 's.city').first();
@@ -78,7 +78,7 @@ export function createHandlers({ database, services, getSchema, env }) {
       operation_revision: delivery.revision, operation_deadline: trx.raw("now() + interval '60 seconds'"),
       attempts: delivery.attempts + 1, error_code: null,
     });
-    await trx('telegram_runtime').where({ bot_id: botId }).update({ send_after: trx.raw("now() + interval '3.2 seconds'") });
+    await trx('telegram_runtime').where({ bot_id: botId }).update({ send_after: trx.raw("now() + interval '1.1 seconds'") });
     return { job: { id: delivery.id, operation_id: operationId, method, payload }, update_offset: Number(runtime.update_offset) };
   });
 
@@ -112,7 +112,12 @@ export function createHandlers({ database, services, getSchema, env }) {
       if (outcome.type === 'rate_limit') await trx('telegram_runtime').where({ bot_id: botId })
         .update({ send_after: trx.raw("now() + (? * interval '1 second')", [disposition.delay]) });
     }
+    if(patch.state==='done') {
+      patch.sent_at=trx.fn.now();
+      patch.delivery_latency_ms=trx.raw("greatest(0,round(extract(epoch from (now()-due_at))*1000))");
+    }
     await trx('telegram_deliveries').where({ id }).update(patch);
+    if(patch.state==='done') await trx.raw('select isvoi_refresh_telegram_delivery_metrics(?)',[botId]);
     return { ok: true };
   });
 

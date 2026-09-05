@@ -37,6 +37,13 @@ export function createConversations({ database, services, getSchema, env, botId,
     const [row] = await trx('telegram_message_outbox').insert({bot_id:botId,...values,payload:JSON.stringify(payload)}).returning('*');
     return row;
   }
+  async function edit(trx, session, messageId, text, reply_markup) {
+    if(!validId(messageId)) return tell(trx,session,text,reply_markup);
+    const payload={text,...(reply_markup?{reply_markup}:{}),link_preview_options:{is_disabled:true}};
+    const pending=await trx('telegram_message_outbox').where({bot_id:botId,session_id:session.id,destination:'client',purpose:'menu_edit',state:'pending',edit_message_id:String(messageId)}).forUpdate().first();
+    if(pending) return trx('telegram_message_outbox').where({id:pending.id}).update({payload:JSON.stringify(payload),due_at:trx.fn.now(),created_at:trx.fn.now()}).returning('*').then(rows=>rows[0]);
+    return queue(trx,{session_id:session.id,destination:'client',purpose:'menu_edit',edit_message_id:String(messageId)},payload);
+  }
   async function retention(trx) {
     await trx('telegram_retention_settings').insert({bot_id:botId}).onConflict('bot_id').ignore();
     const settings=await trx('telegram_retention_settings').where({bot_id:botId}).where('next_run_at','<=',trx.fn.now()).forUpdate().first();
@@ -58,7 +65,7 @@ export function createConversations({ database, services, getSchema, env, botId,
     });
   }
   const tell = (trx, session, text, reply_markup) => queue(trx,{session_id:session.id,destination:'client'}, {text,...(reply_markup?{reply_markup}:{})});
-  const notifications = createNotifications({env,botId,mode,queue,tell});
+  const notifications = createNotifications({env,botId,mode,queue,tell,edit});
   async function context(trx, id) {
     const c = await trx('lead_conversations').where({id,bot_id:botId}).first();
     if (!c) return null;
@@ -163,11 +170,11 @@ export function createConversations({ database, services, getSchema, env, botId,
     const data=update.callback_query?.data;
     if(data) {
       // Only buttons from a successfully sent bot menu in this private session are actionable.
-      const sent=await trx('telegram_message_outbox').where({bot_id:botId,session_id:session.id,telegram_message_id:message.message_id,state:'done'}).first();
+      const sent=await trx('telegram_message_outbox').where({bot_id:botId,session_id:session.id,telegram_message_id:message.message_id,state:'done'}).orderByRaw('sent_at DESC NULLS LAST').orderBy('created_at','desc').first();
       if(!sent || !sent.payload.reply_markup?.inline_keyboard?.flat().some(b=>b.callback_data===data)) return 'stale';
       if(data==='new') {await categories(trx,session);return 'selected';}
       if(data==='dialogs') {await choose(trx,session);return 'selected';}
-      const notificationResult=await notifications.callback(trx,session,data);
+      const notificationResult=await notifications.callback(trx,session,data,String(message.message_id));
       if(notificationResult) return notificationResult;
       if(/^kind:(selection|trade|support)$/.test(data)) {
         await trx('telegram_client_sessions').where({id:session.id}).update({conversation_id:null,pending_kind:data.slice(5)});
@@ -316,7 +323,8 @@ export function createConversations({ database, services, getSchema, env, botId,
       }
       const operation_id=randomUUID();
       await trx('telegram_message_outbox').where({id:row.id}).update({state:'in_flight',operation_id,operation_deadline:trx.raw("now()+interval '60 seconds'")});
-      return {id:row.id,channel:'conversation',operation_id,destination:row.destination,purpose:row.purpose,campaign_id:row.campaign_id || null,method:row.payload.photo?'sendPhoto':'sendMessage',payload:{...row.payload,chat_id:chatId,...(topicId?{message_thread_id:topicId}:{})}};
+      const method=row.edit_message_id?'editMessageText':row.payload.photo?'sendPhoto':'sendMessage';
+      return {id:row.id,channel:'conversation',operation_id,destination:row.destination,purpose:row.purpose,campaign_id:row.campaign_id || null,method,payload:{...row.payload,chat_id:chatId,...(row.edit_message_id?{message_id:Number(row.edit_message_id)}:{}),...(topicId?{message_thread_id:topicId}:{})}};
     }
     return null;
   }
@@ -327,16 +335,19 @@ export function createConversations({ database, services, getSchema, env, botId,
     if(row.state!=='in_flight') return {ok:true};
     const outcome=body.outcome;
     let patch;
-    if(outcome.type==='ok') {
-      if(!validId(outcome.message_id)) throw failure('INVALID_MESSAGE_ID');
-      patch={state:'done',telegram_message_id:String(outcome.message_id),error_code:null};
-      if(['prompt','preview'].includes(row.purpose)) await trx('telegram_reply_drafts').where({id:row.draft_id}).update({[row.purpose==='prompt'?'prompt_message_id':'preview_message_id']:String(outcome.message_id)});
+    const noChange=outcome.type==='not_modified'&&row.edit_message_id;
+    if(outcome.type==='ok'||noChange) {
+      const messageId=noChange?row.edit_message_id:outcome.message_id;
+      if(!validId(messageId)) throw failure('INVALID_MESSAGE_ID');
+      patch={state:'done',telegram_message_id:String(messageId),error_code:null,sent_at:trx.fn.now(),delivery_latency_ms:trx.raw("greatest(0,round(extract(epoch from (now()-due_at))*1000))")};
+      if(['prompt','preview'].includes(row.purpose)) await trx('telegram_reply_drafts').where({id:row.draft_id}).update({[row.purpose==='prompt'?'prompt_message_id':'preview_message_id']:String(messageId)});
     } else if(outcome.type==='rate_limit') {
       const delay=Math.max(1,Math.min(86400,Number(outcome.retryAfter)||60));
       patch={state:'pending',error_code:'TELEGRAM_429',due_at:trx.raw("now()+(?*interval '1 second')",[delay])};
       await trx('telegram_runtime').where({bot_id:botId}).update({send_after:patch.due_at});
     } else patch={state:outcome.type==='permanent'?(row.campaign_id&&outcome.status===403?'blocked':'failed'):'uncertain',error_code:outcome.type==='permanent'?`TELEGRAM_${[400,401,403,404].includes(outcome.status)?outcome.status:'ERROR'}`:'DELIVERY_UNKNOWN'};
     await trx('telegram_message_outbox').where({id:row.id}).update(patch);
+    if(patch.state==='done') await trx.raw('select isvoi_refresh_telegram_delivery_metrics(?)',[botId]);
     if(row.purpose==='reply'&&patch.state==='done') {
       const message=await trx('lead_messages').where({id:row.message_id}).first('created_at');
       await trx('leads').whereIn('id',trx('lead_conversations').where({id:row.conversation_id}).select('lead_id'))

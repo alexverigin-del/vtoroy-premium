@@ -4286,3 +4286,9 @@ Next content-editing priorities:
 - Both PM2 applications are online, the Telegram worker holds a live database lease, and the rendered production homepage includes `https://t.me/isvoi_help_bot?start=site` with label `Заявки и поддержка в Telegram`. The release successfully applied the Telegram description, short description, private-chat commands and command menu.
 - The host occasionally drops the first Node TLS connection to Telegram while later connections succeed. `a45255a` adds three bounded retries for network-only failures in read-only preflight and idempotent profile methods; API/configuration errors still fail immediately. Server tests pass 19/19, the worker reacquired its lease after restart, and the final Bot API profile check reports `ready=true`.
 - No live marketing campaign was created during deployment. The remaining acceptance step is a human pilot from Telegram ID `65092546`: open `/start`, exercise the five actions, subscribe to each topic, send approved test campaigns from Directus, and verify immediate opt-out.
+
+### Telegram Queue Responsiveness · 2026-09-05
+
+- The user completed the human pilot and authorized the recommended responsiveness update. Service traffic (menus, support, lead cards and replies) uses a 1.1-second pacing interval; campaign delivery retains 3.2 seconds and remains lower priority.
+- Subscription topic buttons edit the existing Telegram menu. Pending edits for the same message coalesce, while each completed edit remains in the outbox audit trail with the same Telegram message ID.
+- Successful deliveries record `sent_at` and queue-to-Telegram latency. Directus exposes rolling 24-hour service/campaign p50, p95, maximum and sample count, and stores per-campaign p50/p95 on completion. Pre-release history is intentionally left without fabricated timestamps.

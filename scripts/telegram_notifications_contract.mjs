@@ -4,6 +4,9 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const client=223456700;
   const outboxState=await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_message_outbox',column_name:'state'}).first('character_maximum_length');
   assert.equal(Number(outboxState.character_maximum_length),32);
+  for(const column of ['sent_at','delivery_latency_ms','edit_message_id']) assert.ok(await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_message_outbox',column_name:column}).first());
+  for(const column of ['sent_at','delivery_latency_ms']) assert.ok(await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_deliveries',column_name:column}).first());
+  assert.ok(await db('information_schema.tables').where({table_schema:'public',table_name:'telegram_delivery_metrics'}).first());
   const privateMessage=(text,extra={})=>({update_id:++sequenceState.update,message:{message_id:++sequenceState.message,chat:{type:'private',id:client},from:{id:client,is_bot:false},text,...extra}});
   const apply=update=>h.update(req({update}));
   const leadsBefore=Number((await db('leads').count('* as n').first()).n);
@@ -26,8 +29,14 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const news=await db('telegram_message_outbox').where({session_id:session.id,state:'done'}).orderBy('created_at','desc').first();
   const click=(data,messageId)=>({update_id:++sequenceState.update,callback_query:{id:`notify-${sequenceState.update}`,data,from:{id:client,is_bot:false},message:{message_id:Number(messageId),chat:{type:'private',id:client},from:{id:Number(p.botId),is_bot:true}}}});
   assert.equal((await apply(click('news:toggle:new_arrivals',news.telegram_message_id))).result,'selected');
+  const toggleJob=await next();
+  assert.equal(toggleJob.method,'editMessageText');
+  assert.equal(toggleJob.payload.message_id,Number(news.telegram_message_id));
+  await complete(toggleJob);
   while(true){const job=await next();if(!job)break;await complete(job);}
   const latest=await db('telegram_message_outbox').where({session_id:session.id,state:'done'}).orderBy('created_at','desc').first();
+  assert.equal(latest.purpose,'menu_edit');
+  assert.equal(latest.telegram_message_id,news.telegram_message_id);
   assert.equal((await apply(click('news:save',latest.telegram_message_id))).result,'selected');
   const subscription=await db('telegram_subscriptions').where({session_id:session.id,topic_key:'new_arrivals'}).first();
   assert.equal(subscription.status,'active');
@@ -54,7 +63,16 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   assert.equal(campaignJob.payload.chat_id,String(client));
   assert.equal(campaignJob.payload.reply_markup.inline_keyboard[0][0].url,'https://isvoi.ru/catalog?utm_source=telegram&utm_medium=bot&utm_campaign=pilot-arrival');
   await complete(campaignJob);
-  assert.equal((await db('telegram_campaigns').where({id:campaignId}).first()).status,'completed');
+  const campaign=await db('telegram_campaigns').where({id:campaignId}).first();
+  assert.equal(campaign.status,'completed');
+  assert.ok(Number.isInteger(campaign.latency_p50_ms));
+  assert.ok(Number.isInteger(campaign.latency_p95_ms));
+  const delivered=await db('telegram_message_outbox').where({id:campaignJob.id}).first();
+  assert.ok(delivered.sent_at);
+  assert.ok(Number.isInteger(delivered.delivery_latency_ms));
+  const campaignMetrics=await db('telegram_delivery_metrics').where({bot_id:p.botId,delivery_class:'campaign'}).first();
+  assert.ok(campaignMetrics.sample_count>=1);
+  assert.ok(Number.isInteger(campaignMetrics.latency_p50_ms));
   await assert.rejects(db('telegram_campaigns').where({id:campaignId}).update({message_text:'Подмена после запуска'}),/Started campaign content is immutable/);
   await assert.rejects(db('telegram_message_outbox').where({id:campaignJob.id}).update({payload:{text:'Подмена получателя'}}),/Campaign recipient snapshot is immutable/);
   await db('telegram_campaigns').where({id:campaignId}).update({status:'approved'});

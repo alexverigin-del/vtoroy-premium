@@ -292,6 +292,14 @@ test('explicit pilot test delivery bypasses marketing quiet hours', async () => 
   assert.ok(source.indexOf('if(row.is_test) return true') < source.indexOf('const inside=await trx.raw'));
 });
 
+test('subscription menu distinguishes a draft choice from an active subscription', async () => {
+  const source=await readFile(new URL('../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/notifications.js',import.meta.url),'utf8');
+  assert.match(source,/Изменения ещё не сохранены/);
+  assert.match(source,/✅ Сохранить изменения/);
+  assert.match(source,/news:discard/);
+  assert.match(source,/Подписка сохранена и уже активна/);
+});
+
 test('speed release is pinned, backed up, rehearsed and reversible', async () => {
   const release=await readFile(new URL('./release_telegram_speed_production.mjs',import.meta.url),'utf8');
   const prepare=await readFile(new URL('./prepare_telegram_speed_release.mjs',import.meta.url),'utf8');

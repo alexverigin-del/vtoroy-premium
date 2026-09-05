@@ -32,6 +32,8 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const toggleJob=await next();
   assert.equal(toggleJob.method,'editMessageText');
   assert.equal(toggleJob.payload.message_id,Number(news.telegram_message_id));
+  assert.deepEqual(toggleJob.payload.reply_markup.inline_keyboard.flat().slice(-4,-2).map(button=>button.callback_data),['news:save','news:discard']);
+  assert.match(toggleJob.payload.text,/Изменения ещё не сохранены/);
   await complete(toggleJob);
   while(true){const job=await next();if(!job)break;await complete(job);}
   const latest=await db('telegram_message_outbox').where({session_id:session.id,state:'done'}).orderBy('created_at','desc').first();
@@ -44,6 +46,8 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const saveJob=await next();
   assert.equal(saveJob.method,'editMessageText');
   assert.equal(saveJob.payload.message_id,Number(news.telegram_message_id));
+  assert.match(saveJob.payload.text,/Подписка сохранена и уже активна/);
+  assert.ok(!saveJob.payload.reply_markup.inline_keyboard.flat().some(button=>button.callback_data==='news:save'));
   await complete(saveJob);
   while(true){const job=await next();if(!job)break;await complete(job);}
 

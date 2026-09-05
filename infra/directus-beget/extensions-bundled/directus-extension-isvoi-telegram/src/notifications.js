@@ -71,16 +71,21 @@ export function createNotifications({ env, botId, queue, tell, edit }) {
     }
     const topics = await trx('telegram_notification_topics').where({active:true}).orderBy('sort');
     const active = await trx('telegram_subscriptions').where({bot_id:botId,session_id:session.id,status:'active'}).pluck('topic_key');
+    const hadDraft=Array.isArray(session.subscription_draft);
     let draft = session.subscription_draft;
     if (!Array.isArray(draft)) draft = active;
     draft = draft.filter(key => topics.some(topic => topic.key === key));
-    await trx('telegram_client_sessions').where({id:session.id}).update({subscription_draft:JSON.stringify(draft)});
-    const rows = topics.map(topic => [{text:`${draft.includes(topic.key) ? '✓' : '○'} ${topic.label}`,callback_data:`news:toggle:${topic.key}`}]);
-    rows.push([{text:'Сохранить подписку',callback_data:'news:save'}]);
-    rows.push([{text:'Отключить всё',callback_data:'news:off'}]);
+    const same=[...draft].sort().join('|')===[...active].sort().join('|');
+    const dirty=hadDraft&&!same;
+    if(hadDraft&&!dirty) await trx('telegram_client_sessions').where({id:session.id}).update({subscription_draft:null});
+    const mark=topic=>draft.includes(topic.key)?(active.includes(topic.key)?'✅':'➕'):(active.includes(topic.key)?'➖':'○');
+    const rows = topics.map(topic => [{text:`${mark(topic)} ${topic.label}`,callback_data:`news:toggle:${topic.key}`}]);
+    if(dirty) rows.push([{text:'✅ Сохранить изменения',callback_data:'news:save'}],[{text:'↩️ Отменить изменения',callback_data:'news:discard'}]);
+    rows.push([{text:'Отключить все подписки',callback_data:'news:off'}]);
     rows.push([{text:'Главное меню',callback_data:'main'}]);
-    const state = topics.map(topic => `${draft.includes(topic.key) ? '✓' : '○'} ${topic.label}`).join('\n');
-    const text=`${notice ? `${notice}\n\n` : ''}Выберите темы:\n${state}\n\n${settings.consent_text}\nВерсия согласия: ${settings.consent_version}.`;
+    const state = topics.map(topic => `${mark(topic)} ${topic.label}`).join('\n');
+    const heading=dirty?'Изменения ещё не сохранены. Нажмите «✅ Сохранить изменения» ниже.':active.length?'Подписка активна. Вы можете изменить выбранные темы:':'Сейчас подписок нет. Выберите темы:';
+    const text=`${notice ? `${notice}\n\n` : ''}${heading}\n${state}\n\n${settings.consent_text}\nВерсия согласия: ${settings.consent_version}.`;
     await (editMessageId?edit(trx,session,editMessageId,text,{inline_keyboard:rows}):tell(trx,session,text,{inline_keyboard:rows}));
     return 'shown';
   }
@@ -124,9 +129,14 @@ export function createNotifications({ env, botId, queue, tell, edit }) {
       await renderNews(trx,{...session,subscription_draft:draft},'',messageId); return 'selected';
     }
     if (data === 'news:save') {
-      const draft=Array.isArray(session.subscription_draft)?session.subscription_draft:[];
+      if(!Array.isArray(session.subscription_draft)) {await renderNews(trx,session,'Нет несохранённых изменений.',messageId);return 'selected';}
+      const draft=session.subscription_draft;
       await recordChoice(trx,session,draft,'bot_menu');
-      await renderNews(trx,{...session,subscription_draft:null},'Подписки сохранены. Изменения применяются сразу.',messageId); return 'selected';
+      await renderNews(trx,{...session,subscription_draft:null},'Подписка сохранена и уже активна.',messageId); return 'selected';
+    }
+    if (data === 'news:discard') {
+      await trx('telegram_client_sessions').where({id:session.id}).update({subscription_draft:null});
+      await renderNews(trx,{...session,subscription_draft:null},'Изменения отменены.',messageId); return 'selected';
     }
     if (data === 'news:off') {
       await recordChoice(trx,session,[],'bot_menu');

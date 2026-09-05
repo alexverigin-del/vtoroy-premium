@@ -17,7 +17,7 @@ const assets=[
 
 function sqlValue(value) {return `'${String(value).replaceAll("'","''")}'`;}
 function sql(query) {
-  const result=spawnSync('docker',['compose','-f',compose,'exec','-T','database','sh','-lc','psql -U "$DB_USER" -d "$DB_DATABASE" -At -v ON_ERROR_STOP=1'],{cwd:root,input:query,encoding:'utf8'});
+  const result=spawnSync('docker',['compose','-f',compose,'exec','-T','database','sh','-lc','psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1'],{cwd:root,input:query,encoding:'utf8'});
   if(result.error || result.status!==0) throw new Error(result.error?.message || result.stderr || result.stdout || 'DIRECTUS_SQL_FAILED');
   return result.stdout.trim();
 }

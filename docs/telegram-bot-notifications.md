@@ -14,7 +14,9 @@ ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 Флаг включён в production после миграции `scripts/setup_directus_telegram_notifications_sql.mjs`. Настройка `telegram_bot_settings.notifications_enabled` служит вторым выключателем. Первый выпуск работает с `pilot_mode=true` и разрешённым Telegram ID `65092546`; остальные пользователи видят сообщение о закрытом пилоте и не могут подписаться.
 
-Production-пилот выпущен 5 сентября 2026 года на feature-коммите `e49484b4dccaef304dac87dacad3e0624173758c`; текущая документированная production-база `94d44f7799b7e8e640859ffab2909f15db84055c` включает retry кратких сетевых сбоев и актуальные операционные заметки. Резервная копия первого выпуска: `/opt/isvoi/backups/telegram-notifications-20260905T164908332Z`. Release gate, полный `web:verify`, изолированный PostgreSQL/Directus-контракт, применение и повторная проверка нативного профиля Telegram, lease worker и HTTP smoke сайта прошли.
+Production-пилот выпущен 5 сентября 2026 года на feature-коммите `e49484b4dccaef304dac87dacad3e0624173758c`; база до обновления скорости `94d44f7799b7e8e640859ffab2909f15db84055c` включает retry кратких сетевых сбоев и актуальные операционные заметки. Резервная копия первого выпуска: `/opt/isvoi/backups/telegram-notifications-20260905T164908332Z`. Release gate, полный `web:verify`, изолированный PostgreSQL/Directus-контракт, применение и повторная проверка нативного профиля Telegram, lease worker и HTTP smoke сайта прошли.
+
+Обновление скорости выпущено на production-коммите `e4e0274d27ab53d6cb9862c95dbae6d065be3eff`. Проверенная резервная копия: `/opt/isvoi/backups/telegram-speed-20260905T182855552Z`. Локальные тесты прошли 22/22, серверный `web:verify` и изолированный PostgreSQL/Directus-контракт завершились успешно. После выпуска worker online без unstable restart, lease активен, очередь пуста, Directus отвечает `pong`. Две строки метрик созданы с нулевой выборкой; p50/p95 появятся после новых успешных отправок.
 
 Перед выпуском обязательны:
 

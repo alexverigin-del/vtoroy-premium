@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {setTimeout as pause} from 'node:timers/promises';
 
 const apply = process.argv.includes('--apply');
 if (process.argv.slice(2).some(arg => arg !== '--apply')) throw new Error('Usage: node scripts/configure_telegram_bot_profile.mjs [--apply]');
@@ -16,10 +17,17 @@ const commands = [
 ];
 const base=`https://api.telegram.org/bot${token}`;
 async function call(method,body={}) {
-  const response=await fetch(`${base}/${method}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(15000)});
-  const data=await response.json();
-  if(!response.ok||data.ok!==true) throw new Error(`TELEGRAM_${method.toUpperCase()}_${response.status}`);
-  return data.result;
+  for(let attempt=0;attempt<3;attempt++) {
+    try {
+      const response=await fetch(`${base}/${method}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(15000)});
+      const data=await response.json();
+      if(!response.ok||data.ok!==true) throw new Error(`TELEGRAM_${method.toUpperCase()}_${response.status}`);
+      return data.result;
+    } catch(error) {
+      if(/^TELEGRAM_[A-Z_]+_\d+$/.test(error?.message||'')||attempt===2) throw error;
+      await pause(1000*(attempt+1));
+    }
+  }
 }
 async function snapshot() {
   return {

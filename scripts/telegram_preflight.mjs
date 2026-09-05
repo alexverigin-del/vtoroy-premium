@@ -4,10 +4,11 @@ import { readFile } from "node:fs/promises";
 import { parseEnv } from "node:util";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { setTimeout as pause } from "node:timers/promises";
 
 const READ_METHODS = new Set(["getMe", "getWebhookInfo", "getUpdates", "getChat", "getChatMember"]);
 
-export async function inspectTelegram(config, { discover = false, fetchImpl = fetch } = {}) {
+export async function inspectTelegram(config, { discover = false, fetchImpl = fetch, sleep = pause } = {}) {
   const token = (config.TELEGRAM_BOT_TOKEN ?? "").trim();
   if (!/^\d+:[A-Za-z0-9_-]{20,}$/.test(token)) {
     throw new Error("Заполните TELEGRAM_BOT_TOKEN в локальном env-файле. Значение не выводится.");
@@ -23,18 +24,25 @@ export async function inspectTelegram(config, { discover = false, fetchImpl = fe
     if (!READ_METHODS.has(method)) throw new Error("Метод не разрешён проверкой подключения.");
     let response;
     let body;
-    try {
-      response = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        redirect: "error",
-        signal: AbortSignal.timeout(15000),
-      });
-      body = await response.json();
-    } catch {
-      // Fetch exceptions can contain the URL, which contains the bot token.
-      throw new Error(`Telegram ${method}: сеть или ответ недоступны; секретные детали скрыты.`);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          redirect: "error",
+          signal: AbortSignal.timeout(15000),
+        });
+        body = await response.json();
+        break;
+      } catch {
+        if (attempt < 2) {
+          await sleep(1000 * (attempt + 1));
+          continue;
+        }
+        // Fetch exceptions can contain the URL, which contains the bot token.
+        throw new Error(`Telegram ${method}: сеть или ответ недоступны; секретные детали скрыты.`);
+      }
     }
     if (!response.ok || body?.ok !== true) {
       const code = Number.isInteger(body?.error_code) ? body.error_code : response.status;

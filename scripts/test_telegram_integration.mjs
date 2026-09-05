@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { workerConfig, createClients, workerTick, runWorker } from './lib/telegram-worker.mjs';
+import { inspectTelegram } from './telegram_preflight.mjs';
 import endpoint, { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
 import { parseUpdate, routeMatches, renderCard, deliveryFailure, nextOperation } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/protocol.js';
 import { createConversations, messageContent } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/conversations.js';
@@ -55,6 +56,28 @@ test('message polling is enabled only by the authenticated session capability', 
 test('disabled worker makes no requests, even if credentials exist', async () => {
   await runWorker({ ...env, TELEGRAM_ENABLED: 'false' }, { once: true, log() {}, fetchImpl() { assert.fail('Unexpected network'); } });
   assert.equal(workerConfig({}).enabled, false);
+});
+
+test('Telegram preflight retries transient network failures without exposing credentials', async () => {
+  let calls=0,sleeps=0;
+  const result=await inspectTelegram({...env,TELEGRAM_BOT_USERNAME:'isvoi_help_bot',TELEGRAM_GROUP_TITLE:'I СВОИ · Заявки · Белгород'}, {
+    sleep:async()=>{sleeps++;},
+    fetchImpl:async url=>{
+      calls++;
+      if(calls===1) throw new Error(`transient ${url}`);
+      const method=new URL(url).pathname.split('/').pop();
+      const responses={
+        getMe:{id:123456,is_bot:true,username:'isvoi_help_bot'},
+        getWebhookInfo:{url:'',pending_update_count:0},
+        getChat:{id:Number(CHAT),type:'supergroup',title:'I СВОИ · Заявки · Белгород',is_forum:true},
+        getChatMember:{status:'administrator',can_manage_topics:true,can_pin_messages:true},
+      };
+      return new Response(JSON.stringify({ok:true,result:responses[method]}),{status:200});
+    },
+  });
+  assert.equal(result.ready,true);
+  assert.equal(calls,5);
+  assert.equal(sleeps,1);
 });
 
 test('worker rejects unsafe Directus destinations and incomplete configuration', () => {

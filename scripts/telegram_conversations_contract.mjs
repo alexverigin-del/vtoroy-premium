@@ -73,7 +73,7 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   await db('leads').where({id:created.id}).update({assigned_to:p.staff,status:'in_progress'});
   // Other stage-1 deliveries have been tested above; isolate this fixture's message queue.
   await db('telegram_deliveries').update({state:'done'});
-  const complete=(job,outcome={type:'ok',message_id:++telegramId})=>h.complete(req({id:job.id,operation_id:job.operation_id,channel:job.channel,outcome}));
+  const complete=(job,outcome)=>h.complete(req({id:job.id,operation_id:job.operation_id,channel:job.channel,outcome:outcome??(job.method==='createForumTopic'?{type:'ok',topic_id:++telegramId}:{type:'ok',message_id:++telegramId})}));
   async function next() {await db('telegram_runtime').where({bot_id:p.botId}).update({send_after:db.fn.now()});return (await h.next(req({}))).job;}
   async function drain() {let job;for(let n=0;n<30 && (job=await next());n++) await complete(job);}
   await drain();

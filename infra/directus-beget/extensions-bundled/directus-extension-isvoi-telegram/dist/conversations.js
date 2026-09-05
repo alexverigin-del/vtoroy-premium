@@ -17,7 +17,7 @@ export function messageContent(message) {
 const contentPayload = (content, prefix = '') => content.photo_file_id
   ? { photo: content.photo_file_id, caption: `${prefix}${content.text}`.slice(0,1024) }
   : { text: `${prefix}${content.text}`.slice(0,4096), link_preview_options: { is_disabled: true } };
-const replyButton = id => ({ inline_keyboard: [[{text:'Ответить клиенту',callback_data:`reply:${id}`}]] });
+const replyButton = (id, text = 'Ответить клиенту') => ({ inline_keyboard: [[{text,callback_data:`reply:${id}`}]] });
 
 export function createConversations({ database, services, getSchema, env, botId, mode, staffAccountability }) {
   const enabled = enabledFlag(env.ISVOI_TELEGRAM_ENABLED) && enabledFlag(env.ISVOI_TELEGRAM_CONVERSATIONS_ENABLED) && validId(botId) && ['test','production'].includes(mode);
@@ -314,7 +314,8 @@ export function createConversations({ database, services, getSchema, env, botId,
     } else patch={state:outcome.type==='permanent'?'failed':'uncertain',error_code:outcome.type==='permanent'?`TELEGRAM_${[400,401,403,404].includes(outcome.status)?outcome.status:'ERROR'}`:'DELIVERY_UNKNOWN'};
     await trx('telegram_message_outbox').where({id:row.id}).update(patch);
     if(row.purpose==='reply'&&patch.state!=='pending') await queue(trx,{conversation_id:row.conversation_id,route_id:row.route_id,destination:'group'},
-      {text:patch.state==='done'?'Ответ передан Telegram. Это не подтверждение прочтения клиентом.':patch.state==='uncertain'?'Результат отправки ответа неизвестен. Не отправляйте его повторно до ручной сверки.':'Ответ не доставлен. Клиент мог заблокировать бота; проверьте карточку доставки.'});
+      {text:patch.state==='done'?'Ответ передан Telegram. Это не подтверждение прочтения клиентом.':patch.state==='uncertain'?'Результат отправки ответа неизвестен. Не отправляйте его повторно до ручной сверки.':'Ответ не доставлен. Клиент мог заблокировать бота; проверьте карточку доставки.',
+        ...(patch.state==='done'?{reply_markup:replyButton(row.conversation_id,'Написать ещё')}:{})});
     return {ok:true};
   }
   const maintenance=async trx=>{if(enabled) await retention(trx);};

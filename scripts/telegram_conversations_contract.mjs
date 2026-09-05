@@ -5,6 +5,12 @@ import { createHandlers } from '../infra/directus-beget/extensions-bundled/direc
 export async function conversationsContract({db,ItemsService,getSchema,p,adminRole}) {
   const id=n=>`66666666-6666-4666-8666-${String(n).padStart(12,'0')}`;
   await db.raw(conversationsSql);await db.raw(conversationsSql);
+  assert.equal((await db('directus_fields').where({collection:'leads',field:'telegram_dialogs'}).first()).special,'o2m');
+  assert.equal((await db('directus_fields').where({collection:'lead_conversations',field:'messages'}).first()).special,'o2m');
+  assert.equal((await db('directus_relations').where({many_collection:'lead_conversations',many_field:'lead_id'}).first()).one_field,'telegram_dialogs');
+  assert.equal((await db('directus_relations').where({many_collection:'lead_messages',many_field:'conversation_id'}).first()).one_field,'messages');
+  const salesGroup=await db('directus_collections').where({collection:'isvoi_sales'}).first();
+  assert.equal((await db('directus_collections').where({collection:'lead_conversations'}).first()).group,salesGroup?'isvoi_sales':null);
   await db.raw('ALTER TABLE leads ADD contact text, ADD contact_channel text, ADD message text, ADD source text, ADD source_path text');
   const intake=id(1),role=id(2),policy=id(3);
   await db('directus_roles').insert({id:role,name:'Website intake fixture'});
@@ -74,6 +80,17 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   await complete(reply,{type:'unknown'});await complete(reply,{type:'unknown'});
   assert.equal((await db('telegram_message_outbox').where({id:reply.id}).first()).state,'uncertain');
   await drain();assert.equal(await next(),null);
+  // A successful reply leaves a fresh contextual action at the bottom of the topic.
+  assert.equal((await apply(click(`reply:${c.id}`,source.telegram_message_id))).result,'draft_started');await drain();
+  draft=await db('telegram_reply_drafts').where({conversation_id:c.id,state:'awaiting'}).first();
+  await apply(group('Дополнение к ответу',{reply_to_message:{message_id:Number(draft.prompt_message_id)}}));await drain();
+  draft=await db('telegram_reply_drafts').where({id:draft.id}).first();
+  assert.equal((await apply(click(`send:${draft.id}`,draft.preview_message_id))).result,'queued');
+  const deliveredReply=await next();assert.equal(deliveredReply.destination,'client');assert.equal(deliveredReply.payload.text,'Дополнение к ответу');
+  await complete(deliveredReply);
+  const followupNotice=await next();assert.equal(followupNotice.destination,'group');
+  assert.deepEqual(followupNotice.payload.reply_markup.inline_keyboard,[[{text:'Написать ещё',callback_data:`reply:${c.id}`}]]);
+  await complete(followupNotice);assert.equal(await next(),null);
   // Expired capability cannot bind a different lead.
   const expired=await site({reference_code:'CHAT-EXPIRED'});
   await db('telegram_link_tokens').where({lead_id:expired.id}).update({expires_at:db.raw("now()-interval '1 minute'")});
@@ -122,5 +139,5 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   const retention=await db('telegram_retention_settings').where({bot_id:p.botId}).first();
   assert.equal(Number(retention.retention_months),6);
   assert.ok(Number(retention.last_conversations_deleted)>=1);
-  console.log('PASS: conversations: one-use site binding, expiry, permissions, dedup, photo/album history, internal-message isolation, confirmed reply, uncertain delivery, direct entry, closed lead and six-month retention.');
+  console.log('PASS: conversations: Directus relations, one-use site binding, expiry, permissions, dedup, photo/album history, internal-message isolation, confirmed and follow-up replies, uncertain delivery, direct entry, closed lead and six-month retention.');
 }

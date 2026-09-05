@@ -51,5 +51,5 @@ async function install(asset) {
 const id=botId();
 const installed=Object.fromEntries(await Promise.all(assets.map(async asset=>[asset.key,await install(asset)])));
 const updated=sql(`UPDATE telegram_bot_settings SET welcome_photo_file=${sqlValue(installed.welcome.id)}::uuid,updated_at=now() WHERE bot_id=${id} RETURNING bot_id;`);
-if(updated!==id) throw new Error('TELEGRAM_BOT_SETTINGS_NOT_FOUND');
+if(!updated.split(/\r?\n/).includes(id)) throw new Error('TELEGRAM_BOT_SETTINGS_NOT_FOUND');
 console.log(`Installed Telegram brand assets: welcome=${installed.welcome.id}, avatar=${installed.avatar.id}, bot=${id}.`);

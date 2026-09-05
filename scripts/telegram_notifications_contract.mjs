@@ -108,6 +108,8 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const currentHour=Number((await db.raw("select extract(hour from now() at time zone 'Europe/Moscow')::int h")).rows[0].h);
   const quietHour=(currentHour+2)%23;
   await db('telegram_bot_settings').where({bot_id:p.botId}).update({quiet_start:`${String(quietHour).padStart(2,'0')}:00`,quiet_end:`${String(quietHour+1).padStart(2,'0')}:00`});
+  // The test recipient is the Directus operator's linked Telegram account; bind the isolated fixture to its private pilot session.
+  await db('telegram_staff').where({directus_user:p.staff}).update({telegram_user_id:client});
   await db('telegram_campaigns').where({id:campaignId}).update({test_requested_by:p.staff,test_requested_at:db.fn.now()});
   const afterHoursTest=await next();
   assert.equal(afterHoursTest.purpose,'campaign_test');

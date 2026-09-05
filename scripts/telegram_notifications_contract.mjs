@@ -41,6 +41,11 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const subscription=await db('telegram_subscriptions').where({session_id:session.id,topic_key:'new_arrivals'}).first();
   assert.equal(subscription.status,'active');
   assert.equal(Number((await db('telegram_subscription_events').where({subscription_id:subscription.id,event:'subscribed'}).count('* as n').first()).n),1);
+  const saveJob=await next();
+  assert.equal(saveJob.method,'editMessageText');
+  assert.equal(saveJob.payload.message_id,Number(news.telegram_message_id));
+  await complete(saveJob);
+  while(true){const job=await next();if(!job)break;await complete(job);}
 
   const campaignId='77777777-7777-4777-8777-000000000001';
   await db('telegram_campaigns').insert({id:campaignId,bot_id:p.botId,internal_title:'Пилот: поступление',topic_key:'new_arrivals',message_text:'Поступил iPhone 15',cta_label:'Посмотреть',cta_url:'https://isvoi.ru/catalog',utm_campaign:'pilot-arrival'});

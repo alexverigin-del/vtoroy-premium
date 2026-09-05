@@ -4,13 +4,20 @@ import { conversationsSql } from './setup_directus_telegram_conversations_sql.mj
 import { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
 export async function conversationsContract({db,ItemsService,getSchema,p,adminRole}) {
   const id=n=>`66666666-6666-4666-8666-${String(n).padStart(12,'0')}`;
+  const editorPolicy=id(90);
+  await db('directus_policies').insert({id:editorPolicy,name:'ISVOI Editor',admin_access:false,app_access:true});
+  await db('directus_permissions').insert({policy:editorPolicy,collection:'leads',action:'read',fields:'id,status'});
   await db.raw(conversationsSql);await db.raw(conversationsSql);
-  assert.equal((await db('directus_fields').where({collection:'leads',field:'telegram_dialogs'}).first()).special,'o2m');
+  const dialogsField=await db('directus_fields').where({collection:'leads',field:'telegram_dialogs'}).first();
+  assert.equal(dialogsField.special,'o2m');assert.equal(dialogsField.readonly,false);
   assert.equal((await db('directus_fields').where({collection:'lead_conversations',field:'messages'}).first()).special,'o2m');
   assert.equal((await db('directus_relations').where({many_collection:'lead_conversations',many_field:'lead_id'}).first()).one_field,'telegram_dialogs');
   assert.equal((await db('directus_relations').where({many_collection:'lead_messages',many_field:'conversation_id'}).first()).one_field,'messages');
   const salesGroup=await db('directus_collections').where({collection:'isvoi_sales'}).first();
   assert.equal((await db('directus_collections').where({collection:'lead_conversations'}).first()).group,salesGroup?'isvoi_sales':null);
+  const editorLeadRead=await db('directus_permissions').where({policy:editorPolicy,collection:'leads',action:'read'}).first();
+  assert.ok(editorLeadRead.fields.split(',').includes('telegram_dialogs'));
+  assert.ok(await db('directus_permissions').where({policy:editorPolicy,collection:'lead_messages',action:'read'}).first());
   await db.raw('ALTER TABLE leads ADD contact text, ADD contact_channel text, ADD message text, ADD source text, ADD source_path text');
   const intake=id(1),role=id(2),policy=id(3);
   await db('directus_roles').insert({id:role,name:'Website intake fixture'});
@@ -48,6 +55,7 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   const incoming=privateMessage('Хочу уточнить наличие');
   await apply(incoming);await apply(incoming);
   assert.equal(Number((await db('lead_messages').where({conversation_id:c.id,direction:'in'}).count('* as n').first()).n),1);
+  assert.equal((await db('leads').where({id:created.id}).first()).telegram_unread,true);
   await apply(privateMessage('',client,{photo:[{file_id:'photo_fixture_1'}],caption:'Фото',media_group_id:'album_fixture'}));
   assert.equal((await db('lead_messages').where({conversation_id:c.id,photo_file_id:'photo_fixture_1'}).first()).album_id,'album_fixture');
   const card=await db('telegram_deliveries').where({lead_id:created.id}).first();
@@ -79,6 +87,7 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   const reply=await next();assert.equal(reply.destination,'client');assert.equal(reply.payload.chat_id,String(client));assert.equal(reply.payload.text,'Есть в наличии');
   await complete(reply,{type:'unknown'});await complete(reply,{type:'unknown'});
   assert.equal((await db('telegram_message_outbox').where({id:reply.id}).first()).state,'uncertain');
+  assert.equal((await db('leads').where({id:created.id}).first()).telegram_unread,true);
   await drain();assert.equal(await next(),null);
   // A successful reply leaves a fresh contextual action at the bottom of the topic.
   assert.equal((await apply(click(`reply:${c.id}`,source.telegram_message_id))).result,'draft_started');await drain();
@@ -88,6 +97,7 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   assert.equal((await apply(click(`send:${draft.id}`,draft.preview_message_id))).result,'queued');
   const deliveredReply=await next();assert.equal(deliveredReply.destination,'client');assert.equal(deliveredReply.payload.text,'Дополнение к ответу');
   await complete(deliveredReply);
+  assert.equal((await db('leads').where({id:created.id}).first()).telegram_unread,false);
   const followupNotice=await next();assert.equal(followupNotice.destination,'group');
   assert.deepEqual(followupNotice.payload.reply_markup.inline_keyboard,[[{text:'Написать ещё',callback_data:`reply:${c.id}`}]]);
   await complete(followupNotice);assert.equal(await next(),null);

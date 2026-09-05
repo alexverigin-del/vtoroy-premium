@@ -30,6 +30,15 @@ CREATE TABLE IF NOT EXISTS lead_messages (
  created_by uuid REFERENCES directus_users(id), telegram_message_id bigint,
  created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS telegram_unread boolean NOT NULL DEFAULT false;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS telegram_last_message_at timestamptz;
+WITH latest AS (
+ SELECT DISTINCT ON (c.lead_id) c.lead_id,m.direction,m.created_at
+ FROM lead_conversations c JOIN lead_messages m ON m.conversation_id=c.id
+ ORDER BY c.lead_id,m.created_at DESC,m.id DESC
+)
+UPDATE leads l SET telegram_unread=latest.direction='in',telegram_last_message_at=latest.created_at
+FROM latest WHERE l.id=latest.lead_id;
 CREATE TABLE IF NOT EXISTS telegram_reply_drafts (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), conversation_id uuid NOT NULL REFERENCES lead_conversations(id) ON DELETE CASCADE,
  staff_user uuid NOT NULL REFERENCES directus_users(id), telegram_user_id bigint NOT NULL,
@@ -128,10 +137,16 @@ BEGIN
 END $$;
 
 -- The lead remains the manager's main workspace; open the Telegram history here.
+SELECT isvoi_telegram_field('leads','telegram_unread','boolean','boolean',NULL,
+  'half',8,'Включается при новом сообщении клиента и снимается после подтвержденной отправки ответа.',
+  NULL,'group_processing',true,false,'Новое сообщение Telegram');
+SELECT isvoi_telegram_field('leads','telegram_last_message_at','datetime','datetime',NULL,
+  'half',9,'Время последнего входящего или успешно отправленного сообщения Telegram.',
+  NULL,'group_processing',true,false,'Последнее сообщение Telegram');
 SELECT isvoi_telegram_field('leads','telegram_dialogs','list-o2m',NULL,
   '{"layout":"table","enableCreate":false,"enableSelect":false,"fields":["created_at","closed_at"]}'::json,
-  'full',9,'Диалоги и сообщения клиента в Telegram. Откройте строку, чтобы увидеть всю переписку.',
-  'o2m','group_processing',true,false,'Переписка Telegram');
+  'full',10,'Диалоги и сообщения клиента в Telegram. Откройте строку, чтобы увидеть всю переписку.',
+  'o2m','group_processing',false,false,'Переписка Telegram');
 
 SELECT isvoi_telegram_field('lead_conversations','id','input',NULL,NULL,'half',1,'ID диалога.','uuid',NULL,true,true,'ID');
 SELECT isvoi_telegram_field('lead_conversations','lead_id','select-dropdown-m2o','related-values','{"template":"{{reference_code}} · {{contact}} · {{status}}"}'::json,'full',2,'Заявка, к которой относится переписка.','m2o',NULL,true,false,'Заявка');
@@ -140,11 +155,11 @@ SELECT isvoi_telegram_field('lead_conversations','closed_at','datetime','datetim
 SELECT isvoi_telegram_field('lead_conversations','messages','list-o2m',NULL,
   '{"layout":"table","enableCreate":false,"enableSelect":false,"fields":["created_at","direction","text","created_by","photo_file_id"]}'::json,
   'full',5,'Хронологическая переписка. Входящие сообщения — от клиента, исходящие — подтвержденные ответы менеджера.',
-  'o2m',NULL,true,false,'История сообщений');
+  'o2m',NULL,false,false,'История сообщений');
 SELECT isvoi_telegram_field('lead_conversations','delivery_log','list-o2m',NULL,
   '{"layout":"table","enableCreate":false,"enableSelect":false,"fields":["created_at","destination","purpose","state","error_code"]}'::json,
   'full',6,'Технический журнал доставки. Проверяйте его при состояниях «Неизвестно» или «Ошибка».',
-  'o2m',NULL,true,false,'Доставка сообщений');
+  'o2m',NULL,false,false,'Доставка сообщений');
 SELECT isvoi_telegram_field('lead_conversations','route_id','select-dropdown-m2o','related-values',NULL,'half',90,'Маршрут Telegram.','m2o',NULL,true,true,'Маршрут');
 SELECT isvoi_telegram_field('lead_conversations','bot_id','input',NULL,NULL,'half',91,'Telegram ID бота.',NULL,NULL,true,true,'ID бота');
 SELECT isvoi_telegram_field('lead_conversations','client_user_id','input',NULL,NULL,'half',92,'Telegram ID пользователя.',NULL,NULL,true,true,'ID пользователя');
@@ -189,6 +204,36 @@ SELECT isvoi_telegram_relation('lead_messages','conversation_id','lead_conversat
 SELECT isvoi_telegram_relation('lead_messages','created_by','directus_users',NULL,'nullify');
 SELECT isvoi_telegram_relation('telegram_message_outbox','conversation_id','lead_conversations','delivery_log','delete');
 DROP FUNCTION isvoi_telegram_relation(varchar,varchar,varchar,varchar,varchar);
+
+-- Editors can inspect conversation history but cannot create, edit or delete it in Studio.
+CREATE OR REPLACE FUNCTION isvoi_telegram_editor_read(
+  p_collection varchar, p_fields text, p_append boolean DEFAULT false
+) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE v_policy uuid; v_fields text; v_field text;
+BEGIN
+  SELECT id INTO v_policy FROM directus_policies WHERE name='ISVOI Editor' ORDER BY id LIMIT 1;
+  IF v_policy IS NULL THEN RETURN; END IF;
+  IF EXISTS(SELECT 1 FROM directus_permissions WHERE policy=v_policy AND collection=p_collection AND action='read') THEN
+    SELECT fields INTO v_fields FROM directus_permissions WHERE policy=v_policy AND collection=p_collection AND action='read' LIMIT 1;
+    IF p_append AND coalesce(v_fields,'')<>'*' THEN
+      FOREACH v_field IN ARRAY string_to_array(p_fields,',') LOOP
+        IF NOT (v_field=ANY(string_to_array(coalesce(v_fields,''),','))) THEN
+          v_fields=concat_ws(',',nullif(v_fields,''),v_field);
+        END IF;
+      END LOOP;
+      UPDATE directus_permissions SET fields=v_fields WHERE policy=v_policy AND collection=p_collection AND action='read';
+    ELSIF NOT p_append THEN
+      UPDATE directus_permissions SET fields=p_fields WHERE policy=v_policy AND collection=p_collection AND action='read';
+    END IF;
+  ELSE
+    INSERT INTO directus_permissions(policy,collection,action,fields) VALUES(v_policy,p_collection,'read',p_fields);
+  END IF;
+END $$;
+SELECT isvoi_telegram_editor_read('leads','telegram_unread,telegram_last_message_at,telegram_dialogs',true);
+SELECT isvoi_telegram_editor_read('lead_conversations','id,lead_id,created_at,closed_at,messages,delivery_log');
+SELECT isvoi_telegram_editor_read('lead_messages','id,conversation_id,direction,text,photo_file_id,created_by,created_at');
+SELECT isvoi_telegram_editor_read('telegram_message_outbox','id,conversation_id,destination,purpose,state,created_at,error_code');
+DROP FUNCTION isvoi_telegram_editor_read(varchar,text,boolean);
 COMMIT;
 `;
 if(process.argv[1]?.endsWith('setup_directus_telegram_conversations_sql.mjs')) process.stdout.write(conversationsSql);

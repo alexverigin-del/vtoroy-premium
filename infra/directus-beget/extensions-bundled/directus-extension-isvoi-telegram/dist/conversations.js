@@ -194,7 +194,10 @@ export function createConversations({ database, services, getSchema, env, botId,
     const [saved]=await trx('lead_messages').insert({conversation_id:conversationId,direction:'in',...content,telegram_message_id:message.message_id}).returning('*');
     await queue(trx,{conversation_id:conversationId,route_id:ctx.route.id,message_id:saved.id,destination:'group'},
       {...contentPayload(content,content.album_id?'Клиент · альбом\n':'Клиент\n'),reply_markup:replyButton(conversationId)});
-    if(ctx.lead.status==='waiting') await trx('leads').where({id:ctx.lead.id,status:'waiting'}).update({status:'in_progress'});
+    await trx('leads').where({id:ctx.lead.id}).update({
+      telegram_unread:true,telegram_last_message_at:saved.created_at,
+      ...(ctx.lead.status==='waiting'?{status:'in_progress'}:{}),
+    });
     return 'received';
   }
   async function groupUpdate(trx,update,message,from) {
@@ -313,6 +316,11 @@ export function createConversations({ database, services, getSchema, env, botId,
       await trx('telegram_runtime').where({bot_id:botId}).update({send_after:patch.due_at});
     } else patch={state:outcome.type==='permanent'?'failed':'uncertain',error_code:outcome.type==='permanent'?`TELEGRAM_${[400,401,403,404].includes(outcome.status)?outcome.status:'ERROR'}`:'DELIVERY_UNKNOWN'};
     await trx('telegram_message_outbox').where({id:row.id}).update(patch);
+    if(row.purpose==='reply'&&patch.state==='done') {
+      const message=await trx('lead_messages').where({id:row.message_id}).first('created_at');
+      await trx('leads').whereIn('id',trx('lead_conversations').where({id:row.conversation_id}).select('lead_id'))
+        .update({telegram_unread:false,telegram_last_message_at:message?.created_at || trx.fn.now()});
+    }
     if(row.purpose==='reply'&&patch.state!=='pending') await queue(trx,{conversation_id:row.conversation_id,route_id:row.route_id,destination:'group'},
       {text:patch.state==='done'?'Ответ передан Telegram. Это не подтверждение прочтения клиентом.':patch.state==='uncertain'?'Результат отправки ответа неизвестен. Не отправляйте его повторно до ручной сверки.':'Ответ не доставлен. Клиент мог заблокировать бота; проверьте карточку доставки.',
         ...(patch.state==='done'?{reply_markup:replyButton(row.conversation_id,'Написать ещё')}:{})});

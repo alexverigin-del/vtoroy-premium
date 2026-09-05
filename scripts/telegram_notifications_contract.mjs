@@ -39,7 +39,14 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   assert.equal(serviceJob.campaign_id,null);
   assert.equal(serviceJob.purpose,'notice');
   await complete(serviceJob);
-  const campaignJob=await next();
+  let campaignJob;
+  for(let n=0;n<30 && !campaignJob;n++) {
+    const job=await next();
+    assert.ok(job);
+    if(job.campaign_id) campaignJob=job;
+    else {assert.equal(job.campaign_id,null);await complete(job);}
+  }
+  assert.ok(campaignJob);
   assert.equal(campaignJob.campaign_id,campaignId);
   assert.equal(campaignJob.destination,'client');
   assert.equal(campaignJob.payload.chat_id,String(client));

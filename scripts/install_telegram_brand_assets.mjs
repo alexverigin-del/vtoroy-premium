@@ -12,7 +12,7 @@ const compose=path.join(root,'infra','directus-beget','docker-compose.yml');
 const uploads=path.join(root,'infra','directus-beget','uploads');
 const assets=[
   {key:'welcome',title:'isvoi:telegram:welcome:v1',file:path.join(root,'assets','brand','telegram','isvoi-telegram-welcome-v1.jpg'),type:'image/jpeg'},
-  {key:'avatar',title:'isvoi:telegram:avatar:v1',file:path.join(root,'assets','brand','telegram','isvoi-telegram-avatar-v1.png'),type:'image/png'},
+  {key:'avatar',title:'isvoi:telegram:avatar:v2',file:path.join(root,'assets','brand','telegram','isvoi-telegram-avatar-v2.png'),type:'image/png'},
 ];
 
 function sqlValue(value) {return `'${String(value).replaceAll("'","''")}'`;}

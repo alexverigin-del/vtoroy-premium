@@ -14,7 +14,7 @@ ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 Флаг включён в production после миграции `scripts/setup_directus_telegram_notifications_sql.mjs`. Настройка `telegram_bot_settings.notifications_enabled` служит вторым выключателем. Первый выпуск работает с `pilot_mode=true` и разрешённым Telegram ID `65092546`; остальные пользователи видят сообщение о закрытом пилоте и не могут подписаться.
 
-Production-пилот выпущен 5 сентября 2026 года на коммите `e49484b4dccaef304dac87dacad3e0624173758c`. Резервная копия выпуска: `/opt/isvoi/backups/telegram-notifications-20260905T164908332Z`. Release gate, полный `web:verify`, изолированный PostgreSQL/Directus-контракт, применение нативного профиля Telegram, lease worker и HTTP smoke сайта прошли.
+Production-пилот выпущен 5 сентября 2026 года на feature-коммите `e49484b4dccaef304dac87dacad3e0624173758c`; текущий production-коммит `a45255a` добавляет retry для кратких сетевых сбоев Telegram API. Резервная копия выпуска: `/opt/isvoi/backups/telegram-notifications-20260905T164908332Z`. Release gate, полный `web:verify`, изолированный PostgreSQL/Directus-контракт, применение и повторная проверка нативного профиля Telegram, lease worker и HTTP smoke сайта прошли.
 
 Перед выпуском обязательны:
 

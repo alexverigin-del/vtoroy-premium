@@ -115,7 +115,7 @@ async function baseline({upgrade=false}={}) {
   }
   return {state,telegram,intake:upgrade?await websiteIdentity():null};
 }
-async function restartDirectus() {cmd('docker',['compose','up','-d','--no-deps','directus'],{cwd:stack});await pingDirectus();}
+async function restartDirectus() {cmd('docker',['compose','up','-d','--force-recreate','--no-deps','directus'],{cwd:stack});await pingDirectus();}
 function restartWorker() {cmd('pm2',['restart','isvoi-telegram','--update-env']);}
 function restartWeb() {cmd('pm2',['restart','isvoi-web','--update-env']);}
 

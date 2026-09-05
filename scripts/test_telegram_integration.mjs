@@ -315,4 +315,5 @@ test('speed release is pinned, backed up, rehearsed and reversible', async () =>
   assert.ok(release.indexOf("rehearse_telegram.mjs','--production") < release.indexOf("sql(notificationsSql)"));
   assert.match(release,/git',\['reset','--hard',expectedBase\]/);
   assert.match(release,/serviceDelayMs:1100,campaignDelayMs:3200/);
+  assert.match(release,/compose','up','-d','--force-recreate','--no-deps','directus/);
 });

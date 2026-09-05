@@ -51,7 +51,7 @@ try {
     cmd('pm2',['stop','isvoi-telegram']); cmd('pm2',['save']);
     await writeEnv(resolve(root,'infra/telegram/.env'),{TELEGRAM_ENABLED:false});
     await writeEnv(resolve(stack,'.env'),{ISVOI_TELEGRAM_ENABLED:false});
-    cmd('docker',['compose','up','-d','--no-deps','directus'],{cwd:stack}); await ping();
+    cmd('docker',['compose','up','-d','--force-recreate','--no-deps','directus'],{cwd:stack}); await ping();
     console.log('TELEGRAM_DISABLED_HISTORY_PRESERVED');
   } else if(action==='install') {
     if(cmd('git',['rev-parse','HEAD'])!==expectedBase || cmd('git',['status','--porcelain'])) throw new Error('PRODUCTION_CHECKOUT_CHANGED');
@@ -87,7 +87,7 @@ try {
       await mkdir(resolve(root,'infra/telegram'),{recursive:true});
       await writeEnv(resolve(root,'infra/telegram/.env'),{...bot,TELEGRAM_ENABLED:false,TELEGRAM_MODE:'production',TELEGRAM_DIRECTUS_URL:'http://127.0.0.1:8055',TELEGRAM_DIRECTUS_TOKEN:workerToken});
       await writeEnv(resolve(stack,'.env'),{ISVOI_TELEGRAM_ENABLED:true,ISVOI_TELEGRAM_BOT_ID:p.botId,ISVOI_TELEGRAM_WORKER_USER_ID:p.worker,ISVOI_TELEGRAM_MODE:'production'});
-      phase='API';cmd('docker',['compose','up','-d','--no-deps','directus'],{cwd:stack});await ping();
+      phase='API';cmd('docker',['compose','up','-d','--force-recreate','--no-deps','directus'],{cwd:stack});await ping();
       const identity={bot_id:p.botId,worker_id:randomUUID()};
       const request=async auth=>fetch('http://127.0.0.1:8055/isvoi-telegram/session',{method:'POST',headers:{'Content-Type':'application/json',...(auth?{Authorization:`Bearer ${workerToken}`}:{})},body:JSON.stringify(identity),signal:AbortSignal.timeout(15000)});
       if((await request(false)).status!==403) throw new Error('PUBLIC_ENDPOINT_NOT_DENIED');
@@ -120,7 +120,7 @@ try {
         await copyFile(resolve(backup,'directus.env'),resolve(stack,'.env'));
         // Keep additive reviewed code/schema, but endpoint defaults to disabled.
         await writeEnv(resolve(stack,'.env'),{ISVOI_TELEGRAM_ENABLED:false});
-        try{cmd('docker',['compose','up','-d','--no-deps','directus'],{cwd:stack});await ping();}catch{}
+        try{cmd('docker',['compose','up','-d','--force-recreate','--no-deps','directus'],{cwd:stack});await ping();}catch{}
       }
       throw error;
     } finally { await rmdir(lock); }

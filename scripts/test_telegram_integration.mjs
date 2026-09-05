@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { workerConfig, createClients, workerTick, runWorker, deliveryDelayMs } from './lib/telegram-worker.mjs';
+import { workerConfig, createClients, workerTick, runWorker, deliveryDelayMs, recoverableWorkerError, recoveryDelayMs } from './lib/telegram-worker.mjs';
 import { inspectTelegram } from './telegram_preflight.mjs';
 import endpoint, { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
 import { parseUpdate, routeMatches, renderCard, deliveryFailure, nextOperation } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/protocol.js';
@@ -33,6 +33,29 @@ test('service messages drain quickly while campaigns keep conservative pacing', 
   assert.equal(deliveryDelayMs('service'),1100);
   assert.equal(deliveryDelayMs('campaign'),3200);
   assert.equal(deliveryDelayMs(null),1000);
+});
+
+test('worker keeps one identity through lease conflicts and transient poll failures', async () => {
+  assert.equal(recoverableWorkerError(new Error('DIRECTUS_HTTP_409')),true);
+  assert.equal(recoverableWorkerError(new Error('TELEGRAM_POLL_FAILED')),true);
+  assert.equal(recoverableWorkerError(new Error('TELEGRAM_MODE_MISMATCH')),false);
+  assert.equal(recoveryDelayMs(new Error('DIRECTUS_HTTP_409'),1),5000);
+  const controller=new AbortController();
+  const identities=[];let sessions=0,polls=0;
+  const clients={
+    directus:async(path,data)=>{
+      identities.push(data.worker_id);
+      if(path==='session'&&sessions++===0) throw new Error('DIRECTUS_HTTP_409');
+      if(path==='session') return {mode:'test',update_offset:0,conversations:false};
+      if(path==='next') {controller.abort();return {job:null};}
+      throw new Error('UNEXPECTED_DIRECTUS_CALL');
+    },
+    telegram:async method=>{assert.equal(method,'getUpdates');polls++;return polls===1?{type:'unknown'}:{type:'ok',result:[]};},
+  };
+  await runWorker(env,{signal:controller.signal,sleep:async()=>{},log:()=>{},inspect:async()=>({ready:true,webhookConfigured:false}),clientsFactory:()=>clients});
+  assert.ok(sessions>=3);
+  assert.equal(new Set(identities).size,1);
+  assert.equal(polls,2);
 });
 
 test('campaign payload accepts one verified photo and only a first-party CTA', () => {

@@ -104,21 +104,42 @@ export async function workerTick({ clients, identity, offset, conversations = fa
 
 export const deliveryDelayMs=deliveryClass=>deliveryClass==='campaign'?3200:deliveryClass==='service'?1100:1000;
 
-export async function runWorker(env, { once = false, fetchImpl = fetch, sleep = pause, signal, log = console.log } = {}) {
+export function recoverableWorkerError(error) {
+  const code=error?.message;
+  return code==='TELEGRAM_POLL_FAILED'||code==='DIRECTUS_NETWORK_ERROR'||code==='DELIVERY_ACKNOWLEDGEMENT_PENDING'||
+    /^DIRECTUS_HTTP_(409|429|502|503|504)$/.test(code||'');
+}
+
+export function recoveryDelayMs(error,attempt=1) {
+  if(error?.message==='DIRECTUS_HTTP_409') return 5000;
+  if(error?.message==='DELIVERY_ACKNOWLEDGEMENT_PENDING') return 5000;
+  return Math.min(30000,1000*(2**Math.min(4,Math.max(0,attempt-1))));
+}
+
+export async function runWorker(env, { once = false, fetchImpl = fetch, sleep = pause, signal, log = console.log, inspect = inspectTelegram, clientsFactory = createClients } = {}) {
   const config = workerConfig(env);
   if (!config.enabled) { log('Telegram worker disabled. No network requests made.'); return; }
-  const readiness = await inspectTelegram(env, { fetchImpl });
+  const readiness = await inspect(env, { fetchImpl });
   if (!readiness.ready || readiness.webhookConfigured) throw new Error('TELEGRAM_NOT_READY_FOR_POLLING');
-  const clients = createClients(config, fetchImpl);
+  const clients = clientsFactory(config, fetchImpl);
   const identity = { bot_id: config.botId, worker_id: randomUUID() };
   log(`Telegram worker starting (${config.mode}); message content and credentials are not logged.`);
-  let drainQueue=false;
+  let drainQueue=false,recoveryAttempts=0,deliveryHoldUntil=0;
   do {
-    // Acquire/refresh before polling. A different worker cannot poll concurrently while leased.
-    const session = await clients.directus('session', identity);
-    if (session.mode !== config.mode) throw new Error('TELEGRAM_MODE_MISMATCH');
-    const tick=await workerTick({ clients, identity, offset: session.update_offset, conversations: session.conversations === true, sleep, pollTimeout: once||drainQueue?0:2 });
-    drainQueue=tick.delivered;
-    if (!once && !signal?.aborted) await sleep(deliveryDelayMs(tick.deliveryClass));
+    try {
+      // Acquire/refresh before polling. A different worker cannot poll concurrently while leased.
+      const session = await clients.directus('session', identity);
+      if (session.mode !== config.mode) throw new Error('TELEGRAM_MODE_MISMATCH');
+      if(Date.now()<deliveryHoldUntil) {await sleep(Math.min(5000,deliveryHoldUntil-Date.now()));continue;}
+      const tick=await workerTick({ clients, identity, offset: session.update_offset, conversations: session.conversations === true, sleep, pollTimeout: once||drainQueue?0:2 });
+      drainQueue=tick.delivered;recoveryAttempts=0;
+      if (!once && !signal?.aborted) await sleep(deliveryDelayMs(tick.deliveryClass));
+    } catch(error) {
+      if(once||!recoverableWorkerError(error)) throw error;
+      drainQueue=false;recoveryAttempts++;
+      // Keep the same worker id. After an unacknowledged send, pause new deliveries until the in-flight deadline expires.
+      if(error.message==='DELIVERY_ACKNOWLEDGEMENT_PENDING') deliveryHoldUntil=Date.now()+65000;
+      if(!signal?.aborted) await sleep(recoveryDelayMs(error,recoveryAttempts));
+    }
   } while (!once && !signal?.aborted);
 }

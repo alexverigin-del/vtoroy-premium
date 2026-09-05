@@ -49,6 +49,8 @@ export interface SiteSettings {
   headerCtaUrl?: string;
   phone?: string;
   telegram?: string;
+  supportTelegramUrl?: string;
+  supportTelegramLabel?: string;
   email?: string;
   address?: string;
   businessHours?: string;

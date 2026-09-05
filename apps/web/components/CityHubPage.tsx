@@ -113,8 +113,17 @@ export function CityHubPage({
                   </a>
                 ) : null}
                 {telegramHref ? (
-                  <a href={telegramHref}>{location.contactTelegramLabel || location.telegram}</a>
+                  <a href={telegramHref} rel="noreferrer" target="_blank">
+                    {location.contactTelegramLabel || location.telegram}
+                  </a>
                 ) : null}
+                <a
+                  href={settings.supportTelegramUrl || "https://t.me/isvoi_help_bot?start=site"}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {settings.supportTelegramLabel || "Заявки и поддержка в Telegram"}
+                </a>
                 {location.mapUrl && location.contactMapLabel ? (
                   <a href={location.mapUrl}>{location.contactMapLabel}</a>
                 ) : null}

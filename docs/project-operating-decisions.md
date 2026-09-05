@@ -4274,3 +4274,10 @@ Next content-editing priorities:
   eight screenshots and JSON result convention is under
   `output/playwright/model-specifications` on the server. These are verification
   artifacts, not tracked content or another deployment.
+## Telegram Bot Notifications Pilot · 2026-09-05
+
+- Approved implementation scope: the production bot gains a five-action welcome, automatic support intake for the first unclassified message, `/news` subscriptions, Directus-managed campaigns, and a site/footer deep link with source `site`.
+- Subscription delivery is double-gated by the Directus environment and `telegram_bot_settings`, starts in allowlisted pilot mode, uses explicit opt-in with an immutable event log, and keeps existing users unsubscribed.
+- Campaigns use an immutable content/recipient snapshot, a partial unique key per campaign and client session, service-message priority, Moscow 10:00–20:00 delivery, a rolling seven-day limit of two, and fail-closed handling for 403, 429 and uncertain outcomes.
+- Telegram channels remain reserved and disabled. Figma and a separate admin application remain outside this release; Directus Studio is the control plane.
+- Local implementation and verification do not authorize GitHub push, production migration, Telegram profile mutation, or pilot activation. Those remain a final explicit release action.

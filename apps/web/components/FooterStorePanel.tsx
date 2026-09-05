@@ -98,6 +98,9 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
   const address = valueOrFallback(location?.address, settings.address, allowFallback);
   const phone = valueOrFallback(location?.phone, settings.phone, allowFallback);
   const telegram = valueOrFallback(location?.telegram, settings.telegram, allowFallback);
+  const supportTelegramUrl =
+    settings.supportTelegramUrl || "https://t.me/isvoi_help_bot?start=site";
+  const supportTelegramLabel = settings.supportTelegramLabel || "Заявки и поддержка в Telegram";
   const email = valueOrFallback(location?.email, settings.email, allowFallback);
   const businessHours = valueOrFallback(
     location?.businessHours,
@@ -110,7 +113,7 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
   const ogrn = valueOrFallback(location?.ogrn, settings.ogrn, allowFallback);
   const legalAddress = location?.legalAddress;
 
-  const hasContacts = phone || telegram || email;
+  const hasContacts = phone || telegram || email || supportTelegramUrl;
   const hasLegal = legalName || inn || ogrn || legalAddress;
   const eyebrow =
     location?.footerEyebrow ||
@@ -170,6 +173,14 @@ export function FooterStorePanel({ settings }: { settings: SiteSettings }) {
                   Telegram
                 </a>
               ) : null}
+              <a
+                className={contactLinkClass}
+                href={supportTelegramUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {supportTelegramLabel}
+              </a>
               {email ? (
                 <a className={contactLinkClass} href={`mailto:${email}`}>
                   {email}

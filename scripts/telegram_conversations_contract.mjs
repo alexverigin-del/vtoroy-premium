@@ -1,13 +1,19 @@
 // Runs only inside the disposable native Directus production-policy contract.
 import assert from 'node:assert/strict';
 import { conversationsSql } from './setup_directus_telegram_conversations_sql.mjs';
+import { notificationsSql } from './setup_directus_telegram_notifications_sql.mjs';
+import { notificationsContract } from './telegram_notifications_contract.mjs';
 import { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
 export async function conversationsContract({db,ItemsService,getSchema,p,adminRole}) {
   const id=n=>`66666666-6666-4666-8666-${String(n).padStart(12,'0')}`;
   const editorPolicy=id(90);
+  const editorRole=id(91),editorUser=id(92),editorAccess=id(93);
   await db('directus_policies').insert({id:editorPolicy,name:'ISVOI Editor',admin_access:false,app_access:true});
+  await db('directus_roles').insert({id:editorRole,name:'ISVOI Editor'});
+  await db('directus_users').insert({id:editorUser,role:editorRole,status:'active'});
+  await db('directus_access').insert({id:editorAccess,role:editorRole,policy:editorPolicy});
   await db('directus_permissions').insert({policy:editorPolicy,collection:'leads',action:'read',fields:'id,status'});
-  await db.raw(conversationsSql);await db.raw(conversationsSql);
+  await db.raw(conversationsSql);await db.raw(conversationsSql);await db.raw(notificationsSql);await db.raw(notificationsSql);
   const dialogsField=await db('directus_fields').where({collection:'leads',field:'telegram_dialogs'}).first();
   assert.equal(dialogsField.special,'o2m');assert.equal(dialogsField.readonly,false);
   assert.equal((await db('directus_fields').where({collection:'lead_conversations',field:'messages'}).first()).special,'o2m');
@@ -18,6 +24,10 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   const editorLeadRead=await db('directus_permissions').where({policy:editorPolicy,collection:'leads',action:'read'}).first();
   assert.ok(editorLeadRead.fields.split(',').includes('telegram_dialogs'));
   assert.ok(await db('directus_permissions').where({policy:editorPolicy,collection:'lead_messages',action:'read'}).first());
+  const campaignUpdate=await db('directus_permissions').where({policy:editorPolicy,collection:'telegram_campaigns',action:'update'}).first();
+  assert.ok(campaignUpdate);
+  assert.equal(campaignUpdate.fields.includes('approved_by'),false);
+  assert.equal(campaignUpdate.fields.includes('approved_at'),false);
   await db.raw('ALTER TABLE leads ADD contact text, ADD contact_channel text, ADD message text, ADD source text, ADD source_path text');
   const intake=id(1),role=id(2),policy=id(3);
   await db('directus_roles').insert({id:role,name:'Website intake fixture'});
@@ -25,7 +35,7 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   await db('directus_policies').insert({id:policy,name:'Website intake fixture',admin_access:false,app_access:false});
   await db('directus_access').insert({id:id(4),role,policy});
   await db('directus_permissions').insert({policy,collection:'leads',action:'create',fields:'id,kind,status,contact_channel,contact,source,source_path,message,store_location_id,is_test,reference_code',permissions:{},validation:{status:{_eq:'new'},is_test:{_eq:false}}});
-  const env={ISVOI_TELEGRAM_ENABLED:true,ISVOI_TELEGRAM_BOT_ID:p.botId,ISVOI_TELEGRAM_WORKER_USER_ID:p.worker,ISVOI_TELEGRAM_MODE:'production',PUBLIC_URL:'https://api.example.test',ISVOI_TELEGRAM_CONVERSATIONS_ENABLED:true,ISVOI_TELEGRAM_INTAKE_USER_ID:intake,ISVOI_TELEGRAM_BOT_USERNAME:'fixture_test_bot'};
+  const env={ISVOI_TELEGRAM_ENABLED:true,ISVOI_TELEGRAM_BOT_ID:p.botId,ISVOI_TELEGRAM_WORKER_USER_ID:p.worker,ISVOI_TELEGRAM_MODE:'production',PUBLIC_URL:'https://api.example.test',ISVOI_TELEGRAM_CONVERSATIONS_ENABLED:true,ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED:true,ISVOI_TELEGRAM_INTAKE_USER_ID:intake,ISVOI_TELEGRAM_BOT_USERNAME:'fixture_test_bot'};
   const h=createHandlers({database:db,services:{ItemsService},getSchema:()=>getSchema({bypassCache:true}),env});
   const identity={bot_id:p.botId,worker_id:id(5)};
   await db('telegram_runtime').where({bot_id:p.botId}).update({lease_until:db.raw("now()-interval '1 minute'")});
@@ -157,5 +167,6 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   const retention=await db('telegram_retention_settings').where({bot_id:p.botId}).first();
   assert.equal(Number(retention.retention_months),6);
   assert.ok(Number(retention.last_conversations_deleted)>=1);
+  await notificationsContract({db,h,req,p,next,complete,sequenceState:{update:sequence,message:telegramId}});
   console.log('PASS: conversations: Directus relations, one-use site binding, expiry, permissions, dedup, photo/album history, internal-message isolation, confirmed and follow-up replies, uncertain delivery, closed-lead continuation, direct entry and six-month retention.');
 }

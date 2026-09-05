@@ -5,6 +5,7 @@ import { workerConfig, createClients, workerTick, runWorker } from './lib/telegr
 import endpoint, { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
 import { parseUpdate, routeMatches, renderCard, deliveryFailure, nextOperation } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/protocol.js';
 import { createConversations, messageContent } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/conversations.js';
+import { createNotifications, campaignPayload } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/notifications.js';
 
 const ID = '11111111-1111-4111-8111-111111111111';
 const OTHER = '22222222-2222-4222-8222-222222222222';
@@ -24,6 +25,14 @@ test('private destinations require an explicit conversation job; photos cannot f
   assert.equal(messageContent({photo:[{file_id:'https://example.test/private'}]}),null);
   assert.equal(messageContent({caption:'Caption',document:{file_id:'file'}}),null);
   assert.equal(messageContent({text:'a'.repeat(3501)}),null);
+});
+
+test('campaign payload accepts one verified photo and only a first-party CTA', () => {
+  const payload=campaignPayload({message_text:'Новое поступление',cta_label:'Открыть',cta_url:'https://isvoi.ru/catalog',utm_campaign:'arrival'},'https://api.isvoi.ru/assets/11111111-1111-4111-8111-111111111111');
+  assert.equal(payload.photo,'https://api.isvoi.ru/assets/11111111-1111-4111-8111-111111111111');
+  assert.equal(payload.reply_markup.inline_keyboard[0][0].url,'https://isvoi.ru/catalog?utm_campaign=arrival');
+  assert.throws(()=>campaignPayload({message_text:'Текст',cta_label:'Открыть',cta_url:'https://example.com'},null),/CAMPAIGN_CTA_INVALID/);
+  assert.throws(()=>campaignPayload({message_text:'а'.repeat(1025)},'https://api.isvoi.ru/assets/11111111-1111-4111-8111-111111111111'),/CAMPAIGN_CAPTION_INVALID/);
 });
 
 test('conversation pilot rejects non-allowlisted clients before accessing storage', async () => {
@@ -171,7 +180,8 @@ test('runtime contains only the scoped endpoint and built files match sources', 
   endpoint.handler({ post(path) { paths.push(path); } }, { env: {} });
   assert.deepEqual(paths, ['/session', '/next', '/complete', '/update', '/intake', '/intake-check']);
   const root = new URL('../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/', import.meta.url);
-  for (const file of ['index.js', 'protocol.js', 'conversations.js']) {
+  assert.equal(typeof createNotifications,'function');
+  for (const file of ['index.js', 'protocol.js', 'conversations.js', 'notifications.js']) {
     assert.equal(await readFile(new URL(`src/${file}`, root), 'utf8'), await readFile(new URL(`dist/${file}`, root), 'utf8'));
   }
 });
@@ -199,4 +209,18 @@ test('production conversation release is pinned, reversible and secret-safe', as
   assert.match(release,/retentionMonths:6/);
   assert.doesNotMatch(release,/console\.(?:log|error)\([^\n]*(?:TELEGRAM_BOT_TOKEN|DIRECTUS_LEADS_TOKEN|workerToken)/);
   for(const key of ['ISVOI_TELEGRAM_CONVERSATIONS_ENABLED','ISVOI_TELEGRAM_BOT_USERNAME','ISVOI_TELEGRAM_INTAKE_USER_ID']) assert.match(compose,new RegExp(`${key}: \\$\\{${key}:-`));
+});
+
+test('notification release gates schema, pilot activation, profile and rollback', async () => {
+  const release=await readFile(new URL('./release_telegram_notifications_production.mjs',import.meta.url),'utf8');
+  const prepare=await readFile(new URL('./prepare_telegram_notifications_release.mjs',import.meta.url),'utf8');
+  const compose=await readFile(new URL('../infra/directus-beget/docker-compose.yml',import.meta.url),'utf8');
+  assert.match(release,/expectedBase='9bc0a592338bbb9bba13b6dfb08ad30e7409eac9'/);
+  assert.match(prepare,/RELEASE_MUST_BE_ONE_COMMIT_AFTER_BASE/);
+  assert.ok(release.indexOf("rehearse_telegram.mjs','--production") < release.indexOf("sql(notificationsSql)"));
+  assert.ok(release.indexOf("sql(notificationsSql)") < release.indexOf("ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED:true"));
+  assert.match(release,/configure_telegram_bot_profile\.mjs','--apply/);
+  assert.match(release,/pilot_user_ids='\[\\"65092546\\"\]'::jsonb/);
+  assert.match(release,/state='cancelled',error_code='NOTIFICATIONS_DISABLED'/);
+  assert.match(compose,/ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED: \$\{ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED:-false\}/);
 });

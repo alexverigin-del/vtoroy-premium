@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { UUID, validId, failure, routeMatches } from './protocol.js';
+import { createNotifications } from './notifications.js';
 
 const active = lead => lead && ['new','in_progress','waiting'].includes(lead.status);
 const enabledFlag = value => value === true || value === 'true';
@@ -45,6 +46,8 @@ export function createConversations({ database, services, getSchema, env, botId,
     const conversations=await trx('lead_conversations').where({bot_id:botId}).whereNotNull('closed_at')
       .whereRaw("closed_at <= now() - interval '6 months'").delete();
     const sessions=await trx('telegram_client_sessions').where({bot_id:botId}).whereNull('conversation_id')
+      .whereNotExists(trx('telegram_subscriptions as s').select(1).whereRaw('s.session_id=telegram_client_sessions.id'))
+      .whereNotExists(trx('telegram_message_outbox as o').select(1).whereRaw('o.session_id=telegram_client_sessions.id').whereNotNull('o.campaign_id'))
       .whereRaw("updated_at <= now() - interval '6 months'").delete();
     const tokens=await trx('telegram_link_tokens').where({bot_id:botId}).whereRaw("expires_at <= now() - interval '1 day'").delete();
     const receipts=await trx('telegram_receipts').where({bot_id:botId}).whereRaw("created_at <= now() - interval '6 months'").delete();
@@ -55,6 +58,7 @@ export function createConversations({ database, services, getSchema, env, botId,
     });
   }
   const tell = (trx, session, text, reply_markup) => queue(trx,{session_id:session.id,destination:'client'}, {text,...(reply_markup?{reply_markup}:{})});
+  const notifications = createNotifications({env,botId,mode,queue,tell});
   async function context(trx, id) {
     const c = await trx('lead_conversations').where({id,bot_id:botId}).first();
     if (!c) return null;
@@ -86,14 +90,14 @@ export function createConversations({ database, services, getSchema, env, botId,
     await trx('telegram_client_sessions').where({id:session.id}).update({conversation_id:null,pending_kind:null});
     const buttons=list.map(c=>[{text:c.reference_code || 'Заявка',callback_data:`conv:${c.id}`}]);
     buttons.push([{text:'Новое обращение',callback_data:'new'}]);
-    await tell(trx,session,list.length?'Выберите заявку для переписки. Сообщения до выбора не отправляются менеджеру.':'Здравствуйте! Это бот I СВОИ. Здесь отвечает менеджер. Для обращения нажмите кнопку ниже.',{inline_keyboard:buttons});
+    await tell(trx,session,list.length?'Выберите заявку для переписки. Если написать без выбора, создадим новый вопрос поддержке.':'Активных заявок пока нет. Можно создать новое обращение.',{inline_keyboard:buttons});
   }
   async function categories(trx,session) {
     await trx('telegram_client_sessions').where({id:session.id}).update({conversation_id:null,pending_kind:null});
     await tell(trx,session,'С чем помочь? Отправленные сообщения увидят сотрудники I СВОИ, которые обрабатывают вашу заявку.',{inline_keyboard:[
       [{text:'Купить / подобрать',callback_data:'kind:selection'}],
       [{text:'Продать / обменять',callback_data:'kind:trade'}],
-      [{text:'Другой вопрос',callback_data:'kind:support'}],
+      [{text:'Задать вопрос',callback_data:'kind:support'}],
       [{text:'Мои заявки',callback_data:'dialogs'}],
     ]});
   }
@@ -163,6 +167,8 @@ export function createConversations({ database, services, getSchema, env, botId,
       if(!sent || !sent.payload.reply_markup?.inline_keyboard?.flat().some(b=>b.callback_data===data)) return 'stale';
       if(data==='new') {await categories(trx,session);return 'selected';}
       if(data==='dialogs') {await choose(trx,session);return 'selected';}
+      const notificationResult=await notifications.callback(trx,session,data);
+      if(notificationResult) return notificationResult;
       if(/^kind:(selection|trade|support)$/.test(data)) {
         await trx('telegram_client_sessions').where({id:session.id}).update({conversation_id:null,pending_kind:data.slice(5)});
         await tell(trx,session,data==='kind:trade'?'Напишите, что хотите продать или обменять, либо отправьте фото. Предварительная оценка также доступна на https://isvoi.ru/trade.':'Опишите, что вам нужно, или отправьте фото. Заявка появится после этого сообщения.');
@@ -179,17 +185,20 @@ export function createConversations({ database, services, getSchema, env, botId,
     const text=message.text || '';
     if(/^\/start(?:\s|$)/.test(text)) {
       const token=text.trim().split(/\s+/)[1];
-      if(token) {const result=await bind(trx,session,token);if(result==='invalid_link') await tell(trx,session,'Ссылка уже использована, истекла или заявка недоступна. Ваше сообщение не привязано к заявке. Откройте /dialogs или создайте новое обращение через /new.');return result;}
-      await choose(trx,session);return 'selected';
+      if(token && token!=='site') {const result=await bind(trx,session,token);if(result==='invalid_link') await tell(trx,session,'Ссылка уже использована, истекла или заявка недоступна. Ваше сообщение не привязано к заявке. Откройте /dialogs или создайте новое обращение через /new.');return result;}
+      await notifications.welcome(trx,session,token==='site'?'site':null);return 'selected';
     }
     if(text==='/new') {await categories(trx,session);return 'selected';}
     if(text==='/dialogs'||text==='/cancel') {await choose(trx,session);return 'selected';}
-    if(text.startsWith('/')) {await tell(trx,session,'Доступны /dialogs — выбор заявки, /new — новое обращение.');return 'ignored';}
+    if(text==='/news') {await notifications.news(trx,session);return 'selected';}
+    if(text==='/help') {await notifications.help(trx,session);return 'selected';}
+    if(text.startsWith('/')) {await tell(trx,session,'Доступны /start — главное меню, /new — новое обращение, /dialogs — мои заявки, /news — подписки, /help — помощь.');return 'ignored';}
     const content=messageContent(message);
     if(!content) {await tell(trx,session,'Пока можно отправить текст до 3500 знаков или фото с подписью до 1000 знаков. Для документов и голосовых попросите менеджера согласовать другой способ.');return 'unsupported';}
     let conversationId=session.conversation_id;
     if(!conversationId&&session.pending_kind) conversationId=await createDirectLead(trx,session,content);
-    if(!conversationId) {await choose(trx,session);return 'select_required';}
+    if(!conversationId) conversationId=await createDirectLead(trx,session,content,{kind:'support'});
+    if(!conversationId) return 'closed';
     let ctx=await context(trx,conversationId);
     if(!ctx||!active(ctx.lead)) {
       conversationId=await createDirectLead(trx,session,content,{
@@ -281,9 +290,12 @@ export function createConversations({ database, services, getSchema, env, botId,
   }
   async function next(trx) {
     if(!enabled) return null;
+    await notifications.prepare(trx);
     await trx('telegram_message_outbox').where({bot_id:botId,state:'in_flight'}).where('operation_deadline','<',trx.fn.now()).update({state:'uncertain',error_code:'WORKER_INTERRUPTED'});
-    const rows=await trx('telegram_message_outbox').where({bot_id:botId,state:'pending'}).where('due_at','<=',trx.fn.now()).orderBy('created_at').limit(20).forUpdate().skipLocked();
+    const rows=await trx('telegram_message_outbox').where({bot_id:botId,state:'pending'}).where('due_at','<=',trx.fn.now())
+      .orderByRaw("CASE WHEN campaign_id IS NULL THEN 0 ELSE 1 END").orderBy('created_at').limit(20).forUpdate().skipLocked();
     for(const row of rows) {
+      if(!await notifications.allowDelivery(trx,row)) continue;
       let chatId,topicId;
       const ctx=row.conversation_id?await context(trx,row.conversation_id):null;
       if(row.conversation_id&&!ctx) {await trx('telegram_message_outbox').where({id:row.id}).update({state:'failed',error_code:'ROUTE_CHANGED'});continue;}
@@ -304,7 +316,7 @@ export function createConversations({ database, services, getSchema, env, botId,
       }
       const operation_id=randomUUID();
       await trx('telegram_message_outbox').where({id:row.id}).update({state:'in_flight',operation_id,operation_deadline:trx.raw("now()+interval '60 seconds'")});
-      return {id:row.id,channel:'conversation',operation_id,destination:row.destination,method:row.payload.photo?'sendPhoto':'sendMessage',payload:{...row.payload,chat_id:chatId,...(topicId?{message_thread_id:topicId}:{})}};
+      return {id:row.id,channel:'conversation',operation_id,destination:row.destination,purpose:row.purpose,campaign_id:row.campaign_id || null,method:row.payload.photo?'sendPhoto':'sendMessage',payload:{...row.payload,chat_id:chatId,...(topicId?{message_thread_id:topicId}:{})}};
     }
     return null;
   }
@@ -323,7 +335,7 @@ export function createConversations({ database, services, getSchema, env, botId,
       const delay=Math.max(1,Math.min(86400,Number(outcome.retryAfter)||60));
       patch={state:'pending',error_code:'TELEGRAM_429',due_at:trx.raw("now()+(?*interval '1 second')",[delay])};
       await trx('telegram_runtime').where({bot_id:botId}).update({send_after:patch.due_at});
-    } else patch={state:outcome.type==='permanent'?'failed':'uncertain',error_code:outcome.type==='permanent'?`TELEGRAM_${[400,401,403,404].includes(outcome.status)?outcome.status:'ERROR'}`:'DELIVERY_UNKNOWN'};
+    } else patch={state:outcome.type==='permanent'?(row.campaign_id&&outcome.status===403?'blocked':'failed'):'uncertain',error_code:outcome.type==='permanent'?`TELEGRAM_${[400,401,403,404].includes(outcome.status)?outcome.status:'ERROR'}`:'DELIVERY_UNKNOWN'};
     await trx('telegram_message_outbox').where({id:row.id}).update(patch);
     if(row.purpose==='reply'&&patch.state==='done') {
       const message=await trx('lead_messages').where({id:row.message_id}).first('created_at');
@@ -333,6 +345,7 @@ export function createConversations({ database, services, getSchema, env, botId,
     if(row.purpose==='reply'&&patch.state!=='pending') await queue(trx,{conversation_id:row.conversation_id,route_id:row.route_id,destination:'group'},
       {text:patch.state==='done'?'Ответ передан Telegram. Это не подтверждение прочтения клиентом.':patch.state==='uncertain'?'Результат отправки ответа неизвестен. Не отправляйте его повторно до ручной сверки.':'Ответ не доставлен. Клиент мог заблокировать бота; проверьте карточку доставки.',
         ...(patch.state==='done'?{reply_markup:replyButton(row.conversation_id,'Написать ещё')}:{})});
+    await notifications.completed(trx,row,patch.state,patch.error_code);
     return {ok:true};
   }
   const maintenance=async trx=>{if(enabled) await retention(trx);};

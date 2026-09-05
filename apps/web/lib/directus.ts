@@ -1192,6 +1192,8 @@ function mapSiteSettingsFromDirectus(row: Record<string, unknown>): SiteSettings
     headerCtaUrl: str(row.header_cta_url),
     phone: str(row.phone),
     telegram: str(row.telegram),
+    supportTelegramUrl: str(row.support_telegram_url, "https://t.me/isvoi_help_bot?start=site"),
+    supportTelegramLabel: str(row.support_telegram_label, "Заявки и поддержка в Telegram"),
     email: str(row.email),
     address: str(row.address),
     businessHours: str(row.business_hours),

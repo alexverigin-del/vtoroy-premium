@@ -287,6 +287,11 @@ test('notification schema exposes delivery timestamps and p50/p95 metrics', asyn
   assert.match(schema,/isvoi_refresh_telegram_delivery_metrics/);
 });
 
+test('explicit pilot test delivery bypasses marketing quiet hours', async () => {
+  const source=await readFile(new URL('../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/notifications.js',import.meta.url),'utf8');
+  assert.ok(source.indexOf('if(row.is_test) return true') < source.indexOf('const inside=await trx.raw'));
+});
+
 test('speed release is pinned, backed up, rehearsed and reversible', async () => {
   const release=await readFile(new URL('./release_telegram_speed_production.mjs',import.meta.url),'utf8');
   const prepare=await readFile(new URL('./prepare_telegram_speed_release.mjs',import.meta.url),'utf8');

@@ -188,6 +188,7 @@ export function createNotifications({ env, botId, queue, tell, edit }) {
   async function allowDelivery(trx,row) {
     if(!row.campaign_id) return true;
     const settings=await getSettings(trx); if(!settings?.notifications_enabled) {await trx('telegram_message_outbox').where({id:row.id}).update({state:'cancelled',error_code:'NOTIFICATIONS_DISABLED'});return false;}
+    if(row.is_test) return true;
     const inside=await trx.raw("select ((now() at time zone ?)::time >= ?::time and (now() at time zone ?)::time < ?::time) ok",[settings.timezone,settings.quiet_start,settings.timezone,settings.quiet_end]);
     if(inside.rows[0].ok) return true;
     await trx('telegram_message_outbox').where({id:row.id}).update({due_at:trx.raw("case when (now() at time zone ?)::time < ?::time then ((now() at time zone ?)::date + ?::time) at time zone ? else (((now() at time zone ?)::date + 1) + ?::time) at time zone ? end",[settings.timezone,settings.quiet_start,settings.timezone,settings.quiet_start,settings.timezone,settings.timezone,settings.quiet_start,settings.timezone])});

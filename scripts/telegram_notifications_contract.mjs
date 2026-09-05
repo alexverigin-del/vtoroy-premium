@@ -104,6 +104,10 @@ export async function notificationsContract({db,h,req,p,next,complete,sequenceSt
   const currentHour=Number((await db.raw("select extract(hour from now() at time zone 'Europe/Moscow')::int h")).rows[0].h);
   const quietHour=(currentHour+2)%23;
   await db('telegram_bot_settings').where({bot_id:p.botId}).update({quiet_start:`${String(quietHour).padStart(2,'0')}:00`,quiet_end:`${String(quietHour+1).padStart(2,'0')}:00`});
+  await db('telegram_campaigns').where({id:campaignId}).update({test_requested_by:p.staff,test_requested_at:db.fn.now()});
+  const afterHoursTest=await next();
+  assert.equal(afterHoursTest.purpose,'campaign_test');
+  await complete(afterHoursTest);
   const quietCampaign='77777777-7777-4777-8777-000000000005';
   await db('telegram_campaigns').insert({id:quietCampaign,bot_id:p.botId,internal_title:'Пилот: тихие часы',status:'sending',topic_key:'new_arrivals',message_text:'Отложить',content_snapshot:{message_text:'Отложить'}});
   await db('telegram_message_outbox').insert({bot_id:p.botId,session_id:session.id,subscription_id:subscription.id,campaign_id:quietCampaign,destination:'client',purpose:'campaign',payload:{text:'Отложить'},state:'pending'});

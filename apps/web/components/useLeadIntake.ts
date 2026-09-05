@@ -57,6 +57,7 @@ type LeadPayload = {
 };
 
 export type LeadSubmitResult = {
+  telegram_url?: string;
   ok: true;
   storage: "directus";
   reference_code?: string;
@@ -88,7 +89,7 @@ export function useLeadIntake() {
     [],
   );
   const turnstileWidgetRef = useRef<string>();
-  const submitting = useRef(false);
+  const submission = useRef<true | string>();
   const turnstileRequired = Boolean(TURNSTILE_SITE_KEY);
 
   const resetTurnstile = useCallback(() => {
@@ -142,13 +143,13 @@ export function useLeadIntake() {
       payload: LeadPayload,
       onFailure?: (code: string) => void,
     ): Promise<LeadSubmitResult | null> => {
-      if (submitting.current) return null;
+      if (submission.current === true) return null;
       if (!payload.contact.trim() || (TURNSTILE_SITE_KEY && !turnstileToken)) {
         setState("error");
         return null;
       }
 
-      submitting.current = true;
+      submission.current = true;
       setState("submitting");
       const response = await fetch("/lead-intake", {
         method: "POST",
@@ -163,19 +164,20 @@ export function useLeadIntake() {
       if (!response?.ok) {
         const failure = await response?.json().catch(() => null);
         onFailure?.(typeof failure?.error === "string" ? failure.error : "network_error");
-        submitting.current = false;
+        submission.current = undefined;
         resetTurnstile();
         setState("error");
         return null;
       }
 
       const result = (await response.json().catch(() => null)) as LeadSubmitResult | null;
-      submitting.current = false;
       resetTurnstile();
       if (!result?.ok) {
+        submission.current = undefined;
         setState("error");
         return null;
       }
+      submission.current = result.telegram_url;
       setState("success");
       return result;
     },
@@ -184,7 +186,14 @@ export function useLeadIntake() {
 
   return {
     markError: () => setState("error"),
-    resetState: () => setState("idle"),
+    resetState: () => {
+      setState("idle");
+      submission.current = undefined;
+    },
+    telegramUrl:
+      state === "success" && typeof submission.current === "string"
+        ? submission.current
+        : undefined,
     resetTurnstile,
     state,
     submitLead,

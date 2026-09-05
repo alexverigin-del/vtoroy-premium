@@ -8,6 +8,11 @@ export const RESULT_TEXT = {
   forbidden: 'Нет доступа к этой заявке.',
   stale: 'Кнопка устарела. Откройте актуальную карточку.',
   ignored: 'Действие не поддерживается.',
+  selected: 'Выбор сохранён.', linked: 'Заявка подключена.',
+  draft_started: 'Ответьте на приглашение бота в этой теме.',
+  draft_ready: 'Проверьте черновик и подтвердите отправку.',
+  queued: 'Ответ поставлен в очередь.', cancelled: 'Отправка отменена.',
+  rate_limited: 'Слишком много действий. Подождите минуту.',
 };
 export function failure(code, status = 400) {
   return Object.assign(new Error(code), { publicCode: code, status });

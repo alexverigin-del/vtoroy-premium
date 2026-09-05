@@ -35,7 +35,7 @@ async function cleanup(state) {
 if (action !== 'start') {
   const state = JSON.parse(await readFile(statePath, 'utf8')); valid(state);
   if (action === 'stop') { await cleanup(state); console.log('PILOT_STOPPED'); }
-  else if (['enqueue','status'].includes(action)) {
+  else if (['enqueue','status','conversation-link'].includes(action)) {
     if (state.stopped || Date.now() >= state.expiresAt) throw new Error('PILOT_EXPIRED');
     console.log(docker(execArgs(state, action)));
   } else throw new Error('PILOT_ACTION_INVALID');
@@ -72,6 +72,7 @@ if (action !== 'start') {
     try { if (await new Promise((r,j) => { bootstrap.on('exit',r); bootstrap.on('error',j); }) !== 0) throw new Error('PILOT_BOOTSTRAP_FAILED'); } finally { clearTimeout(timer); }
     // No published ports. SSH reaches the internal bridge address from the host.
     docker(['run','-d','--name',state.api,'--network',network,'--memory','768m','--cpus','0.75',...envArgs(),'-e',`SECRET=${secret}`,
+      ...(process.argv.includes('--conversations')?['-e','ISVOI_TELEGRAM_CONVERSATIONS_ENABLED=true','-e','ISVOI_TELEGRAM_INTAKE_USER_ID=00000000-0000-4000-8000-000000000021','-e','ISVOI_TELEGRAM_BOT_USERNAME=isvoi_test_bot','-e','ISVOI_TELEGRAM_TEST_CLIENT_IDS=65092546']:[]),
       '-e','PUBLIC_URL=https://pilot.invalid','-e','ISVOI_TELEGRAM_ENABLED=true','-e','ISVOI_TELEGRAM_MODE=test','-e','ISVOI_TELEGRAM_BOT_ID=8908725708','-e','ISVOI_TELEGRAM_WORKER_USER_ID=00000000-0000-4000-8000-000000000001','-e','ISVOI_TELEGRAM_STUDIO_LINK_ENABLED=false',
       '--mount',`type=bind,source=${root},target=/workspace,readonly`,'--mount',`type=bind,source=${ext},target=/directus/extensions/directus-extension-isvoi-telegram,readonly`,'--entrypoint','node',image,'/directus/node_modules/@directus/api/dist/cli/run.js','start']);
     state.apiHost = docker(['inspect','--format','{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}',state.api]);

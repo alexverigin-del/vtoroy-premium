@@ -28,10 +28,11 @@ try {
   for (const file of [
     'scripts/telegram_pg_contract.mjs', 'scripts/setup_directus_telegram_sql.mjs',
     ...(native ? ['scripts/telegram_native_contract.mjs', 'scripts/fixtures/telegram_schema.sql'] : []),
-    ...(production ? ['scripts/telegram_production_contract.mjs','scripts/setup_directus_telegram_production_sql.mjs'] : []),
+    ...(production ? ['scripts/telegram_production_contract.mjs','scripts/setup_directus_telegram_production_sql.mjs','scripts/telegram_conversations_contract.mjs','scripts/setup_directus_telegram_conversations_sql.mjs'] : []),
     'infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/package.json',
     'infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js',
     'infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/protocol.js',
+    'infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/conversations.js',
   ]) {
     await mkdir(dirname(resolve(staging, file)), { recursive: true });
     await copyFile(resolve(file), resolve(staging, file));

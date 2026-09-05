@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { workerConfig, createClients, workerTick, runWorker } from './lib/telegram-worker.mjs';
 import endpoint, { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
 import { parseUpdate, routeMatches, renderCard, deliveryFailure, nextOperation } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/protocol.js';
+import { createConversations, messageContent } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/conversations.js';
 
 const ID = '11111111-1111-4111-8111-111111111111';
 const OTHER = '22222222-2222-4222-8222-222222222222';
@@ -12,6 +13,35 @@ const CHAT = '-1001234567890';
 const config = { enabled: true, token: TOKEN, directusToken: 'FAKE_DIRECTUS_SECRET', chatId: CHAT, botId: '123456', mode: 'test', directusUrl: 'https://api.example.test' };
 const env = { TELEGRAM_ENABLED: 'true', TELEGRAM_BOT_TOKEN: TOKEN, TELEGRAM_DIRECTUS_TOKEN: config.directusToken, TELEGRAM_CHAT_ID: CHAT, TELEGRAM_DIRECTUS_URL: config.directusUrl };
 const callback = () => ({ update_id: 7, callback_query: { id: 'callback-7', data: `take:${ID}`, from: { id: 321, is_bot: false }, message: { message_id: 8, message_thread_id: 4, chat: { id: Number(CHAT), type: 'supergroup' } } } });
+
+test('private destinations require an explicit conversation job; photos cannot fetch arbitrary URLs', async () => {
+  let calls=0;
+  const client=createClients(config,async()=>{calls++;return new Response(JSON.stringify({ok:true,result:{message_id:1}}),{status:200});});
+  await assert.rejects(client.telegram('sendMessage',{chat_id:'123',text:'private'}),/DESTINATION_MISMATCH/);
+  await assert.rejects(client.telegram('sendMessage',{chat_id:'-999',text:'other group'},{channel:'conversation',destination:'client'}),/DESTINATION_MISMATCH/);
+  await client.telegram('sendMessage',{chat_id:'123',text:'explicit private reply'},{channel:'conversation',destination:'client'});
+  assert.equal(calls,1);
+  assert.equal(messageContent({photo:[{file_id:'https://example.test/private'}]}),null);
+  assert.equal(messageContent({caption:'Caption',document:{file_id:'file'}}),null);
+  assert.equal(messageContent({text:'a'.repeat(3501)}),null);
+});
+
+test('conversation pilot rejects non-allowlisted clients before accessing storage', async () => {
+  const module=createConversations({env:{ISVOI_TELEGRAM_ENABLED:true,ISVOI_TELEGRAM_CONVERSATIONS_ENABLED:true,ISVOI_TELEGRAM_TEST_CLIENT_IDS:'321'},botId:'123456',mode:'test'});
+  const update={message:{message_id:1,chat:{type:'private',id:999},from:{id:999,is_bot:false},text:'/start'}};
+  assert.equal(await module.update(()=>assert.fail('Unapproved client reached database'),update),'forbidden');
+});
+
+test('message polling is enabled only by the authenticated session capability', async () => {
+  for(const enabled of [false,true]) {
+    const calls=[];
+    await workerTick({conversations:enabled,offset:0,identity:{},clients:{
+      telegram:async(method,payload)=>{calls.push(payload);return {type:'ok',result:[]};},
+      directus:async()=>({job:null}),
+    }});
+    assert.deepEqual(calls[0].allowed_updates,enabled?['callback_query','message']:['callback_query']);
+  }
+});
 
 test('disabled worker makes no requests, even if credentials exist', async () => {
   await runWorker({ ...env, TELEGRAM_ENABLED: 'false' }, { once: true, log() {}, fetchImpl() { assert.fail('Unexpected network'); } });
@@ -121,16 +151,52 @@ test('endpoint refuses disabled, public, admin and mismatched worker identities 
     [{ ISVOI_TELEGRAM_ENABLED: true }, { user: OTHER }, 'FORBIDDEN'],
   ]) {
     const handlers = createHandlers({ env: { ...base, ...envOverride }, database: neverDb });
-    for (const handler of Object.values(handlers)) await assert.rejects(handler({ accountability, body: {} }), error => error.publicCode === code);
+    for (const name of ['session','next','complete','update']) await assert.rejects(handlers[name]({ accountability, body: {} }), error => error.publicCode === code);
+    await assert.rejects(handlers.intake({accountability,body:{}}),error=>error.publicCode==='CONVERSATIONS_DISABLED');
+    await assert.rejects(handlers['intake-check']({accountability,body:{}}),error=>error.publicCode==='CONVERSATIONS_DISABLED');
   }
+});
+
+test('active intake users with a direct policy do not need a role', async () => {
+  const database=()=>({where:()=>({first:async()=>({id:ID,role:null})})});
+  const conversations=createConversations({
+    database,botId:'123456',mode:'production',
+    env:{ISVOI_TELEGRAM_ENABLED:'true',ISVOI_TELEGRAM_CONVERSATIONS_ENABLED:'true',ISVOI_TELEGRAM_INTAKE_USER_ID:ID},
+  });
+  assert.deepEqual(await conversations.intakeCheck({accountability:{user:ID,role:null,admin:false}}),{ok:true});
 });
 
 test('runtime contains only the scoped endpoint and built files match sources', async () => {
   const paths = [];
   endpoint.handler({ post(path) { paths.push(path); } }, { env: {} });
-  assert.deepEqual(paths, ['/session', '/next', '/complete', '/update']);
+  assert.deepEqual(paths, ['/session', '/next', '/complete', '/update', '/intake', '/intake-check']);
   const root = new URL('../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/', import.meta.url);
-  for (const file of ['index.js', 'protocol.js']) {
+  for (const file of ['index.js', 'protocol.js', 'conversations.js']) {
     assert.equal(await readFile(new URL(`src/${file}`, root), 'utf8'), await readFile(new URL(`dist/${file}`, root), 'utf8'));
   }
+});
+
+test('production conversation release is pinned, reversible and secret-safe', async () => {
+  const release=await readFile(new URL('./release_telegram_conversations_production.mjs',import.meta.url),'utf8');
+  const compose=await readFile(new URL('../infra/directus-beget/docker-compose.yml',import.meta.url),'utf8');
+  assert.match(release,/expectedBase='2bee9ed328fe85d65fd270211c99e7147c9efb1d'/);
+  assert.match(release,/pg_restore','--list/);
+  assert.match(release,/git',\['reset','--hard',expectedBase\]/);
+  assert.match(release,/PUBLIC_INTAKE_NOT_DENIED/);
+  assert.match(release,/SCOPED_INTAKE_PREFLIGHT_FAILED/);
+  assert.match(release,/\['127\.0\.0\.1','localhost','::1'\]/);
+  assert.match(release,/target\.protocol==='http:'&&loopback/);
+  assert.match(release,/target\.username\|\|target\.password/);
+  assert.match(release,/effective_policies\(policy\)/);
+  assert.match(release,/q\.name='ISVOI Lead Intake' AND NOT q\.admin_access/);
+  assert.match(release,/CONVERSATIONS_SCHEMA_PARTIAL/);
+  assert.match(release,/CONVERSATIONS_SCHEMA_NOT_EMPTY/);
+  const stopped=release.indexOf("cmd('pm2',['stop','isvoi-telegram'])");
+  const expired=release.indexOf('UPDATE telegram_runtime SET lease_until=now()');
+  const acquired=release.indexOf("endpoint('session',workerToken,identity)");
+  assert.ok(stopped>=0&&stopped<expired&&expired<acquired);
+  assert.match(release,/STAGE1_ROUTE_CHANGED/);
+  assert.match(release,/retentionMonths:6/);
+  assert.doesNotMatch(release,/console\.(?:log|error)\([^\n]*(?:TELEGRAM_BOT_TOKEN|DIRECTUS_LEADS_TOKEN|workerToken)/);
+  for(const key of ['ISVOI_TELEGRAM_CONVERSATIONS_ENABLED','ISVOI_TELEGRAM_BOT_USERNAME','ISVOI_TELEGRAM_INTAKE_USER_ID']) assert.match(compose,new RegExp(`${key}: \\$\\{${key}:-`));
 });

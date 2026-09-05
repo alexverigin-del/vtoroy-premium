@@ -55,6 +55,7 @@ type LeadRequest = {
 };
 
 type StoredLead = {
+  telegram_url?: string;
   created_at: string;
   kind: string;
   status: "new";
@@ -151,7 +152,12 @@ function inferKind(kind: string, scenario: string): string {
 
 function inferContactChannel(contact: string): string {
   const value = contact.toLowerCase();
-  if (value.includes("@") && !value.includes("t.me/") && !value.includes("telegram"))
+  if (
+    value.includes("@") &&
+    !value.startsWith("@") &&
+    !value.includes("t.me/") &&
+    !value.includes("telegram")
+  )
     return "email";
   if (value.includes("telegram") || value.includes("t.me/") || value.startsWith("@"))
     return "telegram";
@@ -251,6 +257,7 @@ async function verifyTurnstile(body: LeadRequest, request: NextRequest): Promise
 }
 
 async function postToDirectus(lead: StoredLead): Promise<boolean> {
+  const conversationsEnabled = process.env.TELEGRAM_CONVERSATIONS_ENABLED === "true";
   const directusUrl = (
     process.env.DIRECTUS_URL ??
     process.env.NEXT_PUBLIC_DIRECTUS_URL ??
@@ -261,15 +268,31 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
 
   async function postPayload(payload: Record<string, unknown>): Promise<Response | null> {
     try {
-      return await fetch(`${directusUrl}/items/leads`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${directusUrl}${conversationsEnabled ? "/isvoi-telegram/intake" : "/items/leads"}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+          cache: "no-store",
         },
-        body: JSON.stringify(payload),
-        cache: "no-store",
-      });
+      );
+      if (response.ok && conversationsEnabled) {
+        const result = await response
+          .clone()
+          .json()
+          .catch(() => null);
+        if (
+          typeof result?.data?.telegram_url === "string" &&
+          /^https:\/\/t\.me\/[A-Za-z0-9_]+\?start=[A-Za-z0-9_-]{43}$/.test(result.data.telegram_url)
+        ) {
+          lead.telegram_url = result.data.telegram_url;
+        }
+      }
+      return response;
     } catch {
       return null;
     }
@@ -337,6 +360,8 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
       }
     }
 
+    // Never repeat an uncertain create through the legacy endpoint.
+    if (conversationsEnabled) return false;
     const fallbackMessage = [
       lead.scenario ? `Сценарий: ${lead.scenario}` : "",
       lead.message ? `Комментарий: ${lead.message}` : "",
@@ -653,9 +678,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({
-    ok: true,
-    storage: "directus",
-    reference_code: lead.reference_code,
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      storage: "directus",
+      reference_code: lead.reference_code,
+      ...(lead.telegram_url ? { telegram_url: lead.telegram_url } : {}),
+    },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

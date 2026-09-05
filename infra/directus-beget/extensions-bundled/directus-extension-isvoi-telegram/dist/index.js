@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { createConversations } from './conversations.js';
 import { UUID, validId, failure, parseUpdate, routeMatches, renderCard, nextOperation, deliveryFailure, RESULT_TEXT } from './protocol.js';
 
 export function createHandlers({ database, services, getSchema, env }) {
@@ -33,9 +34,11 @@ export function createHandlers({ database, services, getSchema, env }) {
     });
   }
 
-  const session = req => locked(req, async (_trx, runtime) => ({ update_offset: Number(runtime.update_offset), mode }), true);
+  const conversations = createConversations({database,services,getSchema,env,botId,mode,staffAccountability});
+  const session = req => locked(req, async (_trx, runtime) => ({ update_offset: Number(runtime.update_offset), mode, conversations: conversations.enabled }), true);
 
   const next = req => locked(req, async (trx, runtime) => {
+    await conversations.maintenance(trx);
     const routes = trx('telegram_routes').where({ bot_id: botId, is_test: mode === 'test' }).select('id');
     // Creation is not retried after an unknown outcome: Telegram has no idempotency key.
     await trx('telegram_deliveries').whereIn('route_id', routes).where({ state: 'in_flight' })
@@ -47,7 +50,11 @@ export function createHandlers({ database, services, getSchema, env }) {
     const delivery = await trx('telegram_deliveries as d').join('telegram_routes as r', 'r.id', 'd.route_id')
       .where({ 'r.bot_id': botId, 'r.is_test': mode === 'test', 'r.enabled': true, 'd.state': 'pending' })
       .where('d.due_at', '<=', trx.fn.now()).orderBy('d.created_at').select('d.*').forUpdate('d').skipLocked().first();
-    if (!delivery) return { job: null, update_offset: Number(runtime.update_offset) };
+    if (!delivery) {
+      const job = await conversations.next(trx);
+      if (job) await trx('telegram_runtime').where({bot_id:botId}).update({send_after:trx.raw("now()+interval '3.2 seconds'")});
+      return { job, update_offset: Number(runtime.update_offset) };
+    }
     const route = await trx('telegram_routes as r').join('store_locations as s', 's.id', 'r.store_id').where('r.id', delivery.route_id).select('r.*', 's.city').first();
     const lead = await trx('leads').where({ id: delivery.lead_id }).first('id', 'status', 'assigned_to', 'kind', 'device', 'reference_code', 'store_location_id', 'is_test');
     const validRoute = routeMatches(lead, route);
@@ -79,6 +86,7 @@ export function createHandlers({ database, services, getSchema, env }) {
     const { id, operation_id: operationId, outcome } = req.body;
     if (!UUID.test(id || '') || !UUID.test(operationId || '') || !outcome ||
       !['ok', 'unknown', 'rate_limit', 'permanent', 'not_modified'].includes(outcome.type)) throw failure('INVALID_OUTCOME');
+    if (req.body.channel === 'conversation') return conversations.complete(trx,req.body);
     const delivery = await trx('telegram_deliveries as d').join('telegram_routes as r', 'r.id', 'd.route_id')
       .where({ 'd.id': id, 'r.bot_id': botId, 'r.is_test': mode === 'test' }).select('d.*').forUpdate('d').first();
     if (!delivery || delivery.operation_id !== operationId) throw failure('STALE_OPERATION', 409);
@@ -117,7 +125,7 @@ export function createHandlers({ database, services, getSchema, env }) {
       role = (await trx('directus_roles').where({ id: role }).first('parent'))?.parent;
     }
     // Deliberately no admin bypass. The mapped staff user needs normal lead permissions.
-    return { user: user.id, role: user.role, roles, admin: false, app: true };
+    return { user: user.id, role: user.role || null, roles, admin: false, app: true };
   }
 
   async function claim(trx, callback) {
@@ -159,7 +167,8 @@ export function createHandlers({ database, services, getSchema, env }) {
       if (parsed.callback) q.orWhere({ callback_id: parsed.callback.id });
     }).first();
     if (!receipt) {
-      const result = parsed.callback ? await claim(trx, parsed.callback) : 'ignored';
+      const conversationResult = await conversations.update(trx,req.body.update);
+      const result = conversationResult ?? (parsed.callback ? await claim(trx, parsed.callback) : 'ignored');
       [receipt] = await trx('telegram_receipts').insert({
         bot_id: botId, update_id: parsed.updateId, callback_id: parsed.callback?.id || null, result_code: result,
       }).returning('*');
@@ -168,7 +177,7 @@ export function createHandlers({ database, services, getSchema, env }) {
     await trx('telegram_runtime').where({ bot_id: botId }).update({ update_offset: offset });
     return { update_offset: offset, callback_id: parsed.callback?.id || null, text: RESULT_TEXT[receipt.result_code] || RESULT_TEXT.ignored, result: receipt.result_code };
   });
-  return { session, next, complete, update };
+  return { session, next, complete, update, intake: conversations.intake, 'intake-check': conversations.intakeCheck };
 }
 
 export default {

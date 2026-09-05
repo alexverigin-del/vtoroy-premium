@@ -25,6 +25,7 @@ import {
   type TradeStep as Step,
   type TradeWizardSnapshot as PersistedState,
 } from "@/lib/trade-wizard-navigation";
+import { TelegramContinue } from "./TelegramContinue";
 import { useLeadIntake } from "./useLeadIntake";
 
 type TradeWizardMode = "public" | "qa";
@@ -372,6 +373,7 @@ export function TradeInWizard({
   const idempotencyKey = useRef("");
   const started = useRef(false);
   const {
+    telegramUrl,
     state: leadState,
     submitLead,
     turnstileElementRef,
@@ -1635,6 +1637,7 @@ export function TradeInWizard({
               </div>
               <p className="mt-3 text-sm text-muted">Номер заявки</p>
               <p className="mt-2 text-3xl font-bold text-carbon">{referenceCode}</p>
+              <TelegramContinue url={telegramUrl} />
               <dl className="mt-4 rounded-card bg-surface p-4 text-sm">
                 <SummaryRow label="Сценарий">
                   {scenario ? SCENARIO_LABELS[scenario] : "Trade‑in"}

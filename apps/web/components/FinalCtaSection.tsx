@@ -8,6 +8,7 @@ import { cn } from "../lib/cn-client";
 import { HomeSectionIntro } from "./HomeSectionIntro";
 import { RichText } from "./RichText";
 import { normalizeSiteUrl } from "./site-chrome-utils";
+import { TelegramContinue } from "./TelegramContinue";
 import { useLeadIntake } from "./useLeadIntake";
 import {
   leadFieldClass,
@@ -190,8 +191,15 @@ export function FinalCtaSection({
   const contactId = useId();
   const consentId = useId();
   const statusId = useId();
-  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
-    useLeadIntake();
+  const {
+    telegramUrl,
+    markError,
+    state,
+    submitLead,
+    turnstileElementRef,
+    turnstileReady,
+    turnstileRequired,
+  } = useLeadIntake();
 
   useEffect(() => {
     if (!isTradePage) return;
@@ -407,6 +415,7 @@ export function FinalCtaSection({
                   ? form.errorNote
                   : form.note}
             </p>
+            <TelegramContinue url={telegramUrl} />
           </form>
         </div>
 

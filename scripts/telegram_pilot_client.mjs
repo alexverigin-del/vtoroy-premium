@@ -16,7 +16,7 @@ const sshArgs = ['-i','C:/Users/1/.ssh/isvoi_beget_ed25519','-o','BatchMode=yes'
 const target = 'deploy@217.114.14.32';
 const output = 'work/private/telegram-pilot-result.json';
 function ssh(command) {
-  const result = spawnSync('ssh',[...sshArgs,target,command],{encoding:'utf8',timeout:30000,maxBuffer:1024*1024,windowsHide:true});
+  const result = spawnSync('ssh',[...sshArgs,target,command],{encoding:'utf8',timeout:60000,maxBuffer:1024*1024,windowsHide:true});
   if (result.error || result.status !== 0) throw new Error('PILOT_SSH_FAILED');
   return result.stdout.trim();
 }
@@ -60,12 +60,20 @@ try {
     }
   }
   phase='SESSION';
-  await sessionWithRetry();
+  const initialSession=await sessionWithRetry();
   // Verify actual HTTP authentication before creating anything to send.
   const denied = await fetch('http://127.0.0.1:18055/isvoi-telegram/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(identity),signal:AbortSignal.timeout(5000)});
   if (denied.status !== 403) throw new Error('PILOT_PUBLIC_ENDPOINT_NOT_DENIED');
   phase='ENQUEUE';
   ssh(`cd ${remote} && node scripts/telegram_pilot_server.mjs enqueue`);
+  if(initialSession.conversations) {
+    const existing=JSON.parse(ssh(`cd ${remote} && node scripts/telegram_pilot_server.mjs status`));
+    if(!existing.conversation) {
+      const link=ssh(`cd ${remote} && node scripts/telegram_pilot_server.mjs conversation-link`);
+      if(!/^https:\/\/t\.me\/isvoi_test_bot\?start=[A-Za-z0-9_-]{43}$/.test(link)) throw new Error('PILOT_LINK_INVALID');
+      console.log(`PILOT_CLIENT_LINK ${link}`);
+    }
+  }
   const deadline=Math.min(credential.expiresAt-60000,Date.now()+1800000);
   let announced=false,claimed=false,lastStatus=0,pollFailures=0;
   while(!interrupted && Date.now()<deadline) {
@@ -73,7 +81,7 @@ try {
     const session=await sessionWithRetry();
     if(session.mode !== 'test') throw new Error('PILOT_MODE_MISMATCH');
     let tick;
-    try { tick=await workerTick({clients,identity,offset:session.update_offset,pollTimeout:2}); pollFailures=0; }
+    try { tick=await workerTick({clients,identity,offset:session.update_offset,conversations:session.conversations===true,pollTimeout:2}); pollFailures=0; }
     catch(error) {
       if(error.message!=='TELEGRAM_POLL_FAILED' || ++pollFailures>5) throw error;
       console.log('PILOT_POLL_RECONNECTING'); await pause(3000); continue;
@@ -88,7 +96,14 @@ try {
         announced=true;
         console.log(`PILOT_CARD_READY https://t.me/c/4431327377/${status.delivery.message_id}`);
       }
-      if(status.lead?.status==='in_progress' && status.delivery?.state==='done' && String(status.delivery.revision)===String(status.delivery.sent_revision)) {
+      if(initialSession.conversations) {
+        if(status.conversation?.outbox?.some(row=>row.destination==='client'&&row.purpose==='reply'&&['failed','uncertain'].includes(row.state))) throw new Error('PILOT_REPLY_REQUIRES_REVIEW');
+        if(status.conversation?.messages?.some(row=>row.direction==='in') && status.conversation?.outbox?.some(row=>row.destination==='client'&&row.purpose==='reply'&&row.state==='done') &&
+          !status.conversation.outbox.some(row=>['pending','in_flight'].includes(row.state))) {
+          console.log('PASS: live client message reached the lead topic, manager explicitly confirmed a reply, Telegram accepted delivery to the linked client.');
+          claimed=true;break;
+        }
+      } else if(status.lead?.status==='in_progress' && status.delivery?.state==='done' && String(status.delivery.revision)===String(status.delivery.sent_revision)) {
         const owner='1a612dfb-8f1c-455b-a8cd-b57ea60afc24';
         if(status.lead.assigned_to!==owner || status.comments.length!==1 || status.comments[0].created_by!==owner || status.activity.length!==1 || status.activity[0].user!==owner) throw new Error('PILOT_CLAIM_AUDIT_MISMATCH');
         console.log('PASS: live Telegram callback assigned the fixture lead, recorded staff audit and updated the card.');

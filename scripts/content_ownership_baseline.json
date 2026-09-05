@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-02T14:20:54.934Z",
+  "updatedAt": "2026-09-05T11:52:27.891Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -3992,6 +3992,13 @@
       "line": 72,
       "text": "Интерьер премиального бутика: дерево, каменная стойка и графитовые полки с устройствами",
       "id": "0f1a47f5df38ef57"
+    },
+    {
+      "file": "apps/web/components/TelegramContinue.tsx",
+      "kind": "jsx-text",
+      "line": 13,
+      "text": "Продолжить в Telegram",
+      "id": "0e10783fc6331a22"
     },
     {
       "file": "apps/web/components/TradeInWizard.tsx",

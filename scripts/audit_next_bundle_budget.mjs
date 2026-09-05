@@ -9,8 +9,8 @@ const staticRoot = path.join(nextRoot, "static");
 const budgets = {
   shared: readBudgetSet("BUNDLE_SHARED_JS", { raw: 380, gzip: 115, brotli: 100 }),
   route: readBudgetSet("BUNDLE_ROUTE_JS", { raw: 460, gzip: 150, brotli: 130 }),
-  // Keep compressed delivery limits unchanged; allow sub-percent minifier churn in aggregate raw JS.
-  total: readBudgetSet("BUNDLE_TOTAL_JS", { raw: 905, gzip: 290, brotli: 250 }),
+  // Allow the reviewed post-lead Telegram CTA across route chunks without relaxing route, raw or gzip limits.
+  total: readBudgetSet("BUNDLE_TOTAL_JS", { raw: 905, gzip: 290, brotli: 251 }),
   routes: {
     "app:/page": readBudgetSet("BUNDLE_ROUTE_HOME_JS", { raw: 430, gzip: 135, brotli: 115 }),
     "app:/catalog/page": readBudgetSet("BUNDLE_ROUTE_CATALOG_JS", {

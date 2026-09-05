@@ -21,7 +21,7 @@ export function workerConfig(env) {
 }
 
 export function createClients(config, fetchImpl = fetch) {
-  const telegramMethods = new Set(['getUpdates', 'createForumTopic', 'sendMessage', 'editMessageText', 'answerCallbackQuery']);
+  const telegramMethods = new Set(['getUpdates', 'createForumTopic', 'sendMessage', 'sendPhoto', 'editMessageText', 'answerCallbackQuery']);
   const directusMethods = new Set(['session', 'next', 'complete', 'update']);
   async function directus(path, data) {
     if (!directusMethods.has(path)) throw new Error('INVALID_DIRECTUS_OPERATION');
@@ -37,9 +37,11 @@ export function createClients(config, fetchImpl = fetch) {
     if (!response.ok || !body?.data) throw new Error(`DIRECTUS_HTTP_${response.status}`);
     return body.data;
   }
-  async function telegram(method, payload) {
+  async function telegram(method, payload, destination) {
     if (!telegramMethods.has(method)) throw new Error('INVALID_TELEGRAM_OPERATION');
-    if (['createForumTopic', 'sendMessage', 'editMessageText'].includes(method) && String(payload.chat_id) !== config.chatId) {
+    const privateDelivery = destination?.channel === 'conversation' && destination?.destination === 'client' &&
+      ['sendMessage','sendPhoto'].includes(method) && /^[1-9][0-9]{0,15}$/.test(String(payload.chat_id)) && !payload.message_thread_id;
+    if (['createForumTopic', 'sendMessage', 'sendPhoto', 'editMessageText'].includes(method) && String(payload.chat_id) !== config.chatId && !privateDelivery) {
       throw new Error('TELEGRAM_DESTINATION_MISMATCH');
     }
     let response, body;
@@ -61,8 +63,8 @@ export function createClients(config, fetchImpl = fetch) {
 }
 
 // One tick is independently testable. Cursor advancement occurs only in the database.
-export async function workerTick({ clients, identity, offset, sleep = pause, pollTimeout = 10 }) {
-  const poll = await clients.telegram('getUpdates', { offset, timeout: pollTimeout, limit: 20, allowed_updates: ['callback_query'] });
+export async function workerTick({ clients, identity, offset, conversations = false, sleep = pause, pollTimeout = 10 }) {
+  const poll = await clients.telegram('getUpdates', { offset, timeout: pollTimeout, limit: 20, allowed_updates: conversations ? ['callback_query','message'] : ['callback_query'] });
   if (poll.type !== 'ok' || !Array.isArray(poll.result)) {
     if (poll.type === 'rate_limit') await sleep(Math.min(86400000, poll.retryAfter * 1000));
     throw new Error('TELEGRAM_POLL_FAILED');
@@ -78,7 +80,8 @@ export async function workerTick({ clients, identity, offset, sleep = pause, pol
   }
   const { job } = await clients.directus('next', identity);
   if (job) {
-    const outcome = await clients.telegram(job.method, job.payload);
+    if(job.channel === 'conversation' && !conversations) throw new Error('CONVERSATIONS_NOT_ENABLED');
+    const outcome = await clients.telegram(job.method, job.payload, job.channel === 'conversation' ? {channel:job.channel,destination:job.destination} : undefined);
     const acknowledgement = outcome.type === 'ok' ? {
       type: 'ok', topic_id: outcome.result?.message_thread_id,
       message_id: outcome.result?.message_id,
@@ -87,7 +90,7 @@ export async function workerTick({ clients, identity, offset, sleep = pause, pol
     let recorded = false;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await clients.directus('complete', { ...identity, id: job.id, operation_id: job.operation_id, outcome: acknowledgement });
+        await clients.directus('complete', { ...identity, id: job.id, operation_id: job.operation_id, ...(job.channel?{channel:job.channel}:{}), outcome: acknowledgement });
         recorded = true;
         break;
       } catch {
@@ -111,7 +114,7 @@ export async function runWorker(env, { once = false, fetchImpl = fetch, sleep = 
     // Acquire/refresh before polling. A different worker cannot poll concurrently while leased.
     const session = await clients.directus('session', identity);
     if (session.mode !== config.mode) throw new Error('TELEGRAM_MODE_MISMATCH');
-    await workerTick({ clients, identity, offset: session.update_offset, sleep, pollTimeout: once ? 0 : 2 });
+    await workerTick({ clients, identity, offset: session.update_offset, conversations: session.conversations === true, sleep, pollTimeout: once ? 0 : 2 });
     if (!once && !signal?.aborted) await sleep(1000);
   } while (!once && !signal?.aborted);
 }

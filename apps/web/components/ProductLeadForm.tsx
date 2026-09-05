@@ -9,6 +9,7 @@ import {
   leadTextareaClass,
   submitButtonClass,
 } from "./ui-classes";
+import { TelegramContinue } from "./TelegramContinue";
 import { useLeadIntake } from "./useLeadIntake";
 
 type ProductLeadCopy = DevicePageSettings["leadForm"];
@@ -109,8 +110,15 @@ export function ProductLeadForm({
   const contactId = useId();
   const messageId = useId();
   const statusId = useId();
-  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
-    useLeadIntake();
+  const {
+    telegramUrl,
+    markError,
+    state,
+    submitLead,
+    turnstileElementRef,
+    turnstileReady,
+    turnstileRequired,
+  } = useLeadIntake();
   const normalizedStockStatus = normalizeStockStatus(stockStatus);
   const mode = leadMode(normalizedStockStatus, leadCopy);
   const submitLabel =
@@ -235,6 +243,7 @@ export function ProductLeadForm({
             ? mode.errorNote
             : mode.idleNote}
       </p>
+      <TelegramContinue url={telegramUrl} />
     </form>
   );
 }

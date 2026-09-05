@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { telegramSql } from './setup_directus_telegram_sql.mjs';
 import { productionIdentitySql, productionTelegram as p } from './setup_directus_telegram_production_sql.mjs';
 import { createHandlers } from '../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/index.js';
+import { conversationsContract } from './telegram_conversations_contract.mjs';
 if(process.env.TELEGRAM_DISPOSABLE_FIXTURE!=='true' || process.env.DB_HOST!=='db' || process.env.DB_DATABASE!=='telegram_test') throw new Error('DISPOSABLE_FIXTURE_REQUIRED');
 const api='/directus/node_modules/@directus/api/dist';
 const {default:getDatabase}=await import(`${api}/database/index.js`);
@@ -54,4 +55,5 @@ try {
  const service=new ItemsService('leads',{knex:db,schema,accountability:{user:p.staff,role:adminRole,roles:[adminRole],admin:false,app:true}});
  await assert.rejects(service.updateOne(id(10),{device:'disallowed'}),error=>error.code==='FORBIDDEN');
  console.log('PASS: exact production policy with admin-role staff, real foreign keys, scoped/unscoped claims, audit identity, forbidden field and test isolation.');
+ await conversationsContract({db,ItemsService,getSchema,p,adminRole});
 } finally {await db.destroy();}

@@ -9,6 +9,7 @@ import {
   leadTextareaClass,
   submitButtonClass,
 } from "./ui-classes";
+import { TelegramContinue } from "./TelegramContinue";
 import { useLeadIntake } from "./useLeadIntake";
 
 type ClubLeadFormProps = {
@@ -40,8 +41,15 @@ export function ClubLeadForm({ settings, offers, plans, selectedOfferId }: ClubL
   const budgetId = useId();
   const messageId = useId();
   const statusId = useId();
-  const { markError, state, submitLead, turnstileElementRef, turnstileReady, turnstileRequired } =
-    useLeadIntake();
+  const {
+    telegramUrl,
+    markError,
+    state,
+    submitLead,
+    turnstileElementRef,
+    turnstileReady,
+    turnstileRequired,
+  } = useLeadIntake();
 
   const selectedOffer = useMemo(
     () => offers.find((offer) => offer.id === offerId),
@@ -293,6 +301,7 @@ export function ClubLeadForm({ settings, offers, plans, selectedOfferId }: ClubL
             ? settings.formErrorNote
             : settings.formIdleNote}
       </p>
+      <TelegramContinue url={telegramUrl} />
     </form>
   );
 }

@@ -300,6 +300,11 @@ test('subscription menu distinguishes a draft choice from an active subscription
   assert.match(source,/Подписка сохранена и уже активна/);
 });
 
+test('campaign deliveries do not consume the private-menu anti-spam budget', async () => {
+  const source=await readFile(new URL('../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/src/conversations.js',import.meta.url),'utf8');
+  assert.match(source,/where\(\{session_id:session\.id\}\)\.whereNull\('campaign_id'\)/);
+});
+
 test('speed release is pinned, backed up, rehearsed and reversible', async () => {
   const release=await readFile(new URL('./release_telegram_speed_production.mjs',import.meta.url),'utf8');
   const prepare=await readFile(new URL('./prepare_telegram_speed_release.mjs',import.meta.url),'utf8');

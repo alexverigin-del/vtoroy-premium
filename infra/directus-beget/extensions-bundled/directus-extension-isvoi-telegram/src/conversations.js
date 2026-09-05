@@ -164,7 +164,7 @@ export function createConversations({ database, services, getSchema, env, botId,
     await trx('telegram_client_sessions').insert({bot_id:botId,user_id:String(from.id),chat_id:String(message.chat.id)}).onConflict(['bot_id','user_id']).ignore();
     const session=await trx('telegram_client_sessions').where({bot_id:botId,user_id:String(from.id)}).forUpdate().first();
     // Bound input rate prevents repeated /start or category clicks from growing an unbounded queue.
-    const count=await trx('telegram_message_outbox').where({session_id:session.id}).where('created_at','>',trx.raw("now()-interval '1 minute'")).count('* as n').first();
+    const count=await trx('telegram_message_outbox').where({session_id:session.id}).whereNull('campaign_id').where('created_at','>',trx.raw("now()-interval '1 minute'")).count('* as n').first();
     if(Number(count.n)>=15) return 'rate_limited';
     await trx('telegram_client_sessions').where({id:session.id}).update({updated_at:trx.fn.now()});
     const data=update.callback_query?.data;

@@ -114,8 +114,16 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   assert.equal((await apply(click(`send:${draft.id}`,draft.preview_message_id))).result,'forbidden');
   await db('telegram_staff').where({id:p.staffBinding}).update({enabled:true});
   await db('leads').where({id:created.id}).update({status:'closed'});
-  assert.equal((await apply(privateMessage('Не открывать завершённую заявку'))).result,'closed');
+  const leadsBeforeContinuation=Number((await db('leads').count('* as n').first()).n);
+  assert.equal((await apply(privateMessage('Новый вопрос после закрытия'))).result,'received');
   assert.equal((await db('leads').where({id:created.id}).first()).status,'closed');
+  assert.equal(Number((await db('leads').count('* as n').first()).n),leadsBeforeContinuation+1);
+  const continuationLead=await db('leads').where({contact:`telegram:${client}`,status:'new',kind:'support'}).first();
+  assert.ok(continuationLead);
+  const continuation=await db('lead_conversations').where({lead_id:continuationLead.id}).first();
+  assert.notEqual(continuation.id,c.id);
+  assert.equal((await db('lead_messages').where({conversation_id:continuation.id,direction:'in'}).first()).text,'Новый вопрос после закрытия');
+  assert.equal((await db('telegram_client_sessions').where({bot_id:p.botId,user_id:client}).first()).conversation_id,continuation.id);
   // Direct entry creates no lead until a category and substantive message have both arrived.
   const before=Number((await db('leads').count('* as n').first()).n);
   await apply(privateMessage('/new',other));await db('telegram_deliveries').update({state:'done'});await drain();
@@ -149,5 +157,5 @@ export async function conversationsContract({db,ItemsService,getSchema,p,adminRo
   const retention=await db('telegram_retention_settings').where({bot_id:p.botId}).first();
   assert.equal(Number(retention.retention_months),6);
   assert.ok(Number(retention.last_conversations_deleted)>=1);
-  console.log('PASS: conversations: Directus relations, one-use site binding, expiry, permissions, dedup, photo/album history, internal-message isolation, confirmed and follow-up replies, uncertain delivery, direct entry, closed lead and six-month retention.');
+  console.log('PASS: conversations: Directus relations, one-use site binding, expiry, permissions, dedup, photo/album history, internal-message isolation, confirmed and follow-up replies, uncertain delivery, closed-lead continuation, direct entry and six-month retention.');
 }

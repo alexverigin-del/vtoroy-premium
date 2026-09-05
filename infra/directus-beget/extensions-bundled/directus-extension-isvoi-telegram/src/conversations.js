@@ -134,17 +134,18 @@ export function createConversations({ database, services, getSchema, env, botId,
     });
   }
   const intakeCheck=async req=>{await intakeIdentity(req);return {ok:true};};
-  async function createDirectLead(trx,session,content) {
+  async function createDirectLead(trx,session,content,{kind=session.pending_kind,notice='Обращение принято. Здесь вам ответит менеджер. Для выбора другой заявки: /dialogs.'}={}) {
+    if(!['selection','trade','support'].includes(kind)) return null;
     const route=await trx('telegram_routes').where({bot_id:botId,is_test:mode==='test',enabled:true,accept_unscoped:true}).first();
     const user=UUID.test(intakeUser || '')?await trx('directus_users').where({id:intakeUser,status:'active'}).first():null;
     if(!route||!user) {await tell(trx,session,'Приём новых обращений временно недоступен. Оставьте заявку на isvoi.ru.');return null;}
     const service=new services.ItemsService('leads',{knex:trx,schema:await getSchema(),accountability:await staffAccountability(trx,user)});
-    const leadId=await service.createOne({kind:session.pending_kind,status:'new',contact_channel:'telegram',contact:`telegram:${session.user_id}`,
+    const leadId=await service.createOne({kind,status:'new',contact_channel:'telegram',contact:`telegram:${session.user_id}`,
       source:'telegram',source_path:'telegram',message:content.text,store_location_id:route.store_id,is_test:mode==='test',
       reference_code:`TG-${randomBytes(6).toString('hex').toUpperCase()}`});
     const [c]=await trx('lead_conversations').insert({lead_id:leadId,route_id:route.id,bot_id:botId,client_user_id:session.user_id,client_chat_id:session.chat_id}).returning('*');
     await trx('telegram_client_sessions').where({id:session.id}).update({conversation_id:c.id,pending_kind:null});
-    await tell(trx,session,'Обращение принято. Здесь вам ответит менеджер. Для выбора другой заявки: /dialogs.');
+    await tell(trx,session,notice);
     return c.id;
   }
   async function privateUpdate(trx,update,message,from) {
@@ -189,8 +190,16 @@ export function createConversations({ database, services, getSchema, env, botId,
     let conversationId=session.conversation_id;
     if(!conversationId&&session.pending_kind) conversationId=await createDirectLead(trx,session,content);
     if(!conversationId) {await choose(trx,session);return 'select_required';}
-    const ctx=await context(trx,conversationId);
-    if(!ctx||!active(ctx.lead)) {await choose(trx,session);return 'closed';}
+    let ctx=await context(trx,conversationId);
+    if(!ctx||!active(ctx.lead)) {
+      conversationId=await createDirectLead(trx,session,content,{
+        kind:'support',
+        notice:'Предыдущая заявка уже закрыта. Мы создали новое обращение из вашего сообщения — повторять его не нужно. Здесь вам ответит менеджер.',
+      });
+      if(!conversationId) return 'closed';
+      ctx=await context(trx,conversationId);
+      if(!ctx) throw failure('CONVERSATION_CREATE_FAILED',503);
+    }
     const [saved]=await trx('lead_messages').insert({conversation_id:conversationId,direction:'in',...content,telegram_message_id:message.message_id}).returning('*');
     await queue(trx,{conversation_id:conversationId,route_id:ctx.route.id,message_id:saved.id,destination:'group'},
       {...contentPayload(content,content.album_id?'Клиент · альбом\n':'Клиент\n'),reply_markup:replyButton(conversationId)});

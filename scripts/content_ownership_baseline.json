@@ -1425,6 +1425,13 @@
       "id": "eeb789b276e08df1"
     },
     {
+      "file": "apps/web/components/CityHubPage.tsx",
+      "kind": "string",
+      "line": 125,
+      "text": "Заявки и поддержка в Telegram",
+      "id": "ed558761e9f8e91b"
+    },
+    {
       "file": "apps/web/components/CityInfoPage.tsx",
       "kind": "jsx-text",
       "line": 21,
@@ -2193,6 +2200,13 @@
       "line": 80,
       "text": "Все магазины",
       "id": "b1abe32d0419f087"
+    },
+    {
+      "file": "apps/web/components/FooterStorePanel.tsx",
+      "kind": "string",
+      "line": 103,
+      "text": "Заявки и поддержка в Telegram",
+      "id": "50eed2e24e6168f7"
     },
     {
       "file": "apps/web/components/FooterStorePanel.tsx",
@@ -7058,6 +7072,13 @@
       "line": 1178,
       "text": "I СВОИ",
       "id": "f521cbebb0fe9445"
+    },
+    {
+      "file": "apps/web/lib/directus.ts",
+      "kind": "string",
+      "line": 1196,
+      "text": "Заявки и поддержка в Telegram",
+      "id": "41f63fc2a3ea2dcb"
     },
     {
       "file": "apps/web/lib/product-catalog.ts",

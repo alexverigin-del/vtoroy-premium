@@ -216,7 +216,7 @@ test('notification release gates schema, pilot activation, profile and rollback'
   const prepare=await readFile(new URL('./prepare_telegram_notifications_release.mjs',import.meta.url),'utf8');
   const compose=await readFile(new URL('../infra/directus-beget/docker-compose.yml',import.meta.url),'utf8');
   assert.match(release,/expectedBase='9bc0a592338bbb9bba13b6dfb08ad30e7409eac9'/);
-  assert.match(prepare,/RELEASE_MUST_BE_ONE_COMMIT_AFTER_BASE/);
+  assert.match(prepare,/RELEASE_BASE_NOT_ANCESTOR/);
   assert.ok(release.indexOf("rehearse_telegram.mjs','--production") < release.indexOf("sql(notificationsSql)"));
   assert.ok(release.indexOf("sql(notificationsSql)") < release.indexOf("ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED:true"));
   assert.match(release,/configure_telegram_bot_profile\.mjs','--apply/);

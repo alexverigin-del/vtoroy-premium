@@ -12,7 +12,7 @@ if(!process.argv[2]||!output.startsWith(outputRoot+sep)||!/telegram-notification
 function git(args){const result=spawnSync('git',args,{cwd:root,encoding:'utf8',timeout:60000,maxBuffer:8*1024*1024});if(result.error||result.status!==0)throw new Error('GIT_COMMAND_FAILED');return result.stdout.trim();}
 if(git(['status','--porcelain'])) throw new Error('WORKTREE_NOT_CLEAN');
 const commit=git(['rev-parse','HEAD']);
-if(!/^[a-f0-9]{40}$/.test(commit)||git(['rev-parse',`${commit}^`])!==base) throw new Error('RELEASE_MUST_BE_ONE_COMMIT_AFTER_BASE');
+if(!/^[a-f0-9]{40}$/.test(commit)||git(['merge-base',base,commit])!==base) throw new Error('RELEASE_BASE_NOT_ANCESTOR');
 const files=git(['diff','--name-only',`${base}..${commit}`]).split(/\r?\n/).filter(Boolean);
 if(!files.length||files.some(path=>/(^|\/)(\.env$|private|backups|work)(\/|$)/i.test(path))) throw new Error('RELEASE_FILE_SET_INVALID');
 await mkdir(output,{recursive:false,mode:0o700});

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 export async function notificationsContract({db,h,req,p,next,complete,sequenceState}) {
   const client=223456700;
+  const outboxState=await db('information_schema.columns').where({table_schema:'public',table_name:'telegram_message_outbox',column_name:'state'}).first('character_maximum_length');
+  assert.equal(Number(outboxState.character_maximum_length),32);
   const privateMessage=(text,extra={})=>({update_id:++sequenceState.update,message:{message_id:++sequenceState.message,chat:{type:'private',id:client},from:{id:client,is_bot:false},text,...extra}});
   const apply=update=>h.update(req({update}));
   const leadsBefore=Number((await db('leads').count('* as n').first()).n);

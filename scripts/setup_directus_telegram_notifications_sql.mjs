@@ -68,6 +68,7 @@ ALTER TABLE telegram_client_sessions ADD COLUMN IF NOT EXISTS subscription_draft
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS campaign_id uuid REFERENCES telegram_campaigns(id) ON DELETE RESTRICT;
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS subscription_id uuid REFERENCES telegram_subscriptions(id) ON DELETE SET NULL;
 ALTER TABLE telegram_message_outbox ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
+ALTER TABLE telegram_message_outbox ALTER COLUMN state TYPE varchar(32);
 ALTER TABLE telegram_message_outbox DROP CONSTRAINT IF EXISTS telegram_message_outbox_state_check;
 ALTER TABLE telegram_message_outbox ADD CONSTRAINT telegram_message_outbox_state_check CHECK(state IN ('pending','in_flight','done','blocked','failed','uncertain','suppressed_frequency','cancelled'));
 CREATE UNIQUE INDEX IF NOT EXISTS telegram_campaign_session_once ON telegram_message_outbox(campaign_id,session_id) WHERE campaign_id IS NOT NULL AND is_test=false;

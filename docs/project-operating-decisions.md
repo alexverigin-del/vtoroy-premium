@@ -4304,3 +4304,44 @@ Next content-editing priorities:
 - The square avatar asset is stored as Directus file `8e6403e6-6ac4-41e2-ae04-fde807ee0c19` and tracked at `assets/brand/telegram/isvoi-telegram-avatar-v1.png`. Telegram reports one current profile photo. Changing it requires BotFather `/setuserpic`; Bot API cannot set bot avatars.
 - The approved avatar copy now has a separate v2 asset with the descriptor `ПРОВЕРЕННАЯ ТЕХНИКА ДЛЯ СВОИХ` below the brand name. The previous v1 stays available for rollback; v2 is the current BotFather upload candidate.
 - Backup `/opt/isvoi/backups/directus/20260905T193301Z` passed database, uploads, IndexNow-state and SHA-256 checks. Local and server unit tests pass 27/27; the disposable production-policy PostgreSQL/Directus contract passed before activation. Directus returned `pong`; the worker is online with zero unstable restarts and a live lease.
+
+### iPhone 15 Pro Max Inventory Release · 2026-09-06
+
+- Seven iPhone 15 Pro Max stock rows were matched by the private inventory source ID,
+  SKU, barcode and full serial; the public content stores only masked identifier tails.
+  Duplicate checks for product SKU/source ID and inventory barcode/serial returned zero.
+- All seven cards are live with one Belgorod offer and six approved images each: `т11`,
+  `т12`, `т13`, `т18`, `т19`, `т20` and `т21`. The Blue `т18` card is Grade B solely
+  because battery health is 88% at 711 cycles; the photo review found no body issue.
+  `т20` and `т21` are operator-confirmed Grade A with no body remarks.
+- The owner confirmed that the `т19` headset works: it was not connected during the
+  automated diagnostic, which caused the negative report row. The public card states
+  that distinction and retains the small chip near the camera as its actual condition
+  remark. Its Grade A, battery, original report and audit history were preserved.
+- All seven Avito listings remain draft. The Yandex Business feed and public catalog
+  include all seven cards; the catalog count advanced from 21 to 24 products.
+- Every card has a linked Passport, diagnostic report, six `2400x1800` WebP views,
+  warranty `90 дней`, completeness `Устройство, коробка, кабель` and the shared official
+  iPhone 15 Pro Max specification set. Public diagnostic copies are branded, masked PNGs;
+  original PDFs remain in `ISVOI Passport Originals` and are unavailable anonymously.
+- Pre-apply backup `/opt/isvoi/backups/directus/20260905T205438Z` passed PostgreSQL,
+  uploads, IndexNow-state and SHA-256 checks. Offsite upload remains unconfigured.
+- Before clearing the final three review states, backup
+  `/opt/isvoi/backups/directus/20260906T175535Z` passed the same database, uploads,
+  IndexNow-state and SHA-256 checks. Offsite upload was skipped again because it remains
+  unconfigured.
+- `web:verify`, Catalog V3, Passport v8, inventory, file, API-policy, operations and
+  site-integration audits passed. Production route, copy, image-latency, visual and
+  performance smokes passed; catalog LCP was 2792 ms desktop / 4008 ms mobile within
+  the current budgets. The umbrella `directus:audit:prod` still reports pre-existing
+  schema-audit drift: 18 custom tables absent from its legacy allowlist and five wildcard
+  permission rows. This release created no table or permission row; reconcile that audit
+  contract separately before claiming the umbrella gate green.
+- The initial temporary release identity could not be deleted while Directus files retained its
+  `uploaded_by` audit reference. It is retained as `suspended` with no static token; the
+  former token returns HTTP 401. The final review-clearing identity uploaded no new files,
+  was deleted normally and its former token also returns HTTP 401. Both VPS staging
+  directories were removed.
+- The reusable release tools now preflight unique inventory/product identities, preserve
+  PDF MIME/extensions and accept per-release audit labels. These repository changes and
+  this operating-memory entry are local only until an explicit commit/push/deploy request.

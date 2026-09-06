@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-05",
+  "model": {
+    "id": "db9577fb-af99-4593-a93d-d8402095f0bf",
+    "slug": "iphone-15-pro-max",
+    "brand": "0037e3cb-a84d-4c9d-a4ae-1a329f7c1c96",
+    "name": "iPhone 15 Pro Max",
+    "family": "iPhone 15",
+    "year": 2023,
+    "sort": 2024
+  },
+  "source": "https://support.apple.com/en-us/111828",
+  "values": [
+    "6,7 дюйма, OLED Super Retina XDR, 2796×1290, ProMotion до 120 Гц",
+    "A17 Pro",
+    "48 Мп основная, 12 Мп сверхширокоугольная, 12 Мп телефото 5×",
+    "USB-C (USB 3 до 10 Гбит/с); MagSafe и Qi2 до 15 Вт",
+    "5G, Wi-Fi 6E, Bluetooth 5.3, NFC, Ultra Wideband",
+    "IP68: до 6 м на 30 минут по IEC 60529",
+    "159,9×76,7×8,25 мм; 221 г"
+  ]
+}

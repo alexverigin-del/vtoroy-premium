@@ -39,7 +39,11 @@ for (const device of manifest.devices) {
     photo.path = `photos/${safeSku}/${filename}`;
   }
 
-  const originalName = `${safeSku}.jpg`;
+  const originalExtension = path.extname(device.originalCertificate).toLowerCase();
+  if (![".jpg", ".jpeg", ".png", ".pdf"].includes(originalExtension)) {
+    throw new Error(`${device.sku}: unsupported original certificate type ${originalExtension}`);
+  }
+  const originalName = `${safeSku}${originalExtension}`;
   const publicName = `${safeSku}.png`;
   await fs.copyFile(path.resolve(device.originalCertificate), path.join(originalDir, originalName));
   await fs.copyFile(path.resolve(device.publicCertificate), path.join(publicDir, publicName));

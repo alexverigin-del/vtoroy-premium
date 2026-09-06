@@ -46,8 +46,123 @@ const endpointFor = (collection) =>
       : `items/${collection}`;
 const first = async (collection, query) =>
   (await request("GET", `/${endpointFor(collection)}?${query}&limit=1`))?.[0];
+const list = async (collection, query, limit = 100) =>
+  (await request("GET", `/${endpointFor(collection)}?${query}&limit=${limit}`)) ?? [];
 const resolvePath = (value) => path.resolve(baseDir, value);
 const normalizeTitle = (value) => `isvoi:release-v8:${value}`;
+
+function mimeTypeFor(filePath) {
+  switch (path.extname(filePath).toLowerCase()) {
+    case ".pdf":
+      return "application/pdf";
+    case ".png":
+      return "image/png";
+    case ".webp":
+      return "image/webp";
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+function assertUniqueManifestField(field) {
+  const seen = new Set();
+  for (const device of manifest.devices) {
+    const value = String(device[field] || "").trim().toLowerCase();
+    if (!value) throw new Error(`Manifest field ${field} is required for every device`);
+    if (seen.has(value)) throw new Error(`Duplicate ${field} in release manifest: ${value}`);
+    seen.add(value);
+  }
+}
+
+function assertOptionalUniqueManifestField(field) {
+  const seen = new Set();
+  for (const device of manifest.devices) {
+    const value = String(device[field] || "").trim().toLowerCase();
+    if (!value) continue;
+    if (seen.has(value)) throw new Error(`Duplicate ${field} in release manifest: ${value}`);
+    seen.add(value);
+  }
+}
+
+assertUniqueManifestField("sku");
+assertOptionalUniqueManifestField("inventorySourceId");
+
+const inventoryBySku = new Map();
+for (const device of manifest.devices) {
+  const inventoryRows = await list(
+    "inventory_items",
+    `filter[source_sku][_eq]=${encodeURIComponent(device.sku)}&fields=id,product,quantity,retail_price,condition,source_title,source_system,source_id,source_sku,barcode,serial_full`,
+    3,
+  );
+  if (inventoryRows.length !== 1) {
+    throw new Error(`${device.sku}: expected exactly one inventory row, got ${inventoryRows.length}`);
+  }
+  const inventory = inventoryRows[0];
+  if (
+    device.inventorySourceId &&
+    String(inventory.source_id) !== String(device.inventorySourceId)
+  ) {
+    throw new Error(`${device.sku}: inventory source id does not match the release manifest`);
+  }
+  if (device.barcode && String(inventory.barcode) !== String(device.barcode)) {
+    throw new Error(`${device.sku}: inventory barcode does not match the release manifest`);
+  }
+  if (device.serialTail && !String(inventory.serial_full || "").endsWith(device.serialTail)) {
+    throw new Error(`${device.sku}: serial tail does not match inventory`);
+  }
+
+  const sameSourceInventory = await list(
+    "inventory_items",
+    `filter[source_system][_eq]=${encodeURIComponent(inventory.source_system)}&filter[source_id][_eq]=${encodeURIComponent(inventory.source_id)}&fields=id`,
+    3,
+  );
+  if (sameSourceInventory.length !== 1) {
+    throw new Error(`${device.sku}: duplicate inventory source identity`);
+  }
+  if (inventory.barcode) {
+    const sameBarcode = await list(
+      "inventory_items",
+      `filter[barcode][_eq]=${encodeURIComponent(inventory.barcode)}&fields=id`,
+      3,
+    );
+    if (sameBarcode.length !== 1) throw new Error(`${device.sku}: duplicate inventory barcode`);
+  }
+  if (inventory.serial_full) {
+    const sameSerial = await list(
+      "inventory_items",
+      `filter[serial_full][_eq]=${encodeURIComponent(inventory.serial_full)}&fields=id`,
+      3,
+    );
+    if (sameSerial.length !== 1) throw new Error(`${device.sku}: duplicate inventory serial`);
+  }
+
+  const sameSkuProducts = await list(
+    "products",
+    `filter[sku][_eq]=${encodeURIComponent(device.sku)}&fields=id,source_system,source_id`,
+    3,
+  );
+  if (sameSkuProducts.length > 1) throw new Error(`${device.sku}: duplicate product SKU`);
+  if (
+    sameSkuProducts[0] &&
+    (String(sameSkuProducts[0].source_system) !== String(inventory.source_system) ||
+      String(sameSkuProducts[0].source_id) !== String(inventory.source_id))
+  ) {
+    throw new Error(`${device.sku}: existing product SKU belongs to another inventory identity`);
+  }
+  const sameSourceProducts = await list(
+    "products",
+    `filter[source_system][_eq]=${encodeURIComponent(inventory.source_system)}&filter[source_id][_eq]=${encodeURIComponent(inventory.source_id)}&fields=id,sku`,
+    3,
+  );
+  if (sameSourceProducts.length > 1) throw new Error(`${device.sku}: duplicate product source identity`);
+  if (sameSourceProducts[0] && String(sameSourceProducts[0].sku) !== String(device.sku)) {
+    throw new Error(`${device.sku}: inventory identity is already linked to another product SKU`);
+  }
+  inventoryBySku.set(device.sku, inventory);
+}
 
 async function folderId(name) {
   const folder = await first(
@@ -127,11 +242,7 @@ const store = prepareOnly
 if (!prepareOnly && !store) throw new Error("Store location belgorod is missing");
 
 for (const [index, device] of manifest.devices.entries()) {
-  const inventory = await first(
-    "inventory_items",
-    `filter[source_sku][_eq]=${encodeURIComponent(device.sku)}&fields=id,product,quantity,retail_price,condition,source_title,serial_full`,
-  );
-  if (!inventory) throw new Error(`${device.sku}: inventory row is missing`);
+  const inventory = inventoryBySku.get(device.sku);
   if (Number(inventory.quantity) !== 1)
     throw new Error(`${device.sku}: expected stock 1, got ${inventory.quantity}`);
   if (device.serialTail && !String(inventory.serial_full || "").endsWith(device.serialTail)) {
@@ -144,7 +255,7 @@ for (const [index, device] of manifest.devices.entries()) {
         eligibility_status: "eligible",
         review_override: true,
         review_note:
-          "Операторская сверка 27.08.2026: склад, серийный хвост, фото и диагностика подтверждены.",
+          `Операторская сверка ${manifest.reviewedAt || "текущей партии"}: склад, серийный хвост, фото и диагностика подтверждены.`,
       }
     : {
         authenticity_status: "verified",
@@ -213,7 +324,7 @@ for (const [index, device] of manifest.devices.entries()) {
     originalCertificatePath,
     normalizeTitle(`${device.sku.toLowerCase()}:passport-original`),
     originalFolder,
-    "image/jpeg",
+    mimeTypeFor(originalCertificatePath),
   );
 
   const shouldPublish =
@@ -238,8 +349,8 @@ for (const [index, device] of manifest.devices.entries()) {
     listing_alt: photoIds[0].alt,
     sort: 20 + index,
     admin_note: device.publishReady
-      ? "Release v8: склад, фото, Passport и диагностика подтверждены."
-      : "Release v8: не публиковать до повторной физической диагностики батареи и наушников.",
+      ? `${manifest.releaseLabel || "Catalog release"}: склад, фото, Passport и диагностика подтверждены.`
+      : `${manifest.releaseLabel || "Catalog release"}: не публиковать до устранения причины проверки.`,
   };
   if (apply)
     await request("PATCH", `/items/products/${encodeURIComponent(productId)}`, productPatch);
@@ -317,7 +428,7 @@ for (const [index, device] of manifest.devices.entries()) {
         label: photo.label,
         alt: photo.alt,
         sort: photo.sort,
-        import_batch: "product-release-v8-2026-08-27",
+        import_batch: manifest.releaseId || "catalog-release-manual",
       },
       ["product"],
     );

@@ -50,6 +50,21 @@ Product lead rule:
 - The current stock status is copied into the lead message so managers can see
   what the user saw at submit time.
 
+## Marking a device sold
+
+1. Open `Карточки сайта` in Directus Studio and select the product.
+2. In `Цена и продажа`, set `Статус наличия` to `Продано` and save.
+3. The database atomically sets the product quantity and every store-offer
+   quantity to zero, and marks those offers as `Продано`.
+4. Keep the publication status `Опубликовано`: the product card remains on the
+   site with the `Продано` label and offers a similar-device selection request.
+5. Use `Скрыто` only when the product must disappear from the public catalog.
+
+The product appears in the `Продано` Studio view. Sold products are excluded
+from Avito and Yandex Business feeds. Returning a sold item to availability is
+not automatic: first confirm a positive inventory balance, then explicitly
+restore the product and store-offer quantities and statuses.
+
 ## Import keys
 
 For large batches, every imported row should carry:

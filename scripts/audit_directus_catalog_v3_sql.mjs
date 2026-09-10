@@ -113,7 +113,7 @@ UNION ALL
 SELECT 'catalog_v3.studio.presets_missing', count(*)::text
 FROM (VALUES
   ('Требует заполнения'),('Нужен Passport или диагностика'),
-  ('Готово к проверке'),('Опубликовано'),('Продано или скрыто'),
+  ('Готово к проверке'),('Опубликовано'),('Продано'),('Скрыто'),
   ('Техника'),('Аксессуары'),('Аксессуары без совместимости')
 ) AS expected(bookmark)
 WHERE NOT EXISTS (
@@ -269,7 +269,7 @@ WHERE p.status='published' AND p.product_type='device' AND p.condition='used'
 UNION ALL
 SELECT 'catalog_v3.publication.inventory_unconfirmed', count(*)::text
 FROM products p
-WHERE p.status='published'
+WHERE p.status='published' AND p.stock_status IN ('available','reserved')
   AND NOT EXISTS (
     SELECT 1
     FROM inventory_items inventory
@@ -371,5 +371,33 @@ SELECT 'catalog_v3.publication.passport_guard_missing',
   CASE WHEN EXISTS (
     SELECT 1 FROM pg_trigger
     WHERE tgname='device_passports_publication_guard' AND NOT tgisinternal
-  ) THEN '0' ELSE '1' END;
+  ) THEN '0' ELSE '1' END
+UNION ALL
+SELECT 'catalog_v3.sold.guards_missing',count(*)::text
+FROM (VALUES
+  ('products_sold_guard'),('products_sync_sold_offers'),('product_offers_sold_guard')
+) expected(trigger_name)
+WHERE NOT EXISTS (
+  SELECT 1 FROM pg_trigger
+  WHERE tgname=expected.trigger_name AND NOT tgisinternal
+)
+UNION ALL
+SELECT 'catalog_v3.sold.labels_missing',count(*)::text
+FROM (VALUES ('products'),('product_offers')) expected(collection)
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM directus_fields field
+  CROSS JOIN LATERAL jsonb_array_elements(field.options::jsonb->'choices') choice
+  WHERE field.collection=expected.collection AND field.field='stock_status'
+    AND choice->>'value'='sold' AND choice->>'text'='Продано'
+)
+UNION ALL
+SELECT 'catalog_v3.sold.product_stock_mismatch',count(*)::text
+FROM products WHERE stock_status='sold' AND stock_quantity<>0
+UNION ALL
+SELECT 'catalog_v3.sold.offer_stock_mismatch',count(*)::text
+FROM product_offers offer
+JOIN products product ON product.id=offer.product
+WHERE product.stock_status='sold'
+  AND (offer.stock_status<>'sold' OR offer.stock_quantity<>0);
 `);

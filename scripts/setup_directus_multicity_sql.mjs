@@ -234,7 +234,7 @@ SELECT pg_temp.isvoi_multicity_field('product_offers','status','select-dropdown'
 SELECT pg_temp.isvoi_multicity_field('product_offers','price','input',NULL,'{"min":0,"step":1}','half',5,'Цена в точке.',NULL,NULL,true);
 SELECT pg_temp.isvoi_multicity_field('product_offers','price_text','input',NULL,NULL,'half',6,'Форматированная цена.',NULL,NULL,false);
 SELECT pg_temp.isvoi_multicity_field('product_offers','stock_quantity','input',NULL,'{"min":0,"step":1}','half',7,'Остаток в точке.',NULL,NULL,true);
-SELECT pg_temp.isvoi_multicity_field('product_offers','stock_status','select-dropdown','labels','{"choices":[{"text":"В наличии","value":"available"},{"text":"Бронь","value":"reserved"},{"text":"Нет","value":"sold"},{"text":"Скрыто","value":"hidden"}]}','half',8,'Статус остатка.',NULL,NULL,true);
+SELECT pg_temp.isvoi_multicity_field('product_offers','stock_status','select-dropdown','labels','{"choices":[{"text":"В наличии","value":"available"},{"text":"Бронь","value":"reserved"},{"text":"Продано","value":"sold"},{"text":"Скрыто","value":"hidden"}]}','half',8,'Предложение синхронизируется с товаром. Для проданного товара остаток всегда равен нулю.',NULL,NULL,true);
 SELECT pg_temp.isvoi_multicity_field('product_offers','sale_mode','select-dropdown','labels','{"choices":[{"text":"Резерв","value":"reservation"},{"text":"Заявка","value":"inquiry"},{"text":"Онлайн","value":"online"}]}','half',9,'Сценарий продажи.',NULL,NULL,true);
 SELECT pg_temp.isvoi_multicity_field('product_offers','pickup_enabled','boolean','boolean',NULL,'half',10,'Самовывоз.',NULL,NULL,true);
 SELECT pg_temp.isvoi_multicity_field('product_offers','local_delivery_enabled','boolean','boolean',NULL,'half',11,'Локальная доставка.',NULL,NULL,true);

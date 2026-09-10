@@ -565,7 +565,7 @@ SELECT isvoi_catalog_field('products','color','input',NULL,NULL,'half',13,'Цв�
 SELECT isvoi_catalog_field('products','price','input',NULL,'{"min":0,"step":1}','half',31,'Цена в рублях числом.',NULL,'group_sale',true);
 SELECT isvoi_catalog_field('products','price_text','input',NULL,NULL,'half',32,'Форматированная цена; если пусто, сайт форматирует price.',NULL,'group_sale');
 SELECT isvoi_catalog_field('products','stock_quantity','input',NULL,'{"min":0,"step":1}','half',33,'Текущий остаток.',NULL,'group_sale',true);
-SELECT isvoi_catalog_field('products','stock_status','select-dropdown','labels','{"choices":[{"text":"В наличии","value":"available"},{"text":"Бронь","value":"reserved"},{"text":"Нет в наличии","value":"sold"},{"text":"Скрыто","value":"hidden"}]}','half',34,'Операционный статус наличия.',NULL,'group_sale',true);
+SELECT isvoi_catalog_field('products','stock_status','select-dropdown','labels','{"choices":[{"text":"В наличии","value":"available"},{"text":"Бронь","value":"reserved"},{"text":"Продано","value":"sold"},{"text":"Скрыто","value":"hidden"}]}','half',34,'Статус «Продано» сохраняет публичную карточку, но закрывает остаток и предложения магазинов. Для полного скрытия используйте «Скрыто».',NULL,'group_sale',true);
 SELECT isvoi_catalog_field('products','sale_mode','select-dropdown','labels','{"choices":[{"text":"Резерв","value":"reservation"},{"text":"Заявка","value":"inquiry"},{"text":"Онлайн — зарезервировано","value":"online"}]}','half',35,'online подготовлен для будущего checkout, но пока не включает оплату.',NULL,'group_sale',true);
 SELECT isvoi_catalog_field('products','sort','input',NULL,'{"min":1,"step":1}','half',36,'Порядок в каталоге.',NULL,'group_sale');
 

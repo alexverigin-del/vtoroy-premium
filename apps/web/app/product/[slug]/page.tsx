@@ -329,6 +329,7 @@ export default async function ProductPage({ params }: PageProps) {
                 offers={product.offers}
                 fallbackPrice={product.priceText}
                 fallbackStatus={product.stockStatusLabel}
+                stockStatus={product.stockStatus}
               />
 
               {usedDevice ? (

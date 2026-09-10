@@ -331,9 +331,12 @@ DO $$ DECLARE role_name text; BEGIN
     PERFORM pg_temp.isvoi_ux_preset(role_name,'products','Опубликовано','public','#059669',
       '{"status":{"_eq":"published"}}',
       '["title","sku","product_type","stock_status","offers","updated_at"]','["sort","title"]');
-    PERFORM pg_temp.isvoi_ux_preset(role_name,'products','Продано или скрыто','visibility_off','#64748b',
-      '{"stock_status":{"_in":["sold","hidden"]}}',
-      '["title","sku","stock_status","status","content_status","updated_at"]','["-updated_at"]');
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'products','Продано','sell','#64748b',
+      '{"stock_status":{"_eq":"sold"}}',
+      '["title","sku","condition","status","stock_quantity","offers","updated_at"]','["-updated_at"]');
+    PERFORM pg_temp.isvoi_ux_preset(role_name,'products','Скрыто','visibility_off','#475569',
+      '{"stock_status":{"_eq":"hidden"}}',
+      '["title","sku","condition","status","content_status","updated_at"]','["-updated_at"]');
     PERFORM pg_temp.isvoi_ux_preset(role_name,'products','Техника','devices','#2563eb',
       '{"product_type":{"_eq":"device"}}','["title","sku","condition","status","content_status","offers"]','["sort","title"]');
     PERFORM pg_temp.isvoi_ux_preset(role_name,'products','Аксессуары','cable','#7c3aed',

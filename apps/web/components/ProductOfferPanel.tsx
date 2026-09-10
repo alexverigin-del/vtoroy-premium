@@ -4,21 +4,18 @@ import Link from "next/link";
 import type { ProductOffer } from "@vtoroy/shared";
 
 import { cityScopedLabel } from "../lib/city-copy";
+import { stockStatusLabel } from "../lib/stock-status";
 import { useCity } from "./CityContext";
-
-function offerStatusLabel(offer: ProductOffer): string {
-  if (offer.stockStatus === "reserved") return "Бронь";
-  if (offer.stockStatus === "sold" || offer.stockQuantity <= 0) return "Нет в наличии";
-  return "В наличии";
-}
 
 export function ProductOfferPanel({
   fallbackPrice,
   fallbackStatus,
+  stockStatus,
   offers,
 }: {
   fallbackPrice: string;
   fallbackStatus: string;
+  stockStatus: string;
   offers: ProductOffer[];
 }) {
   const { locations, selected, selectCity } = useCity();
@@ -43,11 +40,17 @@ export function ProductOfferPanel({
         {offer
           ? selected
             ? local
-              ? cityScopedLabel(offer.location.city, offerStatusLabel(offer))
+              ? cityScopedLabel(
+                  offer.location.city,
+                  stockStatusLabel(offer.stockStatus, offer.stockQuantity),
+                )
               : `${offer.location.city} · Доставка${offer.deliveryEstimate ? ` · ${offer.deliveryEstimate}` : ""}`
-            : cityScopedLabel(offer.location.city, offerStatusLabel(offer))
+            : cityScopedLabel(
+                offer.location.city,
+                stockStatusLabel(offer.stockStatus, offer.stockQuantity),
+              )
           : selected
-            ? cityScopedLabel(selected.city, "Нет в наличии")
+            ? cityScopedLabel(selected.city, stockStatus === "sold" ? "Продано" : "Нет в наличии")
             : fallbackStatus}
       </p>
 

@@ -18,6 +18,8 @@ import type {
   TradeInfo,
 } from "@vtoroy/shared";
 
+import { stockStatusLabel } from "./stock-status";
+
 import { getDeviceBySlug, getPublishedDeviceCards, directusAssetUrl } from "./directus";
 import { PRODUCTS_CACHE_TAG } from "./cache-tags";
 import { cityScopedLabel } from "./city-copy";
@@ -310,12 +312,6 @@ function mapAccessoryDetails(value: unknown): AccessoryDetails | undefined {
   };
 }
 
-function stockLabel(value: string, quantity: number): string {
-  if (value === "reserved") return "Бронь";
-  if (value === "sold" || quantity <= 0) return "Нет в наличии";
-  return "В наличии";
-}
-
 function offerHasStock(offer: ProductOffer | undefined): boolean {
   return Boolean(
     offer &&
@@ -440,10 +436,13 @@ function mapProductCard(row: Row, city?: string, cityName?: string): ProductCard
   const selectedOffer = selectOffer(offers, city);
   const selectedOfferHasStock = offerHasStock(selectedOffer);
   const selectedOfferIsLocal = Boolean(city && selectedOffer?.location.slug === city);
+  const productStockQuantity = number(row.stock_quantity);
+  const productStockStatus = text(
+    row.stock_status,
+    productStockQuantity > 0 ? "available" : "sold",
+  );
   const stockQuantity = selectedOffer?.stockQuantity ?? (city ? 0 : number(row.stock_quantity));
-  const stockStatus =
-    selectedOffer?.stockStatus ??
-    (city ? "sold" : text(row.stock_status, stockQuantity > 0 ? "available" : "sold"));
+  const stockStatus = selectedOffer?.stockStatus ?? productStockStatus;
   const price = selectedOffer?.price ?? number(row.price);
   const networkPrices = new Set(
     offers
@@ -474,17 +473,17 @@ function mapProductCard(row: Row, city?: string, cityName?: string): ProductCard
       ? selectedOfferIsLocal
         ? cityScopedLabel(
             selectedOffer.location.city,
-            stockLabel(selectedOffer.stockStatus, selectedOffer.stockQuantity),
+            stockStatusLabel(selectedOffer.stockStatus, selectedOffer.stockQuantity),
           )
         : city && offerCanDeliver(selectedOffer)
           ? `${selectedOffer.location.city} · Доставка${selectedOffer.deliveryEstimate ? ` · ${selectedOffer.deliveryEstimate}` : ""}`
           : cityScopedLabel(
               selectedOffer.location.city,
-              stockLabel(selectedOffer.stockStatus, selectedOffer.stockQuantity),
+              stockStatusLabel(selectedOffer.stockStatus, selectedOffer.stockQuantity),
             )
       : city
-        ? cityScopedLabel(cityName || city, "Нет в наличии")
-        : stockLabel(stockStatus, stockQuantity),
+        ? cityScopedLabel(cityName || city, stockStatus === "sold" ? "Продано" : "Нет в наличии")
+        : stockStatusLabel(stockStatus, stockQuantity),
     warrantyText: text(row.warranty_text, text(row.warranty)),
     listingImage: assetUrl(row.listing_file, 720, 540),
     listingAlt: text(row.listing_alt, text(row.title)),

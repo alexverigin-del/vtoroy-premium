@@ -1,0 +1,4 @@
+{
+  "name":"directus-extension-isvoi-communications","version":"0.1.0","type":"module",
+  "directus:extension":{"type":"endpoint","path":"dist/index.js","source":"../../../../packages/communications/src/endpoint.ts","host":"^11.17.4"}
+}

@@ -1,0 +1,24 @@
+# Opt-in overlay; the existing stack is unchanged unless explicitly selected.
+# docker compose -f docker-compose.yml -f docker-compose.communications.yml up -d
+services:
+  directus:
+    volumes:
+      - ./private-communications:/directus/private-communications
+    environment:
+      ISVOI_COMMUNICATIONS_ENABLED: ${ISVOI_COMMUNICATIONS_ENABLED:-false}
+      ISVOI_COMMUNICATIONS_PRIVATE_DIR: /directus/private-communications
+      ISVOI_COMMUNICATIONS_CLAMAV_HOST: clamav
+  clamav:
+    image: clamav/clamav:1.4
+    restart: unless-stopped
+    mem_limit: 4g
+    volumes:
+      - clamav-signatures:/var/lib/clamav
+    # No published port; clamd is reachable only inside the compose network.
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+volumes:
+  clamav-signatures:

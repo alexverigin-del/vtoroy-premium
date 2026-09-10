@@ -1,0 +1,76 @@
+name: isvoi-communications-local
+services:
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: communications_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local-fixture-only
+    networks:
+      default:
+        aliases: [comm-db]
+    volumes:
+      - communications-test-db:/var/lib/postgresql/data
+    mem_limit: 512m
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d communications_test"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+  private-init:
+    image: directus/directus:11.17.4
+    user: root
+    command: [sh, -c, "chown 1000:1000 /private && chmod 700 /private"]
+    volumes:
+      - communications-test-private:/private
+    restart: "no"
+  directus:
+    image: directus/directus:11.17.4
+    ports: ["127.0.0.1:8056:8055"]
+    depends_on:
+      database:
+        condition: service_healthy
+      private-init:
+        condition: service_completed_successfully
+    environment:
+      SECRET: local-isvoi-communications-fixture-only
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: local-isvoi-fixture-password
+      PUBLIC_URL: http://127.0.0.1:8056
+      DB_CLIENT: pg
+      DB_HOST: comm-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: local-fixture-only
+      DB_DATABASE: communications_test
+      TELEMETRY: "false"
+      CACHE_ENABLED: "false"
+      CACHE_SCHEMA: "false"
+      MARKETPLACE_TRUST: sandbox
+      ISVOI_COMMUNICATIONS_ENABLED: "true"
+      ISVOI_COMMUNICATIONS_PRIVATE_DIR: /directus/private-communications
+      ISVOI_COMMUNICATIONS_CLAMAV_HOST: clamav
+      ISVOI_TELEGRAM_USE_COMMUNICATIONS: "true"
+      ISVOI_TELEGRAM_ENABLED: "true"
+      ISVOI_TELEGRAM_BOT_ID: "8908725708"
+      ISVOI_TELEGRAM_MODE: test
+      ISVOI_TELEGRAM_BOT_USERNAME: isvoi_test_bot
+    volumes:
+      - ../directus-beget/extensions-bundled:/directus/extensions:ro
+      - communications-test-private:/directus/private-communications
+    mem_limit: 1g
+  clamav:
+    image: clamav/clamav:1.4
+    profiles: [files]
+    mem_limit: 4g
+    volumes:
+      - communications-test-signatures:/var/lib/clamav
+    healthcheck:
+      test: [CMD, clamdcheck.sh]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+volumes:
+  communications-test-db:
+  communications-test-private:
+  communications-test-signatures:

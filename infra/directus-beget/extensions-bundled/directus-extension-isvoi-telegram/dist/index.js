@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { createConversations } from './conversations.js';
+import { createCompatibilityHandlers } from './compatibility.js';
 import { UUID, validId, failure, parseUpdate, routeMatches, renderCard, nextOperation, deliveryFailure, RESULT_TEXT } from './protocol.js';
 
-export function createHandlers({ database, services, getSchema, env }) {
+export function createHandlers(context) {
+  const { database, services, getSchema, env } = context;
   const botId = String(env.ISVOI_TELEGRAM_BOT_ID || '');
   const mode = env.ISVOI_TELEGRAM_MODE || 'test';
   const workerUser = env.ISVOI_TELEGRAM_WORKER_USER_ID || '';
@@ -10,6 +12,8 @@ export function createHandlers({ database, services, getSchema, env }) {
   const enabled = env.ISVOI_TELEGRAM_ENABLED === true || env.ISVOI_TELEGRAM_ENABLED === 'true';
   const configValid = validId(botId) && UUID.test(workerUser) && ['test', 'production'].includes(mode) &&
     /^https:\/\/[^/?#]+$/.test(studioUrl);
+  const compatibility = createCompatibilityHandlers(context);
+  if (compatibility) return compatibility;
 
   async function authorized(req) {
     if (!enabled) throw failure('TELEGRAM_DISABLED', 503);

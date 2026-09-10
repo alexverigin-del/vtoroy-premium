@@ -1,0 +1,24 @@
+[Unit]
+Description=ISVOI communications worker %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=isvoi
+Group=isvoi
+WorkingDirectory=/opt/isvoi
+EnvironmentFile=/etc/isvoi/communications.env
+ExecStart=/usr/bin/node /opt/isvoi/scripts/run_communications_worker.mjs %i
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=75
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+MemoryMax=384M
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

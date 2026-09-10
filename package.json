@@ -255,7 +255,17 @@
     "directus:setup:insights": "node scripts/setup_directus_insights_sql.mjs",
     "directus:test:catalog-v3-editability": "node scripts/test_directus_catalog_v3_editability.mjs",
     "directus:test:inventory-manager-editability": "node scripts/test_directus_inventory_manager_editability.mjs",
-    "directus:catalog-guard:test": "node scripts/test_directus_catalog_guard_extension.mjs"
+    "directus:catalog-guard:test": "node scripts/test_directus_catalog_guard_extension.mjs",
+    "communications:build": "node scripts/build_communications.mjs",
+    "communications:test": "node node_modules/typescript/bin/tsc -p packages/communications/tsconfig.json && node --test scripts/test_communications.mjs",
+    "communications:migrate": "node scripts/migrate_communications.mjs",
+    "communications:worker": "node scripts/run_communications_worker.mjs",
+    "communications:rehearse": "node scripts/rehearse_communications.mjs",
+    "communications:rehearse:production-schema": "node scripts/rehearse_communications_production_schema.mjs",
+    "communications:local:setup": "node scripts/setup_communications_local_fixture.mjs",
+    "communications:local:api:test": "node scripts/test_communications_directus_api.mjs",
+    "communications:local:compat:test": "node scripts/test_communications_legacy_api.mjs",
+    "communications:ui:test": "node scripts/test_communications_ui.mjs"
   },
   "engines": {
     "node": ">=24.18.0 <25",
@@ -264,10 +274,17 @@
   "overrides": {
     "nanoid": "3.3.18",
     "postcss": "8.5.26",
-    "sharp": "0.35.4"
+    "sharp": "0.35.4",
+    "@unhead/vue": "2.1.13",
+    "unhead": "2.1.13",
+    "browserslist": "4.28.9"
   },
   "devDependencies": {
+    "@directus/extensions-sdk": "^18.0.4",
+    "@electric-sql/pglite": "^0.5.8",
+    "esbuild": "^0.28.2",
     "playwright": "^1.61.0",
-    "tailwindcss": "^3.4.19"
+    "tailwindcss": "^3.4.19",
+    "vue": "^3.5.24"
   }
 }

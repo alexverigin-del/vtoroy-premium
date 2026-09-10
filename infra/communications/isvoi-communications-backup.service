@@ -1,0 +1,10 @@
+[Unit]
+Description=ISVOI database and private media offsite backup
+After=network-online.target
+[Service]
+Type=oneshot
+User=isvoi-backup
+EnvironmentFile=/etc/isvoi/communications-backup.env
+ExecStart=/opt/isvoi/scripts/backup_communications.sh
+UMask=0077
+NoNewPrivileges=true

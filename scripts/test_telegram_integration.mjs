@@ -234,7 +234,7 @@ test('runtime contains only the scoped endpoint and built files match sources', 
   assert.deepEqual(paths, ['/session', '/next', '/complete', '/update', '/intake', '/intake-check']);
   const root = new URL('../infra/directus-beget/extensions-bundled/directus-extension-isvoi-telegram/', import.meta.url);
   assert.equal(typeof createNotifications,'function');
-  for (const file of ['index.js', 'protocol.js', 'conversations.js', 'notifications.js']) {
+  for (const file of ['index.js', 'protocol.js', 'conversations.js', 'notifications.js', 'compatibility.js']) {
     assert.equal(await readFile(new URL(`src/${file}`, root), 'utf8'), await readFile(new URL(`dist/${file}`, root), 'utf8'));
   }
 });

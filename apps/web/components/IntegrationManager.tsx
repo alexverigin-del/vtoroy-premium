@@ -1,12 +1,12 @@
 "use client";
 
 import type {
-  ConsentCategory,
   IntegrationConsentSettings,
   SiteIntegration,
   YandexMetrikaSettings,
 } from "@vtoroy/shared";
 import { usePathname, useSearchParams } from "next/navigation";
+import { lazy, Suspense } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -32,8 +32,11 @@ type ActiveAdapter = {
 type MetrikaFunction = ((...args: unknown[]) => void) & { a?: unknown[][]; l?: number };
 type MetrikaWindow = Window & { ym?: MetrikaFunction };
 
+const ConsentDialog = lazy(() =>
+  import("./ConsentDialog").then((module) => ({ default: module.ConsentDialog })),
+);
 const consentBannerClass =
-  "fixed inset-x-3 bottom-3 z-modal mx-auto max-w-copy rounded-card border border-hairline bg-white bg-opacity-95 p-5 shadow-product backdrop-blur-md sm:bottom-5 sm:flex sm:items-center sm:gap-6 sm:p-6";
+  "fixed inset-x-3 bottom-3 z-modal mx-auto max-h-dialog max-w-copy overflow-y-auto break-words rounded-card border border-hairline bg-white p-4 sm:bottom-5 sm:flex sm:items-center sm:gap-6";
 
 function readCookie(name: string): string | undefined {
   const prefix = `${name}=`;
@@ -196,160 +199,6 @@ function activateIntegration(integration: SiteIntegration, url: string): ActiveA
     : activateCustom(integration, url);
 }
 
-function categoryCopy(
-  category: ConsentCategory,
-  settings: IntegrationConsentSettings,
-): { label: string; description: string } {
-  switch (category) {
-    case "necessary":
-      return { label: settings.necessaryLabel, description: settings.necessaryDescription };
-    case "analytics":
-      return { label: settings.analyticsLabel, description: settings.analyticsDescription };
-    case "marketing":
-      return { label: settings.marketingLabel, description: settings.marketingDescription };
-    case "support":
-      return { label: settings.supportLabel, description: settings.supportDescription };
-  }
-}
-
-function ConsentDialog({
-  settings,
-  privacyUrl,
-  categories,
-  onChange,
-  onSave,
-  onClose,
-}: {
-  settings: IntegrationConsentSettings;
-  privacyUrl?: string;
-  categories: Record<OptionalConsentCategory, boolean>;
-  onChange: (category: OptionalConsentCategory, checked: boolean) => void;
-  onSave: () => void;
-  onClose: () => void;
-}) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const previousFocus = document.activeElement as HTMLElement | null;
-    closeRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-      if (event.key !== "Tab" || !dialogRef.current) return;
-      const focusable = Array.from(
-        dialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      previousFocus?.focus();
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      className="fixed inset-0 z-modal grid items-end bg-onyx bg-opacity-40 p-3 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
-      role="presentation"
-      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="integration-consent-title"
-        aria-describedby="integration-consent-description"
-        className="max-h-dialog w-full max-w-overlay-wide overflow-y-auto rounded-card border border-hairline bg-white shadow-product sm:max-h-dialog-sm"
-      >
-        <div className="flex items-start justify-between gap-6 border-b border-hairline px-5 py-5 sm:px-7">
-          <div>
-            <h2 id="integration-consent-title" className="text-2xl font-semibold leading-tight">
-              {settings.settingsTitle}
-            </h2>
-          </div>
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            aria-label={settings.closeLabel}
-            className="grid min-h-11 min-w-11 place-items-center rounded-pill border border-hairline text-xl leading-none outline-none transition hover:bg-frost focus-visible:shadow-focus"
-          >
-            ×
-          </button>
-        </div>
-        <div className="px-5 py-5 sm:px-7">
-          <p id="integration-consent-description" className="text-sm leading-relaxed text-ash">
-            {settings.settingsBody}
-          </p>
-          <div className="mt-6 grid gap-3">
-            {(["necessary", "analytics", "marketing", "support"] as ConsentCategory[]).map(
-              (category) => {
-                const copy = categoryCopy(category, settings);
-                const necessary = category === "necessary";
-                const checked = necessary || categories[category as OptionalConsentCategory];
-                return (
-                  <label
-                    key={category}
-                    className="flex cursor-pointer items-start justify-between gap-5 rounded-card border border-hairline p-4 transition hover:border-mist"
-                  >
-                    <span>
-                      <span className="block text-sm font-semibold text-carbon">{copy.label}</span>
-                      <span className="mt-1 block text-sm leading-relaxed text-ash">
-                        {copy.description}
-                      </span>
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      disabled={necessary}
-                      onChange={(event) =>
-                        !necessary &&
-                        onChange(category as OptionalConsentCategory, event.currentTarget.checked)
-                      }
-                      className="mt-1 h-5 w-5 shrink-0 accent-accent"
-                    />
-                  </label>
-                );
-              },
-            )}
-          </div>
-          <div className="mt-6 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {privacyUrl ? (
-              <a
-                href={privacyUrl}
-                className="inline-flex min-h-11 items-center text-sm text-link-blue underline-offset-4 outline-none hover:underline focus-visible:shadow-focus"
-              >
-                {settings.privacyLinkLabel}
-              </a>
-            ) : (
-              <span />
-            )}
-            <button type="button" onClick={onSave} className="btn-pill min-h-11">
-              {settings.saveLabel}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function IntegrationManager({
   integrations,
   settings,
@@ -470,7 +319,11 @@ export function IntegrationManager({
   return (
     <>
       {choice === null && matchingOptional && !settingsOpen ? (
-        <section aria-label={settings.bannerTitle} className={consentBannerClass}>
+        <section
+          data-consent-banner
+          aria-label={settings.bannerTitle}
+          className={consentBannerClass}
+        >
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-carbon">{settings.bannerTitle}</h2>
             <p className="mt-2 text-sm leading-relaxed text-ash">{settings.bannerBody}</p>
@@ -483,24 +336,24 @@ export function IntegrationManager({
               </a>
             ) : null}
           </div>
-          <div className="mt-4 grid shrink-0 gap-2 sm:mt-0 sm:w-52">
+          <div className="mt-3 grid shrink-0 grid-cols-2 gap-2 sm:mt-0 sm:w-52">
             <button
               type="button"
-              className="btn-pill min-h-11"
+              className="btn-pill min-h-11 min-w-0 break-words px-3 text-sm"
               onClick={() => commitChoice(allConsentCategories())}
             >
               {settings.acceptAllLabel}
             </button>
             <button
               type="button"
-              className="min-h-11 rounded-pill border border-hairline px-5 text-sm font-medium outline-none transition hover:bg-frost focus-visible:shadow-focus"
+              className="min-h-11 min-w-0 break-words rounded-pill border border-hairline px-3 text-sm font-medium outline-none transition hover:bg-frost focus-visible:shadow-focus"
               onClick={() => commitChoice(emptyConsentCategories())}
             >
               {settings.rejectOptionalLabel}
             </button>
             <button
               type="button"
-              className="min-h-11 text-sm font-medium text-link-blue underline-offset-4 outline-none hover:underline focus-visible:shadow-focus"
+              className="col-span-2 min-h-11 text-sm font-medium text-link-blue underline-offset-4 outline-none hover:underline focus-visible:shadow-focus"
               onClick={openSettings}
             >
               {settings.customizeLabel}
@@ -509,16 +362,24 @@ export function IntegrationManager({
         </section>
       ) : null}
       {settingsOpen ? (
-        <ConsentDialog
-          settings={settings}
-          privacyUrl={privacyUrl}
-          categories={draftCategories}
-          onChange={(category, checked) =>
-            setDraftCategories((current) => ({ ...current, [category]: checked }))
+        <Suspense
+          fallback={
+            <p role="status" data-modal-pending>
+              Загрузка…
+            </p>
           }
-          onSave={() => commitChoice(draftCategories)}
-          onClose={closeSettings}
-        />
+        >
+          <ConsentDialog
+            settings={settings}
+            privacyUrl={privacyUrl}
+            categories={draftCategories}
+            onChange={(category, checked) =>
+              setDraftCategories((current) => ({ ...current, [category]: checked }))
+            }
+            onSave={() => commitChoice(draftCategories)}
+            onClose={closeSettings}
+          />
+        </Suspense>
       ) : null}
     </>
   );

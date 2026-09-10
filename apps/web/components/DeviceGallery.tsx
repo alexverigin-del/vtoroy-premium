@@ -12,7 +12,11 @@ import {
 import type { GalleryImage } from "@vtoroy/shared";
 import { cn } from "../lib/cn-client";
 import { ProductImage, productImageSrc } from "./ProductImage";
-import { ProductImageViewer } from "./ProductImageViewer";
+import { lazy, Suspense } from "react";
+
+const ProductImageViewer = lazy(() =>
+  import("./ProductImageViewer").then((module) => ({ default: module.ProductImageViewer })),
+);
 import { productImageLensStyle } from "./product-image-zoom-utils";
 import { productImageLensClass, productImageZoomBadgeClass } from "./ui-classes";
 
@@ -235,14 +239,24 @@ export function DeviceGallery({ images }: { images: GalleryImage[] }) {
         </div>
       ) : null}
 
-      <ProductImageViewer
-        images={normalizedImages}
-        activeIndex={boundedActiveIndex}
-        open={viewerOpen}
-        onClose={() => setViewerOpen(false)}
-        onSelect={showImage}
-        returnFocusRef={triggerRef}
-      />
+      {viewerOpen ? (
+        <Suspense
+          fallback={
+            <p role="status" data-modal-pending>
+              Загрузка…
+            </p>
+          }
+        >
+          <ProductImageViewer
+            images={normalizedImages}
+            activeIndex={boundedActiveIndex}
+            open={viewerOpen}
+            onClose={() => setViewerOpen(false)}
+            onSelect={showImage}
+            returnFocusRef={triggerRef}
+          />
+        </Suspense>
+      ) : null}
     </section>
   );
 }

@@ -72,7 +72,7 @@ const cssVariableTokenMap = {
 const arbitraryUtilityPattern =
   /\b(?:[a-z][a-z0-9:-]*-\[[^\]\s"']+\]|[a-z][a-z0-9:-]*\/\[[^\]\s"']+\])/g;
 const arbitraryUtilityAllowed = [
-  /^(h|min-h|w)-\[var\(--logo-(height|width),\d+px\)\]$/,
+  /^(h|min-h|max-h|w)-\[var\(--logo-(height|width),\d+px\)\]$/,
   /^left-\[-9999px\]$/,
 ];
 

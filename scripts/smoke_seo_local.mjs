@@ -7,6 +7,8 @@ import { mkdtemp, readFile, access, rm, mkdir, cp, symlink } from "node:fs/promi
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { parseDocument, DomUtils } from "htmlparser2";
+import { launchChromium } from "./playwright_browser.mjs";
 
 const root = process.cwd();
 const temporary = await mkdtemp(path.join(os.tmpdir(), "isvoi-seo-smoke-"));
@@ -23,6 +25,7 @@ await cp(buildSource, path.join(fixtureApp, ".next"), {
 await cp(path.join(root, "apps/web/next.config.mjs"), path.join(fixtureApp, "next.config.mjs"));
 await cp(path.join(root, "apps/web/package.json"), path.join(fixtureApp, "package.json"));
 await symlink(path.join(root, "node_modules"), path.join(fixtureApp, "node_modules"), "junction");
+await symlink(path.join(root, "apps/web/public"), path.join(fixtureApp, "public"), "junction");
 const location = {
   id: "belgorod",
   slug: "belgorod",
@@ -35,6 +38,38 @@ const location = {
 const cms = createServer((request, response) => {
   const url = new URL(request.url, "http://127.0.0.1");
   let data = [];
+  if (url.pathname === "/items/products") {
+    const id = url.searchParams.get("filter[id][_eq]");
+    data = ["fixture-available", "fixture-sold"]
+      .filter((value) => !id || id === value)
+      .map((id) => ({
+        id,
+        status: "published",
+        content_status: "ready",
+        sku: id,
+        product_type: "device",
+        condition: "used",
+        title: `iPhone 15 Pro Max ${id}`,
+        price: 79900,
+        price_text: "79 900 ₽",
+        listing_file: { id: "fixture-image" },
+        stock_status: id.endsWith("sold") ? "sold" : "available",
+        stock_quantity: id.endsWith("sold") ? 0 : 1,
+        brand: { id: "apple", name: "Apple", slug: "apple" },
+        category: { id: "phone", name: "Смартфоны", slug: "smartphones" },
+        device_details: { storage: "512 ГБ", grade: "A", battery_text: "97%" },
+      }));
+  }
+  if (url.pathname === "/items/product_images")
+    data = [
+      {
+        id: "photo",
+        role: "front",
+        label: "Фото",
+        alt: "Fixture phone",
+        image: { id: "fixture-image" },
+      },
+    ];
   if (url.pathname === "/items/store_locations") data = [location];
   if (url.pathname === "/items/site_settings")
     data = [{ id: 1, brand_name: "I СВОИ", city: "Белгород" }];
@@ -68,7 +103,7 @@ const app = spawn(
       ...process.env,
       NODE_ENV: "production",
       DIRECTUS_URL: cmsUrl,
-      NEXT_PUBLIC_DIRECTUS_URL: cmsUrl,
+      NEXT_PUBLIC_DIRECTUS_URL: "https://api.isvoi.ru",
       DIRECTUS_TOKEN: "fixture",
       CATALOG_SOURCE: "v3",
       ALLOW_CATALOG_FALLBACK: "false",
@@ -156,6 +191,112 @@ try {
   const sitemap = await (await fetch(`${base}/sitemap.xml`)).text();
   assert.match(sitemap, /<loc>https:\/\/isvoi.ru\/stores<\/loc>/);
   assert.doesNotMatch(sitemap, /<lastmod>/, "fixture has no known modification dates");
+  for (const id of ["fixture-available", "fixture-sold"]) {
+    const response = await fetch(`${base}/product/${id}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    const dom = parseDocument(html);
+    const headings = DomUtils.findAll((node) => /^h[1-6]$/.test(node.name), dom.children);
+    assert.equal(headings[0].name, "h1");
+    assert.equal(headings.filter((node) => node.name === "h1").length, 1);
+    const forms = DomUtils.findAll((node) => node.attribs.id === "product-lead-form", dom.children);
+    assert.equal(forms.length, 1);
+    assert(html.indexOf('id="product-purchase-summary"') < html.indexOf('id="product-lead-form"'));
+    const schemas = DomUtils.findAll(
+      (node) => node.attribs.type === "application/ld+json",
+      dom.children,
+    ).map((node) => JSON.parse(DomUtils.textContent(node)));
+    assert(schemas.some((schema) => schema["@type"] === "Product"));
+    assert(schemas.some((schema) => schema["@type"] === "BreadcrumbList"));
+    assert(
+      html.includes(id.endsWith("sold") ? "Подобрать альтернативу" : "Записаться на просмотр"),
+    );
+  }
+  if (process.env.SEO_UI === "1") {
+    const browser = await launchChromium({ headless: true });
+    const output = path.join(root, "output/playwright/impeccable");
+    await mkdir(output, { recursive: true });
+    try {
+      const page = await browser.newPage();
+      const errors = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      const image = await readFile(
+        path.join(root, "apps/web/public/assets/critical-home-hero.webp"),
+      );
+      await page.route("**/_next/image?**", (route) =>
+        route.fulfill({ body: image, contentType: "image/webp" }),
+      );
+      for (const width of [320, 390, 768, 1024, 1280, 1440]) {
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto(`${base}/product/fixture-available`, { waitUntil: "networkidle" });
+        assert(
+          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+          `Compiled product overflow at ${width}`,
+        );
+        assert.equal(await page.locator("#product-lead-form").count(), 1);
+        assert.equal(
+          await page
+            .locator('#product-lead-form input[name="contact"]')
+            .evaluate((element) => getComputedStyle(element, "::placeholder").color),
+          "rgb(112, 112, 112)",
+          "Contact placeholder uses the contrast-reviewed muted token",
+        );
+        const summary = await page.locator("#product-purchase-summary").boundingBox();
+        const gallery = await page.locator('[data-component="DeviceGallery"]').boundingBox();
+        if (width < 1024) assert(summary.y < gallery.y, "Mobile offer must precede photos");
+        else assert(summary.x > gallery.x, "Desktop offer stays right of gallery");
+        await page.screenshot({
+          path: path.join(output, `compiled-product-${width}.png`),
+          fullPage: true,
+        });
+        await page.evaluate(() => (document.documentElement.style.fontSize = "200%"));
+        await page.waitForTimeout(150);
+        if (!(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))) {
+          console.log(
+            await page.evaluate(() =>
+              Array.from(document.querySelectorAll("body *"))
+                .filter(
+                  (element) =>
+                    getComputedStyle(element).visibility !== "hidden" &&
+                    element.getBoundingClientRect().right > innerWidth,
+                )
+                .map((element) => ({
+                  tag: element.tagName,
+                  cls: element.className,
+                  text: element.textContent.slice(0, 70),
+                  right: element.getBoundingClientRect().right,
+                }))
+                .slice(-25),
+            ),
+          );
+          await page.screenshot({
+            path: path.join(output, `compiled-product-${width}-overflow.png`),
+            fullPage: true,
+          });
+        }
+        assert(
+          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+          `Compiled product text at 200% overflows at ${width}`,
+        );
+      }
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(`${base}/catalog`, { waitUntil: "networkidle" });
+      const firstPrice = page
+        .locator('[data-component="ProductCard"]')
+        .first()
+        .getByText("79 900 ₽", { exact: true });
+      const price = await firstPrice.boundingBox();
+      assert(price.y + price.height <= 844, "Compiled catalog first price must be above the fold");
+      await page.screenshot({
+        path: path.join(output, "compiled-catalog-390.png"),
+        fullPage: true,
+      });
+      assert.equal(errors.length, 0, errors.join("\n"));
+      console.log("Compiled product DOM/grid on six widths and catalog first viewport passed.");
+    } finally {
+      await browser.close();
+    }
+  }
   passed = true;
   console.log(
     "Local compiled Next SEO smoke passed: canonical, metadata, coordinates, Sitemap, key route, auth and durable dirty signal. No IndexNow submissions.",

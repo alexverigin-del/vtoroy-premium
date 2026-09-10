@@ -12,11 +12,13 @@ export function ProductOfferPanel({
   fallbackStatus,
   stockStatus,
   offers,
+  compact = false,
 }: {
   fallbackPrice: string;
   fallbackStatus: string;
   stockStatus: string;
   offers: ProductOffer[];
+  compact?: boolean;
 }) {
   const { locations, selected, selectCity } = useCity();
   const stocked = offers.filter(
@@ -30,9 +32,13 @@ export function ProductOfferPanel({
   const local = Boolean(offer && selected && offer.location.slug === selected.slug);
 
   return (
-    <div className="mt-6" data-component="ProductOfferPanel">
+    <div data-component="ProductOfferPanel">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-3xl font-semibold tabular-nums">
+        <span
+          className={
+            compact ? "text-lg font-semibold tabular-nums" : "text-3xl font-semibold tabular-nums"
+          }
+        >
           {offer?.priceText || fallbackPrice}
         </span>
       </div>
@@ -54,7 +60,7 @@ export function ProductOfferPanel({
             : fallbackStatus}
       </p>
 
-      {locations.length > 0 ? (
+      {!compact && locations.length > 1 ? (
         <label className="mt-5 block">
           <span className="text-xs font-medium text-muted">Город получения</span>
           <select
@@ -72,7 +78,7 @@ export function ProductOfferPanel({
         </label>
       ) : null}
 
-      {offer ? (
+      {!compact && offer ? (
         <div className="mt-4 rounded-card bg-surface p-4 text-sm leading-relaxed text-muted">
           {local && offer.pickupEnabled
             ? `Самовывоз: I СВОИ · ${offer.location.city}. После подтверждения резерва.`

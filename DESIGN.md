@@ -28,22 +28,22 @@ typography:
     letterSpacing: "0"
   headline:
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
-    fontSize: "clamp(32px, 5vw, 48px)"
+    fontSize: "24px compact / 36px page / 48px desktop"
     fontWeight: 600
     lineHeight: 1.1
-    letterSpacing: "-0.015em"
+    letterSpacing: "0"
   title:
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
-    fontSize: "clamp(24px, 3vw, 28px)"
+    fontSize: "24px / 30px"
     fontWeight: 600
     lineHeight: 1.18
-    letterSpacing: "-0.01em"
+    letterSpacing: "0"
   body:
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
     fontSize: "17px"
     fontWeight: 400
     lineHeight: 1.47
-    letterSpacing: "-0.016em"
+    letterSpacing: "0"
   label:
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
     fontSize: "12px"
@@ -100,6 +100,37 @@ components:
 ---
 
 # Design System: ISVOI
+
+## A/B/C Interaction Rules (2026-09-10)
+
+- Preserve manually edited CMS text and existing fallback copy. Layout and
+  performance improvements do not authorize editorial rewrites. The proposed
+  Impeccable text patches were withdrawn at the user's request, not deferred.
+- Header is compact below 1280px and also whenever actual navigation, city,
+  CTA and logo widths do not fit. Do not trade logo editability for a fixed
+  navigation layout. Live captions are 12px, sentence case, below the bitmap;
+  embedded-caption images use an empty live caption. Keep Studio size bounds.
+- Product hierarchy: H1, current offer/action, photos, details, one full form.
+  The mobile sticky action shares the city offer calculation and disappears
+  behind consent/viewer UI and when the form is visible. Sold cards retain
+  their public URL and existing alternative-selection action.
+- Catalog uses a compact header/search, result count with sort, and a mobile
+  filter dialog. Keep its existing editorial title and sold labels explicit;
+  do not replace manually maintained copy to implement a design recommendation.
+- Card price precedes optional trust facts. Do not repeat an exact color or
+  brand already in the title. Facts remain legible and wrap; do not truncate
+  details unique to the actual device. Definition rows replace nested boxes.
+- Use existing stepped type sizes and zero tracking; no viewport-sized type.
+  Retain Inter, palette, hairlines and 8px framed-item radii. Contact sections
+  and products do not need broad decorative shadows.
+- Product grids use bounded tracks so enlarged text cannot widen the page.
+  The single lead form is unframed inside its enclosing panel. Consent
+  categories use flat divided rows; long copy wraps at 320px and 200% text.
+- Local browser evidence covers six widths, maximum logo sizes, caption
+  variants, 200% text, keyboard dialogs and reduced motion. The 390x844 catalog
+  fixture exposes the first card's image/title/price. Content patches were
+  withdrawn; post-release visual/LCP acceptance remains pending. Do not label
+  the whole performance package green from a release-budget pass alone.
 
 ## 1. Overview
 
@@ -235,7 +266,7 @@ Homepage preview overlays and visual frames should follow the same Flat Retail R
 
 Homepage Club and final CTA panels should also stay flat at rest. Featured Club tiers can use contrast and a blue border for emphasis, and lead CTA shells can use a white surface with a hairline border; avoid broad decorative shadows on both.
 
-Homepage section labels should use quiet sentence-case orientation text. Preserve editor wording and avoid forced uppercase tracking on repeated homepage eyebrows, valuation labels, visual captions and final CTA labels; reserve uppercase tracking for true compact badges such as grades, tier badges and logo captions.
+Homepage section labels should use quiet sentence-case orientation text. Preserve editor wording and avoid forced uppercase tracking on repeated homepage eyebrows, valuation labels, visual captions and final CTA labels; reserve uppercase tracking for true compact badges such as grades and tier badges. Live logo captions remain sentence case at 12px.
 
 Marketing section eyebrows should read like quiet orientation text, not a repeated all-caps scaffold. Preserve the editor's wording and use compact blue labels without forced uppercase tracking except where the content itself is an intentional badge or sequence marker.
 

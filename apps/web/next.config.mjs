@@ -1,6 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  webpack(config, { isServer }) {
+    if (!isServer && config.optimization.splitChunks) {
+      // Small shared modules otherwise repeat across every catalog/city route.
+      config.optimization.splitChunks.cacheGroups.isvoiCatalogDialogs = {
+        test: /[\\/]apps[\\/]web[\\/](?:components[\\/]CatalogMobileFilterDrawer\.tsx|lib[\\/]body-scroll-lock\.ts)$/,
+        name: "isvoi-catalog-dialogs",
+        chunks: "all",
+        minChunks: 2,
+        enforce: true,
+        priority: 30,
+        reuseExistingChunk: true,
+      };
+    }
+    return config;
+  },
   async headers() {
     return [
       {

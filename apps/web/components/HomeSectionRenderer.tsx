@@ -223,7 +223,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
   const showPassport = section.content.show_passport !== false;
 
   return (
-    <section className="mx-auto max-w-page px-4 pb-14 pt-10 text-center md:px-6 md:pb-20 md:pt-20">
+    <section className="mx-auto max-w-page px-4 pb-10 pt-6 text-center md:px-6 md:pb-14 md:pt-12">
       {section.eyebrow ? (
         <div className={cn("mx-auto max-w-measure", homeSectionLabelClass)}>{section.eyebrow}</div>
       ) : null}
@@ -265,7 +265,7 @@ function HomeHeroSection({ section }: { section: PageSection }) {
 
       {note ? <p className="mx-auto mt-5 max-w-copy font-semibold text-carbon">{note}</p> : null}
 
-      <div className="relative mx-auto mt-8 min-h-hero-visual max-w-stage overflow-hidden rounded-img bg-frost md:mt-10 md:min-h-hero-visual-lg">
+      <div className="relative mx-auto mt-5 min-h-hero-visual max-w-stage overflow-hidden rounded-img bg-frost md:mt-6 md:min-h-hero-visual-lg">
         <Image
           src={imageSrc}
           alt={visual.imageAlt}

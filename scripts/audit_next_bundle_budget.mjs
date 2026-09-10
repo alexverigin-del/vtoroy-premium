@@ -18,7 +18,7 @@ const budgets = {
       gzip: 132,
       brotli: 112,
     }),
-    "app:/device/[slug]/page": readBudgetSet("BUNDLE_ROUTE_DEVICE_JS", {
+    "app:/product/[slug]/page": readBudgetSet("BUNDLE_ROUTE_DEVICE_JS", {
       raw: 420,
       gzip: 130,
       brotli: 110,
@@ -178,6 +178,7 @@ checkBudget("total emitted client JS", totalSize, budgets.total, failures);
 for (const [route, budget] of Object.entries(budgets.routes)) {
   const entry = routeEntries.find((candidate) => candidate.route === route);
   if (!entry) {
+    failures.push(`Required route ${route} is missing from the build manifest`);
     continue;
   }
   checkBudget(`route JS ${route}`, entry.size, budget, failures);
@@ -198,7 +199,7 @@ console.log(
   `- total emitted client JS: ${formatSizeSet(totalSize)} / ${formatBudgetSet(budgets.total)}`,
 );
 
-console.log("- route budgets:");
+console.log("- initial route JS budgets (async chunks excluded; all emitted chunks counted above):");
 for (const [route, budget] of Object.entries(budgets.routes)) {
   const entry = routeEntries.find((candidate) => candidate.route === route);
   const size = entry?.size ?? { raw: 0, gzip: 0, brotli: 0 };

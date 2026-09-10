@@ -1,10 +1,155 @@
 # Project Operating Decisions
 
-Last updated: 2026-09-05.
+Last updated: 2026-09-10.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Impeccable Technical Release Preparation (2026-09-10)
+
+- User explicitly approved commit, push and deployment of technical changes,
+  followed by production LCP measurements. Editorial/CMS patches remain
+  withdrawn; no content, schema or communications rollout is authorized here.
+- Preflight: GitHub master and Beget are at `dbc25a9`, with clean production
+  checkout. The working communications branch has seven additional commits
+  through `2f1464e`; preserve them on that branch, not in this web release.
+- Commit the completed UI work on its original branch, then port only that
+  commit onto master. Keep the production Telegram continuation contract in
+  extracted form components. Do not activate MAX/VK or deploy their workers.
+- Existing production backup: `backups/directus/20260910T114049Z`.
+  Verify integrity before deployment. Release outcome and measurements follow
+  after actual deployment, not in advance.
+
+## Impeccable A/B/C Implementation (2026-09-10, Local Only)
+
+- User correction: preserve manual/editorial text. UI/performance work must
+  not rewrite existing CMS or fallback copy without a separate explicit request.
+  The three fallback rewrites (home hero, catalog title, consent banner) were
+  withdrawn and their original values restored. All six unapplied content
+  candidate/rollback files and their release README were removed. No production
+  or Directus editorial values were ever changed by this implementation.
+  After restoration: original-copy diff is empty; content ownership, 18 Studio
+  render cases, isolated UI (including long consent copy at 200%), production
+  build and unchanged bundle budgets pass. This correction is local only.
+- Scope: no commit, push or deployment. Existing omnichannel work on
+  `codex/omnichannel-communications` is preserved. No Directus schema, stock,
+  permission, lead workflow or production content write was performed.
+- Product DOM now puts H1 and price/status/action before gallery and details;
+  there is one full form. Desktop placement remains two-column CSS Grid.
+  `ProductPurchaseBar` reuses `ProductOfferPanel` and CityContext, including
+  no-local-offer and sold states. It hides for the visible summary/form,
+  photo/certificate/consent dialogs and the consent banner; safe-area padding
+  protects its lower edge. Sold leads retain `selection`, available leads
+  retain `purchase`; isolated submissions verified both payloads.
+- Header collapses below 1280px or when measured contents do not fit, using
+  ResizeObserver. Studio logo width 28..360 and height 16..120 bounds remain.
+  Live captions sit below the image, 12px, normal case, wrapping. Empty caption
+  is the correct option for a bitmap with an embedded descriptor. This
+  supersedes older recommendations for tiny uppercase live logo captions.
+- Mobile filters use native modal dialog, labelled close, Escape, bounded
+  keyboard focus, focus restoration, body scroll locking and desktop close.
+  Search/filter/sort GET state survives. Catalog top spacing is reduced;
+  category selection stays in the mobile drawer and sorting sits by the count.
+  Cards keep sold entries/order, remove literal repeated brand/color, place
+  price before trust facts, and no longer lift with a broad hover shadow.
+  Product facts are divided definition rows rather than nested cards.
+- Photo viewer, certificate and consent-settings contents load on opening.
+  Final CTA preparation, legacy catalog presentation/cards and product-form
+  fallback copy are server-side; client controls remain interactive. A scoped
+  webpack group shares the small dialog/filter code previously copied into
+  ten catalog routes. Communication continuation links are untouched.
+- `web:verify` passed including Studio render/ownership, Trade, integrations,
+  continuation links, SEO contracts, client classes, format, lint, typecheck,
+  production build and unchanged bundle budgets. Total JS is 889.5/286.6/247.4
+  kB raw/gzip/Brotli (limits 905/290.5/251); pre-change Brotli was 250.6.
+  Product initial JS is 403.8/123.3/104.6 kB (limits 420/130/110), down from
+  413.9/125.6/106.6. Required product route is now `/product/[slug]/page`;
+  a missing required route fails the gate. Only 3.6 kB total Brotli headroom
+  remains; this is not a claim of a 20-30 kB reserve.
+- New isolated `smoke_impeccable_ui.mjs` passed 320/390/768/1024/1280/1440px,
+  five logo/caption/size variants (including the fallback mark), 200% text,
+  reduced motion, focus/Escape,
+  repeated dialogs, city-price/status parity, sold/available form payloads and
+  certificate error/retry. On the 390x844 catalog fixture the first image,
+  title and price are visible without scrolling. Framework image/routing
+  adapters in this fixture are separate from compiled Next SEO checks.
+  Compiled Next product/catalog fixtures also pass all six widths, first
+  heading H1, one form, sold/available actions, valid JSON-LD and product
+  text at 200%. Explicit bounded Grid tracks fix enlarged-text overflow;
+  the full form no longer has a nested decorative card. Desktop/mobile
+  screenshots were inspected during the final Impeccable polish pass.
+- Build wrapper preserves only `.next/cache/images` in ignored
+  `work/next-image-cache`, never route output. `npm run images:warm` derives
+  priority image URLs from public HTML, deduplicates optimizer variants and
+  warms sequentially without credentials, permission changes or content
+  writes. Failures are reported but do not block publication. Run it against
+  the local production listener after a separately approved release; it is
+  not an automatic production mutation in this work.
+  A control file survived a real production build in both cache locations
+  and was removed afterward. Loopback HTTP warmup tests pass repeated runs,
+  URL deduplication, GET-only/no-credentials, cross-origin refusal and
+  non-blocking unavailable-page handling.
+- There are no pending Impeccable content patches. The technical `expected`
+  protection against editorial drift remains, tested with synthetic in-memory
+  values only; original full-row lock/backup/commit gates remain unchanged.
+  Existing Studio content continues to win over original fallback copy.
+- Performance smoke now runs five serial samples per route/viewport/consent
+  state, each with first/repeat navigation in the same browser context. It
+  saves median/range, navigation TTFB, LCP resource start/end, render delay,
+  session-window CLS and raw image timings. `greenLcp` means median <=2500ms,
+  independently of the old release budget. Production before/after acceptance
+  cannot be closed before deployment of this local work.
+
+### Production Performance Baseline (Not The Local Release)
+
+Read-only run started 2026-09-10 19:12 UTC: 200 sequential navigations,
+five samples per route/viewport/cookie state, unthrottled Chromium. No visual
+smoke ran concurrently. Raw samples, ranges and resource timings are in ignored
+`output/performance/impeccable-production-baseline.json`. This is a laboratory
+baseline from this machine, not field Core Web Vitals or a post-deploy result.
+
+Median LCP in milliseconds with only necessary cookies selected:
+
+| Route | Desktop first / repeat | Mobile first / repeat |
+| --- | --- | --- |
+| `/` | 2664 / 456 | 2644 / 460 |
+| `/catalog` | 2884 / 652 | 2904 / 560 |
+| `/store` | 3356 / 456 | 2576 / 448 |
+| `/blog` | 2432 / 448 | 2408 / 456 |
+| `/blog/chto-pokazyvaet-diagnostika-iphone` | 4056 / 556 | 3484 / 580 |
+
+- All old release budgets pass; CLS was 0 in all samples. Only `/blog`
+  meets the <=2500ms first-visit target in both viewport/cookie states.
+  All repeat-visit medians meet that target.
+- With the consent decision still pending, mobile catalog median is 4148ms
+  (range 4044..4852); its LCP element is consent text. The new compact banner
+  has not been deployed, so its effect is not yet measured.
+- Store desktop first-visit median TTFB is 2029..2049ms across the two cookie
+  states, hero request starts at 2035..2058ms and ends at 3308..3338ms,
+  render delay is only 26..29ms. TTFB includes connection/network time;
+  it does not identify backend execution time by itself.
+- Keep green-zone acceptance OPEN. After a separately approved release,
+  preserve/warm image cache, repeat the same matrix without concurrent load,
+  then investigate response and image-delivery latency if it still dominates.
+  Do not increase budgets or delay consent to declare success.
+- Final isolated consent/integration browser smoke passes analytics gating,
+  category selection, SPA cleanup, revoke and reject-without-provider-request.
+  A 320px/200% consent-dialog overflow found during polish was fixed with
+  bounded grid tracks and flat category rows; the UI fixture now covers it.
+
+- Read-only `smoke:prod`, `smoke:copy`, `smoke:images` and `smoke:visual`
+  passed against the currently deployed site. These confirm baseline health,
+  not delivery of the local changes. Visual outputs are under
+  `output/playwright/impeccable-production-baseline`.
+- A separate post-measurement Store trace confirms hero starts at 2383ms,
+  before the first card at 3695ms: hero is high-priority, cards are lazy/auto.
+  This single trace is an ordering check, not a replacement LCP median.
+- Reviewed text-token contrast: muted #707070 is 4.95:1 on white and 4.55:1
+  on #f5f5f7; graphite on white is 9.29:1; white on action blue is 4.70:1.
+  Product form placeholders explicitly use muted instead of browser defaults.
+  Final Impeccable static detector returned no findings on changed UI files;
+  this is not a design score or a substitute for screenshot inspection.
 
 ## Telegram Leads And Client Conversations (2026-09-05, Production)
 

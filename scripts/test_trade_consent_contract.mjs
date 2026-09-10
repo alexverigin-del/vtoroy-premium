@@ -8,7 +8,8 @@ function read(path) {
 }
 
 const route = read("apps/web/app/lead-intake/route.ts");
-const finalCta = read("apps/web/components/FinalCtaSection.tsx");
+const finalCta =
+  read("apps/web/components/FinalCtaSection.tsx") + read("apps/web/components/FinalCtaForm.tsx");
 const wizard = read("apps/web/components/TradeInWizard.tsx");
 const tradeServer = read("apps/web/lib/trade-server.ts");
 const governance = read("scripts/setup_directus_trade_governance_sql.mjs");

@@ -13,6 +13,7 @@ import { PassportSummary } from "@/components/PassportSummary";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductLeadForm } from "@/components/ProductLeadForm";
 import { ProductOfferPanel } from "@/components/ProductOfferPanel";
+import { ProductPurchaseBar } from "@/components/ProductPurchaseBar";
 import {
   brandZoneEyebrowClass,
   detailBackLinkClass,
@@ -215,6 +216,15 @@ export default async function ProductPage({ params }: PageProps) {
   const facts =
     product.productType === "accessory" ? accessoryFacts(product) : deviceFacts(product);
   const usedDevice = product.productType === "device" && product.condition === "used";
+  const formId = "product-lead-form";
+  const actionLabel =
+    product.stockStatus === "sold"
+      ? devicePageSettings.leadForm.sold.submitLabel
+      : product.stockStatus === "reserved"
+        ? devicePageSettings.leadForm.reserved.submitLabel
+        : product.productType === "accessory"
+          ? "Забронировать"
+          : "Записаться на просмотр";
   const conditionLabel =
     product.productType === "accessory"
       ? "Новый аксессуар"
@@ -249,7 +259,7 @@ export default async function ProductPage({ params }: PageProps) {
           }}
         />
 
-        <section className="mx-auto max-w-content px-6 py-10 md:py-14">
+        <section className="mx-auto max-w-content break-words px-5 py-6 pb-28 md:py-10 lg:pb-10">
           <Link href="/catalog" className={detailBackLinkClass}>
             ← Назад в каталог
           </Link>
@@ -258,22 +268,40 @@ export default async function ProductPage({ params }: PageProps) {
             <p className={brandZoneEyebrowClass}>
               {product.brand.name} · {product.category.name}
             </p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">{product.title}</h1>
+            <h1 className="mt-3 break-words text-3xl font-semibold tracking-normal md:text-5xl">
+              {product.title}
+            </h1>
           </div>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-product lg:items-start lg:gap-8">
-            <div className="grid gap-6">
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-product lg:grid-rows-product lg:items-start lg:gap-8">
+            <section
+              id="product-purchase-summary"
+              aria-label="Цена и наличие"
+              className="rounded-card border border-hairline bg-white p-5 lg:col-start-2 lg:row-start-1"
+            >
+              <ProductOfferPanel
+                offers={product.offers}
+                fallbackPrice={product.priceText}
+                fallbackStatus={product.stockStatusLabel}
+                stockStatus={product.stockStatus}
+              />
+              <a
+                href={`#${formId}`}
+                className="focus-ring mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-pill bg-action px-5 py-3 text-center text-sm font-semibold text-white"
+              >
+                {actionLabel}
+              </a>
+            </section>
+            <div className="grid min-w-0 grid-cols-1 gap-6 lg:col-start-1 lg:row-span-2 lg:row-start-1">
               <DeviceGallery images={gallery} />
 
               {facts.length > 0 ? (
                 <section className="card p-6">
                   <h2 className="text-xl font-semibold">О конкретном устройстве</h2>
-                  <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <dl className="mt-5 divide-y divide-hairline">
                     {facts.map(([label, value]) => (
-                      <div key={label} className="rounded-card border border-hairline p-4">
-                        <dt className="text-xs font-medium uppercase tracking-wide text-muted">
-                          {label}
-                        </dt>
+                      <div key={label} className="grid grid-cols-2 gap-4 py-3">
+                        <dt className="text-sm text-muted">{label}</dt>
                         <dd className="mt-1 text-sm font-semibold text-carbon">{value}</dd>
                       </div>
                     ))}
@@ -297,15 +325,13 @@ export default async function ProductPage({ params }: PageProps) {
                 <section className="card p-6">
                   <p className={homeSectionLabelClass}>Модель</p>
                   <h2 className="mt-2 text-xl font-semibold">Технические характеристики модели</h2>
-                  <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <dl className="mt-5 divide-y divide-hairline">
                     {product.deviceModel.specifications.map((specification) => (
                       <div
                         key={specification.id}
-                        className="rounded-card border border-hairline p-4"
+                        className="grid gap-2 py-3 sm:grid-cols-2 sm:gap-4"
                       >
-                        <dt className="text-xs font-medium uppercase tracking-wide text-muted">
-                          {specification.label}
-                        </dt>
+                        <dt className="text-sm text-muted">{specification.label}</dt>
                         <dd className="mt-1 text-sm font-semibold leading-relaxed text-carbon">
                           {specification.value}
                         </dd>
@@ -320,17 +346,11 @@ export default async function ProductPage({ params }: PageProps) {
               ) : null}
             </div>
 
-            <aside className="card p-6 lg:sticky lg:top-24">
+            <aside className="card p-6 lg:col-start-2 lg:row-start-2">
               <p className="text-muted">{product.shortDescription}</p>
               <span className="mt-5 inline-flex rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">
                 {conditionLabel}
               </span>
-              <ProductOfferPanel
-                offers={product.offers}
-                fallbackPrice={product.priceText}
-                fallbackStatus={product.stockStatusLabel}
-                stockStatus={product.stockStatus}
-              />
 
               {usedDevice ? (
                 <p className="mt-5 rounded-card bg-surface p-4 text-sm text-muted">
@@ -345,6 +365,7 @@ export default async function ProductPage({ params }: PageProps) {
               )}
 
               <ProductLeadForm
+                formId={formId}
                 productId={product.id}
                 productTitle={product.title}
                 productType={product.productType}
@@ -389,6 +410,14 @@ export default async function ProductPage({ params }: PageProps) {
           </section>
         ) : null}
       </main>
+      <ProductPurchaseBar
+        offers={product.offers}
+        price={product.priceText}
+        status={product.stockStatusLabel}
+        stockStatus={product.stockStatus}
+        label={actionLabel}
+        formId={formId}
+      />
     </SiteShell>
   );
 }

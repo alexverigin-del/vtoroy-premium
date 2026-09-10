@@ -1,19 +1,15 @@
-"use client";
-
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { RichText } from "./RichText";
 import {
-  CatalogDeviceList,
-  CatalogToolbar,
   DEFAULT_CATEGORY_FILTERS,
   DEFAULT_SORT_OPTIONS,
   DEFAULT_STATUS_FILTERS,
   catalogFilterList,
-  useCatalogControls,
-  useVisibleCatalogDevices,
-} from "./CatalogClientControls";
+} from "../lib/catalog-presentation";
+import { InteractiveCatalog } from "./InteractiveCatalog";
+import { DeviceCard } from "./DeviceCard";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { brandZoneEyebrowClass, primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
@@ -53,8 +49,6 @@ export function CatalogGrid({
   headingLevel?: "h1" | "h2";
   section?: PageSection | null;
 }) {
-  const controls = useCatalogControls();
-  const visibleDevices = useVisibleCatalogDevices({ devices, ...controls });
   const Heading = headingLevel;
   const categoryFilters = catalogFilterList(section?.content.filters);
   const statusFilters = catalogFilterList(section?.content.statusFilters);
@@ -94,26 +88,31 @@ export function CatalogGrid({
           />
         </div>
 
-        <CatalogToolbar
-          categories={categories}
-          statuses={statuses}
-          controls={controls}
-          categoryLabel={categoryLabel}
-          statusLabel={statusLabel}
-          sortLabel={sortLabel}
-          sortAriaLabel={sortAriaLabel}
-          sortOptions={sorts}
-          inactiveSurface="transparent"
-        />
-
-        <CatalogDeviceList
-          devices={visibleDevices}
-          emptyHeadline={empty.headline}
-          emptyMessage={empty.body}
-          emptyCtaLabel={empty.ctaLabel}
-          emptyCtaHref={normalizeSiteUrl(empty.ctaUrl)}
-          priorityImageCount={1}
-          showSelectionCta
+        <InteractiveCatalog
+          devices={devices}
+          cards={Object.fromEntries(
+            devices.map((device, index) => [
+              device.id,
+              <DeviceCard key={device.id} device={device} imagePriority={index === 0} />,
+            ]),
+          )}
+          toolbar={{
+            categories,
+            statuses,
+            categoryLabel,
+            statusLabel,
+            sortLabel,
+            sortAriaLabel,
+            sortOptions: sorts,
+            inactiveSurface: "transparent",
+          }}
+          list={{
+            emptyHeadline: empty.headline,
+            emptyMessage: empty.body,
+            emptyCtaLabel: empty.ctaLabel,
+            emptyCtaHref: normalizeSiteUrl(empty.ctaUrl),
+            showSelectionCta: true,
+          }}
         />
 
         {section?.primaryCtaLabel || section?.secondaryCtaLabel ? (

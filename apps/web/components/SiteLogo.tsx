@@ -6,7 +6,7 @@ import { boundedLogoSize, logoSizeStyle, normalizeSiteUrl } from "./site-chrome-
 function LogoMark() {
   return (
     <svg
-      className="h-[var(--logo-height,22px)] w-[var(--logo-width,34px)] shrink-0"
+      className="h-auto max-h-[var(--logo-height,22px)] w-[var(--logo-width,34px)] max-w-full shrink-0"
       viewBox="0 0 34 34"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -35,15 +35,15 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
     <a
       href={href}
       aria-label={`${settings.brandName} на главную`}
-      className="flex min-h-11 items-center gap-2 rounded-card text-carbon outline-none transition focus-visible:shadow-focus"
+      className="flex min-h-11 min-w-0 max-w-full flex-col items-start gap-1 rounded-card text-carbon outline-none transition focus-visible:shadow-focus"
     >
       <span
-        className="flex min-h-[var(--logo-height,22px)] shrink-0 items-center gap-1 text-carbon"
+        className="flex w-[var(--logo-width,120px)] max-w-full flex-col items-start gap-1 text-carbon"
         style={logoSizeStyle(settings)}
       >
         {logoSrc ? (
           <img
-            className="h-[var(--logo-height,22px)] w-[var(--logo-width,34px)] object-contain"
+            className="h-auto max-h-[var(--logo-height,22px)] w-[var(--logo-width,34px)] max-w-full object-contain object-left"
             src={logoSrc}
             alt={settings.logoAlt || settings.brandName}
             width={logoWidth}
@@ -56,7 +56,7 @@ export function SiteLogo({ settings }: { settings: SiteSettings }) {
           <LogoMark />
         )}
         {settings.logoCaption ? (
-          <span className="leading-brand-caption max-w-logo-caption text-brand-caption font-semibold uppercase tracking-caption text-ash">
+          <span className="max-w-full break-words text-xs font-medium leading-snug tracking-normal text-graphite">
             {settings.logoCaption}
           </span>
         ) : null}

@@ -75,6 +75,14 @@ export function validatePatch(patch, { requireLock = false } = {}) {
   }
 
   const paths = [...changeEntries.map(([field]) => field), ...removals];
+  if (patch.expected !== undefined) {
+    if (!patch.expected || typeof patch.expected !== "object" || Array.isArray(patch.expected)) {
+      throw new Error("expected must be an object of original field values");
+    }
+    for (const field of Object.keys(patch.expected)) {
+      if (!paths.includes(field)) throw new Error(`Expected field is not changed: ${field}`);
+    }
+  }
   if (new Set(paths).size !== paths.length) throw new Error("Patch paths must be unique");
   for (const fieldPath of paths) {
     validateFieldPath(fieldPath);
@@ -248,6 +256,11 @@ ${transactionEnd}
 }
 
 export function assertLockMatches(patch, row, currentHash) {
+  for (const [field, expected] of Object.entries(patch.expected ?? {})) {
+    if (!contentValuesEqual(getPath(row, field), expected)) {
+      throw new Error(`Editorial value changed at ${field}; review the patch before applying`);
+    }
+  }
   if (patch.lock?.snapshotHash && patch.lock.snapshotHash !== currentHash) {
     throw new Error(
       `Snapshot changed since preparation: expected ${patch.lock.snapshotHash}, got ${currentHash}`,

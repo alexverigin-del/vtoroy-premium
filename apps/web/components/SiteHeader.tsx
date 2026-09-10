@@ -2,7 +2,7 @@
 
 import type { NavigationItem, SiteSettings } from "@vtoroy/shared";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "../lib/cn-client";
 import { externalLinkAttrs, navigationHref, sortNavigation } from "./site-chrome-utils";
 import { SiteLogo } from "./SiteLogo";
@@ -85,6 +85,38 @@ export function SiteHeader({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [compact, setCompact] = useState(true);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const row = rowRef.current;
+    const logo = logoRef.current;
+    const nav = navRef.current;
+    const actions = actionsRef.current;
+    if (!row || !logo || !nav || !actions) return;
+    const update = () => {
+      const style = getComputedStyle(row);
+      const available =
+        row.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const required =
+        logo.getBoundingClientRect().width +
+        nav.scrollWidth +
+        actions.scrollWidth +
+        2 * (parseFloat(style.columnGap) || 0);
+      const next = window.innerWidth < 1280 || required > available;
+      setCompact(next);
+      if (!next) setOpen(false);
+    };
+    const observer = new ResizeObserver(update);
+    [row, logo, nav, actions].forEach((element) => observer.observe(element));
+    update();
+    return () => observer.disconnect();
+  }, [settings, navigation]);
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
   const mobileNavId = "site-mobile-navigation";
   const headerItems = sortNavigation(
     navigation.filter(
@@ -103,11 +135,34 @@ export function SiteHeader({
     <header
       className="sticky top-0 z-50 border-b border-hairline/80 bg-white/85 backdrop-blur-xl"
       data-component="SiteHeader"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && open) {
+          setOpen(false);
+          rowRef.current?.querySelector<HTMLButtonElement>("button[aria-controls]")?.focus();
+        }
+      }}
     >
-      <div className="mx-auto flex max-w-shell items-center justify-between gap-4 px-5 py-1.5">
-        <SiteLogo settings={settings} />
+      <div
+        ref={rowRef}
+        className={cn(
+          "relative mx-auto flex max-w-shell items-center justify-between gap-4 px-5 py-1.5",
+          compact && "overflow-hidden",
+        )}
+      >
+        <div ref={logoRef} className="min-w-0 max-w-header-brand shrink-0">
+          <SiteLogo settings={settings} />
+        </div>
 
-        <nav className="hidden items-center gap-2 md:flex" aria-label="Основная навигация">
+        <nav
+          ref={navRef}
+          inert={compact ? true : undefined}
+          aria-hidden={compact || undefined}
+          className={cn(
+            "flex w-max shrink-0 items-center gap-2 whitespace-nowrap",
+            compact && "pointer-events-none invisible absolute left-0 top-0",
+          )}
+          aria-label="Основная навигация"
+        >
           {headerItems.map((item) => {
             const children = childrenFor(item.id);
             if (children.length === 0) {
@@ -145,7 +200,15 @@ export function SiteHeader({
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div
+          ref={actionsRef}
+          inert={compact ? true : undefined}
+          aria-hidden={compact || undefined}
+          className={cn(
+            "flex w-max shrink-0 items-center gap-2",
+            compact && "pointer-events-none invisible absolute right-0 top-0",
+          )}
+        >
           <CitySwitcher />
           {cta ? (
             <a
@@ -156,30 +219,33 @@ export function SiteHeader({
               {cta.label}
             </a>
           ) : null}
-          <button
-            type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-card text-carbon outline-none transition focus-visible:shadow-focus md:hidden"
-            aria-label={open ? "Закрыть меню" : "Открыть меню"}
-            aria-controls={mobileNavId}
-            aria-expanded={open}
-            onClick={() => setOpen((value) => !value)}
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            >
-              <path d={open ? "M6 6l12 12M18 6L6 18" : "M3 6h18M3 12h18M3 18h18"} />
-            </svg>
-          </button>
         </div>
+        <button
+          type="button"
+          className={cn(
+            "min-h-11 min-w-11 shrink-0 items-center justify-center rounded-card text-carbon outline-none transition focus-visible:shadow-focus",
+            compact ? "inline-flex" : "hidden",
+          )}
+          aria-label={open ? "Закрыть меню" : "Открыть меню"}
+          aria-controls={mobileNavId}
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          >
+            <path d={open ? "M6 6l12 12M18 6L6 18" : "M3 6h18M3 12h18M3 18h18"} />
+          </svg>
+        </button>
       </div>
 
       {open ? (
-        <div className="border-t border-hairline bg-white px-5 py-3 md:hidden">
+        <div className="max-h-header-menu overflow-y-auto border-t border-hairline bg-white px-5 py-3">
           <nav
             id={mobileNavId}
             className="mx-auto grid max-w-shell gap-1"

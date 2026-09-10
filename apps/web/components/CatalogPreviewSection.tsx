@@ -1,19 +1,15 @@
-"use client";
-
 import Link from "next/link";
 import type { PageSection } from "@vtoroy/shared";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { RichText } from "./RichText";
 import {
-  CatalogDeviceList,
-  CatalogToolbar,
   DEFAULT_CATEGORY_FILTERS,
   DEFAULT_SORT_OPTIONS,
   DEFAULT_STATUS_FILTERS,
   catalogFilterList,
-  useCatalogControls,
-  useVisibleCatalogDevices,
-} from "./CatalogClientControls";
+} from "../lib/catalog-presentation";
+import { InteractiveCatalog } from "./InteractiveCatalog";
+import { DeviceCard } from "./DeviceCard";
 import { normalizeSiteUrl } from "./site-chrome-utils";
 import { homeSectionLabelClass, primaryCtaClass, secondaryCtaClass } from "./ui-classes";
 
@@ -27,7 +23,6 @@ export function CatalogPreviewSection({
   const categoryFilters = catalogFilterList(section.content.filters);
   const statusFilters = catalogFilterList(section.content.statusFilters);
   const sortOptions = catalogFilterList(section.content.sortOptions);
-  const controls = useCatalogControls();
   const showFilters = section.content.showFilters === true;
   const headingTag = section.content.headingTag === "h1" ? "h1" : "h2";
   const limit =
@@ -37,7 +32,6 @@ export function CatalogPreviewSection({
   const categories = categoryFilters.length > 0 ? categoryFilters : DEFAULT_CATEGORY_FILTERS;
   const statuses = statusFilters.length > 0 ? statusFilters : DEFAULT_STATUS_FILTERS;
   const sorts = sortOptions.length > 0 ? sortOptions : DEFAULT_SORT_OPTIONS;
-  const visibleDevices = useVisibleCatalogDevices({ devices, limit, ...controls });
 
   const Heading = headingTag;
 
@@ -65,38 +59,39 @@ export function CatalogPreviewSection({
         </div>
       </div>
 
-      {showFilters ? (
-        <div className="mx-auto max-w-shell px-5">
-          <CatalogToolbar
-            categories={categories}
-            statuses={statuses}
-            controls={controls}
-            categoryLabel={section.subheadline || "Фильтры каталога"}
-            statusLabel={
-              typeof section.content.statusFilterLabel === "string"
-                ? section.content.statusFilterLabel
-                : "Статус устройства"
-            }
-            sortLabel={
-              typeof section.content.sortLabel === "string"
-                ? section.content.sortLabel
-                : "Сортировка"
-            }
-            sortAriaLabel={
-              typeof section.content.sortAriaLabel === "string"
-                ? section.content.sortAriaLabel
-                : "Сортировка каталога"
-            }
-            sortOptions={sorts}
-          />
-        </div>
-      ) : null}
-
       <div className="mx-auto max-w-page px-4 md:px-6">
-        <CatalogDeviceList
-          devices={visibleDevices}
-          emptyMessage="Каталог пока пуст. Измените фильтры или вернитесь позже."
-          layout="four-up"
+        <InteractiveCatalog
+          devices={devices}
+          limit={limit}
+          cards={Object.fromEntries(
+            devices.map((device) => [device.id, <DeviceCard key={device.id} device={device} />]),
+          )}
+          toolbar={
+            showFilters
+              ? {
+                  categories,
+                  statuses,
+                  categoryLabel: section.subheadline || "Фильтры каталога",
+                  statusLabel:
+                    typeof section.content.statusFilterLabel === "string"
+                      ? section.content.statusFilterLabel
+                      : "Статус устройства",
+                  sortLabel:
+                    typeof section.content.sortLabel === "string"
+                      ? section.content.sortLabel
+                      : "Сортировка",
+                  sortAriaLabel:
+                    typeof section.content.sortAriaLabel === "string"
+                      ? section.content.sortAriaLabel
+                      : "Сортировка каталога",
+                  sortOptions: sorts,
+                }
+              : undefined
+          }
+          list={{
+            emptyMessage: "Каталог пока пуст. Измените фильтры или вернитесь позже.",
+            layout: "four-up",
+          }}
         />
 
         {section.primaryCtaLabel || section.secondaryCtaLabel ? (

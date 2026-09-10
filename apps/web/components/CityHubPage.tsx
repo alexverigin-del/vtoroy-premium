@@ -76,7 +76,7 @@ export function CityHubPage({
 
             <aside
               id="store-contacts"
-              className="scroll-mt-24 rounded-card border border-hairline bg-white p-6 shadow-soft lg:col-span-2"
+              className="scroll-mt-24 border-t border-hairline pt-6 lg:col-span-2 lg:border-t-0 lg:pt-0"
             >
               {location.contactEyebrow ? (
                 <p className="text-xs font-medium uppercase tracking-eyebrow text-muted">
@@ -106,7 +106,7 @@ export function CityHubPage({
                   </div>
                 ) : null}
               </dl>
-              <div className="mt-5 flex flex-wrap gap-3 text-sm font-medium text-accent">
+              <div className="mt-5 flex flex-wrap gap-3 text-sm font-medium text-link-blue [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center">
                 {location.phone ? (
                   <a href={`tel:${location.phone}`}>
                     {location.contactPhoneLabel || location.phone}
@@ -146,7 +146,7 @@ export function CityHubPage({
                   priority
                   fetchPriority="high"
                   className="object-cover"
-                  sizes="(min-width: 1180px) 1180px, 92vw"
+                  sizes="(min-width: 1440px) 1400px, calc(100vw - 40px)"
                 />
               </figure>
             </div>

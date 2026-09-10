@@ -57,6 +57,7 @@ const themeExtend = {
     modal: "100",
   },
   maxWidth: {
+    "header-brand": "calc(100% - 3.75rem)",
     shell: "1440px",
     page: "1180px",
     content: "1120px",
@@ -96,12 +97,15 @@ const themeExtend = {
     "hero-visual-lg": "620px",
   },
   width: {
+    dialog: "calc(100% - 1.5rem)",
     overlay: "390px",
   },
   height: {
     "zoom-lens": "132px",
   },
   maxHeight: {
+    "header-menu": "75dvh",
+    certificate: "65dvh",
     "trade-list": "420px",
     dialog: "calc(100dvh - 1.5rem)",
     "dialog-sm": "calc(100dvh - 3rem)",
@@ -120,6 +124,9 @@ const themeExtend = {
     product: "minmax(0, 1fr) 410px",
     "related-device": "12rem minmax(0, 1fr)",
     trade: "1fr auto 1fr",
+  },
+  gridTemplateRows: {
+    product: "auto 1fr",
   },
   aspectRatio: {
     "blog-cover": "8 / 5",

@@ -237,7 +237,7 @@ function CatalogCategoryRail({
 
   return (
     <nav
-      className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6"
+      className="mt-4 hidden grid-cols-3 gap-2 md:grid lg:grid-cols-6"
       aria-label="Категории товаров"
     >
       <Link
@@ -412,7 +412,7 @@ function CatalogTypeTabs({
   const visibleTypes: Array<ProductType | undefined> = [undefined, ...availableTypes];
 
   return (
-    <nav className="mt-8 flex gap-2 overflow-x-auto pb-1" aria-label="Раздел каталога">
+    <nav className="mt-4 flex gap-2 overflow-x-auto pb-1" aria-label="Раздел каталога">
       {visibleTypes.map((type) => (
         <Link
           key={type || "all"}
@@ -456,30 +456,27 @@ function CatalogFilters({
     <>
       <CatalogCategoryRail categories={categories} filters={filters} type={type} />
 
-      <div
-        className="mt-5 rounded-card border border-hairline bg-frost p-4 md:hidden"
-        data-component="CatalogFilters"
-      >
-        <form action={sectionHref(type, filters.city)}>
+      <div className="mt-4 md:hidden" data-component="CatalogFilters">
+        <form action={sectionHref(type, filters.city)} className="flex items-end gap-2">
           <HiddenFilterFields filters={filters} omit={["q"]} type={type} />
-          <label>
-            <span className="text-xs font-medium text-muted">Поиск</span>
+          <label className="min-w-0 flex-1">
+            <span className="sr-only">Поиск</span>
             <input
               type="search"
               name="q"
               defaultValue={filters.q}
               placeholder="Модель, бренд или аксессуар"
-              className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
+              className="focus-ring min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-base placeholder:text-muted"
             />
           </label>
-          <button type="submit" className={cn(primaryPillCtaClass, "mt-3 w-full")}>
-            Показать
+          <button type="submit" className={cn(primaryPillCtaClass, "shrink-0 px-4")}>
+            Найти
           </button>
         </form>
-        <div className="mt-3 border-t border-hairline pt-3">
+        <div className="mt-2">
           <CatalogMobileFilterDrawer
             activeCount={advancedFilterCount}
-            title={<span>Расширенные фильтры</span>}
+            title={<span>Фильтры</span>}
             triggerClassName={cn(secondaryPillCtaClass, "w-full")}
           >
             <form action={sectionHref(type, filters.city)} className="grid gap-3">
@@ -537,12 +534,12 @@ function CatalogFilters({
 
       <form
         action={sectionHref(type, filters.city)}
-        className="mt-5 hidden rounded-card border border-hairline bg-frost p-4 md:block"
+        className="mt-5 hidden border-y border-hairline py-4 md:block"
         data-component="CatalogFilters"
       >
         {filters.category ? <input type="hidden" name="category" value={filters.category} /> : null}
-        <div className="grid gap-3 lg:grid-cols-12">
-          <label className="lg:col-span-7">
+        <div className="flex items-end gap-3">
+          <label className="min-w-0 flex-1">
             <span className="text-xs font-medium text-muted">Поиск</span>
             <input
               type="search"
@@ -553,21 +550,9 @@ function CatalogFilters({
             />
           </label>
 
-          <label className="lg:col-span-3">
-            <span className="text-xs font-medium text-muted">Сортировка</span>
-            <select
-              name="sort"
-              defaultValue={filters.sort || "default"}
-              className="focus-ring mt-1 min-h-11 w-full rounded-card border border-hairline bg-white px-3 text-sm"
-            >
-              <option value="default">По рекомендации</option>
-              <option value="updated-desc">Сначала обновлённые</option>
-              <option value="price-asc">Цена: ниже</option>
-              <option value="price-desc">Цена: выше</option>
-            </select>
-          </label>
+          <input type="hidden" name="sort" value={filters.sort || "default"} />
 
-          <div className="flex flex-col justify-end lg:col-span-2">
+          <div className="flex shrink-0 flex-col justify-end">
             <button type="submit" className={primaryPillCtaClass}>
               Показать
             </button>
@@ -671,7 +656,7 @@ export function ProductCatalogView({
   ).slice(0, 3);
   return (
     <section
-      className="bg-white py-14 md:py-20"
+      className="bg-white py-6 md:py-10"
       data-city={city || undefined}
       data-city-slug={filters.city || undefined}
       data-catalog-source={catalogSource}
@@ -680,10 +665,12 @@ export function ProductCatalogView({
       <div className="mx-auto max-w-shell px-5">
         <div className="max-w-copy-wide">
           <p className={brandZoneEyebrowClass}>{copy.eyebrow}</p>
-          <h1 className="mt-3 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-carbon md:text-6xl">
+          <h1 className="mt-2 max-w-4xl break-words text-2xl font-semibold leading-tight tracking-normal text-carbon md:text-4xl">
             {copy.headline}
           </h1>
-          <p className="mt-5 max-w-prose text-copy leading-relaxed text-graphite">{copy.body}</p>
+          <p className="mt-3 hidden max-w-prose text-copy leading-relaxed text-graphite md:block">
+            {copy.body}
+          </p>
         </div>
 
         <CatalogTypeTabs activeType={type} city={filters.city} facets={facets} />
@@ -695,13 +682,40 @@ export function ProductCatalogView({
           type={type}
         />
 
-        <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted">
               Найдено: <span className="font-medium tabular-nums text-carbon">{result.total}</span>
             </p>
             <ActiveFilterChips chips={chips} city={city} />
           </div>
+          <form
+            action={sectionHref(type, filters.city)}
+            className="flex min-w-0 max-w-full items-center gap-2"
+          >
+            <HiddenFilterFields filters={filters} omit={["sort"]} type={type} />
+            <label className="sr-only" htmlFor="catalog-mobile-sort">
+              Сортировка
+            </label>
+            <select
+              id="catalog-mobile-sort"
+              name="sort"
+              defaultValue={filters.sort || "default"}
+              className="focus-ring min-h-11 min-w-0 max-w-44 rounded-card border border-hairline bg-white px-2 text-sm"
+            >
+              <option value="default">По рекомендации</option>
+              <option value="updated-desc">Сначала обновлённые</option>
+              <option value="price-asc">Цена: ниже</option>
+              <option value="price-desc">Цена: выше</option>
+            </select>
+            <button
+              type="submit"
+              aria-label="Применить сортировку"
+              className="focus-ring min-h-11 min-w-11 rounded-card border border-hairline text-lg"
+            >
+              →
+            </button>
+          </form>
           {result.pageCount > 1 ? (
             <p className="hidden text-sm tabular-nums text-muted sm:block">
               Показано {(result.page - 1) * result.pageSize + 1}–
@@ -711,9 +725,9 @@ export function ProductCatalogView({
         </div>
 
         {result.products.length > 0 ? (
-          <ul className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ul className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {result.products.map((product, index) => (
-              <li key={product.id}>
+              <li key={product.id} className="min-w-0">
                 <ProductCard product={product} imagePriority={index < 4} />
               </li>
             ))}

@@ -5,35 +5,13 @@ import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import type { DeviceCardData } from "@/lib/device-card-data";
 import { cn } from "../lib/cn-client";
-import { DeviceCard } from "./DeviceCard";
+
 import { primaryPillCtaClass, secondaryPillCtaClass } from "./ui-classes";
 
 export type CatalogFilterOption = {
   label: string;
   value: string;
 };
-
-export const DEFAULT_CATEGORY_FILTERS: CatalogFilterOption[] = [
-  { label: "Все", value: "all" },
-  { label: "iPhone", value: "iphone" },
-  { label: "MacBook", value: "macbook" },
-  { label: "iPad", value: "ipad" },
-];
-
-export const DEFAULT_STATUS_FILTERS: CatalogFilterOption[] = [
-  { label: "Все статусы", value: "all" },
-  { label: "В наличии", value: "available" },
-  { label: "Бронь", value: "reserved" },
-  { label: "Продано", value: "sold" },
-];
-
-export const DEFAULT_SORT_OPTIONS: CatalogFilterOption[] = [
-  { label: "По рекомендации", value: "default" },
-  { label: "Сначала обновленные", value: "updated-desc" },
-  { label: "По статусу", value: "status" },
-  { label: "Цена ↑", value: "price-asc" },
-  { label: "Цена ↓", value: "price-desc" },
-];
 
 type CatalogControls = {
   category: string;
@@ -128,17 +106,6 @@ function FilterChip({
   );
 }
 
-export function catalogFilterList(value: unknown): CatalogFilterOption[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((item) => {
-    if (!item || typeof item !== "object") return [];
-    const record = item as Record<string, unknown>;
-    const label = typeof record.label === "string" ? record.label : "";
-    const filterValue = typeof record.value === "string" ? record.value : "";
-    return label && filterValue ? [{ label, value: filterValue }] : [];
-  });
-}
-
 export function useCatalogControls(): CatalogControls {
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
@@ -176,7 +143,7 @@ export function CatalogToolbar({
   statusLabel = "Статус устройства",
   sortLabel = "Сортировка",
   sortAriaLabel = "Сортировка каталога",
-  sortOptions = DEFAULT_SORT_OPTIONS,
+  sortOptions,
   inactiveSurface,
 }: {
   categories: CatalogFilterOption[];
@@ -186,7 +153,7 @@ export function CatalogToolbar({
   statusLabel?: string;
   sortLabel?: string;
   sortAriaLabel?: string;
-  sortOptions?: CatalogFilterOption[];
+  sortOptions: CatalogFilterOption[];
   inactiveSurface?: "transparent" | "white";
 }) {
   return (
@@ -250,7 +217,7 @@ export function CatalogDeviceList({
   emptyHeadline,
   emptyCtaLabel,
   emptyCtaHref = "/#final",
-  priorityImageCount = 0,
+  cards,
   showSelectionCta = false,
   selectionCtaHref = "/#final",
   layout = "balanced",
@@ -260,7 +227,7 @@ export function CatalogDeviceList({
   emptyHeadline?: string;
   emptyCtaLabel?: string;
   emptyCtaHref?: string;
-  priorityImageCount?: number;
+  cards: Record<string, ReactNode>;
   showSelectionCta?: boolean;
   selectionCtaHref?: string;
   layout?: "balanced" | "four-up";
@@ -306,10 +273,8 @@ export function CatalogDeviceList({
               : "lg:grid-cols-3",
         )}
       >
-        {devices.map((device, index) => (
-          <li key={device.id}>
-            <DeviceCard device={device} imagePriority={index < priorityImageCount} />
-          </li>
+        {devices.map((device) => (
+          <li key={device.id}>{cards[device.id]}</li>
         ))}
       </ul>
       {showSelectionCta ? (

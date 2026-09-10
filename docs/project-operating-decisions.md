@@ -96,9 +96,10 @@ memory alone.
   or CDN change needs its own tested rollout; none was made in this release.
   Do not expand public file access, cache personal/admin responses, change
   manual copy/logo dimensions, or raise budgets to close the target.
-- Final documentation follow-up only updates this file and `DESIGN.md`;
-  production app build remains `34eaea1`. The local implementation section
-  below is historical evidence from before this separately approved release.
+- The final documentation follow-up for that release updated only this file
+  and `DESIGN.md`; its app build was `34eaea1`. The later logo-lockup release
+  below supersedes that production build. The local implementation section is
+  historical evidence from before the separately approved releases.
 
 ## Logo Lockup Visual Correction (2026-09-10)
 
@@ -112,8 +113,17 @@ memory alone.
   captions wrap and must not overlap the menu button. No Directus schema,
   content or fallback text changes are part of this correction.
 - User requested commit, push and production deployment after local UI,
-  Impeccable detector and full `web:verify` checks passed. Record the exact
-  release commit, rollback build and production smoke result after deployment.
+  Impeccable detector and full `web:verify` checks passed. Release `c03055c`
+  was pushed to master and deployed from a separate staging build. The prior
+  build and commit are retained in
+  `/opt/isvoi/backups/web-impeccable-c03055c-20260910T204337Z`; staging is
+  `/opt/isvoi/work/impeccable-release-c03055c-20260910T204337Z`.
+- Production browser verification passed at 390px and 1440px using current
+  Directus values: caption is to the right, 9px and uppercase; configured logo
+  renders at 120x49px; no menu overlap or horizontal overflow. Public route,
+  SEO, image and product-viewer smoke also passed. `isvoi-web` restarted onto
+  the new build while `isvoi-telegram` kept its existing process. Directus
+  schema, content, permissions and logo values were not changed.
 
 ## Impeccable A/B/C Implementation (2026-09-10, Local Only)
 

@@ -4345,3 +4345,26 @@ Next content-editing priorities:
 - The reusable release tools now preflight unique inventory/product identities, preserve
   PDF MIME/extensions and accept per-release audit labels. These repository changes and
   this operating-memory entry are local only until an explicit commit/push/deploy request.
+
+### Sold Product Lifecycle · 2026-09-10
+
+- Releases `19d7b7e` and `a2f5437` add an explicit Catalog V3 `Продано` workflow and
+  reviewed system copy. Local, origin and Beget production are synchronized on the
+  latter release before this operating-memory update.
+- Setting `products.stock_status=sold` in `Карточки сайта` now atomically sets the
+  product quantity and every related store-offer quantity to zero and marks those offers
+  sold. A sold published card remains public with a `Продано` label and similar-device
+  lead scenario; `hidden` remains the separate full-removal state. Restoring availability
+  stays manual and requires a confirmed positive inventory balance.
+- Directus uses the same `Продано` label for products and offers. Administrator,
+  `ISVOI Editor` and `ISVOI Advanced Editor` have separate `Продано` and `Скрыто`
+  views. Avito and Yandex Business continue to select available positive-stock rows only.
+- Pre-migration backup `/opt/isvoi/backups/directus/20260910T114049Z` passed PostgreSQL,
+  uploads, IndexNow state and SHA-256 verification. Offsite upload remains unconfigured.
+  The migration passed a full rollback rehearsal before apply; all five post-apply checks
+  are zero. A real available product and offer were changed to sold inside a verification
+  transaction and successfully rolled back, leaving public inventory unchanged.
+- Production `web:verify`, the sold contract, Catalog V3 audit and full public smoke pass.
+  Directus health is `ok`, PM2 `isvoi-web` is online with zero unstable restarts, and the
+  Yandex Business feed responds HTTP 200. Avito responds expected HTTP 503 with
+  `avito_feed_disabled` because that channel has not been activated.

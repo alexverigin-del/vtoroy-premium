@@ -108,8 +108,11 @@ components:
   Impeccable text patches were withdrawn at the user's request, not deferred.
 - Header is compact below 1280px and also whenever actual navigation, city,
   CTA and logo widths do not fit. Do not trade logo editability for a fixed
-  navigation layout. Live captions are 12px, sentence case, below the bitmap;
-  embedded-caption images use an empty live caption. Keep Studio size bounds.
+  navigation layout. Live captions form a compact horizontal lockup to the
+  right of the bitmap, using the established 9px semibold uppercase style;
+  embedded-caption images use an empty live caption. Keep Studio size bounds
+  and let the image shrink proportionally before the lockup can collide with
+  the menu button.
 - Product hierarchy: H1, current offer/action, photos, details, one full form.
   The mobile sticky action shares the city offer calculation and disappears
   behind consent/viewer UI and when the form is visible. Sold cards retain
@@ -269,7 +272,7 @@ Homepage preview overlays and visual frames should follow the same Flat Retail R
 
 Homepage Club and final CTA panels should also stay flat at rest. Featured Club tiers can use contrast and a blue border for emphasis, and lead CTA shells can use a white surface with a hairline border; avoid broad decorative shadows on both.
 
-Homepage section labels should use quiet sentence-case orientation text. Preserve editor wording and avoid forced uppercase tracking on repeated homepage eyebrows, valuation labels, visual captions and final CTA labels; reserve uppercase tracking for true compact badges such as grades and tier badges. Live logo captions remain sentence case at 12px.
+Homepage section labels should use quiet sentence-case orientation text. Preserve editor wording and avoid forced uppercase tracking on repeated homepage eyebrows, valuation labels, visual captions and final CTA labels; reserve uppercase tracking for true compact badges such as grades, tier badges and the intentional logo lockup. Live logo captions use the established 9px uppercase treatment to the right of the image.
 
 Marketing section eyebrows should read like quiet orientation text, not a repeated all-caps scaffold. Preserve the editor's wording and use compact blue labels without forced uppercase tracking except where the content itself is an intentional badge or sequence marker.
 

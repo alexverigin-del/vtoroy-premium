@@ -100,6 +100,21 @@ memory alone.
   production app build remains `34eaea1`. The local implementation section
   below is historical evidence from before this separately approved release.
 
+## Logo Lockup Visual Correction (2026-09-10)
+
+- User preferred the previous unified horizontal logo lockup. Restore the live
+  `logo_caption` to the right of the uploaded image with its established 9px
+  semibold uppercase treatment. This is an intentional compact brand label,
+  not a general return to uppercase page labels.
+- Preserve `logoWidth`, `logoHeight`, `logoCaption`, `showBrandName`, the Studio
+  bounds and the measured compact-header behavior from the Impeccable release.
+  The image may shrink proportionally inside the available header width; long
+  captions wrap and must not overlap the menu button. No Directus schema,
+  content or fallback text changes are part of this correction.
+- User requested commit, push and production deployment after local UI,
+  Impeccable detector and full `web:verify` checks passed. Record the exact
+  release commit, rollback build and production smoke result after deployment.
+
 ## Impeccable A/B/C Implementation (2026-09-10, Local Only)
 
 - User correction: preserve manual/editorial text. UI/performance work must
@@ -123,9 +138,8 @@ memory alone.
   retain `purchase`; isolated submissions verified both payloads.
 - Header collapses below 1280px or when measured contents do not fit, using
   ResizeObserver. Studio logo width 28..360 and height 16..120 bounds remain.
-  Live captions sit below the image, 12px, normal case, wrapping. Empty caption
-  is the correct option for a bitmap with an embedded descriptor. This
-  supersedes older recommendations for tiny uppercase live logo captions.
+  The later logo-lockup correction above supersedes this implementation-time
+  caption placement while retaining its sizing and overflow protections.
 - Mobile filters use native modal dialog, labelled close, Escape, bounded
   keyboard focus, focus restoration, body scroll locking and desktop close.
   Search/filter/sort GET state survives. Catalog top spacing is reduced;

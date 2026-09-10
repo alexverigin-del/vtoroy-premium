@@ -119,14 +119,36 @@ try {
         return button.width > 0 && logo.right > button.left;
       });
       assert(!overlap, `Header overlap ${width}${variant}`);
-      if (variant.includes("caption"))
-        assert.equal(
-          await page
-            .locator("header a span span")
-            .first()
-            .evaluate((el) => getComputedStyle(el).fontSize),
-          "12px",
+      if (variant.includes("caption")) {
+        const lockup = await page.evaluate(() => {
+          const image = document.querySelector("header a span img").getBoundingClientRect();
+          const caption = document.querySelector("header a span span");
+          const captionBox = caption.getBoundingClientRect();
+          const style = getComputedStyle(caption);
+          return {
+            captionLeft: captionBox.left,
+            imageRight: image.right,
+            fontSize: style.fontSize,
+            textTransform: style.textTransform,
+          };
+        });
+        assert(
+          lockup.captionLeft >= lockup.imageRight,
+          `Logo caption is not to the right of the image at ${width}${variant}`,
         );
+        assert.equal(lockup.fontSize, "9px");
+        assert.equal(lockup.textTransform, "uppercase");
+        if (variant === "?caption" && (width === 390 || width === 1440)) {
+          await page.locator("header").screenshot({
+            path: `${output}/logo-caption-${width}.png`,
+          });
+        }
+        if (variant === "?max&caption&long&brand" && width === 320) {
+          await page.locator("header").screenshot({
+            path: `${output}/logo-caption-max-320.png`,
+          });
+        }
+      }
       if (width === 390 && !variant) {
         const price = await page
           .locator('[data-component="ProductCard"] p')

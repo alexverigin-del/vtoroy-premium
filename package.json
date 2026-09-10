@@ -257,6 +257,7 @@
     "directus:test:inventory-manager-editability": "node scripts/test_directus_inventory_manager_editability.mjs",
     "directus:catalog-guard:test": "node scripts/test_directus_catalog_guard_extension.mjs",
     "communications:build": "node scripts/build_communications.mjs",
+    "communications:local:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start_isvoi_docker.ps1",
     "communications:test": "node node_modules/typescript/bin/tsc -p packages/communications/tsconfig.json && node --test scripts/test_communications.mjs",
     "communications:migrate": "node scripts/migrate_communications.mjs",
     "communications:worker": "node scripts/run_communications_worker.mjs",

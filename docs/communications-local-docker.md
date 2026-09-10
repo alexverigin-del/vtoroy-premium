@@ -2,11 +2,11 @@
 
 Предпочтительное место разработки и испытаний — Docker Desktop на Windows с WSL 2. Рабочий сервер используется для выкладки только после приёмки. Локальные учётные записи, база, файлы и секреты не связаны с production.
 
-Проверено 10 сентября 2026: Windows 11 Pro, 16 ГБ RAM, работающий гипервизор, около 324 ГБ свободного места. С разрешения пользователя установлены Docker Desktop 4.89.0 (клиент и Engine 29.7.2) и WSL 2.7.13. Исправлена неполная per-user установка, из-за которой запускатель не находил регистрацию backend; рабочая установка размещена в `C:\Program Files\Docker\Docker`. Docker Engine и `docker-desktop` в WSL 2 работают. Нативный контракт PostgreSQL 16 + Directus 11.17.4 выполнен успешно.
+Проверено 10 сентября 2026: Windows 11 Pro build 26200, 16 ГБ RAM, работающий гипервизор, около 324 ГБ свободного места. Установлены Docker Desktop 4.90.0 (Engine 29.7.2) и WSL 2.7.13. Исправлена неполная per-user установка, из-за которой запускатель не находил регистрацию backend; рабочая установка размещена в `C:\Program Files\Docker\Docker`. Docker Engine и `docker-desktop` в WSL 2 работают. Нативный контракт PostgreSQL 16 + Directus 11.17.4 выполнен успешно.
 
 ## Установка
 
-1. Запустить Docker Desktop обычным ярлыком. Рабочий ярлык указывает на `C:\Program Files\Docker\Docker\Docker Desktop.exe`.
+1. Запустить ярлык **ISVOI Docker** на рабочем столе либо выполнить `npm run communications:local:start`. Команда предотвращает двойной запуск, восстанавливает временные socket-каталоги только при недоступном Engine и поднимает постоянный Compose-стенд.
 2. Проверить `wsl --version`, `docker desktop status` и `docker version`. Минимальная версия WSL по документации Docker — 2.1.5.
 3. Для обычных контрактных тестов достаточно около 2 ГБ свободной памяти. Полный профиль с ClamAV требует дополнительно до 4 ГБ; при 16 ГБ общей памяти следует закрыть тяжёлые приложения. Не изменять существующий `.wslconfig` без сверки настроек других WSL-проектов.
 
@@ -28,6 +28,16 @@ node scripts/rehearse_communications.mjs
 На Windows скрипт сам находит Docker CLI в стандартных каталогах Docker Desktop и добавляет его каталог в окружение дочерних процессов. Поэтому контракт работает и из терминала, открытого до установки Docker.
 
 ## Постоянный локальный стенд
+
+Штатный запуск Docker Desktop и стенда одной командой:
+
+```powershell
+npm run communications:local:start
+```
+
+Если Docker Engine уже работает, команда не перезапускает его и только приводит Compose к требуемому состоянию. Если приложение уже запускается, команда ждёт 30 секунд. Восстановление выполняется лишь после неуспешного ожидания. Успешное завершение команды означает, что PostgreSQL и ClamAV прошли healthchecks, а Directus вернул `status=ok`.
+
+Ручной запуск Compose для диагностики:
 
 ```powershell
 docker compose -f infra/communications/docker-compose.test.yml --profile files up -d
@@ -84,15 +94,25 @@ npm run communications:rehearse:production-schema
 docker compose -f infra/communications/docker-compose.test.yml stop
 ```
 
+## Вход в Docker Desktop
+
+Вход по email не требует изменений в архитектуре, Compose или переменных окружения ISVOI. Он авторизует обращения к Docker Hub и увеличивает лимит скачивания образов. Docker Desktop хранит учётные данные через системное хранилище Windows; пароль и токен нельзя помещать в `.env`, Compose или Git. Для production и CI при необходимости используется отдельный ограниченный токен организации, а не локальная сессия разработчика. Docker Desktop бесплатен для небольших компаний с численностью менее 250 сотрудников и выручкой менее 10 млн долларов в год; для более крупных компаний и государственных организаций требуется платная подписка.
+
+Источники: [вход в Docker Desktop](https://docs.docker.com/desktop/setup/sign-in/), [хранилище учётных данных `docker login`](https://docs.docker.com/reference/cli/docker/login/), [условия использования Docker Desktop на Windows](https://docs.docker.com/desktop/setup/install/windows-install/).
+
 ## Повторная ошибка `sailor-ingest.sock`
 
-На Docker Desktop 4.89.0 для Windows 11 build 26200 дважды воспроизводился аварийный запуск с сообщениями о невозможности переименовать `sailor-ingest.sock` и затем `docker-secrets-engine/engine.sock`. Рабочее восстановление без сброса данных:
+На Docker Desktop 4.89.0 и 4.90.0 для Windows 11 build 26200 воспроизводился аварийный запуск с сообщениями о невозможности переименовать `sailor-ingest.sock` и `docker-secrets-engine/engine.sock`. Полное восстановление 10 сентября 2026 подтвердило, что WSL-диск, образы, тома и контейнеры при этом не повреждаются.
 
-1. Полностью завершить Docker Desktop.
-2. Переименовать, а не удалять, `%LOCALAPPDATA%\Docker\run` и `%LOCALAPPDATA%\docker-secrets-engine`, добавив к именам отметку времени.
-3. Сделать резервную копию `%APPDATA%\Docker\settings-store.json` и выключить Docker AI (`EnableDockerAI=false`).
-4. Запустить Docker Desktop и проверить `docker version` и состояние Compose.
+Штатное восстановление выполняет `npm run communications:local:start`:
+
+1. Сначала проверяет Engine и ждёт уже начавшийся запуск, чтобы не создать второй backend.
+2. При подтверждённом сбое завершает процессы Docker, останавливает WSL и переименовывает оба временных socket-каталога с отметкой времени.
+3. Сохраняет копию `%APPDATA%\Docker\settings-store.json` и фиксирует `EnableDockerAI=false`.
+4. Запускает Docker Desktop ровно один раз, ждёт Engine и поднимает PostgreSQL, Directus и ClamAV.
 
 Не использовать **Reset to factory defaults** для этой ошибки: он удаляет локальные контейнеры, образы и тома, тогда как повреждены временные сокеты запуска. Отключение Docker AI соответствует обходному решению для этой конкретной ошибки; после обновления Docker Desktop его можно проверить повторно. См. [сообщение об ошибке Docker Desktop](https://github.com/docker/desktop-feedback/issues/554), [настройки Docker Desktop](https://docs.docker.com/desktop/settings-and-maintenance/settings/) и [команду отключения model runner](https://docs.docker.com/reference/cli/docker/desktop/disable/).
+
+Перед обновлением 4.89.0 → 4.90.0 создана локальная резервная копия двух остановленных WSL-дисков в `backups/docker-desktop/pre-4.90.0-20260910`. Каталог `backups/` исключён из Git.
 
 Наличие локального Docker не решает нехватку памяти production-сервера: на проверенном сервере всего около 4 ГБ. До выпуска файлов нужен сервер с достаточным запасом памяти либо отдельное закрытое размещение сканера.

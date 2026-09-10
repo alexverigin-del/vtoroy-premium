@@ -6,7 +6,7 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
-## Impeccable Technical Release Preparation (2026-09-10)
+## Impeccable Technical Release (2026-09-10)
 
 - User explicitly approved commit, push and deployment of technical changes,
   followed by production LCP measurements. Editorial/CMS patches remain
@@ -14,12 +14,91 @@ memory alone.
 - Preflight: GitHub master and Beget are at `dbc25a9`, with clean production
   checkout. The working communications branch has seven additional commits
   through `2f1464e`; preserve them on that branch, not in this web release.
-- Commit the completed UI work on its original branch, then port only that
-  commit onto master. Keep the production Telegram continuation contract in
-  extracted form components. Do not activate MAX/VK or deploy their workers.
-- Existing production backup: `backups/directus/20260910T114049Z`.
-  Verify integrity before deployment. Release outcome and measurements follow
-  after actual deployment, not in advance.
+- Preserved completed work as `90ff37c` on the communications branch and
+  cherry-picked only that frontend commit onto master as `34eaea1`. Extracted
+  forms keep production `telegramUrl` / `TelegramContinue` contracts; the
+  seven communications commits are not deployed. Package lock, shared types,
+  Directus, lead-intake handler and original editorial/fallback files have
+  empty diffs against the previous production commit.
+- `34eaea1` was pushed and deployed using a separate staging build, then a
+  short restart of `isvoi-web`. Telegram stayed online with its original PID.
+  Production checkout was clean after the release. Staging directory:
+  `/opt/isvoi/work/impeccable-release-34eaea1-20260910T200556Z`.
+  Previous commit and complete build are retained for rollback in
+  `/opt/isvoi/backups/web-impeccable-34eaea1-20260910T200556Z`.
+- Directus backup `backups/directus/20260910T114049Z` passed checksums,
+  database gzip integrity and uploads archive checks before and after release.
+  No schema, content, permission or production lead writes were performed.
+- Master `web:verify`, isolated Impeccable UI and compiled Next SEO/UI checks
+  passed again after branch isolation. Production build bundle gate passed:
+  total emitted JS 883.7/283.7/244.6 kB raw/gzip/Brotli, unchanged limits
+  905/290/251. Product initial JS: 403.8/123.0/104.5 kB, limits 420/130/110.
+  Production Brotli reserve is 6.4 kB, not the desired 20-30 kB.
+- Image cache survived the staged build. Initial warmup reported the existing
+  `/store` -> `/belgorod` redirect because it deliberately refuses redirects.
+  Repeating against observed public destinations with
+  `IMAGE_WARM_ROUTES=/,/belgorod,/blog` warmed 53/53 variants without failures.
+  The helper remains best-effort; use final same-origin routes when warming
+  redirected pages. No asset-ID map or CMS credentials were used.
+- Production route/SEO/product-viewer, image, copy and visual smokes passed
+  after deployment. Desktop/mobile screenshots are in ignored
+  `output/playwright/impeccable-production-release/`. The actual 390x844
+  catalog viewport was also inspected with cookies closed: first image,
+  complete product title and price are visible without scrolling. Original
+  manual logo caption and catalog title remain unchanged.
+
+### Post-Release LCP And Remaining Work
+
+- Completed 40 serial navigations of production `/store`, five samples for
+  each viewport/consent state with isolated first visits and same-context
+  repeats. Chromium 152.0.7977.83, unthrottled, no parallel visual smoke.
+  Report: ignored `output/performance/impeccable-store-postdeploy.json`,
+  started `2026-09-10T20:11:34Z`. These are laboratory measurements from this
+  workstation, not field Core Web Vitals.
+
+| Viewport / consent  | First LCP median (range), ms | Repeat median, ms |
+| ------------------- | ---------------------------- | ----------------- |
+| Desktop / undecided | 3424 (3372-3592)             | 460               |
+| Desktop / necessary | 3388 (3372-3408)             | 468               |
+| Mobile / undecided  | 2628 (2620-2880)             | 468               |
+| Mobile / necessary  | 2620 (2612-2680)             | 460               |
+
+- Release budgets passed; CLS was zero and image checks had no failures in
+  all 40 navigations. **First-visit LCP <=2500ms remains open in all four
+  groups.** Prior desktop medians were 3328/3356ms and mobile 2580/2576ms;
+  this release does not demonstrate a first-visit LCP improvement. Do not
+  interpret the small before/after difference as a causal regression without
+  controlled repeat measurements of both builds.
+- Desktop LCP remains the hero image: first-visit median navigation TTFB
+  2049-2077ms, resource start 2059-2082ms, resource end 3354-3394ms, render
+  delay 27-33ms. Mobile LCP is H1, not the hero or consent banner. Optional
+  analytics remained disabled; the banner was not delayed for the metric.
+- All 20 first visits have exactly one high-priority image and one fetched
+  hero variant. Hero starts 544-622ms before lazy/auto product images. Its
+  `sizes` matches rendered widths: 1326px at 1366px, 350px at 390px. No
+  priority conflict, duplicate variant or late rendering fix remains here.
+- Separate five-pair, alternating desktop diagnostic compared `/store` and
+  its existing canonical destination `/belgorod`. Medians: 3556 vs 3184ms
+  LCP, 2087 vs 1893ms navigation TTFB. The header already links directly to
+  `/belgorod`; do not rewrite editorial links or remove legacy redirects to
+  make the old-route metric look better. Diagnostic report:
+  `output/performance/impeccable-store-navigation-postdeploy.json` (ignored).
+- The diagnostic negotiated HTTP/1.1. A single VPS curl probe also negotiated
+  HTTP/1.1 even with `--http2`, with public TTFB 381ms; the loopback Next
+  listener answered in 5.6ms. Browser direct-entry medians included 843ms
+  connection setup, 844ms request-to-first-byte, and 1266ms hero fetch
+  (591ms response wait, 672ms body transfer). These different-path probes
+  indicate a substantial delivery/network contribution, not proof that
+  Directus or Next rendering takes the full external TTFB.
+- Next technical investigation: inspect TLS/ALPN and HTTP/2 availability on
+  the public nginx path, compare safe static/image cache delivery and traces
+  from another network, then repeat the same cold/repeat matrix. Any nginx
+  or CDN change needs its own tested rollout; none was made in this release.
+  Do not expand public file access, cache personal/admin responses, change
+  manual copy/logo dimensions, or raise budgets to close the target.
+- Final documentation follow-up only updates this file and `DESIGN.md`;
+  production app build remains `34eaea1`. The local implementation section
+  below is historical evidence from before this separately approved release.
 
 ## Impeccable A/B/C Implementation (2026-09-10, Local Only)
 

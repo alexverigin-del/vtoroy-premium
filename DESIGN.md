@@ -128,9 +128,12 @@ components:
   categories use flat divided rows; long copy wraps at 320px and 200% text.
 - Local browser evidence covers six widths, maximum logo sizes, caption
   variants, 200% text, keyboard dialogs and reduced motion. The 390x844 catalog
-  fixture exposes the first card's image/title/price. Content patches were
-  withdrawn; post-release visual/LCP acceptance remains pending. Do not label
-  the whole performance package green from a release-budget pass alone.
+  fixture exposes the first card's image/title/price. Release `34eaea1` passed
+  production desktop/mobile visual smoke and a real 390x844 catalog viewport
+  inspection with cookies closed; the first image/title/price remain visible.
+  Content patches were withdrawn. Post-release LCP acceptance is recorded
+  separately in operating decisions; do not label the whole performance
+  package green from a release-budget pass alone.
 
 ## 1. Overview
 

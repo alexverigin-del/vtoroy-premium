@@ -305,16 +305,30 @@ export function createDelivery(context: Context, service: any) {
             .update({ [`${op.payload.draft_stage}_message_id`]: outcome.externalId });
       }
       const result = await summary(trx, b.id);
-      if (result === "accepted" && b.message_id && b.purpose === "service") {
+      if (outcome.type === "accepted" && b.message_id && b.purpose === "service") {
         const message = await trx("comm_messages").where({ id: b.message_id }).first();
+        const conversation = await trx("comm_conversations")
+          .where({ id: b.conversation_id })
+          .forUpdate()
+          .first("first_agent_response_at", "lead_id");
         await trx("comm_conversations")
           .where({ id: b.conversation_id })
           .update({
             last_agent_reply_at: trx.fn.now(),
+            first_agent_response_at: trx.raw("COALESCE(first_agent_response_at,now())"),
             awaiting_since: trx.raw(
               "CASE WHEN last_inbound_at<=? THEN NULL ELSE awaiting_since END",
               [message.occurred_at],
             ),
+          });
+        if (!conversation.first_agent_response_at)
+          await service.event(trx, {
+            connection_id: n.id,
+            identity_id: b.identity_id,
+            lead_id: conversation.lead_id,
+            kind: "first_agent_response",
+            dedupe_key: `conversation:${b.conversation_id}:first-agent-response`,
+            is_test: n.mode === "test",
           });
       }
       await service.event(trx, {

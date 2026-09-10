@@ -270,15 +270,26 @@ function createDelivery(context, service) {
           await trx("comm_staff_drafts").where({ id: op.payload.draft_id }).update({ [`${op.payload.draft_stage}_message_id`]: outcome.externalId });
       }
       const result = await summary(trx, b.id);
-      if (result === "accepted" && b.message_id && b.purpose === "service") {
+      if (outcome.type === "accepted" && b.message_id && b.purpose === "service") {
         const message = await trx("comm_messages").where({ id: b.message_id }).first();
+        const conversation = await trx("comm_conversations").where({ id: b.conversation_id }).forUpdate().first("first_agent_response_at", "lead_id");
         await trx("comm_conversations").where({ id: b.conversation_id }).update({
           last_agent_reply_at: trx.fn.now(),
+          first_agent_response_at: trx.raw("COALESCE(first_agent_response_at,now())"),
           awaiting_since: trx.raw(
             "CASE WHEN last_inbound_at<=? THEN NULL ELSE awaiting_since END",
             [message.occurred_at]
           )
         });
+        if (!conversation.first_agent_response_at)
+          await service.event(trx, {
+            connection_id: n.id,
+            identity_id: b.identity_id,
+            lead_id: conversation.lead_id,
+            kind: "first_agent_response",
+            dedupe_key: `conversation:${b.conversation_id}:first-agent-response`,
+            is_test: n.mode === "test"
+          });
       }
       await service.event(trx, {
         connection_id: n.id,
@@ -431,6 +442,122 @@ function normalize(platform, raw) {
     callbackId: m.event_id,
     callbackData: typeof m.payload === "string" ? m.payload : m.payload?.action,
     availability: kind === "availability" ? raw.type === "message_deny" ? "blocked" : "allowed" : void 0
+  };
+}
+
+// packages/communications/src/sla.ts
+var defaultServiceLevel = {
+  enabled: true,
+  timezone: "Europe/Moscow",
+  working_days: [1, 2, 3, 4, 5, 6, 7],
+  workday_start: "10:00",
+  workday_end: "20:00",
+  first_response_minutes: 10,
+  escalation_minutes: 15
+};
+var formatter = (timezone) => new Intl.DateTimeFormat("en-CA", {
+  timeZone: timezone,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23"
+});
+function localParts(value, timezone) {
+  const parts = Object.fromEntries(
+    formatter(timezone).formatToParts(value).filter((part) => part.type !== "literal").map((part) => [part.type, Number(part.value)])
+  );
+  return {
+    year: parts.year,
+    month: parts.month,
+    day: parts.day,
+    hour: parts.hour,
+    minute: parts.minute,
+    second: parts.second
+  };
+}
+function utcForLocal(value, timezone) {
+  const desired = Date.UTC(value.year, value.month - 1, value.day, value.hour, value.minute);
+  let result = desired;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const actual = localParts(new Date(result), timezone);
+    const represented = Date.UTC(
+      actual.year,
+      actual.month - 1,
+      actual.day,
+      actual.hour,
+      actual.minute,
+      actual.second
+    );
+    const next = result + desired - represented;
+    if (next === result) break;
+    result = next;
+  }
+  return new Date(result);
+}
+function clock(value) {
+  const match = String(value).match(/^(\d{1,2}):(\d{2})/);
+  if (!match) throw new Error("INVALID_SERVICE_LEVEL_CLOCK");
+  const hour = Number(match[1]), minute = Number(match[2]);
+  if (hour > 23 || minute > 59) throw new Error("INVALID_SERVICE_LEVEL_CLOCK");
+  return hour * 60 + minute;
+}
+function nextDate(value) {
+  const date2 = new Date(Date.UTC(value.year, value.month - 1, value.day + 1));
+  return { year: date2.getUTCFullYear(), month: date2.getUTCMonth() + 1, day: date2.getUTCDate() };
+}
+function isoWeekday(value) {
+  return new Date(Date.UTC(value.year, value.month - 1, value.day)).getUTCDay() || 7;
+}
+function addWorkingMinutes(start, minutes, level) {
+  if (!Number.isInteger(minutes) || minutes < 0) throw new Error("INVALID_SERVICE_LEVEL_MINUTES");
+  const days = new Set(level.working_days.map(Number));
+  const dayStart = clock(level.workday_start), dayEnd = clock(level.workday_end);
+  if (!days.size || [...days].some((day) => day < 1 || day > 7) || dayEnd <= dayStart)
+    throw new Error("INVALID_SERVICE_LEVEL_SCHEDULE");
+  let cursor = new Date(start);
+  if (Number.isNaN(cursor.getTime())) throw new Error("INVALID_SERVICE_LEVEL_START");
+  let remaining = minutes * 6e4;
+  for (let guard = 0; guard < 370; guard += 1) {
+    let local = localParts(cursor, level.timezone);
+    const minuteOfDay = local.hour * 60 + local.minute;
+    if (!days.has(isoWeekday(local)) || minuteOfDay >= dayEnd) {
+      const date3 = nextDate(local);
+      cursor = utcForLocal(
+        { ...date3, hour: Math.floor(dayStart / 60), minute: dayStart % 60 },
+        level.timezone
+      );
+      continue;
+    }
+    if (minuteOfDay < dayStart) {
+      cursor = utcForLocal(
+        { ...local, hour: Math.floor(dayStart / 60), minute: dayStart % 60 },
+        level.timezone
+      );
+      local = localParts(cursor, level.timezone);
+    }
+    const end = utcForLocal(
+      { ...local, hour: Math.floor(dayEnd / 60), minute: dayEnd % 60 },
+      level.timezone
+    );
+    const available = Math.max(0, end.getTime() - cursor.getTime());
+    if (remaining <= available) return new Date(cursor.getTime() + remaining);
+    remaining -= available;
+    const date2 = nextDate(local);
+    cursor = utcForLocal(
+      { ...date2, hour: Math.floor(dayStart / 60), minute: dayStart % 60 },
+      level.timezone
+    );
+  }
+  throw new Error("SERVICE_LEVEL_SCHEDULE_EXHAUSTED");
+}
+function serviceDeadlines(start, level = defaultServiceLevel) {
+  if (!level.enabled) return { firstResponseDueAt: null, escalationDueAt: null };
+  return {
+    firstResponseDueAt: addWorkingMinutes(start, level.first_response_minutes, level),
+    escalationDueAt: addWorkingMinutes(start, level.escalation_minutes, level)
   };
 }
 
@@ -649,7 +776,16 @@ function createService(context) {
       store_location_id: n.store_id,
       is_test: n.mode === "test"
     });
-    const [c] = await trx("comm_conversations").insert({ lead_id: id, thread_id: thread.id }).returning("*");
+    await trx("comm_service_levels").insert({ store_id: n.store_id }).onConflict("store_id").ignore();
+    const configured = await trx("comm_service_levels").where({ store_id: n.store_id }).first();
+    const level = { ...defaultServiceLevel, ...configured };
+    const deadlines = serviceDeadlines(e.occurredAt, level);
+    const [c] = await trx("comm_conversations").insert({
+      lead_id: id,
+      thread_id: thread.id,
+      first_response_due_at: deadlines.firstResponseDueAt,
+      escalation_due_at: deadlines.escalationDueAt
+    }).returning("*");
     await trx("comm_threads").where({ id: thread.id }).update({ selected_conversation_id: c.id, pending_kind: null });
     await trx("comm_access_grants").insert({ identity_id: thread.identity_id, lead_id: id }).onConflict(["identity_id", "lead_id"]).ignore();
     await event(trx, {
@@ -1172,6 +1308,15 @@ function createService(context) {
       "l.assigned_to",
       "n.platform",
       "i.external_user_id",
+      db.raw(`CASE
+          WHEN c.first_agent_response_at IS NOT NULL AND c.first_response_due_at IS NOT NULL
+            THEN CASE WHEN c.first_agent_response_at<=c.first_response_due_at THEN 'met' ELSE 'breached' END
+          WHEN c.sla_escalated_at IS NOT NULL THEN 'escalated'
+          WHEN c.escalation_due_at<=now() THEN 'overdue'
+          WHEN c.first_response_due_at<=now() THEN 'warning'
+          WHEN c.first_response_due_at IS NOT NULL THEN 'on_track'
+          ELSE 'untracked'
+        END AS sla_state`),
       db.raw(
         "(SELECT count(*)::int FROM comm_messages m WHERE m.conversation_id=c.id AND m.direction='in' AND m.deleted_at IS NULL AND m.sequence>COALESCE(r.sequence,0)) AS unread_count"
       )
@@ -1292,7 +1437,7 @@ function createStaff(context, service) {
     });
     return id;
   }
-  async function notify(trx, n, c, message) {
+  async function ensureCard(trx, n, c) {
     if (n.platform !== "telegram") return;
     const destination = await trx("comm_destinations").where({ connection_id: n.id, kind: "staff", enabled: true }).first();
     if (!destination) return;
@@ -1338,6 +1483,11 @@ function createStaff(context, service) {
         }
       ]);
     }
+    return card;
+  }
+  async function notify(trx, n, c, message) {
+    const card = await ensureCard(trx, n, c);
+    if (!card) return;
     await queue(
       trx,
       n,
@@ -1347,6 +1497,36 @@ ${String(message.text || "\u0412\u043B\u043E\u0436\u0435\u043D\u0438\u0435").sli
       { conversation_id: c.id },
       { inline_keyboard: [[{ text: "\u041E\u0442\u0432\u0435\u0442\u0438\u0442\u044C \u043A\u043B\u0438\u0435\u043D\u0442\u0443", callback_data: `reply:${c.id}` }]] }
     );
+  }
+  async function sweep(trx, n) {
+    if (n.platform !== "telegram") return null;
+    const c = await trx("comm_conversations as c").join("comm_threads as t", "t.id", "c.thread_id").join("leads as l", "l.id", "c.lead_id").where({ "t.connection_id": n.id }).whereNull("c.closed_at").whereNull("c.first_agent_response_at").whereNull("c.sla_escalated_at").where("c.escalation_due_at", "<=", trx.fn.now()).orderBy("c.escalation_due_at").select("c.*", "l.reference_code").forUpdate("c").skipLocked().first();
+    if (!c) return null;
+    const card = await ensureCard(trx, n, c);
+    if (!card) return null;
+    await queue(
+      trx,
+      n,
+      card,
+      `SLA: \u043F\u043E \u0437\u0430\u044F\u0432\u043A\u0435 ${c.reference_code || c.lead_id} \u043D\u0435\u0442 \u043F\u0435\u0440\u0432\u043E\u0433\u043E \u043E\u0442\u0432\u0435\u0442\u0430 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0430 \u0437\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u043D\u043E\u0435 \u0440\u0430\u0431\u043E\u0447\u0435\u0435 \u0432\u0440\u0435\u043C\u044F.`,
+      { conversation_id: c.id },
+      {
+        inline_keyboard: [
+          [{ text: "\u041F\u0440\u0438\u043D\u044F\u0442\u044C \u0432 \u0440\u0430\u0431\u043E\u0442\u0443", callback_data: `take:${card.id}` }],
+          [{ text: "\u041E\u0442\u0432\u0435\u0442\u0438\u0442\u044C \u043A\u043B\u0438\u0435\u043D\u0442\u0443", callback_data: `reply:${c.id}` }]
+        ]
+      }
+    );
+    await trx("comm_conversations").where({ id: c.id }).update({ sla_escalated_at: trx.fn.now() });
+    await service.event(trx, {
+      connection_id: n.id,
+      lead_id: c.lead_id,
+      kind: "sla_escalated",
+      dedupe_key: `conversation:${c.id}:sla-escalated`,
+      is_test: n.mode === "test",
+      facts: { conversation_id: c.id }
+    });
+    return { result: "sla_escalated", conversation_id: c.id };
   }
   async function process(trx, n, row) {
     const raw = row.event.raw, q = raw.callback_query, m = q?.message || raw.message, from = q?.from || m?.from;
@@ -1499,7 +1679,7 @@ ${text}${attachmentId ? "\n[\u0424\u043E\u0442\u043E \u043E\u0436\u0438\u0434\u0
   }
   service.setStaffProcessor(process);
   service.setStaffNotifier(notify);
-  return { notify, process };
+  return { notify, process, sweep };
 }
 
 // packages/communications/src/legacy.ts

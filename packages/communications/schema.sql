@@ -24,6 +24,17 @@ CREATE TABLE IF NOT EXISTS comm_staff (
  can_manage boolean NOT NULL DEFAULT false, can_publish boolean NOT NULL DEFAULT false,
  UNIQUE(user_id,store_id)
 );
+CREATE TABLE IF NOT EXISTS comm_service_levels (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(), store_id uuid NOT NULL UNIQUE REFERENCES store_locations(id),
+ enabled boolean NOT NULL DEFAULT true, timezone text NOT NULL DEFAULT 'Europe/Moscow',
+ working_days smallint[] NOT NULL DEFAULT ARRAY[1,2,3,4,5,6,7]::smallint[],
+ workday_start time NOT NULL DEFAULT '10:00', workday_end time NOT NULL DEFAULT '20:00',
+ first_response_minutes integer NOT NULL DEFAULT 10 CHECK(first_response_minutes>0),
+ escalation_minutes integer NOT NULL DEFAULT 15 CHECK(escalation_minutes>=first_response_minutes),
+ CHECK(workday_end>workday_start),
+ CHECK(working_days<@ARRAY[1,2,3,4,5,6,7]::smallint[] AND cardinality(working_days)>0)
+);
+INSERT INTO comm_service_levels(store_id) SELECT id FROM store_locations ON CONFLICT(store_id) DO NOTHING;
 CREATE TABLE IF NOT EXISTS comm_contacts (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now(),
  merged_into uuid REFERENCES comm_contacts(id), CHECK(merged_into IS NULL OR merged_into<>id)
@@ -47,8 +58,16 @@ CREATE TABLE IF NOT EXISTS comm_conversations (
  lead_id uuid NOT NULL REFERENCES leads(id), handling text NOT NULL DEFAULT 'queued' CHECK(handling IN ('bot','queued','agent','waiting','closed')),
  version integer NOT NULL DEFAULT 1, created_at timestamptz NOT NULL DEFAULT now(), closed_at timestamptz,
  last_inbound_at timestamptz, last_agent_reply_at timestamptz, awaiting_since timestamptz,
+ first_response_due_at timestamptz, escalation_due_at timestamptz,
+ first_agent_response_at timestamptz, sla_escalated_at timestamptz,
  UNIQUE(thread_id,lead_id)
 );
+ALTER TABLE comm_conversations ADD COLUMN IF NOT EXISTS first_response_due_at timestamptz;
+ALTER TABLE comm_conversations ADD COLUMN IF NOT EXISTS escalation_due_at timestamptz;
+ALTER TABLE comm_conversations ADD COLUMN IF NOT EXISTS first_agent_response_at timestamptz;
+ALTER TABLE comm_conversations ADD COLUMN IF NOT EXISTS sla_escalated_at timestamptz;
+CREATE INDEX IF NOT EXISTS comm_sla_escalation_queue ON comm_conversations(escalation_due_at)
+ WHERE first_agent_response_at IS NULL AND sla_escalated_at IS NULL AND closed_at IS NULL;
 DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conname='comm_thread_selected_fk') THEN
  ALTER TABLE comm_threads ADD CONSTRAINT comm_thread_selected_fk FOREIGN KEY(selected_conversation_id) REFERENCES comm_conversations(id) ON DELETE SET NULL;

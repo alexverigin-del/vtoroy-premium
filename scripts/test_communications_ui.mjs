@@ -47,6 +47,8 @@ try {
     unread_count: 1,
     version: 1,
     awaiting_since: new Date().toISOString(),
+    first_response_due_at: new Date(Date.now() - 60_000).toISOString(),
+    sla_state: "warning",
   };
   const history = [
     {
@@ -134,6 +136,7 @@ try {
   await page.goto(`http://127.0.0.1:${address.port}`);
   await page.waitForTimeout(1500);
   await page.getByText("1 новое", { exact: true }).waitFor();
+  await page.getByText("Срок первого ответа истёк", { exact: true }).first().waitFor();
   console.log((await page.locator("body").innerText()).slice(0, 2000));
   console.log("browser faults", faults);
   await page.getByRole("button", { name: /ISV-0101/ }).click();

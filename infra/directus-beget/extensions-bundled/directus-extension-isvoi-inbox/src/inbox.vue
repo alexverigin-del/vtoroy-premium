@@ -42,6 +42,13 @@ const status: Record<string, string> = {
   waiting: "Ожидаем клиента",
   closed: "Закрыто",
   bot: "Бот",
+  on_track: "Первый ответ по графику",
+  warning: "Срок первого ответа истёк",
+  overdue: "Требуется эскалация",
+  escalated: "Руководитель уведомлён",
+  met: "Первый ответ вовремя",
+  breached: "Первый ответ с опозданием",
+  untracked: "SLA не настроен",
 };
 const canSend = computed(
   () =>
@@ -244,6 +251,8 @@ const eventName: Record<string, string> = {
   subscribed: "Подписки",
   unsubscribed: "Отписки",
   lead_created: "Новые заявки",
+  first_agent_response: "Первые ответы менеджеров",
+  sla_escalated: "Эскалации SLA",
 };
 const unreadLabel = (value: unknown) => {
   const count = Number(value) || 0,
@@ -310,9 +319,14 @@ onBeforeUnmount(() => {
             <span class="platform">{{ row.platform }}</span
             ><strong>{{ row.reference_code || "Обращение" }}</strong
             ><span>{{ status[row.handling] }}</span
-            ><span v-if="Number(row.unread_count)" class="unread" aria-label="Непрочитанные сообщения">
-              {{ unreadLabel(row.unread_count) }}
-            </span
+            ><span v-if="row.sla_state !== 'untracked'" :class="['sla', row.sla_state]">
+              {{ status[row.sla_state] }} </span
+            ><span
+              v-if="Number(row.unread_count)"
+              class="unread"
+              aria-label="Непрочитанные сообщения"
+            >
+              {{ unreadLabel(row.unread_count) }} </span
             ><small v-if="row.awaiting_since">Ожидает с {{ date(row.awaiting_since) }}</small>
           </button>
         </aside>
@@ -321,6 +335,8 @@ onBeforeUnmount(() => {
             <button class="back" @click="selected = null">← Очередь</button
             ><strong>{{ selected.reference_code || "Переписка" }}</strong
             ><span>{{ status[selected.handling] }}</span
+            ><span v-if="selected.sla_state !== 'untracked'" :class="['sla', selected.sla_state]">
+              {{ status[selected.sla_state] }} </span
             ><button :disabled="busy" @click="command('claim')">Принять в работу</button>
           </header>
           <div class="messages" aria-live="polite">
@@ -414,6 +430,12 @@ onBeforeUnmount(() => {
             <dd>{{ selected.external_user_id }}</dd>
             <dt>Состояние</dt>
             <dd>{{ status[selected.handling] }}</dd>
+            <template v-if="selected.first_response_due_at">
+              <dt>SLA первого ответа</dt>
+              <dd>
+                {{ status[selected.sla_state] }} · до {{ date(selected.first_response_due_at) }}
+              </dd>
+            </template>
           </dl>
           <a :href="`/admin/content/leads/${selected.lead_id}`">Открыть карточку заявки ↗</a
           ><label
@@ -630,6 +652,26 @@ textarea:focus-visible {
   background: var(--theme--primary, #6644ff);
   color: #fff;
   font-size: 11px;
+}
+.sla {
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: var(--theme--background-subdued, #eef1f4);
+  font-size: 11px;
+}
+.sla.warning {
+  background: var(--theme--warning-background, #fff2c2);
+  color: var(--theme--warning, #7a5400);
+}
+.sla.overdue,
+.sla.escalated,
+.sla.breached {
+  background: var(--theme--danger-background, #ffe1e1);
+  color: var(--theme--danger, #a31313);
+}
+.sla.met {
+  background: var(--theme--success-background, #dff5e5);
+  color: var(--theme--success, #176c35);
 }
 .conversation {
   display: flex;

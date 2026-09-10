@@ -12,6 +12,7 @@ import {
   validText,
 } from "./policy.js";
 import { normalize } from "./normalize.js";
+import { defaultServiceLevel, serviceDeadlines, type ServiceLevel } from "./sla.js";
 
 const activeLead = (lead: any) => ["new", "in_progress", "waiting"].includes(lead?.status);
 const incomingKinds = new Set([
@@ -288,8 +289,20 @@ export function createService(context: Context) {
       store_location_id: n.store_id,
       is_test: n.mode === "test",
     });
+    await trx("comm_service_levels")
+      .insert({ store_id: n.store_id })
+      .onConflict("store_id")
+      .ignore();
+    const configured = await trx("comm_service_levels").where({ store_id: n.store_id }).first();
+    const level: ServiceLevel = { ...defaultServiceLevel, ...configured };
+    const deadlines = serviceDeadlines(e.occurredAt, level);
     const [c] = await trx("comm_conversations")
-      .insert({ lead_id: id, thread_id: thread.id })
+      .insert({
+        lead_id: id,
+        thread_id: thread.id,
+        first_response_due_at: deadlines.firstResponseDueAt,
+        escalation_due_at: deadlines.escalationDueAt,
+      })
       .returning("*");
     await trx("comm_threads")
       .where({ id: thread.id })
@@ -1005,6 +1018,15 @@ export function createService(context: Context) {
         "l.assigned_to",
         "n.platform",
         "i.external_user_id",
+        db.raw(`CASE
+          WHEN c.first_agent_response_at IS NOT NULL AND c.first_response_due_at IS NOT NULL
+            THEN CASE WHEN c.first_agent_response_at<=c.first_response_due_at THEN 'met' ELSE 'breached' END
+          WHEN c.sla_escalated_at IS NOT NULL THEN 'escalated'
+          WHEN c.escalation_due_at<=now() THEN 'overdue'
+          WHEN c.first_response_due_at<=now() THEN 'warning'
+          WHEN c.first_response_due_at IS NOT NULL THEN 'on_track'
+          ELSE 'untracked'
+        END AS sla_state`),
         db.raw(
           "(SELECT count(*)::int FROM comm_messages m WHERE m.conversation_id=c.id AND m.direction='in' AND m.deleted_at IS NULL AND m.sequence>COALESCE(r.sequence,0)) AS unread_count",
         ),

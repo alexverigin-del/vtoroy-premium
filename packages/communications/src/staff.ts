@@ -40,7 +40,7 @@ export function createStaff(context: Context, service: any) {
     });
     return id;
   }
-  async function notify(trx: Database, n: Connection, c: any, message: any) {
+  async function ensureCard(trx: Database, n: Connection, c: any) {
     if (n.platform !== "telegram") return;
     const destination = await trx("comm_destinations")
       .where({ connection_id: n.id, kind: "staff", enabled: true })
@@ -91,6 +91,11 @@ export function createStaff(context: Context, service: any) {
         },
       ]);
     }
+    return card;
+  }
+  async function notify(trx: Database, n: Connection, c: any, message: any) {
+    const card = await ensureCard(trx, n, c);
+    if (!card) return;
     await queue(
       trx,
       n,
@@ -99,6 +104,48 @@ export function createStaff(context: Context, service: any) {
       { conversation_id: c.id },
       { inline_keyboard: [[{ text: "Ответить клиенту", callback_data: `reply:${c.id}` }]] },
     );
+  }
+  async function sweep(trx: Database, n: Connection) {
+    if (n.platform !== "telegram") return null;
+    const c = await trx("comm_conversations as c")
+      .join("comm_threads as t", "t.id", "c.thread_id")
+      .join("leads as l", "l.id", "c.lead_id")
+      .where({ "t.connection_id": n.id })
+      .whereNull("c.closed_at")
+      .whereNull("c.first_agent_response_at")
+      .whereNull("c.sla_escalated_at")
+      .where("c.escalation_due_at", "<=", trx.fn.now())
+      .orderBy("c.escalation_due_at")
+      .select("c.*", "l.reference_code")
+      .forUpdate("c")
+      .skipLocked()
+      .first();
+    if (!c) return null;
+    const card = await ensureCard(trx, n, c);
+    if (!card) return null;
+    await queue(
+      trx,
+      n,
+      card,
+      `SLA: по заявке ${c.reference_code || c.lead_id} нет первого ответа менеджера за установленное рабочее время.`,
+      { conversation_id: c.id },
+      {
+        inline_keyboard: [
+          [{ text: "Принять в работу", callback_data: `take:${card.id}` }],
+          [{ text: "Ответить клиенту", callback_data: `reply:${c.id}` }],
+        ],
+      },
+    );
+    await trx("comm_conversations").where({ id: c.id }).update({ sla_escalated_at: trx.fn.now() });
+    await service.event(trx, {
+      connection_id: n.id,
+      lead_id: c.lead_id,
+      kind: "sla_escalated",
+      dedupe_key: `conversation:${c.id}:sla-escalated`,
+      is_test: n.mode === "test",
+      facts: { conversation_id: c.id },
+    });
+    return { result: "sla_escalated", conversation_id: c.id };
   }
   async function process(trx: Database, n: Connection, row: any) {
     const raw = row.event.raw,
@@ -291,5 +338,5 @@ export function createStaff(context: Context, service: any) {
   }
   service.setStaffProcessor(process);
   service.setStaffNotifier(notify);
-  return { notify, process };
+  return { notify, process, sweep };
 }

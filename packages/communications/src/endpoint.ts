@@ -11,8 +11,8 @@ export default {
     const service = createService(context),
       delivery = createDelivery(context, service),
       attachments = createAttachments(context, service),
+      staff = createStaff(context, service),
       db = context.database;
-    createStaff(context, service);
     const handler = (fn: any) => async (req: any, res: any) => {
       try {
         if (!flag(context.env.ISVOI_COMMUNICATIONS_ENABLED)) fail("COMMUNICATIONS_DISABLED", 503);
@@ -20,16 +20,13 @@ export default {
       } catch (e: any) {
         if (!(e instanceof CommunicationError))
           context.logger?.error(e, "Unexpected communications endpoint failure");
-        res
-          .status(e instanceof CommunicationError ? e.status : 500)
-          .json({
-            errors: [
-              {
-                message:
-                  e instanceof CommunicationError ? e.code : "COMMUNICATIONS_OPERATION_FAILED",
-              },
-            ],
-          });
+        res.status(e instanceof CommunicationError ? e.status : 500).json({
+          errors: [
+            {
+              message: e instanceof CommunicationError ? e.code : "COMMUNICATIONS_OPERATION_FAILED",
+            },
+          ],
+        });
       }
     };
     router.get(
@@ -87,16 +84,14 @@ export default {
       handler(async (req: any, res: any) => {
         if (req.headers["content-type"] !== "application/octet-stream")
           return fail("BINARY_UPLOAD_REQUIRED", 415);
-        res
-          .status(201)
-          .json({
-            data: await attachments.upload(
-              await service.actor(req.accountability?.user),
-              String(req.query.conversation_id || ""),
-              req,
-              { name: req.query.name, mime: req.query.mime, size: req.headers["content-length"] },
-            ),
-          });
+        res.status(201).json({
+          data: await attachments.upload(
+            await service.actor(req.accountability?.user),
+            String(req.query.conversation_id || ""),
+            req,
+            { name: req.query.name, mime: req.query.mime, size: req.headers["content-length"] },
+          ),
+        });
       }),
     );
     router.get(
@@ -192,7 +187,13 @@ export default {
         await db.transaction((trx: any) =>
           delivery.worker(trx, req.params.id, req.accountability?.user),
         );
-        res.json({ data: await service.processIncoming(req.params.id) });
+        const incoming = await service.processIncoming(req.params.id);
+        if (incoming) return res.json({ data: incoming });
+        const connection = await db("comm_connections")
+          .where({ id: req.params.id, enabled: true })
+          .first();
+        if (!connection) return fail("CONNECTION_DISABLED", 403);
+        res.json({ data: await db.transaction((trx: any) => staff.sweep(trx, connection)) });
       }),
     );
     router.post(

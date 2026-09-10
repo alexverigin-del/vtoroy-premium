@@ -5,6 +5,7 @@ import { testDatabase } from "./lib/communications-test-db.mjs";
 import {
   createService,
   createDelivery,
+  createStaff,
   normalize,
   classify,
   marketingWindow,
@@ -14,7 +15,32 @@ import {
   sendOperation,
   publicIPv4,
   validateMediaURL,
+  serviceDeadlines,
+  defaultServiceLevel,
 } from "../packages/communications/dist/index.js";
+
+test("SLA deadlines count only configured working time", () => {
+  assert.deepEqual(serviceDeadlines("2026-09-07T07:05:00.000Z", defaultServiceLevel), {
+    firstResponseDueAt: new Date("2026-09-07T07:15:00.000Z"),
+    escalationDueAt: new Date("2026-09-07T07:20:00.000Z"),
+  });
+  const weekdayLevel = { ...defaultServiceLevel, working_days: [1, 2, 3, 4, 5] };
+  assert.deepEqual(serviceDeadlines("2026-09-11T16:55:00.000Z", weekdayLevel), {
+    firstResponseDueAt: new Date("2026-09-14T07:05:00.000Z"),
+    escalationDueAt: new Date("2026-09-14T07:10:00.000Z"),
+  });
+  assert.equal(
+    serviceDeadlines(
+      "2026-09-07T07:05:30.000Z",
+      defaultServiceLevel,
+    ).firstResponseDueAt.toISOString(),
+    "2026-09-07T07:15:30.000Z",
+  );
+  assert.throws(
+    () => serviceDeadlines(new Date(), { ...defaultServiceLevel, workday_end: "09:00" }),
+    /INVALID_SERVICE_LEVEL_SCHEDULE/,
+  );
+});
 
 test("Telegram Opus voice is sent as voice instead of a generic document", async () => {
   const originalFetch = globalThis.fetch;
@@ -226,7 +252,8 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
     env: { ISVOI_COMMUNICATIONS_ENABLED: true },
   };
   const service = createService(context),
-    delivery = createDelivery(context, service);
+    delivery = createDelivery(context, service),
+    staffService = createStaff(context, service);
   const raw = {
     update_id: 10,
     message: {
@@ -258,6 +285,18 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
   );
   assert.equal((await db("comm_messages").first()).text, "handled");
   const c = await db("comm_conversations").first();
+  const expectedDeadlines = serviceDeadlines(
+    new Date(raw.message.date * 1000),
+    defaultServiceLevel,
+  );
+  assert.equal(
+    new Date(c.first_response_due_at).toISOString(),
+    expectedDeadlines.firstResponseDueAt.toISOString(),
+  );
+  assert.equal(
+    new Date(c.escalation_due_at).toISOString(),
+    expectedDeadlines.escalationDueAt.toISOString(),
+  );
   const actor = await service.actor(manager);
   const claim = {
     type: "claim",
@@ -290,6 +329,11 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
     payload: { attachment_id: randomUUID(), peer_id: "123" },
   });
   await db("comm_runtime").update({ active: true, sending_enabled: true, recovery_hold: false });
+  assert.equal(
+    (await db("comm_conversations").where({ id: c.id }).first()).first_agent_response_at,
+    null,
+    "queued automatic acknowledgement does not count as an agent response",
+  );
   const op = await delivery.next(connection, worker);
   assert.ok(op);
   await db("comm_operations")
@@ -322,7 +366,9 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
     lease_version: next.lease_version,
     outcome: { type: "accepted", externalId: "43" },
   });
-  await db("comm_connections").where({ id: connection }).update({ send_after: new Date(0) });
+  await db("comm_connections")
+    .where({ id: connection })
+    .update({ send_after: new Date(0) });
   const attachmentOperation = await delivery.next(connection, worker);
   assert.equal(attachmentOperation.outbox_id, replyOutbox.id);
   assert.equal(attachmentOperation.position, 1);
@@ -332,6 +378,18 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
     outcome: { type: "rejected", code: "FIXTURE_ATTACHMENT_REJECTED" },
   });
   assert.equal((await db("comm_outbox").where({ id: replyOutbox.id }).first()).state, "partial");
+  assert.ok((await db("comm_conversations").where({ id: c.id }).first()).first_agent_response_at);
+  assert.equal(
+    Number(
+      (
+        await db("comm_events")
+          .where({ kind: "first_agent_response", lead_id: c.lead_id })
+          .count("* as n")
+          .first()
+      ).n,
+    ),
+    1,
+  );
   assert.deepEqual(
     await db("comm_operations")
       .where({ outbox_id: replyOutbox.id })
@@ -386,6 +444,44 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
     (await db("comm_identities").first()).availability,
     "blocked",
     "late older unblock does not override block",
+  );
+  const destination = randomUUID();
+  await db("comm_destinations").insert({
+    id: destination,
+    connection_id: connection,
+    name: "Managers",
+    external_id: "-100123",
+    kind: "staff",
+    enabled: true,
+  });
+  const overdue = await db("comm_conversations").orderBy("created_at", "desc").first();
+  await db("comm_conversations")
+    .where({ id: overdue.id })
+    .update({
+      escalation_due_at: new Date(Date.now() - 60_000),
+      first_agent_response_at: null,
+      sla_escalated_at: null,
+    });
+  const connectionRow = await db("comm_connections").where({ id: connection }).first();
+  const concurrentSweeps = await Promise.all([
+    db.transaction((trx) => staffService.sweep(trx, connectionRow)),
+    db.transaction((trx) => staffService.sweep(trx, connectionRow)),
+  ]);
+  assert.equal(concurrentSweeps.filter(Boolean).length, 1, "concurrent workers escalate once");
+  assert.deepEqual(concurrentSweeps.find(Boolean), {
+    result: "sla_escalated",
+    conversation_id: overdue.id,
+  });
+  assert.equal(await db.transaction((trx) => staffService.sweep(trx, connectionRow)), null);
+  assert.ok((await db("comm_conversations").where({ id: overdue.id }).first()).sla_escalated_at);
+  assert.equal(
+    Number((await db("comm_events").where({ kind: "sla_escalated" }).count("* as n").first()).n),
+    1,
+  );
+  assert.equal(
+    Number((await db("comm_outbox").where({ purpose: "staff" }).count("* as n").first()).n),
+    2,
+    "one card and one escalation notification",
   );
   await db("comm_staff").where({ user_id: manager }).update({ enabled: false });
   await assert.rejects(

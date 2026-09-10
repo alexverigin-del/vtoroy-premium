@@ -87,6 +87,8 @@ export function classify(platform: Platform, status: number, body: any): Outcome
         Math.max(1, Number(body?.parameters?.retry_after ?? body?.retry_after) || 60),
       ),
     };
+  if (platform === "max" && code === "attachment.not.ready")
+    return { type: "retryable", code: "ATTACHMENT_NOT_READY" };
   if (
     (platform === "telegram" &&
       status === 403 &&

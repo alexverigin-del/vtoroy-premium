@@ -15,6 +15,8 @@ import {
   sendOperation,
   publicIPv4,
   validateMediaURL,
+  validateProviderUploadURL,
+  mediaRoute,
   serviceDeadlines,
   defaultServiceLevel,
 } from "../packages/communications/dist/index.js";
@@ -71,6 +73,242 @@ test("Telegram Opus voice is sent as voice instead of a generic document", async
   }
 });
 
+test("MAX media uses a provider upload slot and sends only its token", async () => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), init });
+    if (calls.length === 1)
+      return Response.json({ url: "https://iu.oneme.ru/upload.do?fixture=1" });
+    if (calls.length === 2) return Response.json({ token: "max-upload-token" });
+    return Response.json({ message: { body: { mid: "max-message-7" } } });
+  };
+  try {
+    const result = await sendOperation(
+      "max",
+      "MAX_TEST_TOKEN",
+      { id: "op-max-1", method: "attachment", payload: { peer_id: "900001" } },
+      {
+        bytes: Buffer.from("image"),
+        mime: "image/jpeg",
+        kind: "image",
+        name: "photo.jpg",
+      },
+    );
+    assert.deepEqual(result, { type: "accepted", externalId: "max-message-7" });
+    assert.equal(calls[0].url, "https://platform-api2.max.ru/uploads?type=image");
+    assert.equal(calls[1].url, "https://iu.oneme.ru/upload.do?fixture=1");
+    assert.equal(calls[1].init.headers?.Authorization, undefined, "bot token is not sent to upload host");
+    assert.equal(calls[2].url, "https://platform-api2.max.ru/messages?chat_id=900001");
+    assert.deepEqual(JSON.parse(calls[2].init.body), {
+      attachments: [{ type: "image", payload: { token: "max-upload-token" } }],
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("MAX attachment-not-ready retry reuses the prepared media token", async () => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), init });
+    if (calls.length === 1)
+      return Response.json({ url: "https://omu.okcdn.ru/upload?fixture=retry" });
+    if (calls.length === 2) return Response.json({ retval: 1, token: "prepared-audio-token" });
+    return Response.json(
+      { code: "attachment.not.ready", message: "file not processed" },
+      { status: 400 },
+    );
+  };
+  try {
+    const op = {
+      id: "op-max-retry",
+      method: "attachment",
+      payload: { peer_id: "700" },
+    };
+    const file = {
+      bytes: Buffer.from("audio"),
+      mime: "audio/mpeg",
+      kind: "audio",
+      name: "answer.mp3",
+    };
+    const first = await sendOperation("max", "MAX_TEST_TOKEN", op, file);
+    assert.deepEqual(first, {
+      type: "retryable",
+      code: "ATTACHMENT_NOT_READY",
+      resume: {
+        platform: "max",
+        attachment: { type: "audio", payload: { token: "prepared-audio-token" } },
+      },
+    });
+
+    calls.length = 0;
+    globalThis.fetch = async (url, init) => {
+      calls.push({ url: String(url), init });
+      return Response.json({ message: { body: { mid: "max-ready" } } });
+    };
+    const second = await sendOperation(
+      "max",
+      "MAX_TEST_TOKEN",
+      { ...op, payload: { ...op.payload, provider_attachment: first.resume.attachment } },
+      file,
+    );
+    assert.deepEqual(second, { type: "accepted", externalId: "max-ready" });
+    assert.equal(calls.length, 1, "retry does not request another upload slot");
+    assert.equal(calls[0].url, "https://platform-api2.max.ru/messages?chat_id=700");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("VK photo upload is saved and sent with a stable operation random_id", async () => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), init });
+    if (calls.length === 1)
+      return Response.json({ response: { upload_url: "https://pu.vk.com/upload?fixture=1" } });
+    if (calls.length === 2)
+      return Response.json({ server: 11, photo: "photo-json", hash: "photo-hash" });
+    if (calls.length === 3)
+      return Response.json({ response: [{ owner_id: -42, id: 77, access_key: "access" }] });
+    return Response.json({ response: 901 });
+  };
+  try {
+    const op = {
+      id: "9b1175b7-5a3e-4e1f-973a-2f893fd690dd",
+      method: "attachment",
+      payload: { peer_id: "12345" },
+    };
+    const file = {
+      bytes: Buffer.from("image"),
+      mime: "image/png",
+      kind: "image",
+      name: "client-photo.png",
+    };
+    const first = await sendOperation("vk", "VK_TEST_TOKEN", op, file);
+    const firstSend = new URLSearchParams(calls[3].init.body);
+    assert.deepEqual(first, { type: "accepted", externalId: "901" });
+    assert.equal(calls[0].url, "https://api.vk.ru/method/photos.getMessagesUploadServer");
+    assert.equal(calls[1].url, "https://pu.vk.com/upload?fixture=1");
+    assert.equal(calls[2].url, "https://api.vk.ru/method/photos.saveMessagesPhoto");
+    assert.equal(calls[3].url, "https://api.vk.ru/method/messages.send");
+    assert.equal(firstSend.get("attachment"), "photo-42_77_access");
+    assert.equal(firstSend.get("peer_id"), "12345");
+    assert.match(firstSend.get("random_id"), /^[1-9][0-9]*$/);
+
+    calls.length = 0;
+    await sendOperation("vk", "VK_TEST_TOKEN", op, file);
+    assert.equal(new URLSearchParams(calls[3].init.body).get("random_id"), firstSend.get("random_id"));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("VK voice uses audio_message while video remains deliverable as a document", async () => {
+  const originalFetch = globalThis.fetch;
+  const run = async (kind, mime, savedField) => {
+    const calls = [];
+    globalThis.fetch = async (url, init) => {
+      calls.push({ url: String(url), init });
+      if (calls.length === 1)
+        return Response.json({ response: { upload_url: "https://psv4.userapi.com/upload" } });
+      if (calls.length === 2) return Response.json({ file: "vk-file-token" });
+      if (calls.length === 3)
+        return Response.json({
+          response: { [savedField]: { owner_id: -8, id: 19, access_key: "key" } },
+        });
+      return Response.json({ response: 902 });
+    };
+    const outcome = await sendOperation(
+      "vk",
+      "VK_TEST_TOKEN",
+      { id: `op-${kind}`, method: "attachment", payload: { peer_id: "321" } },
+      { bytes: Buffer.from(kind), mime, kind, name: `${kind}.bin` },
+    );
+    return { calls, outcome };
+  };
+  try {
+    const voice = await run("voice", "audio/ogg; codecs=opus", "audio_message");
+    assert.deepEqual(voice.outcome, { type: "accepted", externalId: "902" });
+    assert.equal(
+      new URLSearchParams(voice.calls[0].init.body).get("type"),
+      "audio_message",
+    );
+    assert.equal(new URLSearchParams(voice.calls[3].init.body).get("attachment"), "doc-8_19_key");
+
+    const video = await run("video", "video/mp4", "doc");
+    assert.deepEqual(video.outcome, { type: "accepted", externalId: "902" });
+    assert.equal(new URLSearchParams(video.calls[0].init.body).get("type"), "doc");
+    assert.equal(new URLSearchParams(video.calls[3].init.body).get("attachment"), "doc-8_19_key");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("media preparation failures are retryable before the final send", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    throw new Error("fixture network failure");
+  };
+  try {
+    assert.deepEqual(
+      await sendOperation(
+        "max",
+        "MAX_TEST_TOKEN",
+        { id: "op-safe-retry", method: "attachment", payload: { peer_id: "44" } },
+        {
+          bytes: Buffer.from("doc"),
+          mime: "application/pdf",
+          kind: "document",
+          name: "document.pdf",
+        },
+      ),
+      { type: "retryable", code: "MEDIA_PREPARATION_FAILED" },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("provider media routes cover every accepted attachment kind", () => {
+  const byKind = (kind, mime) => ({ kind, mime });
+  assert.deepEqual(
+    [
+      mediaRoute("max", byKind("image", "image/webp")),
+      mediaRoute("max", byKind("voice", "audio/ogg")),
+      mediaRoute("max", byKind("audio", "audio/mpeg")),
+      mediaRoute("max", byKind("video", "video/mp4")),
+      mediaRoute("max", byKind("document", "application/pdf")),
+    ],
+    ["image", "audio", "audio", "video", "file"],
+  );
+  assert.deepEqual(
+    [
+      mediaRoute("vk", byKind("image", "image/jpeg")),
+      mediaRoute("vk", byKind("voice", "audio/ogg; codecs=opus")),
+      mediaRoute("vk", byKind("audio", "audio/mpeg")),
+      mediaRoute("vk", byKind("video", "video/mp4")),
+      mediaRoute("vk", byKind("document", "application/pdf")),
+    ],
+    ["photo", "audio_message", "doc", "doc", "doc"],
+  );
+  assert.equal(
+    validateProviderUploadURL("max", "https://omu.okcdn.ru/upload", "audio").hostname,
+    "omu.okcdn.ru",
+  );
+  assert.equal(validateProviderUploadURL("vk", "https://pu.vk.com/upload").hostname, "pu.vk.com");
+  assert.throws(
+    () => validateProviderUploadURL("max", "https://iu.oneme.ru.evil.example/upload", "image"),
+    /MEDIA_UPLOAD_URL_FORBIDDEN/,
+  );
+  assert.throws(
+    () => validateProviderUploadURL("vk", "https://userapi.com.evil.example/upload"),
+    /MEDIA_UPLOAD_URL_FORBIDDEN/,
+  );
+});
+
 test("delivery error classification never treats missing rights as customer opt-out", () => {
   assert.equal(
     classify("telegram", 403, { description: "Forbidden: bot was blocked by the user" }).type,
@@ -82,6 +320,10 @@ test("delivery error classification never treats missing rights as customer opt-
   );
   assert.equal(classify("telegram", 503, {}).type, "unknown");
   assert.equal(classify("vk", 200, { error: { error_code: 901 } }).type, "blocked");
+  assert.deepEqual(classify("max", 400, { code: "attachment.not.ready" }), {
+    type: "retryable",
+    code: "ATTACHMENT_NOT_READY",
+  });
   assert.equal(marketingWindow(new Date("2026-09-06T06:59:59Z")).allowed, false);
   assert.equal(marketingWindow(new Date("2026-09-06T07:00:00Z")).allowed, true);
   assert.equal(marketingWindow(new Date("2026-09-06T17:00:00Z")).allowed, false);
@@ -391,9 +633,40 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
   const attachmentOperation = await delivery.next(connection, worker);
   assert.equal(attachmentOperation.outbox_id, replyOutbox.id);
   assert.equal(attachmentOperation.position, 1);
+  await db("comm_connections").where({ id: connection }).update({ platform: "max" });
+  assert.deepEqual(
+    await delivery.complete(connection, worker, {
+      attempt_id: attachmentOperation.attempt_id,
+      lease_version: attachmentOperation.lease_version,
+      outcome: {
+        type: "retryable",
+        code: "ATTACHMENT_NOT_READY",
+        resume: {
+          platform: "max",
+          attachment: { type: "audio", payload: { token: "persisted-media-token" } },
+        },
+      },
+    }),
+    { state: "sending" },
+  );
+  const retryableOperation = await db("comm_operations")
+    .where({ id: attachmentOperation.id })
+    .first();
+  assert.equal(retryableOperation.state, "pending");
+  assert.deepEqual(retryableOperation.payload.provider_attachment, {
+    type: "audio",
+    payload: { token: "persisted-media-token" },
+  });
+  await db("comm_connections").where({ id: connection }).update({ platform: "telegram" });
+  assert.equal(await delivery.next(connection, worker), null, "retry backoff is enforced");
+  await db("comm_outbox").where({ id: replyOutbox.id }).update({ due_at: new Date(0) });
+  await db("comm_connections").where({ id: connection }).update({ send_after: new Date(0) });
+  const attachmentRetry = await delivery.next(connection, worker);
+  assert.equal(attachmentRetry.id, attachmentOperation.id);
+  assert.equal(attachmentRetry.lease_version, attachmentOperation.lease_version + 1);
   await delivery.complete(connection, worker, {
-    attempt_id: attachmentOperation.attempt_id,
-    lease_version: attachmentOperation.lease_version,
+    attempt_id: attachmentRetry.attempt_id,
+    lease_version: attachmentRetry.lease_version,
     outcome: { type: "rejected", code: "FIXTURE_ATTACHMENT_REJECTED" },
   });
   assert.equal((await db("comm_outbox").where({ id: replyOutbox.id }).first()).state, "partial");

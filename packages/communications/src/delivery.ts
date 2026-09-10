@@ -2,6 +2,30 @@ import { randomUUID } from "node:crypto";
 import { fail, flag, marketingWindow, UUID } from "./policy.js";
 import type { Context, Database, Outcome } from "./types.js";
 
+function providerAttachment(platform: string, outcome: Outcome) {
+  if (!("resume" in outcome) || !outcome.resume || outcome.resume.platform !== platform)
+    return null;
+  if (platform === "max") {
+    const value = outcome.resume.attachment as any;
+    if (
+      !value ||
+      !["image", "video", "audio", "file"].includes(value.type) ||
+      typeof value.payload?.token !== "string" ||
+      !value.payload.token ||
+      value.payload.token.length > 2000
+    )
+      return fail("INVALID_PROVIDER_RESUME");
+    return { type: value.type, payload: { token: value.payload.token } };
+  }
+  const value = outcome.resume.attachment;
+  if (
+    typeof value !== "string" ||
+    !/^(?:photo|doc)-?\d+_\d+(?:_[A-Za-z0-9_-]+)?$/.test(value)
+  )
+    return fail("INVALID_PROVIDER_RESUME");
+  return value;
+}
+
 /** A lease authorizes ONE HTTP attempt. Expiry never means safe to resend. */
 export function createDelivery(context: Context, service: any) {
   const db = context.database;
@@ -222,9 +246,15 @@ export function createDelivery(context: Context, service: any) {
     const outcome: Outcome = input.outcome;
     if (
       !outcome ||
-      !["accepted", "rate_limited", "rejected", "blocked", "connection_error", "unknown"].includes(
-        outcome.type,
-      )
+      ![
+        "accepted",
+        "rate_limited",
+        "retryable",
+        "rejected",
+        "blocked",
+        "connection_error",
+        "unknown",
+      ].includes(outcome.type)
     )
       return fail("INVALID_OUTCOME");
     if (
@@ -236,6 +266,7 @@ export function createDelivery(context: Context, service: any) {
       return fail("INVALID_EXTERNAL_ID");
     return db.transaction(async (trx: Database) => {
       const n = await worker(trx, connectionId, user);
+      const preparedAttachment = providerAttachment(n.platform, outcome);
       const attempt = await trx("comm_attempts")
         .where({ id: input.attempt_id })
         .forUpdate()
@@ -268,7 +299,18 @@ export function createDelivery(context: Context, service: any) {
           .where({ id: n.id })
           .update({ last_sent_at: trx.fn.now(), error_code: null });
       } else if (outcome.type === "unknown") state = "uncertain";
-      else if (outcome.type === "rate_limited") {
+      else if (outcome.type === "retryable") {
+        if (op.attempts >= 8) {
+          state = "failed";
+          error = "RETRY_LIMIT_REACHED";
+        } else {
+          state = "pending";
+          const delaySeconds = Math.min(300, 2 ** Math.min(op.attempts, 8));
+          const due = new Date(Date.now() + delaySeconds * 1000);
+          await trx("comm_outbox").where({ id: b.id }).update({ due_at: due });
+          await trx("comm_connections").where({ id: n.id }).update({ send_after: due });
+        }
+      } else if (outcome.type === "rate_limited") {
         state = "pending";
         const due = new Date(
           Date.now() + Math.max(1, Math.min(86400, Number(outcome.retryAfter) || 60)) * 1000,
@@ -289,6 +331,9 @@ export function createDelivery(context: Context, service: any) {
           state,
           error_code: error,
           external_id: outcome.type === "accepted" ? outcome.externalId : null,
+          ...(preparedAttachment
+            ? { payload: { ...op.payload, provider_attachment: preparedAttachment } }
+            : {}),
         });
       if (outcome.type === "accepted" && op.payload.card_id) {
         if (op.method === "topic")

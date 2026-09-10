@@ -69,6 +69,20 @@ function marketingWindow(now) {
 }
 
 // packages/communications/src/delivery.ts
+function providerAttachment(platform, outcome) {
+  if (!("resume" in outcome) || !outcome.resume || outcome.resume.platform !== platform)
+    return null;
+  if (platform === "max") {
+    const value2 = outcome.resume.attachment;
+    if (!value2 || !["image", "video", "audio", "file"].includes(value2.type) || typeof value2.payload?.token !== "string" || !value2.payload.token || value2.payload.token.length > 2e3)
+      return fail("INVALID_PROVIDER_RESUME");
+    return { type: value2.type, payload: { token: value2.payload.token } };
+  }
+  const value = outcome.resume.attachment;
+  if (typeof value !== "string" || !/^(?:photo|doc)-?\d+_\d+(?:_[A-Za-z0-9_-]+)?$/.test(value))
+    return fail("INVALID_PROVIDER_RESUME");
+  return value;
+}
 function createDelivery(context, service) {
   const db = context.database;
   async function worker(trx, connectionId, user) {
@@ -219,14 +233,21 @@ function createDelivery(context, service) {
   async function complete(connectionId, user, input) {
     if (!UUID.test(input?.attempt_id || "")) return fail("INVALID_ATTEMPT");
     const outcome = input.outcome;
-    if (!outcome || !["accepted", "rate_limited", "rejected", "blocked", "connection_error", "unknown"].includes(
-      outcome.type
-    ))
+    if (!outcome || ![
+      "accepted",
+      "rate_limited",
+      "retryable",
+      "rejected",
+      "blocked",
+      "connection_error",
+      "unknown"
+    ].includes(outcome.type))
       return fail("INVALID_OUTCOME");
     if (outcome.type === "accepted" && (typeof outcome.externalId !== "string" || !outcome.externalId || outcome.externalId.length > 200))
       return fail("INVALID_EXTERNAL_ID");
     return db.transaction(async (trx) => {
       const n = await worker(trx, connectionId, user);
+      const preparedAttachment = providerAttachment(n.platform, outcome);
       const attempt = await trx("comm_attempts").where({ id: input.attempt_id }).forUpdate().first();
       if (!attempt) return fail("NOT_FOUND", 404);
       const op = await trx("comm_operations").where({ id: attempt.operation_id }).forUpdate().first();
@@ -245,7 +266,18 @@ function createDelivery(context, service) {
         state = "accepted";
         await trx("comm_connections").where({ id: n.id }).update({ last_sent_at: trx.fn.now(), error_code: null });
       } else if (outcome.type === "unknown") state = "uncertain";
-      else if (outcome.type === "rate_limited") {
+      else if (outcome.type === "retryable") {
+        if (op.attempts >= 8) {
+          state = "failed";
+          error = "RETRY_LIMIT_REACHED";
+        } else {
+          state = "pending";
+          const delaySeconds = Math.min(300, 2 ** Math.min(op.attempts, 8));
+          const due = new Date(Date.now() + delaySeconds * 1e3);
+          await trx("comm_outbox").where({ id: b.id }).update({ due_at: due });
+          await trx("comm_connections").where({ id: n.id }).update({ send_after: due });
+        }
+      } else if (outcome.type === "rate_limited") {
         state = "pending";
         const due = new Date(
           Date.now() + Math.max(1, Math.min(86400, Number(outcome.retryAfter) || 60)) * 1e3
@@ -259,7 +291,8 @@ function createDelivery(context, service) {
       await trx("comm_operations").where({ id: op.id }).update({
         state,
         error_code: error,
-        external_id: outcome.type === "accepted" ? outcome.externalId : null
+        external_id: outcome.type === "accepted" ? outcome.externalId : null,
+        ...preparedAttachment ? { payload: { ...op.payload, provider_attachment: preparedAttachment } } : {}
       });
       if (outcome.type === "accepted" && op.payload.card_id) {
         if (op.method === "topic")

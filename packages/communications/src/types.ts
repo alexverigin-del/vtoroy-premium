@@ -2,10 +2,19 @@ export type Platform = "telegram" | "max" | "vk";
 export type Availability = "unknown" | "allowed" | "blocked";
 export type Handling = "bot" | "queued" | "agent" | "waiting" | "closed";
 export type MediaKind = "image" | "voice" | "audio" | "video" | "document";
+export type ProviderResume =
+  | {
+      platform: "max";
+      attachment: {
+        type: "image" | "video" | "audio" | "file";
+        payload: { token: string };
+      };
+    }
+  | { platform: "vk"; attachment: string };
 export type Outcome =
   | { type: "accepted"; externalId: string }
-  | { type: "rate_limited"; retryAfter: number }
-  | { type: "retryable"; code: string }
+  | { type: "rate_limited"; retryAfter: number; resume?: ProviderResume }
+  | { type: "retryable"; code: string; resume?: ProviderResume }
   | { type: "blocked" | "connection_error" | "rejected" | "unknown"; code: string };
 export interface AttachmentRef {
   kind: MediaKind;

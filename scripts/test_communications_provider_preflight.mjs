@@ -6,6 +6,7 @@ import {
   inspectMax,
   inspectVk,
 } from "./communications_provider_preflight.mjs";
+import { configureMaxWebhook } from "./configure_max_webhook.mjs";
 
 const maxConfig = {
   MAX_BOT_TOKEN: "fixture_max_token_not_valid_000000",
@@ -113,6 +114,63 @@ test("MAX preflight blocks wrong URL and missing events without mutating provide
   assert.equal(report.webhook.matches, 0);
   assert.ok(report.next.some((item) => item.includes("подписку")));
   assert.deepEqual(fixture.calls.map(({ init }) => init.method), ["GET", "GET"]);
+});
+
+test("MAX webhook apply registers once and verifies with read-only calls", async () => {
+  const calls = [];
+  let subscriptions = [];
+  const fetchImpl = async (url, init) => {
+    calls.push({ url, init });
+    if (url.endsWith("/me")) {
+      return json({ user_id: 778899, username: "isvoi_max_bot", is_bot: true });
+    }
+    if (init.method === "GET" && url.endsWith("/subscriptions")) {
+      return json({ subscriptions });
+    }
+    if (init.method === "POST" && url.endsWith("/subscriptions")) {
+      const payload = JSON.parse(init.body);
+      assert.equal(payload.secret, maxConfig.MAX_WEBHOOK_SECRET);
+      assert.equal(payload.url, maxConfig.MAX_WEBHOOK_URL);
+      assert.deepEqual(payload.update_types, [...MAX_REQUIRED_EVENTS].sort());
+      subscriptions = [{ url: payload.url, update_types: payload.update_types }];
+      return json({ success: true });
+    }
+    throw new Error("unexpected request");
+  };
+  const result = await configureMaxWebhook(maxConfig, {
+    apply: true,
+    confirmation: maxConfig.MAX_WEBHOOK_URL,
+    fetchImpl,
+    sleep: async () => {},
+  });
+  assert.equal(result.changed, true);
+  assert.equal(result.after.ready, true);
+  assert.deepEqual(calls.map(({ init }) => init.method), ["GET", "GET", "POST", "GET", "GET"]);
+});
+
+test("MAX webhook unknown result is not retried and does not expose secrets", async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    calls.push({ url, init });
+    if (url.endsWith("/me")) {
+      return json({ user_id: 778899, username: "isvoi_max_bot", is_bot: true });
+    }
+    if (init.method === "GET" && url.endsWith("/subscriptions")) {
+      return json({ subscriptions: [] });
+    }
+    throw new Error(`unknown ${maxConfig.MAX_WEBHOOK_SECRET}`);
+  };
+  await assert.rejects(
+    configureMaxWebhook(maxConfig, {
+      apply: true,
+      confirmation: maxConfig.MAX_WEBHOOK_URL,
+      fetchImpl,
+      sleep: async () => {},
+    }),
+    (error) => error.message.includes("результат неизвестен") &&
+      !error.message.includes(maxConfig.MAX_WEBHOOK_SECRET),
+  );
+  assert.deepEqual(calls.map(({ init }) => init.method), ["GET", "GET", "POST"]);
 });
 
 test("VK preflight uses only read methods and verifies callback contract", async () => {

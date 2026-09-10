@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-05T11:52:27.891Z",
+  "updatedAt": "2026-09-10T11:44:28.257Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -7856,6 +7856,48 @@
       "line": 103,
       "text": "Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.",
       "id": "bbc8850eb2d432b9"
+    },
+    {
+      "file": "apps/web/components/ProductOfferPanel.tsx",
+      "kind": "string",
+      "line": 53,
+      "text": "Продано",
+      "id": "99e178637f04b9fd"
+    },
+    {
+      "file": "apps/web/lib/product-catalog.ts",
+      "kind": "string",
+      "line": 485,
+      "text": "Продано",
+      "id": "24f0fcf947d9ae5f"
+    },
+    {
+      "file": "apps/web/lib/stock-status.ts",
+      "kind": "string",
+      "line": 2,
+      "text": "Бронь",
+      "id": "34c70b80b9574d3a"
+    },
+    {
+      "file": "apps/web/lib/stock-status.ts",
+      "kind": "string",
+      "line": 3,
+      "text": "Продано",
+      "id": "762807a4b3ef5e47"
+    },
+    {
+      "file": "apps/web/lib/stock-status.ts",
+      "kind": "string",
+      "line": 4,
+      "text": "Нет в наличии",
+      "id": "59769d0fb0be81ef"
+    },
+    {
+      "file": "apps/web/lib/stock-status.ts",
+      "kind": "string",
+      "line": 5,
+      "text": "В наличии",
+      "id": "08b8ebaa5242c6bc"
     }
   ]
 }

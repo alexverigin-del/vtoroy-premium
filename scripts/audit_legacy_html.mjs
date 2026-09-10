@@ -39,6 +39,7 @@ const ALLOWLIST = new Set([
   "apps/web/lib/site-content.ts",
   "scripts/audit_legacy_html.mjs",
   "scripts/audit_text_encoding.py",
+  "scripts/test_communications_ui.mjs",
   "scripts/normalize_directus_site_urls_sql.mjs",
 ]);
 

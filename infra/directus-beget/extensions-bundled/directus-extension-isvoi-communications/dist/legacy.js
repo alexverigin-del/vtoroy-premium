@@ -399,7 +399,7 @@ function normalize(platform, raw) {
       kind: kind2,
       occurredAt,
       externalMessageId: m2?.body?.mid ? identifier(m2.body.mid) : void 0,
-      text: String(m2?.body?.text ?? ""),
+      text: kind2 === "started" && raw.payload ? `/start ${String(raw.payload)}` : String(m2?.body?.text ?? ""),
       attachments: attachments2,
       callbackId: raw.callback?.callback_id,
       callbackData: raw.callback?.payload,
@@ -437,7 +437,7 @@ function normalize(platform, raw) {
     kind,
     occurredAt: m.date ? date(m.date) : (/* @__PURE__ */ new Date()).toISOString(),
     externalMessageId: m.id ? identifier(m.id) : m.conversation_message_id ? identifier(m.conversation_message_id) : void 0,
-    text: String(m.text || ""),
+    text: m.ref ? `/start ${String(m.ref)}` : String(m.text || ""),
     attachments,
     callbackId: m.event_id,
     callbackData: typeof m.payload === "string" ? m.payload : m.payload?.action,
@@ -1704,6 +1704,15 @@ var RESULT_TEXT = {
 function createLegacyTelegramCompatibility(context) {
   const db = context.database, env = context.env, botId = String(env.ISVOI_TELEGRAM_BOT_ID || ""), mode = String(env.ISVOI_TELEGRAM_MODE || "test"), service = createService(context), delivery = createDelivery(context, service);
   createStaff(context, service);
+  const continuationUrl = (connection, token, fallbackUsername = "") => {
+    const configured = String(connection.bot_username || "").replace(/^@/, ""), username = /^[A-Za-z0-9_.-]{2,64}$/.test(configured) ? configured : fallbackUsername;
+    if (!/^[A-Za-z0-9_.-]{2,64}$/.test(username)) return null;
+    if (connection.platform === "telegram") return `https://t.me/${username}?start=${token}`;
+    if (connection.platform === "max") return `https://max.ru/${username}?start=${token}`;
+    if (connection.platform === "vk")
+      return `https://vk.me/${username}?ref=${token}&ref_source=site`;
+    return null;
+  };
   async function authorize(req, trx, requireLease = true) {
     if (!flag(env.ISVOI_TELEGRAM_USE_COMMUNICATIONS)) return fail("TELEGRAM_COMPAT_DISABLED", 503);
     if (!flag(env.ISVOI_COMMUNICATIONS_ENABLED)) return fail("COMMUNICATIONS_DISABLED", 503);
@@ -1753,7 +1762,10 @@ function createLegacyTelegramCompatibility(context) {
   }
   async function next(req) {
     const connection = await refresh(req);
-    const operation = await delivery.next(connection.id, req.accountability.user, ["topic", "text"]);
+    const operation = await delivery.next(connection.id, req.accountability.user, [
+      "topic",
+      "text"
+    ]);
     const current = await db("comm_connections").where({ id: connection.id }).first("poll_offset");
     if (!operation) return { job: null, update_offset: Number(current.poll_offset) };
     const outbox = await db("comm_outbox").where({ id: operation.outbox_id }).first();
@@ -1833,8 +1845,7 @@ function createLegacyTelegramCompatibility(context) {
   }
   async function intake(req) {
     const username = String(env.ISVOI_TELEGRAM_BOT_USERNAME || "").replace(/^@/, "");
-    if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username))
-      return fail("BOT_USERNAME_REQUIRED", 503);
+    if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username)) return fail("BOT_USERNAME_REQUIRED", 503);
     return db.transaction(async (trx) => {
       const connection = await intakeIdentity(req, trx), accountability = await service.userAccountability(trx, connection.service_user_id), schema = await context.getSchema(), leads = new context.services.ItemsService("leads", { knex: trx, schema, accountability }), id = await leads.createOne(req.body), lead = await trx("leads").where({ id }).first();
       if (!lead || lead.store_location_id !== connection.store_id)
@@ -1845,7 +1856,17 @@ function createLegacyTelegramCompatibility(context) {
         lead_id: id,
         expires_at: new Date(Date.now() + 15 * 6e4)
       });
-      return { id, telegram_url: `https://t.me/${username}?start=${token}` };
+      const connections = await trx("comm_connections").where({ store_id: connection.store_id, enabled: true }).whereIn("platform", ["telegram", "max", "vk"]).orderByRaw("CASE platform WHEN 'telegram' THEN 1 WHEN 'max' THEN 2 ELSE 3 END").orderBy("name");
+      const continuation_links = connections.flatMap((candidate) => {
+        const url = continuationUrl(
+          candidate,
+          token,
+          candidate.id === connection.id ? username : ""
+        );
+        return url ? [{ platform: candidate.platform, label: candidate.name, url }] : [];
+      });
+      const telegram = continuation_links.find((link) => link.platform === "telegram");
+      return { id, telegram_url: telegram.url, continuation_links };
     });
   }
   const intakeCheck = async (req) => db.transaction(async (trx) => {

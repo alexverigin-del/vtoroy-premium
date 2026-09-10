@@ -40,7 +40,7 @@ export function FinalCtaForm({ form, source }: { form: FinalCtaFormConfig; sourc
   const consentId = useId();
   const statusId = useId();
   const {
-    telegramUrl,
+    links,
     markError,
     state,
     submitLead,
@@ -202,7 +202,7 @@ export function FinalCtaForm({ form, source }: { form: FinalCtaFormConfig; sourc
       >
         {state === "success" ? form.successNote : state === "error" ? form.errorNote : form.note}
       </p>
-      <TelegramContinue url={telegramUrl} />
+      <TelegramContinue links={links} />
     </form>
   );
 }

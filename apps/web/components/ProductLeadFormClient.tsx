@@ -63,7 +63,7 @@ export function ProductLeadFormClient({
   const messageId = useId();
   const statusId = useId();
   const {
-    telegramUrl,
+    links,
     markError,
     state,
     submitLead,
@@ -195,7 +195,7 @@ export function ProductLeadFormClient({
             ? mode.errorNote
             : mode.idleNote}
       </p>
-      <TelegramContinue url={telegramUrl} />
+      <TelegramContinue links={links} />
     </form>
   );
 }

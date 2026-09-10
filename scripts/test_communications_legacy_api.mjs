@@ -70,7 +70,12 @@ function psql(sql) {
 
 psql(
   `UPDATE comm_runtime SET sending_enabled=false,recovery_hold=true WHERE id=1;
-   UPDATE comm_connections SET poll_owner=NULL,poll_until=NULL WHERE id='${connection}';`,
+   UPDATE comm_connections SET poll_owner=NULL,poll_until=NULL WHERE id='${connection}';
+   DELETE FROM comm_connections WHERE id IN ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+   INSERT INTO comm_connections(id,platform,external_id,name,enabled,mode,store_id,worker_user_id,service_user_id,secret_ref,bot_username)
+   VALUES
+    ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','max','max-fixture','MAX local fixture',true,'test','11111111-1111-4111-8111-111111111111','33333333-3333-4333-8333-333333333333','44444444-4444-4444-8444-444444444444','MAX_FIXTURE','isvoi_max_bot'),
+    ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','vk','vk-fixture','VK local fixture',true,'test','11111111-1111-4111-8111-111111111111','33333333-3333-4333-8333-333333333333','44444444-4444-4444-8444-444444444444','VK_FIXTURE','isvoi_vk');`,
 );
 
 const worker = await login("worker@example.com"),
@@ -117,6 +122,23 @@ assert.equal(request.response.status, 200, JSON.stringify(request.result));
 const leadId = request.result.data.id,
   token = new URL(request.result.data.telegram_url).searchParams.get("start");
 assert.match(token, /^[A-Za-z0-9_-]{43}$/);
+assert.deepEqual(request.result.data.continuation_links, [
+  {
+    platform: "telegram",
+    label: "Telegram local fixture",
+    url: request.result.data.telegram_url,
+  },
+  {
+    platform: "max",
+    label: "MAX local fixture",
+    url: `https://max.ru/isvoi_max_bot?start=${token}`,
+  },
+  {
+    platform: "vk",
+    label: "VK local fixture",
+    url: `https://vk.me/isvoi_vk?ref=${token}&ref_source=site`,
+  },
+]);
 
 let updateId = Number(String(Date.now()).slice(-9));
 const privateUpdate = (text, user = 900002) => ({
@@ -161,7 +183,8 @@ request = await call(
 );
 assert.equal(request.response.status, 200, JSON.stringify(request.result));
 assert.equal(
-  request.result.data.filter((row) => row.external_id === String(message.message.message_id)).length,
+  request.result.data.filter((row) => row.external_id === String(message.message.message_id))
+    .length,
   1,
   "a repeated legacy update must not duplicate the core message",
 );
@@ -196,10 +219,11 @@ try {
 } finally {
   psql(
     `UPDATE comm_runtime SET sending_enabled=false,recovery_hold=true WHERE id=1;
-     UPDATE comm_connections SET poll_owner=NULL,poll_until=NULL WHERE id='${connection}';`,
+     UPDATE comm_connections SET poll_owner=NULL,poll_until=NULL WHERE id='${connection}';
+     DELETE FROM comm_connections WHERE id IN ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');`,
   );
 }
 
 console.log(
-  "PASS: legacy /isvoi-telegram endpoints use core receipts, intake tokens, leases and delivery operations.",
+  "PASS: legacy API uses core receipts, one-token Telegram/MAX/VK continuation links, leases and delivery operations.",
 );

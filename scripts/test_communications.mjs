@@ -114,6 +114,25 @@ test("normalizes private messages, media and availability; rejects group ingress
     }).kind,
     "staff",
   );
+  const token = "a".repeat(43);
+  assert.equal(
+    normalize("max", {
+      update_type: "bot_started",
+      timestamp: 1700000000000,
+      chat_id: 123,
+      user: { user_id: 123 },
+      payload: token,
+    }).text,
+    `/start ${token}`,
+  );
+  assert.equal(
+    normalize("vk", {
+      type: "message_new",
+      event_id: "vk-ref-1",
+      object: { message: { from_id: 123, peer_id: 123, date: 1700000000, ref: token } },
+    }).text,
+    `/start ${token}`,
+  );
 });
 test("file validation uses content, rejects active formats and bounds streamed bytes", async () => {
   const opus = Buffer.concat([

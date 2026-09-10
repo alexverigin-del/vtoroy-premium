@@ -42,7 +42,7 @@ export function ClubLeadForm({ settings, offers, plans, selectedOfferId }: ClubL
   const messageId = useId();
   const statusId = useId();
   const {
-    telegramUrl,
+    links,
     markError,
     state,
     submitLead,
@@ -301,7 +301,7 @@ export function ClubLeadForm({ settings, offers, plans, selectedOfferId }: ClubL
             ? settings.formErrorNote
             : settings.formIdleNote}
       </p>
-      <TelegramContinue url={telegramUrl} />
+      <TelegramContinue links={links} />
     </form>
   );
 }

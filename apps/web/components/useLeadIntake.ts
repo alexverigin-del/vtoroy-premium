@@ -58,6 +58,11 @@ type LeadPayload = {
 
 export type LeadSubmitResult = {
   telegram_url?: string;
+  continuation_links?: Array<{
+    platform: "telegram" | "max" | "vk";
+    label: string;
+    url: string;
+  }>;
   ok: true;
   storage: "directus";
   reference_code?: string;
@@ -89,7 +94,7 @@ export function useLeadIntake() {
     [],
   );
   const turnstileWidgetRef = useRef<string>();
-  const submission = useRef<true | string>();
+  const submission = useRef<true | LeadSubmitResult>();
   const turnstileRequired = Boolean(TURNSTILE_SITE_KEY);
 
   const resetTurnstile = useCallback(() => {
@@ -177,7 +182,7 @@ export function useLeadIntake() {
         setState("error");
         return null;
       }
-      submission.current = result.telegram_url;
+      submission.current = result;
       setState("success");
       return result;
     },
@@ -190,9 +195,9 @@ export function useLeadIntake() {
       setState("idle");
       submission.current = undefined;
     },
-    telegramUrl:
-      state === "success" && typeof submission.current === "string"
-        ? submission.current
+    links:
+      state === "success" && typeof submission.current === "object"
+        ? submission.current.continuation_links
         : undefined,
     resetTurnstile,
     state,

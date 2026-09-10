@@ -7,6 +7,7 @@ import {
   validateTradeExchangeSelection,
 } from "@/lib/trade-server";
 import { isTradeQaRequest } from "@/lib/trade-qa";
+import { continuationLinks, type ContinuationLink } from "@/lib/continuation-links";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -56,6 +57,7 @@ type LeadRequest = {
 
 type StoredLead = {
   telegram_url?: string;
+  continuation_links?: ContinuationLink[];
   created_at: string;
   kind: string;
   status: "new";
@@ -285,11 +287,17 @@ async function postToDirectus(lead: StoredLead): Promise<boolean> {
           .clone()
           .json()
           .catch(() => null);
+        const links = continuationLinks(result?.data?.continuation_links);
+        if (links.length) lead.continuation_links = links;
         if (
           typeof result?.data?.telegram_url === "string" &&
           /^https:\/\/t\.me\/[A-Za-z0-9_]+\?start=[A-Za-z0-9_-]{43}$/.test(result.data.telegram_url)
         ) {
           lead.telegram_url = result.data.telegram_url;
+          if (!lead.continuation_links)
+            lead.continuation_links = [
+              { platform: "telegram", label: "Telegram", url: result.data.telegram_url },
+            ];
         }
       }
       return response;
@@ -684,6 +692,7 @@ export async function POST(request: NextRequest) {
       storage: "directus",
       reference_code: lead.reference_code,
       ...(lead.telegram_url ? { telegram_url: lead.telegram_url } : {}),
+      ...(lead.continuation_links ? { continuation_links: lead.continuation_links } : {}),
     },
     { headers: { "Cache-Control": "no-store" } },
   );

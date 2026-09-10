@@ -118,7 +118,10 @@ export function normalize(platform: Platform, raw: any): IncomingEvent {
       kind,
       occurredAt,
       externalMessageId: m?.body?.mid ? identifier(m.body.mid) : undefined,
-      text: String(m?.body?.text ?? ""),
+      text:
+        kind === "started" && raw.payload
+          ? `/start ${String(raw.payload)}`
+          : String(m?.body?.text ?? ""),
       attachments,
       callbackId: raw.callback?.callback_id,
       callbackData: raw.callback?.payload,
@@ -177,7 +180,7 @@ export function normalize(platform: Platform, raw: any): IncomingEvent {
       : m.conversation_message_id
         ? identifier(m.conversation_message_id)
         : undefined,
-    text: String(m.text || ""),
+    text: m.ref ? `/start ${String(m.ref)}` : String(m.text || ""),
     attachments,
     callbackId: m.event_id,
     callbackData: typeof m.payload === "string" ? m.payload : m.payload?.action,

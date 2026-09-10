@@ -37,6 +37,17 @@ export function createLegacyTelegramCompatibility(context: Context) {
     delivery = createDelivery(context, service);
   createStaff(context, service);
 
+  const continuationUrl = (connection: any, token: string, fallbackUsername = "") => {
+    const configured = String(connection.bot_username || "").replace(/^@/, ""),
+      username = /^[A-Za-z0-9_.-]{2,64}$/.test(configured) ? configured : fallbackUsername;
+    if (!/^[A-Za-z0-9_.-]{2,64}$/.test(username)) return null;
+    if (connection.platform === "telegram") return `https://t.me/${username}?start=${token}`;
+    if (connection.platform === "max") return `https://max.ru/${username}?start=${token}`;
+    if (connection.platform === "vk")
+      return `https://vk.me/${username}?ref=${token}&ref_source=site`;
+    return null;
+  };
+
   async function authorize(req: any, trx: Database, requireLease = true) {
     if (!flag(env.ISVOI_TELEGRAM_USE_COMMUNICATIONS)) return fail("TELEGRAM_COMPAT_DISABLED", 503);
     if (!flag(env.ISVOI_COMMUNICATIONS_ENABLED)) return fail("COMMUNICATIONS_DISABLED", 503);
@@ -66,7 +77,8 @@ export function createLegacyTelegramCompatibility(context: Context) {
     if (!worker) return fail("FORBIDDEN", 403);
     if (
       requireLease &&
-      (connection.poll_owner !== req.body.worker_id || new Date(connection.poll_until) <= new Date())
+      (connection.poll_owner !== req.body.worker_id ||
+        new Date(connection.poll_until) <= new Date())
     )
       return fail("WORKER_LEASE_UNAVAILABLE", 409);
     return connection;
@@ -81,10 +93,12 @@ export function createLegacyTelegramCompatibility(context: Context) {
         new Date(connection.poll_until) > new Date()
       )
         return fail("WORKER_LEASE_UNAVAILABLE", 409);
-      await trx("comm_connections").where({ id: connection.id }).update({
-        poll_owner: req.body.worker_id,
-        poll_until: new Date(Date.now() + 90000),
-      });
+      await trx("comm_connections")
+        .where({ id: connection.id })
+        .update({
+          poll_owner: req.body.worker_id,
+          poll_until: new Date(Date.now() + 90000),
+        });
       return {
         update_offset: Number(connection.poll_offset),
         mode: connection.mode,
@@ -96,16 +110,21 @@ export function createLegacyTelegramCompatibility(context: Context) {
   async function refresh(req: any) {
     return db.transaction(async (trx: Database) => {
       const connection = await authorize(req, trx);
-      await trx("comm_connections").where({ id: connection.id }).update({
-        poll_until: new Date(Date.now() + 90000),
-      });
+      await trx("comm_connections")
+        .where({ id: connection.id })
+        .update({
+          poll_until: new Date(Date.now() + 90000),
+        });
       return connection;
     });
   }
 
   async function next(req: any) {
     const connection = await refresh(req);
-    const operation = await delivery.next(connection.id, req.accountability.user, ["topic", "text"]);
+    const operation = await delivery.next(connection.id, req.accountability.user, [
+      "topic",
+      "text",
+    ]);
     const current = await db("comm_connections").where({ id: connection.id }).first("poll_offset");
     if (!operation) return { job: null, update_offset: Number(current.poll_offset) };
     const outbox = await db("comm_outbox").where({ id: operation.outbox_id }).first();
@@ -116,9 +135,7 @@ export function createLegacyTelegramCompatibility(context: Context) {
         operation_id: operation.attempt_id,
         method: operation.method === "topic" ? "createForumTopic" : "sendMessage",
         payload: operation.payload,
-        ...(outbox.purpose !== "staff"
-          ? { channel: "conversation", destination: "client" }
-          : {}),
+        ...(outbox.purpose !== "staff" ? { channel: "conversation", destination: "client" } : {}),
         ...(outbox.campaign_id ? { campaign_id: outbox.campaign_id } : {}),
       },
     };
@@ -206,8 +223,7 @@ export function createLegacyTelegramCompatibility(context: Context) {
 
   async function intake(req: any) {
     const username = String(env.ISVOI_TELEGRAM_BOT_USERNAME || "").replace(/^@/, "");
-    if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username))
-      return fail("BOT_USERNAME_REQUIRED", 503);
+    if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username)) return fail("BOT_USERNAME_REQUIRED", 503);
     return db.transaction(async (trx: Database) => {
       const connection = await intakeIdentity(req, trx),
         accountability = await service.userAccountability(trx, connection.service_user_id),
@@ -223,7 +239,21 @@ export function createLegacyTelegramCompatibility(context: Context) {
         lead_id: id,
         expires_at: new Date(Date.now() + 15 * 60000),
       });
-      return { id, telegram_url: `https://t.me/${username}?start=${token}` };
+      const connections = await trx("comm_connections")
+        .where({ store_id: connection.store_id, enabled: true })
+        .whereIn("platform", ["telegram", "max", "vk"])
+        .orderByRaw("CASE platform WHEN 'telegram' THEN 1 WHEN 'max' THEN 2 ELSE 3 END")
+        .orderBy("name");
+      const continuation_links = connections.flatMap((candidate: any) => {
+        const url = continuationUrl(
+          candidate,
+          token,
+          candidate.id === connection.id ? username : "",
+        );
+        return url ? [{ platform: candidate.platform, label: candidate.name, url }] : [];
+      });
+      const telegram = continuation_links.find((link: any) => link.platform === "telegram");
+      return { id, telegram_url: telegram.url, continuation_links };
     });
   }
 

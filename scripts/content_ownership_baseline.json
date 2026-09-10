@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-10T11:44:28.257Z",
+  "updatedAt": "2026-09-10T11:59:21.098Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -7898,6 +7898,20 @@
       "line": 5,
       "text": "В наличии",
       "id": "08b8ebaa5242c6bc"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "jsx-text",
+      "line": 203,
+      "text": "Продано",
+      "id": "5b902fd735905ca8"
+    },
+    {
+      "file": "apps/web/components/ProductCatalogView.tsx",
+      "kind": "string",
+      "line": 367,
+      "text": "Продано",
+      "id": "dc86c0b1b671ec42"
     }
   ]
 }

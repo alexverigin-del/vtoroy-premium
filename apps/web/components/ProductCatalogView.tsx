@@ -200,7 +200,7 @@ function StockFilterValue({ value }: { value?: string }) {
   if (value === "available") return <>В наличии</>;
   if (value === "delivery") return <>Доставка из другого города</>;
   if (value === "reserved") return <>Бронь</>;
-  if (value === "sold") return <>Нет в наличии</>;
+  if (value === "sold") return <>Продано</>;
   return null;
 }
 
@@ -364,7 +364,7 @@ function CatalogAdvancedFilterFields({
           <option value="available">{cityScopedLabel(city, "В наличии")}</option>
           {city ? <option value="delivery">Доставка из другого города</option> : null}
           <option value="reserved">{cityScopedLabel(city, "Бронь")}</option>
-          <option value="sold">{cityScopedLabel(city, "Нет в наличии")}</option>
+          <option value="sold">{cityScopedLabel(city, "Продано")}</option>
         </select>
       </label>
     </>

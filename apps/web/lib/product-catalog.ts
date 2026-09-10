@@ -20,6 +20,10 @@ import type {
 
 import { stockStatusLabel } from "./stock-status";
 
+import {
+  appendPublicCatalogAvailabilityFilter,
+  matchesCityStockFilter,
+} from "./catalog-availability";
 import { getDeviceBySlug, getPublishedDeviceCards, directusAssetUrl } from "./directus";
 import { PRODUCTS_CACHE_TAG } from "./cache-tags";
 import { cityScopedLabel } from "./city-copy";
@@ -626,13 +630,13 @@ export async function getPublishedProducts(
     "filter[status][_eq]": "published",
     "filter[content_status][_eq]": "ready",
     "filter[stock_status][_neq]": "hidden",
-    "filter[stock_quantity][_gt]": "0",
     fields: PRODUCT_CARD_FIELDS,
     limit: cityMode ? "500" : String(pageSize),
     offset: cityMode ? "0" : String((page - 1) * pageSize),
     sort: productSort(filters.sort),
     meta: "filter_count",
   });
+  appendPublicCatalogAvailabilityFilter(params);
 
   if (filters.q) params.set("search", filters.q);
   if (filters.type) params.set("filter[product_type][_eq]", filters.type);
@@ -651,11 +655,7 @@ export async function getPublishedProducts(
     let products = response.data.map((row) => mapProductCard(row, filters.city, filters.cityName));
     if (cityMode) {
       if (filters.stock) {
-        products = products.filter((product) => {
-          if (filters.stock === "delivery") return product.availabilityScope === "delivery";
-          if (filters.stock === "sold") return product.availabilityScope === "unavailable";
-          return product.availabilityScope === "local" && product.stockStatus === filters.stock;
-        });
+        products = products.filter((product) => matchesCityStockFilter(product, filters.stock));
       }
       products.sort((a, b) => {
         const rank = { local: 0, delivery: 1, network: 2, unavailable: 3 } as const;
@@ -765,9 +765,17 @@ export const getProductCatalogFacets = cache(
         "/items/device_models?filter[is_active][_eq]=true&fields=id,slug,name,family,year,brand.id,brand.slug,brand.name&sort=brand.name,name&limit=1000",
       ),
       source === "v3"
-        ? directusRequest<Row[]>(
-            "/items/products?filter[status][_eq]=published&filter[content_status][_eq]=ready&filter[stock_status][_neq]=hidden&filter[stock_quantity][_gt]=0&fields=product_type,brand.slug,category.slug&limit=500",
-          )
+        ? (() => {
+            const params = new URLSearchParams({
+              "filter[status][_eq]": "published",
+              "filter[content_status][_eq]": "ready",
+              "filter[stock_status][_neq]": "hidden",
+              fields: "product_type,brand.slug,category.slug",
+              limit: "500",
+            });
+            appendPublicCatalogAvailabilityFilter(params);
+            return directusRequest<Row[]>(`/items/products?${params}`);
+          })()
         : Promise.resolve(null),
     ]);
 

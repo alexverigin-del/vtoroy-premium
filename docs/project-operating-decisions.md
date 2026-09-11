@@ -165,6 +165,17 @@ memory alone.
   local `web:verify`, bundle-budget, Impeccable detector and compiled UI checks
   passed. Local, GitHub and the clean production checkout were at `c644f7a`
   before release; backup `backups/directus/20260911T021702Z` was available.
+- Follow-up release `d18a9d9` was pushed and deployed from the env-aware staging
+  worktree `/opt/isvoi/work/product-full-sticky-d18a9d9-20260911T141032Z`.
+  Staging passed full `web:verify`; isolated runtime checks returned `200` for
+  `/trade` and the published product before the switch. The previous production
+  build is retained in
+  `/opt/isvoi/backups/web-product-full-sticky-d18a9d9-20260911T141249Z`.
+- Production route/product-viewer, image, desktop/mobile visual and copy smoke
+  passed. At 1440x1080 the published purchase card measured 928.5px high with
+  equal 927px client/scroll heights, `max-height: none` and `overflow: visible`;
+  it moved from `y=626.5` to sticky `y=96`. Directus, content, schema and
+  Telegram were unchanged; `isvoi-telegram` retained PID `4149600`.
 
 ## Impeccable A/B/C Implementation (2026-09-10, Local Only)
 

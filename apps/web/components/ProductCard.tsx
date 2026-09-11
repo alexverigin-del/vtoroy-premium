@@ -41,7 +41,7 @@ export function ProductCard({
             <span className="px-5 text-center text-sm text-muted">{product.title}</span>
           )}
           {sold ? (
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-pill bg-carbon/80 px-5 py-2 text-sm font-semibold text-white">
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-pill bg-carbon/80 px-5 py-2 text-sm font-semibold text-white">
               {product.stockStatusLabel}
             </span>
           ) : null}

@@ -38,4 +38,35 @@
 - P1: none.
 - P2: none.
 
+## Follow-up — one-line sold badge
+
+- Source visual truth: `C:\Users\1\AppData\Local\Temp\codex-clipboard-b5f18c27-04d8-4e3f-8d05-807fb2813617.png` (`358 × 355` px).
+- Implementation screenshot: `C:\Users\1\.codex\visualizations\2026\08\29\01a04d88-86b2-7830-a38c-2ffb50ccdbd9\catalog-sold-badge-oneline.png` (`290 × 300` px).
+- Focused comparison: `C:\Users\1\.codex\visualizations\2026\08\29\01a04d88-86b2-7830-a38c-2ffb50ccdbd9\catalog-sold-badge-oneline-comparison.png`.
+- Viewport: desktop catalogue in the Codex in-app browser, `1264 × 712` CSS px, density `1`; implementation clip `289.6 × 300` CSS px, normalized to `290 × 300` output pixels.
+- State: sold card with the managed Directus label `Белгород · Продано`.
+- Full-view evidence: the supplied reference is itself a focused card crop; the implementation capture includes the complete image region and the beginning of the card metadata, confirming that the pill remains centred and contained by the card.
+- Focused-region evidence: the combined before/after image shows the same sold badge changing from two lines to one without changing colour, radius, typography, or image treatment.
+
+### Comparison history
+
+- Earlier P2: the managed city/status label wrapped after `Белгород ·`, increasing the pill height and weakening the compact overlay hierarchy.
+- Fix: added the existing Tailwind `whitespace-nowrap` utility to the badge only.
+- Post-fix evidence: computed `white-space` is `nowrap`; badge size is `172.29 × 36` CSS px inside a `289.6` px image region, leaving safe horizontal space on both sides.
+
+### Fidelity surfaces
+
+- Fonts and typography: existing Inter family, size, weight, line height, and antialiasing are unchanged; wrapping is removed as requested.
+- Spacing and layout rhythm: existing padding, pill radius, centring, and card grid are unchanged.
+- Colours and tokens: existing `bg-carbon/80` and `text-white` tokens are unchanged.
+- Image quality: the original product asset, crop, grayscale treatment, and scaling are unchanged.
+- Copy and content: the label still comes from Directus and remains `Белгород · Продано`.
+
+### Follow-up findings
+
+- P0: none.
+- P1: none.
+- P2: none after the one-line fix.
+- P3: none required for this scoped change.
+
 Final result: passed

@@ -9,6 +9,7 @@ User=isvoi
 Group=isvoi
 WorkingDirectory=/opt/isvoi
 EnvironmentFile=/etc/isvoi/communications.env
+Environment=COMM_MAX_TLS_CA_PATH=/opt/isvoi/infra/communications/certificates/russian_trusted_root_ca.crt
 ExecStart=/usr/bin/node /opt/isvoi/scripts/run_communications_worker.mjs %i
 Restart=on-failure
 RestartSec=5

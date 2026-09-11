@@ -6,6 +6,7 @@ import { dirname, resolve } from "node:path";
 import { setTimeout as pause } from "node:timers/promises";
 import { parseEnv } from "node:util";
 import { pathToFileURL } from "node:url";
+import { createMaxApiFetch } from "../packages/communications/max-api-fetch.mjs";
 
 export const MAX_REQUIRED_EVENTS = [
   "message_created",
@@ -49,7 +50,9 @@ function webhookUrl(config, key) {
     (parsed.port && parsed.port !== "443") ||
     parsed.hash
   ) {
-    throw new Error(`${key} должен использовать HTTPS на стандартном порту без credentials и fragment.`);
+    throw new Error(
+      `${key} должен использовать HTTPS на стандартном порту без credentials и fragment.`,
+    );
   }
   return parsed.href;
 }
@@ -103,11 +106,16 @@ function enabledNames(values) {
     .map(([name]) => name);
 }
 
-export async function inspectMax(config, { fetchImpl = fetch, sleep = pause } = {}) {
+export async function inspectMax(
+  config,
+  { fetchImpl = createMaxApiFetch(config.MAX_CA_CERT_PATH), sleep = pause } = {},
+) {
   const token = required(config, "MAX_BOT_TOKEN");
-  if (/\s/.test(token) || token.length < 20) throw new Error("MAX_BOT_TOKEN имеет неверный формат.");
+  if (/\s/.test(token) || token.length < 20)
+    throw new Error("MAX_BOT_TOKEN имеет неверный формат.");
   const expectedId = required(config, "MAX_BOT_ID");
-  if (!/^\d+$/.test(expectedId)) throw new Error("MAX_BOT_ID должен быть положительным числовым ID.");
+  if (!/^\d+$/.test(expectedId))
+    throw new Error("MAX_BOT_ID должен быть положительным числовым ID.");
   const expectedUsername = required(config, "MAX_BOT_USERNAME").replace(/^@/, "");
   const expectedUrl = webhookUrl(config, "MAX_WEBHOOK_URL");
   secret(
@@ -117,10 +125,16 @@ export async function inspectMax(config, { fetchImpl = fetch, sleep = pause } = 
     "нужно 16–256 символов A-Z, a-z, 0-9, _ или -",
   );
 
-  const get = (path) => requestJson(`MAX GET ${path}`, `${MAX_API}${path}`, {
-    method: "GET",
-    headers: { Authorization: token, Accept: "application/json" },
-  }, { fetchImpl, sleep });
+  const get = (path) =>
+    requestJson(
+      `MAX GET ${path}`,
+      `${MAX_API}${path}`,
+      {
+        method: "GET",
+        headers: { Authorization: token, Accept: "application/json" },
+      },
+      { fetchImpl, sleep },
+    );
   const bot = await get("/me");
   const subscriptionsBody = await get("/subscriptions");
   const subscriptions = Array.isArray(subscriptionsBody)
@@ -133,18 +147,23 @@ export async function inspectMax(config, { fetchImpl = fetch, sleep = pause } = 
   const identityMatches =
     bot?.is_bot === true &&
     String(bot?.user_id) === expectedId &&
-    String(bot?.username ?? "").replace(/^@/, "").toLowerCase() === expectedUsername.toLowerCase();
+    String(bot?.username ?? "")
+      .replace(/^@/, "")
+      .toLowerCase() === expectedUsername.toLowerCase();
   const matches = subscriptions.filter((item) => item?.url === expectedUrl);
   const subscription = matches.length === 1 ? matches[0] : null;
   const enabledEvents = Array.isArray(subscription?.update_types) ? subscription.update_types : [];
   const missingEvents = MAX_REQUIRED_EVENTS.filter((event) => !enabledEvents.includes(event));
   const ready = identityMatches && matches.length === 1 && missingEvents.length === 0;
   const next = [];
-  if (!identityMatches) next.push("Проверьте MAX_BOT_ID/MAX_BOT_USERNAME: токен принадлежит другому ресурсу.");
+  if (!identityMatches)
+    next.push("Проверьте MAX_BOT_ID/MAX_BOT_USERNAME: токен принадлежит другому ресурсу.");
   if (matches.length === 0) next.push("Создайте MAX webhook-подписку на точный MAX_WEBHOOK_URL.");
   if (matches.length > 1) next.push("Удалите дублирующиеся MAX webhook-подписки для этого URL.");
   if (missingEvents.length) next.push(`Добавьте события MAX: ${missingEvents.join(", ")}.`);
-  next.push("Секрет MAX подтверждается только подписанным тестовым webhook; GET API его не раскрывает.");
+  next.push(
+    "Секрет MAX подтверждается только подписанным тестовым webhook; GET API его не раскрывает.",
+  );
 
   return {
     platform: "max",
@@ -169,9 +188,11 @@ export async function inspectMax(config, { fetchImpl = fetch, sleep = pause } = 
 
 export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {}) {
   const token = required(config, "VK_GROUP_TOKEN");
-  if (/\s/.test(token) || token.length < 20) throw new Error("VK_GROUP_TOKEN имеет неверный формат.");
+  if (/\s/.test(token) || token.length < 20)
+    throw new Error("VK_GROUP_TOKEN имеет неверный формат.");
   const groupId = required(config, "VK_GROUP_ID");
-  if (!/^\d+$/.test(groupId) || groupId === "0") throw new Error("VK_GROUP_ID должен быть положительным числовым ID.");
+  if (!/^\d+$/.test(groupId) || groupId === "0")
+    throw new Error("VK_GROUP_ID должен быть положительным числовым ID.");
   const expectedUrl = webhookUrl(config, "VK_WEBHOOK_URL");
   const expectedSecret = secret(
     config,
@@ -179,7 +200,8 @@ export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {
     /^.{16,50}$/u,
     "нужно 16–50 символов без перевода строки",
   );
-  if (/\r|\n/.test(expectedSecret)) throw new Error("VK_WEBHOOK_SECRET не должен содержать перевод строки.");
+  if (/\r|\n/.test(expectedSecret))
+    throw new Error("VK_WEBHOOK_SECRET не должен содержать перевод строки.");
   const expectedConfirmation = required(config, "VK_CONFIRMATION");
   const requestedServerId = String(config.VK_CALLBACK_SERVER_ID ?? "").trim();
   if (requestedServerId && !/^\d+$/.test(requestedServerId)) {
@@ -188,16 +210,25 @@ export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {
 
   async function api(method, params = {}) {
     if (!VK_READ_METHODS.has(method)) throw new Error("Метод не разрешён проверкой подключения.");
-    const body = await requestJson(`VK ${method}`, `${VK_API}/${method}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-      body: new URLSearchParams({ ...params, access_token: token, v: VK_VERSION }),
-    }, { fetchImpl, sleep });
+    const body = await requestJson(
+      `VK ${method}`,
+      `${VK_API}/${method}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
+        body: new URLSearchParams({ ...params, access_token: token, v: VK_VERSION }),
+      },
+      { fetchImpl, sleep },
+    );
     if (body?.error) {
       const code = Number.isInteger(body.error.error_code) ? body.error.error_code : "unknown";
       throw new Error(`VK ${method}: ошибка API ${code}. Текст API скрыт.`);
     }
-    if (!("response" in (body || {}))) throw new Error(`VK ${method}: получен неизвестный формат ответа.`);
+    if (!("response" in (body || {})))
+      throw new Error(`VK ${method}: получен неизвестный формат ответа.`);
     return body.response;
   }
 
@@ -207,7 +238,9 @@ export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {
   const identityMatches = String(group?.id ?? "") === groupId;
   const permissionResponse = await api("groups.getTokenPermissions");
   const permissions = enabledNames(permissionResponse?.permissions);
-  const missingPermissions = VK_REQUIRED_PERMISSIONS.filter((permission) => !permissions.includes(permission));
+  const missingPermissions = VK_REQUIRED_PERMISSIONS.filter(
+    (permission) => !permissions.includes(permission),
+  );
   const serversResponse = await api("groups.getCallbackServers", { group_id: groupId });
   const servers = Array.isArray(serversResponse?.items) ? serversResponse.items : [];
   const candidates = requestedServerId
@@ -218,7 +251,10 @@ export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {
   let settings = null;
   let confirmationMatches = false;
   if (server) {
-    settings = await api("groups.getCallbackSettings", { group_id: groupId, server_id: String(server.id) });
+    settings = await api("groups.getCallbackSettings", {
+      group_id: groupId,
+      server_id: String(server.id),
+    });
     const confirmation = await api("groups.getCallbackConfirmationCode", { group_id: groupId });
     confirmationMatches = sameSecret(String(confirmation?.code ?? ""), expectedConfirmation);
   }
@@ -239,17 +275,22 @@ export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {
     apiVersionMatches &&
     missingEvents.length === 0;
   const next = [];
-  if (!identityMatches) next.push("Проверьте VK_GROUP_ID: токен не подтвердил ожидаемое сообщество.");
-  if (missingPermissions.length) next.push(`Добавьте права токена VK: ${missingPermissions.join(", ")}.`);
+  if (!identityMatches)
+    next.push("Проверьте VK_GROUP_ID: токен не подтвердил ожидаемое сообщество.");
+  if (missingPermissions.length)
+    next.push(`Добавьте права токена VK: ${missingPermissions.join(", ")}.`);
   if (candidates.length === 0) next.push("Создайте callback-сервер VK для точного VK_WEBHOOK_URL.");
   if (candidates.length > 1) next.push("Укажите однозначный VK_CALLBACK_SERVER_ID.");
   if (server && !urlMatches) next.push("Исправьте URL выбранного callback-сервера VK.");
-  if (server && !secretMatches) next.push("Секрет callback-сервера VK не совпадает с локальной настройкой.");
+  if (server && !secretMatches)
+    next.push("Секрет callback-сервера VK не совпадает с локальной настройкой.");
   if (server && !confirmationMatches) next.push("VK_CONFIRMATION не совпадает с кодом сообщества.");
   if (server && !statusOk) next.push("Добейтесь состояния callback-сервера VK status=ok.");
   if (server && !apiVersionMatches) next.push(`Установите версию Callback API VK ${VK_VERSION}.`);
   if (missingEvents.length) next.push(`Включите события VK: ${missingEvents.join(", ")}.`);
-  next.push("Событие message_event и фактический ответ бота подтверждаются закрытым живым пилотом.");
+  next.push(
+    "Событие message_event и фактический ответ бота подтверждаются закрытым живым пилотом.",
+  );
 
   return {
     platform: "vk",
@@ -262,7 +303,11 @@ export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {
       screenName: String(group?.screen_name ?? ""),
     },
     identityMatches,
-    token: { enabledPermissions: permissions.sort(), requiredPermissions: VK_REQUIRED_PERMISSIONS, missingPermissions },
+    token: {
+      enabledPermissions: permissions.sort(),
+      requiredPermissions: VK_REQUIRED_PERMISSIONS,
+      missingPermissions,
+    },
     webhook: {
       url: expectedUrl,
       selectedServerId: server ? String(server.id) : null,
@@ -285,7 +330,9 @@ export async function inspectVk(config, { fetchImpl = fetch, sleep = pause } = {
 }
 
 function redact(output, values) {
-  return values.filter(Boolean).reduce((result, value) => result.split(value).join("[REDACTED]"), output);
+  return values
+    .filter(Boolean)
+    .reduce((result, value) => result.split(value).join("[REDACTED]"), output);
 }
 
 async function main() {
@@ -297,9 +344,13 @@ async function main() {
     if (args[index] === "--platform" && args[index + 1]) platform = args[++index];
     else if (args[index] === "--env" && args[index + 1]) envPath = args[++index];
     else if (args[index] === "--output" && args[index + 1]) outputPath = args[++index];
-    else throw new Error("Использование: node scripts/communications_provider_preflight.mjs --platform max|vk [--env путь] [--output путь]");
+    else
+      throw new Error(
+        "Использование: node scripts/communications_provider_preflight.mjs --platform max|vk [--env путь] [--output путь]",
+      );
   }
-  if (!["max", "vk"].includes(platform)) throw new Error("Укажите --platform max или --platform vk.");
+  if (!["max", "vk"].includes(platform))
+    throw new Error("Укажите --platform max или --platform vk.");
   let config;
   try {
     config = parseEnv(await readFile(resolve(envPath), "utf8"));
@@ -307,9 +358,10 @@ async function main() {
     throw new Error("Не удалось прочитать закрытый env-файл. Его содержимое не выводится.");
   }
   const report = platform === "max" ? await inspectMax(config) : await inspectVk(config);
-  const sensitive = platform === "max"
-    ? [config.MAX_BOT_TOKEN, config.MAX_WEBHOOK_SECRET]
-    : [config.VK_GROUP_TOKEN, config.VK_WEBHOOK_SECRET, config.VK_CONFIRMATION];
+  const sensitive =
+    platform === "max"
+      ? [config.MAX_BOT_TOKEN, config.MAX_WEBHOOK_SECRET]
+      : [config.VK_GROUP_TOKEN, config.VK_WEBHOOK_SECRET, config.VK_CONFIRMATION];
   const output = redact(`${JSON.stringify(report, null, 2)}\n`, sensitive);
   if (outputPath) {
     const target = resolve(outputPath);

@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { setTimeout as pause } from "node:timers/promises";
 import { parseEnv } from "node:util";
 import { pathToFileURL } from "node:url";
+import { createMaxApiFetch } from "../packages/communications/max-api-fetch.mjs";
 import { inspectMax, MAX_REQUIRED_EVENTS } from "./communications_provider_preflight.mjs";
 
 const MAX_SUBSCRIPTIONS = "https://platform-api2.max.ru/subscriptions";
@@ -42,7 +43,12 @@ async function register(config, events, fetchImpl) {
 
 export async function configureMaxWebhook(
   config,
-  { apply = false, confirmation = "", fetchImpl = fetch, sleep = pause } = {},
+  {
+    apply = false,
+    confirmation = "",
+    fetchImpl = createMaxApiFetch(config.MAX_CA_CERT_PATH),
+    sleep = pause,
+  } = {},
 ) {
   const before = await inspectMax(config, { fetchImpl, sleep });
   if (before.ready) return { changed: false, before, after: before };
@@ -68,9 +74,10 @@ async function main() {
     if (args[index] === "--env" && args[index + 1]) envPath = args[++index];
     else if (args[index] === "--apply") apply = true;
     else if (args[index] === "--confirm-webhook" && args[index + 1]) confirmation = args[++index];
-    else throw new Error(
-      "Использование: node scripts/configure_max_webhook.mjs [--env путь] [--apply --confirm-webhook URL]",
-    );
+    else
+      throw new Error(
+        "Использование: node scripts/configure_max_webhook.mjs [--env путь] [--apply --confirm-webhook URL]",
+      );
   }
   let config;
   try {
@@ -79,15 +86,21 @@ async function main() {
     throw new Error("Не удалось прочитать закрытый env-файл. Его содержимое не выводится.");
   }
   const result = await configureMaxWebhook(config, { apply, confirmation });
-  process.stdout.write(`${JSON.stringify({
-    platform: "max",
-    changed: result.changed,
-    readyBefore: result.before.ready,
-    readyAfter: result.after?.ready ?? false,
-    webhookUrl: result.before.webhook.url,
-    missingEventsBefore: result.before.webhook.missingEvents,
-    livePilotRequired: true,
-  }, null, 2)}\n`);
+  process.stdout.write(
+    `${JSON.stringify(
+      {
+        platform: "max",
+        changed: result.changed,
+        readyBefore: result.before.ready,
+        readyAfter: result.after?.ready ?? false,
+        webhookUrl: result.before.webhook.url,
+        missingEventsBefore: result.before.webhook.missingEvents,
+        livePilotRequired: true,
+      },
+      null,
+      2,
+    )}\n`,
+  );
   if (!apply && !result.before.ready) process.exitCode = 2;
 }
 

@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+  createMaxApiFetch,
+  DEFAULT_MAX_CA_PATH,
+  MAX_ROOT_CA_SHA256,
+  verifyMaxRootCertificate,
+} from "../packages/communications/max-api-fetch.mjs";
 import {
   MAX_REQUIRED_EVENTS,
   VK_REQUIRED_EVENTS,
@@ -44,8 +51,22 @@ function maxFetch(subscriptions) {
   return { calls, fetchImpl };
 }
 
-function vkFixture({ permissions = ["messages", "photos", "docs"], events = VK_REQUIRED_EVENTS,
-  servers = null, confirmation = "fixture-confirmation", apiVersion = "5.199" } = {}) {
+test("MAX TLS trust anchor is pinned and restricted to the MAX API origin", async () => {
+  const pem = await readFile(DEFAULT_MAX_CA_PATH, "utf8");
+  const certificate = verifyMaxRootCertificate(pem);
+  assert.equal(certificate.fingerprint256, MAX_ROOT_CA_SHA256);
+  assert.equal(certificate.subject, certificate.issuer);
+  assert.throws(() => verifyMaxRootCertificate("not a certificate"), /MAX_CA_INVALID/);
+  await assert.rejects(createMaxApiFetch()("https://example.com/me"), /MAX_API_ORIGIN_FORBIDDEN/);
+});
+
+function vkFixture({
+  permissions = ["messages", "photos", "docs"],
+  events = VK_REQUIRED_EVENTS,
+  servers = null,
+  confirmation = "fixture-confirmation",
+  apiVersion = "5.199",
+} = {}) {
   const calls = [];
   const fetchImpl = async (url, init) => {
     const method = url.split("/").at(-1);
@@ -54,23 +75,39 @@ function vkFixture({ permissions = ["messages", "photos", "docs"], events = VK_R
     assert.equal(body.access_token, vkConfig.VK_GROUP_TOKEN);
     assert.equal(body.v, "5.199");
     if (method === "groups.getById") {
-      return json({ response: { groups: [{ id: 556677, name: "I СВОИ", screen_name: "isvoi" }], profiles: [] } });
+      return json({
+        response: { groups: [{ id: 556677, name: "I СВОИ", screen_name: "isvoi" }], profiles: [] },
+      });
     }
     if (method === "groups.getTokenPermissions") {
-      return json({ response: { mask: 0, permissions: permissions.map((name) => ({ name, setting: 1 })) } });
+      return json({
+        response: { mask: 0, permissions: permissions.map((name) => ({ name, setting: 1 })) },
+      });
     }
     if (method === "groups.getCallbackServers") {
-      return json({ response: { count: 1, items: servers ?? [{
-        id: 44,
-        title: "ISVOI test",
-        creator_id: 1,
-        url: vkConfig.VK_WEBHOOK_URL,
-        secret_key: vkConfig.VK_WEBHOOK_SECRET,
-        status: "ok",
-      }] } });
+      return json({
+        response: {
+          count: 1,
+          items: servers ?? [
+            {
+              id: 44,
+              title: "ISVOI test",
+              creator_id: 1,
+              url: vkConfig.VK_WEBHOOK_URL,
+              secret_key: vkConfig.VK_WEBHOOK_SECRET,
+              status: "ok",
+            },
+          ],
+        },
+      });
     }
     if (method === "groups.getCallbackSettings") {
-      return json({ response: { api_version: apiVersion, events: Object.fromEntries(events.map((name) => [name, 1])) } });
+      return json({
+        response: {
+          api_version: apiVersion,
+          events: Object.fromEntries(events.map((name) => [name, 1])),
+        },
+      });
     }
     if (method === "groups.getCallbackConfirmationCode") {
       return json({ response: { code: confirmation } });
@@ -81,20 +118,27 @@ function vkFixture({ permissions = ["messages", "photos", "docs"], events = VK_R
 }
 
 test("MAX preflight is read-only and reports complete resource readiness", async () => {
-  const fixture = maxFetch({ subscriptions: [{
-    url: maxConfig.MAX_WEBHOOK_URL,
-    update_types: MAX_REQUIRED_EVENTS,
-  }] });
-  const report = await inspectMax(maxConfig, { fetchImpl: fixture.fetchImpl, sleep: async () => {} });
+  const fixture = maxFetch({
+    subscriptions: [
+      {
+        url: maxConfig.MAX_WEBHOOK_URL,
+        update_types: MAX_REQUIRED_EVENTS,
+      },
+    ],
+  });
+  const report = await inspectMax(maxConfig, {
+    fetchImpl: fixture.fetchImpl,
+    sleep: async () => {},
+  });
 
   assert.equal(report.ready, true);
   assert.equal(report.identityMatches, true);
   assert.deepEqual(report.webhook.missingEvents, []);
   assert.equal(report.webhook.secretVerification, "live_webhook_required");
-  assert.deepEqual(fixture.calls.map(({ url }) => url), [
-    "https://platform-api2.max.ru/me",
-    "https://platform-api2.max.ru/subscriptions",
-  ]);
+  assert.deepEqual(
+    fixture.calls.map(({ url }) => url),
+    ["https://platform-api2.max.ru/me", "https://platform-api2.max.ru/subscriptions"],
+  );
   for (const call of fixture.calls) {
     assert.equal(call.init.method, "GET");
     assert.equal(call.init.headers.Authorization, maxConfig.MAX_BOT_TOKEN);
@@ -105,15 +149,25 @@ test("MAX preflight is read-only and reports complete resource readiness", async
 });
 
 test("MAX preflight blocks wrong URL and missing events without mutating provider", async () => {
-  const fixture = maxFetch({ subscriptions: [{
-    url: "https://wrong.example.test/hook",
-    update_types: ["message_created"],
-  }] });
-  const report = await inspectMax(maxConfig, { fetchImpl: fixture.fetchImpl, sleep: async () => {} });
+  const fixture = maxFetch({
+    subscriptions: [
+      {
+        url: "https://wrong.example.test/hook",
+        update_types: ["message_created"],
+      },
+    ],
+  });
+  const report = await inspectMax(maxConfig, {
+    fetchImpl: fixture.fetchImpl,
+    sleep: async () => {},
+  });
   assert.equal(report.ready, false);
   assert.equal(report.webhook.matches, 0);
   assert.ok(report.next.some((item) => item.includes("подписку")));
-  assert.deepEqual(fixture.calls.map(({ init }) => init.method), ["GET", "GET"]);
+  assert.deepEqual(
+    fixture.calls.map(({ init }) => init.method),
+    ["GET", "GET"],
+  );
 });
 
 test("MAX webhook apply registers once and verifies with read-only calls", async () => {
@@ -145,7 +199,10 @@ test("MAX webhook apply registers once and verifies with read-only calls", async
   });
   assert.equal(result.changed, true);
   assert.equal(result.after.ready, true);
-  assert.deepEqual(calls.map(({ init }) => init.method), ["GET", "GET", "POST", "GET", "GET"]);
+  assert.deepEqual(
+    calls.map(({ init }) => init.method),
+    ["GET", "GET", "POST", "GET", "GET"],
+  );
 });
 
 test("MAX webhook unknown result is not retried and does not expose secrets", async () => {
@@ -167,10 +224,14 @@ test("MAX webhook unknown result is not retried and does not expose secrets", as
       fetchImpl,
       sleep: async () => {},
     }),
-    (error) => error.message.includes("результат неизвестен") &&
+    (error) =>
+      error.message.includes("результат неизвестен") &&
       !error.message.includes(maxConfig.MAX_WEBHOOK_SECRET),
   );
-  assert.deepEqual(calls.map(({ init }) => init.method), ["GET", "GET", "POST"]);
+  assert.deepEqual(
+    calls.map(({ init }) => init.method),
+    ["GET", "GET", "POST"],
+  );
 });
 
 test("VK preflight uses only read methods and verifies callback contract", async () => {
@@ -183,17 +244,24 @@ test("VK preflight uses only read methods and verifies callback contract", async
   assert.deepEqual(report.webhook.missingEvents, []);
   assert.equal(report.webhook.secretMatches, true);
   assert.equal(report.webhook.confirmationMatches, true);
-  assert.deepEqual(fixture.calls.map(({ method }) => method), [
-    "groups.getById",
-    "groups.getTokenPermissions",
-    "groups.getCallbackServers",
-    "groups.getCallbackSettings",
-    "groups.getCallbackConfirmationCode",
-  ]);
+  assert.deepEqual(
+    fixture.calls.map(({ method }) => method),
+    [
+      "groups.getById",
+      "groups.getTokenPermissions",
+      "groups.getCallbackServers",
+      "groups.getCallbackSettings",
+      "groups.getCallbackConfirmationCode",
+    ],
+  );
   assert.ok(fixture.calls.every(({ init }) => init.method === "POST"));
   assert.ok(fixture.calls.every(({ url }) => !url.includes(vkConfig.VK_GROUP_TOKEN)));
   const serialized = JSON.stringify(report);
-  for (const value of [vkConfig.VK_GROUP_TOKEN, vkConfig.VK_WEBHOOK_SECRET, vkConfig.VK_CONFIRMATION]) {
+  for (const value of [
+    vkConfig.VK_GROUP_TOKEN,
+    vkConfig.VK_WEBHOOK_SECRET,
+    vkConfig.VK_CONFIRMATION,
+  ]) {
     assert.equal(serialized.includes(value), false);
   }
 });
@@ -204,12 +272,14 @@ test("VK preflight reports permission, event, version, and secret mismatches", a
     events: ["message_new"],
     apiVersion: "5.131",
     confirmation: "wrong-confirmation",
-    servers: [{
-      id: 44,
-      url: vkConfig.VK_WEBHOOK_URL,
-      secret_key: "wrong-secret-value",
-      status: "failed",
-    }],
+    servers: [
+      {
+        id: 44,
+        url: vkConfig.VK_WEBHOOK_URL,
+        secret_key: "wrong-secret-value",
+        status: "failed",
+      },
+    ],
   });
   const report = await inspectVk(vkConfig, { fetchImpl: fixture.fetchImpl, sleep: async () => {} });
   assert.equal(report.ready, false);
@@ -232,26 +302,29 @@ test("VK preflight does not probe settings when callback server is ambiguous", a
   const report = await inspectVk(vkConfig, { fetchImpl: fixture.fetchImpl, sleep: async () => {} });
   assert.equal(report.ready, false);
   assert.equal(report.webhook.candidates, 2);
-  assert.deepEqual(fixture.calls.map(({ method }) => method), [
-    "groups.getById",
-    "groups.getTokenPermissions",
-    "groups.getCallbackServers",
-  ]);
+  assert.deepEqual(
+    fixture.calls.map(({ method }) => method),
+    ["groups.getById", "groups.getTokenPermissions", "groups.getCallbackServers"],
+  );
 });
 
 test("provider errors never expose tokens or provider error text", async () => {
   await assert.rejects(
     inspectMax(maxConfig, {
-      fetchImpl: async () => { throw new Error(`network ${maxConfig.MAX_BOT_TOKEN}`); },
+      fetchImpl: async () => {
+        throw new Error(`network ${maxConfig.MAX_BOT_TOKEN}`);
+      },
       sleep: async () => {},
     }),
     (error) => !error.message.includes(maxConfig.MAX_BOT_TOKEN) && error.message.includes("скрыты"),
   );
   await assert.rejects(
     inspectVk(vkConfig, {
-      fetchImpl: async () => json({ error: { error_code: 5, error_msg: vkConfig.VK_WEBHOOK_SECRET } }),
+      fetchImpl: async () =>
+        json({ error: { error_code: 5, error_msg: vkConfig.VK_WEBHOOK_SECRET } }),
       sleep: async () => {},
     }),
-    (error) => !error.message.includes(vkConfig.VK_WEBHOOK_SECRET) && error.message.includes("ошибка API 5"),
+    (error) =>
+      !error.message.includes(vkConfig.VK_WEBHOOK_SECRET) && error.message.includes("ошибка API 5"),
   );
 });

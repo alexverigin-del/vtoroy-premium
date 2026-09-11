@@ -1,6 +1,7 @@
 import { request } from "node:https";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
+import { createMaxApiFetch } from "../max-api-fetch.mjs";
 import { classify, digest, fail, MAX_FILE_BYTES } from "./policy.js";
 import { readBounded } from "./attachments.js";
 import type { MediaKind, Platform, Outcome, ProviderResume } from "./types.js";
@@ -207,7 +208,11 @@ export async function providerJSON(
     body = new URLSearchParams({ ...payload, access_token: token, v: "5.199" });
     headers = { "content-type": "application/x-www-form-urlencoded" };
   }
-  const response = await fetch(url, {
+  const requestImpl =
+    platform === "max" && process.env.COMM_MAX_TLS_CA_PATH
+      ? createMaxApiFetch(process.env.COMM_MAX_TLS_CA_PATH)
+      : fetch;
+  const response = await requestImpl(url, {
     method: "POST",
     headers,
     body,
@@ -219,7 +224,12 @@ export async function providerJSON(
 }
 
 function safeName(value: string) {
-  return value.replace(/[\r\n"\\/]/g, "_").trim().slice(0, 128) || "attachment";
+  return (
+    value
+      .replace(/[\r\n"\\/]/g, "_")
+      .trim()
+      .slice(0, 128) || "attachment"
+  );
 }
 
 function preparationResponse(platform: Platform, response: ProviderResponse) {
@@ -250,7 +260,11 @@ async function uploadMultipart(
 ): Promise<ProviderResponse> {
   const url = validateProviderUploadURL(platform, uploadURL, mediaType);
   const form = new FormData();
-  form.append(field, new Blob([new Uint8Array(file.bytes)], { type: file.mime }), safeName(file.name));
+  form.append(
+    field,
+    new Blob([new Uint8Array(file.bytes)], { type: file.mime }),
+    safeName(file.name),
+  );
   const response = await fetch(url, {
     method: "POST",
     body: form,
@@ -285,7 +299,8 @@ async function prepareMaxAttachment(token: string, file: OutgoingFile) {
 function vkAttachmentId(prefix: "photo" | "doc", value: any) {
   if (!Number.isInteger(value?.owner_id) || !Number.isInteger(value?.id))
     throw new PreparationError({ type: "retryable", code: "MEDIA_SAVE_RECEIPT_MISSING" });
-  const access = typeof value.access_key === "string" && value.access_key ? `_${value.access_key}` : "";
+  const access =
+    typeof value.access_key === "string" && value.access_key ? `_${value.access_key}` : "";
   return `${prefix}${value.owner_id}_${value.id}${access}`;
 }
 
@@ -345,7 +360,8 @@ async function prepareVkAttachment(token: string, peerId: string, file: Outgoing
 }
 
 function stableVkRandomId(op: any) {
-  const value = parseInt(digest(String(op.id || op.outbox_id || op.attempt_id)).slice(0, 8), 16) & 0x7fffffff;
+  const value =
+    parseInt(digest(String(op.id || op.outbox_id || op.attempt_id)).slice(0, 8), 16) & 0x7fffffff;
   return value || 1;
 }
 

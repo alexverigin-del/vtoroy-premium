@@ -120,8 +120,9 @@ components:
 - On desktop, the right purchase aside with the full form, warranty and store
   link remains sticky below the site header while the longer dossier column is
   read. The separate price/action summary stays at the top of the right column.
-  Constrain the sticky card to the available viewport height and let its content
-  scroll internally when a short desktop viewport cannot fit the full form.
+  Always render the full purchase card without an internal scroll region. When
+  a short desktop viewport cannot fit it below the header, let the complete card
+  move with the page instead of clipping it or introducing nested scrolling.
   Below 1024px the aside is static and the existing bottom action remains the
   only persistent purchase control. Preserve the semantic DOM order and one
   full form.

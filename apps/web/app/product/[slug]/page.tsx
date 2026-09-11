@@ -350,7 +350,7 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
 
             <aside
-              className="card p-6 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-2 lg:max-h-product-aside lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain"
+              className="card p-6 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-2"
               data-component="ProductPurchaseAside"
             >
               <p className="text-muted">{product.shortDescription}</p>

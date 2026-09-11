@@ -251,46 +251,24 @@ try {
           width < 1024 ? "static" : "sticky",
           `Purchase aside positioning at ${width}`,
         );
+        const asideLayout = await purchaseAside.evaluate((element) => ({
+          clientHeight: element.clientHeight,
+          maxHeight: getComputedStyle(element).maxHeight,
+          overflowY: getComputedStyle(element).overflowY,
+          scrollHeight: element.scrollHeight,
+        }));
+        assert.equal(asideLayout.maxHeight, "none", `Purchase aside max-height at ${width}`);
+        assert.equal(asideLayout.overflowY, "visible", `Purchase aside overflow at ${width}`);
+        assert(
+          asideLayout.scrollHeight <= asideLayout.clientHeight + 1,
+          `Purchase aside must display its full content at ${width}: ${JSON.stringify(asideLayout)}`,
+        );
         if (width >= 1024) {
-          await page
-            .locator('[data-component="ProductDossier"]')
-            .evaluate((element) => (element.style.minHeight = "1600px"));
           const initialAside = await purchaseAside.boundingBox();
-          const stickyViewportHeight = await page.evaluate(() => innerHeight - 120);
-          const asideStyles = await purchaseAside.evaluate((element) => ({
-            maxHeight: getComputedStyle(element).maxHeight,
-            minHeight: getComputedStyle(element).minHeight,
-            overflowY: getComputedStyle(element).overflowY,
-          }));
-          assert(
-            initialAside.height <= stickyViewportHeight + 1,
-            `Desktop purchase aside must fit the sticky viewport at ${width}: ${JSON.stringify({ initialAside, asideStyles })}`,
-          );
           assert(
             summary.y + summary.height <= initialAside.y,
             `Desktop purchase summary and sticky card overlap at ${width}`,
           );
-          await page.evaluate(() => {
-            const aside = document.querySelector('[data-component="ProductPurchaseAside"]');
-            const target = aside.getBoundingClientRect().top + scrollY + 320;
-            scrollTo(0, Math.min(target, document.documentElement.scrollHeight - innerHeight - 1));
-          });
-          await page.waitForTimeout(100);
-          const stickyAside = await purchaseAside.boundingBox();
-          assert(
-            stickyAside.y >= 95 && stickyAside.y <= 97,
-            `Desktop purchase aside must stick below the header at ${width}: ${JSON.stringify({ initialAside, stickyAside, asideStyles })}`,
-          );
-          assert(stickyAside.y < initialAside.y, `Desktop purchase aside did not move at ${width}`);
-          if (width === 1440) {
-            await page.screenshot({
-              path: path.join(output, "compiled-product-1440-sticky.png"),
-            });
-          }
-          await page.evaluate(() => scrollTo(0, 0));
-          await page
-            .locator('[data-component="ProductDossier"]')
-            .evaluate((element) => element.style.removeProperty("min-height"));
         }
         await page.screenshot({
           path: path.join(output, `compiled-product-${width}.png`),
@@ -325,6 +303,36 @@ try {
           await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
           `Compiled product text at 200% overflows at ${width}`,
         );
+      }
+      for (const width of [1024, 1280, 1440]) {
+        await page.setViewportSize({ width, height: 1080 });
+        await page.goto(`${base}/product/fixture-available`, { waitUntil: "networkidle" });
+        await page
+          .locator('[data-component="ProductDossier"]')
+          .evaluate((element) => (element.style.minHeight = "1600px"));
+        const purchaseAside = page.locator('[data-component="ProductPurchaseAside"]');
+        const initialAside = await purchaseAside.boundingBox();
+        assert(
+          initialAside.height + 96 <= 1080,
+          `Full purchase aside must fit the tall sticky viewport at ${width}`,
+        );
+        await page.evaluate(() => {
+          const aside = document.querySelector('[data-component="ProductPurchaseAside"]');
+          const target = aside.getBoundingClientRect().top + scrollY + 320;
+          scrollTo(0, Math.min(target, document.documentElement.scrollHeight - innerHeight - 1));
+        });
+        await page.waitForTimeout(100);
+        const stickyAside = await purchaseAside.boundingBox();
+        assert(
+          stickyAside.y >= 95 && stickyAside.y <= 97,
+          `Full purchase aside must stick below the header at ${width}: ${stickyAside.y}`,
+        );
+        assert(stickyAside.y < initialAside.y, `Desktop purchase aside did not move at ${width}`);
+        if (width === 1440) {
+          await page.screenshot({
+            path: path.join(output, "compiled-product-1440-sticky.png"),
+          });
+        }
       }
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(`${base}/catalog`, { waitUntil: "networkidle" });

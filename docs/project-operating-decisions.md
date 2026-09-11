@@ -130,9 +130,12 @@ memory alone.
 - User requested restoration of the useful desktop behavior where the purchase
   form follows the reader through the long device dossier. The current
   `ProductPurchaseAside` is sticky from 1024px with a 96px offset below the
-  site header; it remains static below that breakpoint. On short desktop
-  viewports the card is capped to the available height and scrolls internally,
-  because an element taller than the viewport cannot physically remain sticky.
+  site header; it remains static below that breakpoint.
+- Follow-up decision on 2026-09-11: the purchase card must always be displayed
+  in full without its own scrollbar or viewport-height cap. Sticky remains
+  available when the complete card fits below the header; on a shorter desktop
+  viewport the browser may move the oversized card with the document. This is
+  preferable to nested scrolling inside a purchase form.
 - Keep the separate price/action summary at the top of the right column, the
   single full form after gallery/details in DOM order, and the existing mobile
   bottom purchase bar. This restores desktop visual balance and access to the
@@ -157,7 +160,11 @@ memory alone.
 - Corrected production passed route/product-viewer, image, desktop/mobile
   visual and copy smoke. On the published iPhone 14 Pro card at 1440x900, the
   purchase aside moved from `y=626.5` to the required sticky `y=96`; its 780px
-  viewport cap and internal overflow were active beside a 3211px dossier.
+  viewport cap and internal overflow were active beside a 3211px dossier. The
+  follow-up above supersedes that cap. User approved the full release after
+  local `web:verify`, bundle-budget, Impeccable detector and compiled UI checks
+  passed. Local, GitHub and the clean production checkout were at `c644f7a`
+  before release; backup `backups/directus/20260911T021702Z` was available.
 
 ## Impeccable A/B/C Implementation (2026-09-10, Local Only)
 

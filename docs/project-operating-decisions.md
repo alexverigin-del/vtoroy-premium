@@ -1,6 +1,6 @@
 # Project Operating Decisions
 
-Last updated: 2026-09-10.
+Last updated: 2026-09-11.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
@@ -124,6 +124,26 @@ memory alone.
   SEO, image and product-viewer smoke also passed. `isvoi-web` restarted onto
   the new build while `isvoi-telegram` kept its existing process. Directus
   schema, content, permissions and logo values were not changed.
+
+## Desktop Product Sticky Aside Release (2026-09-11)
+
+- User requested restoration of the useful desktop behavior where the purchase
+  form follows the reader through the long device dossier. The current
+  `ProductPurchaseAside` is sticky from 1024px with a 96px offset below the
+  site header; it remains static below that breakpoint. On short desktop
+  viewports the card is capped to the available height and scrolls internally,
+  because an element taller than the viewport cannot physically remain sticky.
+- Keep the separate price/action summary at the top of the right column, the
+  single full form after gallery/details in DOM order, and the existing mobile
+  bottom purchase bar. This restores desktop visual balance and access to the
+  form without reverting semantic or mobile improvements.
+- Compiled Next smoke must verify computed static/sticky modes and actual
+  movement after scrolling at 1024, 1280 and 1440px. No Directus schema,
+  content, lead workflow or fallback-copy changes are included. User approved
+  the full release after local `web:verify`, bundle-budget, Impeccable detector
+  and compiled six-width UI checks passed. GitHub and the clean production
+  checkout were both at `719f925` before release; backup
+  `backups/directus/20260911T021702Z` was available.
 
 ## Impeccable A/B/C Implementation (2026-09-10, Local Only)
 

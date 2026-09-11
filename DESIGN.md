@@ -117,6 +117,14 @@ components:
   The mobile sticky action shares the city offer calculation and disappears
   behind consent/viewer UI and when the form is visible. Sold cards retain
   their public URL and existing alternative-selection action.
+- On desktop, the right purchase aside with the full form, warranty and store
+  link remains sticky below the site header while the longer dossier column is
+  read. The separate price/action summary stays at the top of the right column.
+  Constrain the sticky card to the available viewport height and let its content
+  scroll internally when a short desktop viewport cannot fit the full form.
+  Below 1024px the aside is static and the existing bottom action remains the
+  only persistent purchase control. Preserve the semantic DOM order and one
+  full form.
 - Catalog uses a compact header/search, result count with sort, and a mobile
   filter dialog. Keep its existing editorial title and sold labels explicit;
   do not replace manually maintained copy to implement a design recommendation.

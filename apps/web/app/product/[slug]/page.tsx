@@ -292,7 +292,10 @@ export default async function ProductPage({ params }: PageProps) {
                 {actionLabel}
               </a>
             </section>
-            <div className="grid min-w-0 grid-cols-1 gap-6 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+            <div
+              className="grid min-w-0 grid-cols-1 gap-6 lg:col-start-1 lg:row-span-2 lg:row-start-1"
+              data-component="ProductDossier"
+            >
               <DeviceGallery images={gallery} />
 
               {facts.length > 0 ? (
@@ -346,7 +349,10 @@ export default async function ProductPage({ params }: PageProps) {
               ) : null}
             </div>
 
-            <aside className="card p-6 lg:col-start-2 lg:row-start-2">
+            <aside
+              className="card p-6 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-2 lg:max-h-product-aside lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain"
+              data-component="ProductPurchaseAside"
+            >
               <p className="text-muted">{product.shortDescription}</p>
               <span className="mt-5 inline-flex rounded-pill bg-surface px-3 py-1 text-sm font-medium text-muted">
                 {conditionLabel}

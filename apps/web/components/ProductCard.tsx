@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ProductCardData } from "@vtoroy/shared";
 
+import { cn } from "../lib/cn";
 import { ProductImage, productImageSrc } from "./ProductImage";
 
 function conditionLabel(product: ProductCardData): string {
@@ -25,7 +26,7 @@ export function ProductCard({
       data-component="ProductCard"
       data-stock-status={sold ? "sold" : product.stockStatus}
     >
-      <div className={sold ? "flex h-full flex-col grayscale" : "flex h-full flex-col"}>
+      <div className={cn("flex h-full flex-col", sold && "grayscale")}>
         <div className="relative flex aspect-product items-center justify-center bg-surface">
           {src ? (
             <ProductImage
@@ -63,7 +64,10 @@ export function ProductCard({
             <p className="mt-1 text-sm text-muted">{product.color}</p>
           ) : null}
           <p
-            className={`mt-3 text-lg font-semibold tabular-nums ${sold ? "text-muted" : "text-carbon"}`}
+            className={cn(
+              "mt-3 text-lg font-semibold tabular-nums",
+              sold ? "text-muted" : "text-carbon",
+            )}
           >
             {product.priceText}
           </p>
@@ -81,7 +85,10 @@ export function ProductCard({
 
           <div className="mt-auto pt-2">
             <span
-              className={`mt-3 inline-flex text-sm font-medium group-hover:underline ${sold ? "text-graphite" : "text-accent"}`}
+              className={cn(
+                "mt-3 inline-flex text-sm font-medium group-hover:underline",
+                sold ? "text-graphite" : "text-accent",
+              )}
             >
               {product.ctaLabel} →
             </span>

@@ -52,6 +52,10 @@ psql_file() {
   compose exec -T database sh -lc 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$1"
 }
 
+repo_git() {
+  runuser -u deploy -- git -C "$ROOT" "$@"
+}
+
 rollback() {
   local original_status=${1:-1}
   trap - ERR EXIT
@@ -78,7 +82,7 @@ rollback() {
     printf "DO \\$\\$ BEGIN IF to_regclass('public.comm_connections') IS NOT NULL THEN UPDATE comm_connections SET enabled=false WHERE id='%s'; UPDATE comm_runtime SET sending_enabled=false,recovery_hold=true WHERE id=1; END IF; END \\$\\$;\n" "$CONNECTION_ID" |
       compose exec -T database sh -lc 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' >/dev/null 2>&1
     if [[ $MERGED == true ]]; then
-      git -C "$ROOT" reset --hard "$BASE_COMMIT" >/dev/null 2>&1
+      repo_git reset --hard "$BASE_COMMIT" >/dev/null 2>&1
     fi
     rmdir "$LOCK" >/dev/null 2>&1
   fi
@@ -91,9 +95,12 @@ trap 'rollback $?' EXIT
 [[ $RELEASE_COMMIT =~ ^[0-9a-f]{40}$ ]] || fail RELEASE_COMMIT_INVALID
 [[ $RELEASE_SHA256 =~ ^[0-9a-f]{64}$ ]] || fail RELEASE_HASH_INVALID
 [[ $(sha256sum "$BUNDLE" | awk '{print $1}') == "$RELEASE_SHA256" ]] || fail RELEASE_HASH_MISMATCH
-git -C "$ROOT" bundle verify "$BUNDLE" >/dev/null 2>&1 || fail RELEASE_BUNDLE_INVALID
-[[ $(git -C "$ROOT" rev-parse HEAD) == "$BASE_COMMIT" ]] || fail PRODUCTION_BASE_CHANGED
-[[ -z $(git -C "$ROOT" status --porcelain) ]] || fail PRODUCTION_WORKTREE_DIRTY
+getent passwd deploy >/dev/null || fail DEPLOY_USER_MISSING
+chown deploy:deploy "$BUNDLE"
+chmod 600 "$BUNDLE"
+repo_git bundle verify "$BUNDLE" >/dev/null 2>&1 || fail RELEASE_BUNDLE_INVALID
+[[ $(repo_git rev-parse HEAD) == "$BASE_COMMIT" ]] || fail PRODUCTION_BASE_CHANGED
+[[ -z $(repo_git status --porcelain) ]] || fail PRODUCTION_WORKTREE_DIRTY
 [[ -f $SECRETS_FILE && $(stat -c %a "$SECRETS_FILE") == 600 ]] || fail SECRETS_FILE_NOT_PRIVATE
 
 MAX_BOT_TOKEN=$(sed -n 's/^MAX_BOT_TOKEN=//p' "$SECRETS_FILE" | tail -n 1)
@@ -117,22 +124,22 @@ cp "$DIRECTUS_ENV" "$BACKUP/directus.env"
 [[ ! -f $UNIT ]] || cp "$UNIT" "$BACKUP/isvoi-communications@.service"
 
 PHASE=code
-git -C "$ROOT" fetch "$BUNDLE" "$RELEASE_COMMIT" >/dev/null
-git -C "$ROOT" merge-base --is-ancestor "$BASE_COMMIT" "$RELEASE_COMMIT" || fail RELEASE_NOT_DESCENDANT_OF_BASE
-git -C "$ROOT" merge --ff-only "$RELEASE_COMMIT" >/dev/null
+repo_git fetch "$BUNDLE" "$RELEASE_COMMIT" >/dev/null
+repo_git merge-base --is-ancestor "$BASE_COMMIT" "$RELEASE_COMMIT" || fail RELEASE_NOT_DESCENDANT_OF_BASE
+repo_git merge --ff-only "$RELEASE_COMMIT" >/dev/null
 MERGED=true
-[[ $(git -C "$ROOT" rev-parse HEAD) == "$RELEASE_COMMIT" ]] || fail RELEASE_CODE_MISMATCH
-[[ -z $(git -C "$ROOT" status --porcelain) ]] || fail RELEASE_CODE_DIRTY
+[[ $(repo_git rev-parse HEAD) == "$RELEASE_COMMIT" ]] || fail RELEASE_CODE_MISMATCH
+[[ -z $(repo_git status --porcelain) ]] || fail RELEASE_CODE_DIRTY
 
 PHASE=dependencies
 cd "$ROOT"
-npm ci --ignore-scripts --no-audit --no-fund >/dev/null
-npm run communications:build >/dev/null
-npm run communications:test >/dev/null
-npm run telegram:test >/dev/null
+runuser -u deploy -- npm ci --ignore-scripts --no-audit --no-fund >/dev/null
+runuser -u deploy -- npm run communications:build >/dev/null
+runuser -u deploy -- npm run communications:test >/dev/null
+runuser -u deploy -- npm run telegram:test >/dev/null
 
 PHASE=schema
-node scripts/setup_directus_communications_sql.mjs > "$BACKUP/communications-schema.sql"
+runuser -u deploy -- node scripts/setup_directus_communications_sql.mjs > "$BACKUP/communications-schema.sql"
 psql_file "$BACKUP/communications-schema.sql"
 WORKER_TOKEN=$(openssl rand -hex 32)
 [[ $WORKER_TOKEN =~ ^[A-Fa-f0-9]{64}$ ]] || fail WORKER_TOKEN_GENERATION_FAILED
@@ -141,7 +148,7 @@ psql_file scripts/audit_max_production.sql | tee "$BACKUP/max-audit.txt"
 
 PHASE=configuration
 mkdir -p "$STACK/private-communications"
-chown isvoi:isvoi "$STACK/private-communications"
+chown deploy:deploy "$STACK/private-communications"
 chmod 700 "$STACK/private-communications"
 ENV_CHANGED=true
 set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_ENABLED true

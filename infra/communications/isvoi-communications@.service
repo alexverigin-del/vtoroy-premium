@@ -5,8 +5,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=isvoi
-Group=isvoi
+User=deploy
+Group=deploy
 WorkingDirectory=/opt/isvoi
 EnvironmentFile=/etc/isvoi/communications.env
 Environment=COMM_MAX_TLS_CA_PATH=/opt/isvoi/infra/communications/certificates/russian_trusted_root_ca.crt

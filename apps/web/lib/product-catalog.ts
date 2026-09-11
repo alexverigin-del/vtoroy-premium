@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { catalogProductSort } from "./catalog-product-sort";
 import type {
   AccessoryDetails,
   CatalogProduct,
@@ -577,13 +578,6 @@ const getActiveCatalogCategories = cache(async function getActiveCatalogCategori
   return response?.data.map((row) => mapCategory(row)).filter((item) => item.name) ?? [];
 });
 
-function productSort(sort = "default"): string {
-  if (sort === "price-asc") return "price,sort";
-  if (sort === "price-desc") return "-price,sort";
-  if (sort === "updated-desc") return "-updated_at,sort";
-  return "sort,-updated_at";
-}
-
 function normalizePage(value?: number): number {
   return Number.isFinite(value) && Number(value) > 0 ? Math.floor(Number(value)) : 1;
 }
@@ -633,7 +627,7 @@ export async function getPublishedProducts(
     fields: PRODUCT_CARD_FIELDS,
     limit: cityMode ? "500" : String(pageSize),
     offset: cityMode ? "0" : String((page - 1) * pageSize),
-    sort: productSort(filters.sort),
+    sort: catalogProductSort(filters.sort),
     meta: "filter_count",
   });
   appendPublicCatalogAvailabilityFilter(params);
@@ -718,7 +712,7 @@ export async function getAllPublishedV3ProductCards(
       fields: PRODUCT_CARD_FIELDS,
       limit: String(pageSize),
       offset: String((page - 1) * pageSize),
-      sort: productSort(),
+      sort: catalogProductSort(),
     });
     const response = await directusRequest<Row[]>(`/items/products?${params}`, options);
     if (!response) {

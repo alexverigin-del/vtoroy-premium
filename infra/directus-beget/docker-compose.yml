@@ -43,6 +43,7 @@ services:
     volumes:
       - ./uploads:/directus/uploads
       - ./extensions-bundled:/directus/extensions:ro
+      - ./private-communications:/directus/private-communications
     environment:
       SECRET: ${SECRET}
 
@@ -69,6 +70,13 @@ services:
       ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED: ${ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED:-false}
       ISVOI_TELEGRAM_BOT_USERNAME: ${ISVOI_TELEGRAM_BOT_USERNAME:-}
       ISVOI_TELEGRAM_INTAKE_USER_ID: ${ISVOI_TELEGRAM_INTAKE_USER_ID:-}
+
+      # Omnichannel endpoint. Keep disabled until the additive schema and
+      # scoped worker identities have passed the release checks.
+      ISVOI_COMMUNICATIONS_ENABLED: ${ISVOI_COMMUNICATIONS_ENABLED:-false}
+      ISVOI_COMMUNICATIONS_PRIVATE_DIR: /directus/private-communications
+      ISVOI_COMMUNICATIONS_CLAMAV_HOST: ${ISVOI_COMMUNICATIONS_CLAMAV_HOST:-clamav}
+      ISVOI_MAX_SUPPORT_WEBHOOK_SECRET: ${ISVOI_MAX_SUPPORT_WEBHOOK_SECRET:-}
 
       # Realtime / WebSockets.
       WEBSOCKETS_ENABLED: ${WEBSOCKETS_ENABLED}

@@ -144,6 +144,20 @@ memory alone.
   and compiled six-width UI checks passed. GitHub and the clean production
   checkout were both at `719f925` before release; backup
   `backups/directus/20260911T021702Z` was available.
+- Release `4743592` was pushed to `master` and deployed from
+  `/opt/isvoi/work/product-sticky-4743592-20260911T135118Z`. Rollback material,
+  including the previous build and the rejected first build, is retained in
+  `/opt/isvoi/backups/web-product-sticky-4743592-20260911T135338Z`.
+- The first staged build omitted the production `apps/web/.env.local` symlink.
+  Live smoke immediately caught `/trade` returning `500` with a Next
+  static-to-dynamic error. The previous build was restored before rebuilding;
+  the corrected staging build loaded `.env.local`, returned `200` for `/trade`
+  on isolated port 3011 and was then deployed. No Directus, content, schema or
+  Telegram changes occurred; `isvoi-telegram` kept PID `4149600` throughout.
+- Corrected production passed route/product-viewer, image, desktop/mobile
+  visual and copy smoke. On the published iPhone 14 Pro card at 1440x900, the
+  purchase aside moved from `y=626.5` to the required sticky `y=96`; its 780px
+  viewport cap and internal overflow were active beside a 3211px dossier.
 
 ## Impeccable A/B/C Implementation (2026-09-10, Local Only)
 
@@ -436,6 +450,12 @@ New chat rules:
   leads, backups and deployment.
 - Prefer small production-safe iterations: audit, implement one logical step,
   verify, commit, then deploy only when explicitly requested.
+- A detached Beget worktree used for a production Next build must symlink
+  `/opt/isvoi/apps/web/.env.local` to `apps/web/.env.local` before `web:verify`
+  or `web:build`. Confirm the build reports `.env.local` and run `/trade` on an
+  isolated loopback port before switching `.next`; compilation and bundle gates
+  alone do not catch a build-time fallback that becomes static-to-dynamic at
+  runtime.
 - Use these request modes:
   - `проведи аудит и дай рекомендации` means inspect and report without edits.
   - `реализуй` means edit locally and verify.

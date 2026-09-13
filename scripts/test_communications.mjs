@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { testDatabase } from "./lib/communications-test-db.mjs";
 import {
   createService,
+  keyboard,
   createDelivery,
   createStaff,
   normalize,
@@ -20,6 +21,12 @@ import {
   serviceDeadlines,
   defaultServiceLevel,
 } from "../packages/communications/dist/index.js";
+
+test("empty menus do not create invalid keyboard payloads", () => {
+  assert.deepEqual(keyboard("telegram", []), {});
+  assert.deepEqual(keyboard("max", []), {});
+  assert.deepEqual(keyboard("vk", []), {});
+});
 
 test("SLA deadlines count only configured working time", () => {
   assert.deepEqual(serviceDeadlines("2026-09-07T07:05:00.000Z", defaultServiceLevel), {

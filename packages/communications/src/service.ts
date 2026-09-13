@@ -48,6 +48,7 @@ const menu = [
   ["Подписки", "news"],
 ];
 export function keyboard(platform: string, rows: string[][]): Record<string, unknown> {
+  if (!rows.length) return {};
   if (platform === "telegram")
     return {
       reply_markup: {

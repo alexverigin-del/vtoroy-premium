@@ -5509,6 +5509,7 @@ var menu = [
   ["\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0438", "news"]
 ];
 function keyboard(platform, rows) {
+  if (!rows.length) return {};
   if (platform === "telegram")
     return {
       reply_markup: {

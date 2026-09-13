@@ -181,9 +181,13 @@ export async function providerJSON(
     headers = { "content-type": "application/json" };
   } else if (platform === "max") {
     if (!["messages", "answers", "uploads"].includes(method)) return fail("UNSUPPORTED_METHOD");
-    const { chat_id, type, ...rest } = payload;
+    const { chat_id, user_id, type, ...rest } = payload;
     const query = new URLSearchParams();
-    if (chat_id !== undefined && chat_id !== null) query.set("chat_id", String(chat_id));
+    const hasChatId = chat_id !== undefined && chat_id !== null;
+    const hasUserId = user_id !== undefined && user_id !== null;
+    if (method === "messages" && hasChatId === hasUserId) return fail("INVALID_MAX_RECIPIENT");
+    if (hasUserId) query.set("user_id", String(user_id));
+    if (hasChatId) query.set("chat_id", String(chat_id));
     if (method === "uploads" && type) query.set("type", String(type));
     url = `https://platform-api2.max.ru/${method}${query.size ? `?${query}` : ""}`;
     body = method === "uploads" ? "" : JSON.stringify(rest);
@@ -394,6 +398,11 @@ export async function sendOperation(
   if (!["text", "attachment", "topic"].includes(op.method))
     return { type: "rejected", code: "UNSUPPORTED_OPERATION" };
   if (op.method === "attachment" && !file) return { type: "rejected", code: "FILE_NOT_AVAILABLE" };
+  if (platform === "max") {
+    const hasUserId = op.payload?.user_id !== undefined && op.payload?.user_id !== null;
+    const hasChatId = op.payload?.chat_id !== undefined && op.payload?.chat_id !== null;
+    if (hasUserId === hasChatId) return { type: "rejected", code: "INVALID_MAX_RECIPIENT" };
+  }
   let userVisibleRequestStarted = false;
   let resume: ProviderResume | undefined;
   try {
@@ -427,8 +436,12 @@ export async function sendOperation(
         (await prepareMaxAttachment(token, file));
       resume = { platform: "max", attachment };
       userVisibleRequestStarted = true;
+      const recipient =
+        op.payload.user_id !== undefined && op.payload.user_id !== null
+          ? { user_id: op.payload.user_id }
+          : { chat_id: op.payload.chat_id };
       result = await providerJSON("max", token, "messages", {
-        chat_id: op.payload.chat_id ?? op.payload.peer_id,
+        ...recipient,
         ...(op.payload.text ? { text: op.payload.text } : {}),
         attachments: [attachment],
       });

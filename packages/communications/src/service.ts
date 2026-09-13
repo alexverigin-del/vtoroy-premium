@@ -151,6 +151,13 @@ export function createService(context: Context) {
   async function event(trx: Database, values: any) {
     await trx("comm_events").insert(values).onConflict("dedupe_key").ignore();
   }
+  async function maxUserId(trx: Database, thread: any) {
+    const identity = await trx("comm_identities")
+      .where({ id: thread.identity_id })
+      .first("external_user_id");
+    if (!identity?.external_user_id) return fail("IDENTITY_NOT_FOUND", 409);
+    return identity.external_user_id;
+  }
   async function enqueue(
     trx: Database,
     connection: Connection,
@@ -175,7 +182,7 @@ export function createService(context: Context) {
       connection.platform === "telegram"
         ? { chat_id: thread.external_peer_id, text }
         : connection.platform === "max"
-          ? { chat_id: thread.external_peer_id, text }
+          ? { user_id: await maxUserId(trx, thread), text }
           : {
               peer_id: thread.external_peer_id,
               message: text,
@@ -931,12 +938,16 @@ export function createService(context: Context) {
           });
           if (!text) await trx("comm_operations").where({ outbox_id: outbox.id }).delete();
           let position = text ? 1 : 0;
+          const attachmentRecipient =
+            n.platform === "max"
+              ? { user_id: await maxUserId(trx, thread) }
+              : { peer_id: thread.external_peer_id };
           for (const f of files)
             await trx("comm_operations").insert({
               outbox_id: outbox.id,
               position: position++,
               method: "attachment",
-              payload: { attachment_id: f.id, peer_id: thread.external_peer_id },
+              payload: { attachment_id: f.id, ...attachmentRecipient },
             });
         }
         result = { ok: true, message_id: m.id };

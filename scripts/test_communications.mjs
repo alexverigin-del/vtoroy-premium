@@ -73,6 +73,53 @@ test("Telegram Opus voice is sent as voice instead of a generic document", async
   }
 });
 
+test("MAX addresses private messages by user_id and group messages by chat_id", async () => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), init });
+    return Response.json({ message: { body: { mid: `max-${calls.length}` } } });
+  };
+  try {
+    assert.deepEqual(
+      await sendOperation("max", "MAX_TEST_TOKEN", {
+        id: "op-max-private",
+        method: "text",
+        payload: { user_id: "227941682", text: "Личный ответ" },
+      }),
+      { type: "accepted", externalId: "max-1" },
+    );
+    assert.equal(
+      calls[0].url,
+      "https://platform-api2.max.ru/messages?user_id=227941682",
+    );
+    assert.deepEqual(JSON.parse(calls[0].init.body), { text: "Личный ответ" });
+
+    assert.deepEqual(
+      await sendOperation("max", "MAX_TEST_TOKEN", {
+        id: "op-max-group",
+        method: "text",
+        payload: { chat_id: "-900001", text: "Ответ в чат" },
+      }),
+      { type: "accepted", externalId: "max-2" },
+    );
+    assert.equal(calls[1].url, "https://platform-api2.max.ru/messages?chat_id=-900001");
+    assert.deepEqual(JSON.parse(calls[1].init.body), { text: "Ответ в чат" });
+
+    assert.deepEqual(
+      await sendOperation("max", "MAX_TEST_TOKEN", {
+        id: "op-max-ambiguous",
+        method: "text",
+        payload: { user_id: "1", chat_id: "2", text: "Не отправлять" },
+      }),
+      { type: "rejected", code: "INVALID_MAX_RECIPIENT" },
+    );
+    assert.equal(calls.length, 2, "ambiguous recipient is rejected before the provider call");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("MAX media uses a provider upload slot and sends only its token", async () => {
   const originalFetch = globalThis.fetch;
   const calls = [];
@@ -87,7 +134,7 @@ test("MAX media uses a provider upload slot and sends only its token", async () 
     const result = await sendOperation(
       "max",
       "MAX_TEST_TOKEN",
-      { id: "op-max-1", method: "attachment", payload: { peer_id: "900001" } },
+      { id: "op-max-1", method: "attachment", payload: { user_id: "900001" } },
       {
         bytes: Buffer.from("image"),
         mime: "image/jpeg",
@@ -99,7 +146,7 @@ test("MAX media uses a provider upload slot and sends only its token", async () 
     assert.equal(calls[0].url, "https://platform-api2.max.ru/uploads?type=image");
     assert.equal(calls[1].url, "https://iu.oneme.ru/upload.do?fixture=1");
     assert.equal(calls[1].init.headers?.Authorization, undefined, "bot token is not sent to upload host");
-    assert.equal(calls[2].url, "https://platform-api2.max.ru/messages?chat_id=900001");
+    assert.equal(calls[2].url, "https://platform-api2.max.ru/messages?user_id=900001");
     assert.deepEqual(JSON.parse(calls[2].init.body), {
       attachments: [{ type: "image", payload: { token: "max-upload-token" } }],
     });
@@ -125,7 +172,7 @@ test("MAX attachment-not-ready retry reuses the prepared media token", async () 
     const op = {
       id: "op-max-retry",
       method: "attachment",
-      payload: { peer_id: "700" },
+      payload: { user_id: "700" },
     };
     const file = {
       bytes: Buffer.from("audio"),
@@ -156,7 +203,7 @@ test("MAX attachment-not-ready retry reuses the prepared media token", async () 
     );
     assert.deepEqual(second, { type: "accepted", externalId: "max-ready" });
     assert.equal(calls.length, 1, "retry does not request another upload slot");
-    assert.equal(calls[0].url, "https://platform-api2.max.ru/messages?chat_id=700");
+    assert.equal(calls[0].url, "https://platform-api2.max.ru/messages?user_id=700");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -257,7 +304,7 @@ test("media preparation failures are retryable before the final send", async () 
       await sendOperation(
         "max",
         "MAX_TEST_TOKEN",
-        { id: "op-safe-retry", method: "attachment", payload: { peer_id: "44" } },
+        { id: "op-safe-retry", method: "attachment", payload: { user_id: "44" } },
         {
           bytes: Buffer.from("doc"),
           mime: "application/pdf",

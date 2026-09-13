@@ -1395,6 +1395,57 @@ function createService(context) {
       delivery: jobs.find((j) => j.message_id === m.id) || null
     })).reverse();
   }
+  async function connections(a) {
+    const scopes = await db("comm_staff").where({ user_id: a.user, enabled: true, can_manage: true }).pluck("store_id");
+    if (!scopes.length) return fail("FORBIDDEN", 403);
+    const result = await db.raw(
+      `SELECT n.id,n.name,n.platform,n.enabled,n.mode,n.bot_username,n.marketing_enabled,
+      n.last_received_at,n.last_sent_at,n.error_code,n.send_after,
+      (SELECT count(*)::int FROM comm_identities i WHERE i.connection_id=n.id) AS accounts,
+      (SELECT count(*)::int FROM comm_identities i WHERE i.connection_id=n.id AND i.is_test) AS test_accounts,
+      (SELECT count(*)::int FROM comm_conversations c JOIN comm_threads t ON t.id=c.thread_id
+        WHERE t.connection_id=n.id AND c.handling<>'closed') AS open_conversations,
+      (SELECT count(*)::int FROM comm_inbound i WHERE i.connection_id=n.id AND i.state='pending') AS inbound_pending,
+      (SELECT count(*)::int FROM comm_inbound i WHERE i.connection_id=n.id AND i.state='failed'
+        AND i.received_at>=now()-interval '24 hours') AS inbound_failed_24,
+      (SELECT count(*)::int FROM comm_outbox o WHERE o.connection_id=n.id
+        AND o.state IN ('pending','sending')) AS outbox_pending,
+      (SELECT count(*)::int FROM comm_outbox o WHERE o.connection_id=n.id
+        AND o.state='uncertain') AS uncertain,
+      (SELECT count(*)::int FROM comm_outbox o WHERE o.connection_id=n.id
+        AND o.state='failed' AND o.created_at>=now()-interval '24 hours') AS delivery_failed_24,
+      (SELECT count(*)::int FROM comm_outbox o WHERE o.connection_id=n.id
+        AND o.state='partial' AND o.created_at>=now()-interval '24 hours') AS delivery_partial_24,
+      (SELECT min(i.received_at) FROM comm_inbound i
+        WHERE i.connection_id=n.id AND i.state='pending') AS oldest_inbound_at,
+      (SELECT min(o.created_at) FROM comm_outbox o
+        WHERE o.connection_id=n.id AND o.state IN ('pending','sending')) AS oldest_outbox_at,
+      CASE
+        WHEN NOT n.enabled THEN 'disabled'
+        WHEN n.error_code IS NOT NULL THEN 'error'
+        WHEN EXISTS(SELECT 1 FROM comm_outbox o WHERE o.connection_id=n.id AND o.state='uncertain')
+          THEN 'attention'
+        WHEN EXISTS(SELECT 1 FROM comm_inbound i WHERE i.connection_id=n.id AND i.state='pending'
+          AND i.received_at<now()-interval '5 minutes')
+          OR EXISTS(SELECT 1 FROM comm_outbox o WHERE o.connection_id=n.id
+          AND o.state IN ('pending','sending') AND o.created_at<now()-interval '5 minutes')
+          THEN 'delayed'
+        WHEN n.last_received_at IS NULL AND n.last_sent_at IS NULL THEN 'idle'
+        ELSE 'ok'
+      END AS health
+      FROM comm_connections n WHERE n.store_id=ANY(?::uuid[]) ORDER BY n.name`,
+      [scopes]
+    );
+    const runtime = await db("comm_runtime").where({ id: 1 }).first([
+      "active",
+      "sending_enabled",
+      "recovery_hold",
+      "cutover_at",
+      "baseline_at",
+      "last_backup_at"
+    ]);
+    return { checked_at: (/* @__PURE__ */ new Date()).toISOString(), runtime, connections: result.rows };
+  }
   async function audience(a) {
     const scopes = await db("comm_staff").where({ user_id: a.user, enabled: true, can_manage: true }).pluck("store_id");
     if (!scopes.length) return fail("FORBIDDEN", 403);
@@ -1438,6 +1489,7 @@ function createService(context) {
     commands,
     inbox,
     messages,
+    connections,
     audience,
     enqueue,
     event,

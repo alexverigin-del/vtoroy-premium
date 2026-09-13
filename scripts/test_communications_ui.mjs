@@ -130,6 +130,37 @@ try {
         ],
         baseline_at: "2026-09-01T09:00:00.000Z",
       };
+    else if (path.endsWith("/connections"))
+      data = {
+        checked_at: "2026-09-13T18:00:00.000Z",
+        runtime: { active: true, sending_enabled: true, recovery_hold: false },
+        connections: [
+          {
+            id: "max-test",
+            name: "MAX · Поддержка",
+            platform: "max",
+            enabled: true,
+            mode: "test",
+            bot_username: "isvoi_support_bot",
+            marketing_enabled: false,
+            health: "ok",
+            last_received_at: "2026-09-13T17:58:00.000Z",
+            last_sent_at: "2026-09-13T17:59:00.000Z",
+            open_conversations: 1,
+            accounts: 1,
+            test_accounts: 1,
+            inbound_pending: 0,
+            inbound_failed_24: 0,
+            outbox_pending: 0,
+            oldest_inbound_at: null,
+            oldest_outbox_at: null,
+            uncertain: 0,
+            delivery_failed_24: 2,
+            delivery_partial_24: 0,
+            error_code: null,
+          },
+        ],
+      };
     else throw Error(`Unexpected fixture route ${path}`);
     await route.fulfill({ json: { data } });
   });
@@ -167,6 +198,12 @@ try {
   await page.getByText("Новые аккаунты", { exact: true }).waitFor();
   await page.getByText(/Начальный снимок:/).waitFor();
   await page.screenshot({ path: resolve(output, "communications-audience.png"), fullPage: true });
+  await page.getByRole("button", { name: "Подключения", exact: true }).click();
+  await page.getByRole("heading", { name: "Подключения площадок" }).waitFor();
+  await page.getByText("MAX · Поддержка", { exact: true }).waitFor();
+  await page.getByText("Работает", { exact: true }).waitFor();
+  await page.getByText("Персональный маркетинг: выключен", { exact: true }).waitFor();
+  await page.screenshot({ path: resolve(output, "communications-connections.png"), fullPage: true });
   await page.getByRole("button", { name: "Обращения", exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: resolve(output, "communications-mobile.png"), fullPage: true });
@@ -181,7 +218,7 @@ try {
   );
   assert.deepEqual(faults, []);
   console.log(
-    "PASS UI: actual Vue module, claim/reply/note/upload, retry key after network failure, audience topics/daily baseline, desktop and mobile layout.",
+    "PASS UI: actual Vue module, claim/reply/note/upload, retry key after network failure, audience, connection operations, desktop and mobile layout.",
   );
 } finally {
   await browser.close();

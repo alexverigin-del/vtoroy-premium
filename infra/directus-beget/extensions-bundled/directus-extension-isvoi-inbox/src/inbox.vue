@@ -17,6 +17,7 @@ const rows = ref<any[]>([]),
   assignee = ref(""),
   tab = ref("inbox"),
   audience = ref<any>(null),
+  connections = ref<any>(null),
   refreshing = ref(false),
   hasOlder = ref(false);
 let timer: ReturnType<typeof setTimeout> | undefined,
@@ -232,6 +233,19 @@ async function showAudience() {
     error.value = errorText(e);
   }
 }
+async function showConnections() {
+  tab.value = "connections";
+  try {
+    connections.value = (await api.get(`${base}/connections`)).data.data;
+  } catch (e) {
+    error.value = errorText(e);
+  }
+}
+async function refreshCurrent() {
+  if (tab.value === "audience") return showAudience();
+  if (tab.value === "connections") return showConnections();
+  return load();
+}
 const date = (value: string) =>
   new Date(value).toLocaleString("ru-RU", {
     day: "2-digit",
@@ -246,6 +260,15 @@ const day = (value: string) =>
   });
 const connectionName = (id: string) =>
   audience.value?.connections?.find((connection: any) => connection.id === id)?.name || id;
+const optionalDate = (value: string | null) => (value ? date(value) : "—");
+const healthName: Record<string, string> = {
+  ok: "Работает",
+  idle: "Ожидает первых событий",
+  delayed: "Есть задержка",
+  attention: "Требует проверки",
+  error: "Ошибка подключения",
+  disabled: "Отключено",
+};
 const eventName: Record<string, string> = {
   first_seen: "Новые аккаунты",
   subscribed: "Подписки",
@@ -287,9 +310,12 @@ onBeforeUnmount(() => {
         ><button :aria-current="tab === 'audience' ? 'page' : undefined" @click="showAudience">
           Аудитория
         </button>
+        <button :aria-current="tab === 'connections' ? 'page' : undefined" @click="showConnections">
+          Подключения
+        </button>
       </nav>
       <p v-if="error" class="error" role="alert">
-        {{ error }} <button @click="load">Обновить</button>
+        {{ error }} <button @click="refreshCurrent">Обновить</button>
       </p>
       <div v-if="tab === 'inbox'" class="inbox" :class="{ 'has-selection': selected }">
         <aside class="queue" aria-label="Очередь обращений">
@@ -463,7 +489,7 @@ onBeforeUnmount(() => {
           </button>
         </aside>
       </div>
-      <section v-else class="audience">
+      <section v-else-if="tab === 'audience'" class="audience">
         <h2>Аудитория ботов</h2>
         <p>
           Аккаунты площадок могут принадлежать одному человеку. Сумма аккаунтов не равна числу
@@ -558,6 +584,63 @@ onBeforeUnmount(() => {
             восстановлены искусственно.
           </p>
         </div>
+      </section>
+      <section v-else class="connections-view">
+        <header class="section-heading">
+          <div>
+            <h2>Подключения площадок</h2>
+            <p>Состояние приёма, отправки и очередей без доступа к секретам площадок.</p>
+          </div>
+          <button :disabled="refreshing" @click="showConnections">Обновить</button>
+        </header>
+        <template v-if="connections">
+          <div
+            v-if="connections.runtime?.recovery_hold || !connections.runtime?.sending_enabled"
+            class="runtime-alert"
+            role="status"
+          >
+            Исходящая отправка остановлена
+            <span v-if="connections.runtime?.recovery_hold">· включён recovery hold</span>
+          </div>
+          <p class="checked">Проверено: {{ date(connections.checked_at) }}</p>
+          <div class="connection-grid">
+            <article v-for="item in connections.connections" :key="item.id" class="connection-card">
+              <header>
+                <div>
+                  <span class="platform">{{ item.platform }}</span>
+                  <h3>{{ item.name }}</h3>
+                </div>
+                <span :class="['health', item.health]">{{ healthName[item.health] || item.health }}</span>
+              </header>
+              <dl>
+                <dt>Режим</dt><dd>{{ item.mode === "test" ? "Закрытый пилот" : "Рабочий" }}</dd>
+                <dt>Бот</dt><dd>{{ item.bot_username || "—" }}</dd>
+                <dt>Последнее входящее</dt><dd>{{ optionalDate(item.last_received_at) }}</dd>
+                <dt>Последняя отправка</dt><dd>{{ optionalDate(item.last_sent_at) }}</dd>
+                <dt>Открытые обращения</dt><dd>{{ item.open_conversations }}</dd>
+                <dt>Аккаунты</dt><dd>{{ item.accounts }} <small>тестовых: {{ item.test_accounts }}</small></dd>
+                <dt>Очередь приёма</dt>
+                <dd>
+                  {{ item.inbound_pending }}
+                  <small v-if="item.oldest_inbound_at">с {{ optionalDate(item.oldest_inbound_at) }}</small>
+                </dd>
+                <dt>Очередь отправки</dt>
+                <dd>
+                  {{ item.outbox_pending }}
+                  <small v-if="item.oldest_outbox_at">с {{ optionalDate(item.oldest_outbox_at) }}</small>
+                </dd>
+                <dt>Неизвестный результат</dt><dd>{{ item.uncertain }}</dd>
+                <dt>Частичная доставка за 24 часа</dt><dd>{{ item.delivery_partial_24 }}</dd>
+                <dt>Ошибки за 24 часа</dt>
+                <dd>{{ item.inbound_failed_24 + item.delivery_failed_24 }}</dd>
+              </dl>
+              <p v-if="item.error_code" class="connection-error">{{ item.error_code }}</p>
+              <p class="marketing">
+                Персональный маркетинг: {{ item.marketing_enabled ? "включён" : "выключен" }}
+              </p>
+            </article>
+          </div>
+        </template>
       </section>
     </div>
   </private-view>
@@ -785,7 +868,8 @@ textarea {
   overflow: auto;
 }
 .details h2,
-.audience h2 {
+.audience h2,
+.connections-view h2 {
   font-size: 18px;
   margin-bottom: 16px;
 }
@@ -836,6 +920,98 @@ textarea {
   max-width: 850px;
   margin: 16px 0;
   line-height: 1.6;
+}
+.section-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.section-heading h2,
+.section-heading p {
+  margin: 0 0 8px;
+}
+.checked {
+  color: var(--theme--foreground-subdued, #687482);
+  font-size: 12px;
+}
+.runtime-alert {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--theme--warning, #b78103);
+  border-radius: 6px;
+  background: var(--theme--warning-background, #fff7d7);
+}
+.connection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.connection-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--theme--background, #fff);
+}
+.connection-card > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.connection-card h3 {
+  margin: 4px 0 16px;
+}
+.connection-card dl {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) auto;
+  gap: 9px 16px;
+  margin: 0;
+}
+.connection-card dt {
+  color: var(--theme--foreground-subdued, #687482);
+}
+.connection-card dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.connection-card dd small {
+  display: block;
+}
+.health {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--theme--success-background, #dff5e5);
+  color: var(--theme--success, #176c35);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.health.delayed,
+.health.attention,
+.health.idle {
+  background: var(--theme--warning-background, #fff2c2);
+  color: var(--theme--warning, #7a5400);
+}
+.health.error,
+.connection-error {
+  background: var(--theme--danger-background, #ffe1e1);
+  color: var(--theme--danger, #a31313);
+}
+.health.disabled {
+  background: var(--theme--background-subdued, #eef1f4);
+  color: var(--theme--foreground-subdued, #687482);
+}
+.connection-error,
+.marketing {
+  margin: 16px 0 0;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.marketing {
+  background: var(--theme--background-subdued, #eef1f4);
 }
 .table-wrap {
   overflow: auto;

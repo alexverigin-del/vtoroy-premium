@@ -744,6 +744,15 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
     ["accepted", "failed"],
   );
   assert.equal((await service.audience(actor)).connections[0].users, 0, "pilot excluded");
+  const connectionOverview = await service.connections(actor);
+  assert.equal(connectionOverview.connections[0].id, connection);
+  assert.equal(connectionOverview.connections[0].accounts, 1);
+  assert.equal(connectionOverview.connections[0].test_accounts, 1);
+  assert.equal(connectionOverview.connections[0].uncertain, 0);
+  assert.equal(connectionOverview.runtime.sending_enabled, true);
+  assert.equal("secret_ref" in connectionOverview.connections[0], false);
+  assert.equal("worker_user_id" in connectionOverview.connections[0], false);
+  assert.equal("settings" in connectionOverview.connections[0], false);
   const firstConversation = await db("comm_conversations").where({ id: c.id }).first();
   await service.commands(actor, {
     type: "handling",

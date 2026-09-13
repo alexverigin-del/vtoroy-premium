@@ -315,6 +315,19 @@ const analytics = request.result.data.connections.find((item) => item.id === con
 assert.ok(analytics, "manager must see analytics for the assigned store connection");
 assert.equal(analytics.users, 0, "test identities must be excluded from business analytics");
 
+request = await call("/isvoi-communications/v1/connections", { token: manager });
+assert.equal(request.response.status, 200, JSON.stringify(request.result));
+const overview = request.result.data.connections.find((item) => item.id === connection);
+assert.ok(overview, "manager must see operational state for the assigned connection");
+assert.equal(typeof overview.inbound_pending, "number");
+assert.equal(typeof overview.outbox_pending, "number");
+assert.equal("secret_ref" in overview, false);
+assert.equal("worker_user_id" in overview, false);
+assert.equal("settings" in overview, false);
+
+request = await call("/isvoi-communications/v1/connections");
+assert.equal(request.response.status, 403, "connection operations must not be public");
+
 console.log(
-  `PASS Directus API: public denied, worker ingest/process, manager inbox/claim/reply/history/unread, quarantine hold, ${scannerExpected ? "ClamAV image/audio/video/document/Telegram voice release, EICAR rejection, private download" : "scanner outage"}, private collections, audience (version ${version}).`,
+  `PASS Directus API: public denied, worker ingest/process, manager inbox/claim/reply/history/unread, quarantine hold, ${scannerExpected ? "ClamAV image/audio/video/document/Telegram voice release, EICAR rejection, private download" : "scanner outage"}, private collections, audience and connection operations (version ${version}).`,
 );

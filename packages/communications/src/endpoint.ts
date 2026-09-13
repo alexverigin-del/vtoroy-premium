@@ -64,6 +64,12 @@ export default {
       ),
     );
     router.get(
+      "/v1/connections",
+      handler(async (req: any, res: any) =>
+        res.json({ data: await service.connections(await service.actor(req.accountability?.user)) }),
+      ),
+    );
+    router.get(
       "/v1/staff",
       handler(async (req: any, res: any) => {
         const a = await service.actor(req.accountability?.user);

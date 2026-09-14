@@ -53,7 +53,10 @@ for (const column of [
   "private_file_count",
   "error_code",
 ]) assert.match(schema, new RegExp(`ADD COLUMN IF NOT EXISTS ${column}`));
-assert.match(envExample, /force_path_style = true/);
+assert.match(envExample, /provider = Ceph/);
+assert.match(envExample, /no_check_bucket = true/);
+assert.match(envExample, /# region =\r?\n/);
+assert.doesNotMatch(envExample, /force_path_style = true/);
 assert.doesNotMatch(envExample, /[A-Za-z0-9]{24,}:[A-Za-z0-9/+]{24,}/);
 assert.match(installer, /apt-get install -y -qq rclone/);
 assert.match(installer, /chmod 0600 "\$ENV_FILE" "\$RCLONE_FILE"/);

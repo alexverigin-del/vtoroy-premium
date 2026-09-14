@@ -135,20 +135,30 @@ while (running) {
           } else {
             url = f.external_ref.url;
             hosts = (process.env.COMM_MEDIA_HOSTS || "").split(",").filter(Boolean);
-            if (!url || !hosts.length) throw Error("MEDIA_URL_FORBIDDEN");
+            if (!url) throw Error("MEDIA_URL_FORBIDDEN");
+            // MAX and VK do not publish a stable exhaustive list of download CDN hosts.
+            // Keep the provider object pending until a host observed in the live pilot has
+            // been reviewed and explicitly allowed. Rejecting here would lose the chance to
+            // process the attachment after configuration is corrected.
+            if (!hosts.length) throw Error("MEDIA_HOSTS_REQUIRED");
           }
           const bytes = await downloadMedia(url, hosts, f.external_ref.size);
           await api(`media/${f.id}`, bytes, "POST", true);
         } catch (e) {
-          const code = [
-            "FILE_TOO_LARGE",
-            "FILE_FORMAT_NOT_ALLOWED",
-            "MEDIA_URL_FORBIDDEN",
-            "MEDIA_ADDRESS_FORBIDDEN",
-          ].includes(e.code || e.message)
-            ? e.code || e.message
-            : "MEDIA_UNAVAILABLE";
-          await api(`media/${f.id}`, { error_code: code });
+          if ((e.code || e.message) === "MEDIA_HOSTS_REQUIRED") {
+            console.error("COMM_MEDIA_HOSTS_REQUIRED");
+            await pause(5000);
+          } else {
+            const code = [
+              "FILE_TOO_LARGE",
+              "FILE_FORMAT_NOT_ALLOWED",
+              "MEDIA_URL_FORBIDDEN",
+              "MEDIA_ADDRESS_FORBIDDEN",
+            ].includes(e.code || e.message)
+              ? e.code || e.message
+              : "MEDIA_UNAVAILABLE";
+            await api(`media/${f.id}`, { error_code: code });
+          }
         }
       }
       const scanned = await api("scan", {});

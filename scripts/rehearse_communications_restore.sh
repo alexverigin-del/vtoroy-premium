@@ -44,8 +44,20 @@ test -s "$snapshot_dir/database.dump"
   sha256sum -c SHA256SUMS >/dev/null
 )
 
-rclone copy "$remote_root/objects/directus" "$directus_dir" --config "$RCLONE_CONFIG"
-rclone copy "$remote_root/objects/private" "$private_dir" --config "$RCLONE_CONFIG"
+rclone copy "$remote_root/objects-v2/directus" "$work_dir/pool-directus" --config "$RCLONE_CONFIG"
+rclone copy "$remote_root/objects-v2/private" "$work_dir/pool-private" --config "$RCLONE_CONFIG"
+restore_manifest() {
+  local manifest="$1" pool_dir="$2" destination="$3"
+  while read -r digest relative_path; do
+    test -n "${digest:-}" || continue
+    relative_path="${relative_path#./}"
+    test -f "$pool_dir/$digest"
+    mkdir -p "$destination/$(dirname "$relative_path")"
+    cp -- "$pool_dir/$digest" "$destination/$relative_path"
+  done <"$manifest"
+}
+restore_manifest "$snapshot_dir/directus-uploads.sha256" "$work_dir/pool-directus" "$directus_dir"
+restore_manifest "$snapshot_dir/private-media.sha256" "$work_dir/pool-private" "$private_dir"
 (cd "$directus_dir" && sha256sum -c "$snapshot_dir/directus-uploads.sha256" >/dev/null)
 if test -s "$snapshot_dir/private-media.sha256"; then
   (cd "$private_dir" && sha256sum -c "$snapshot_dir/private-media.sha256" >/dev/null)

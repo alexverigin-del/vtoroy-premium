@@ -13,7 +13,7 @@ COMM_DIRECTUS_UPLOADS_DIR="${COMM_DIRECTUS_UPLOADS_DIR:-$COMM_STACK_DIR/uploads}
 COMM_LOCAL_RETENTION_HOURS="${COMM_LOCAL_RETENTION_HOURS:-48}"
 COMPOSE_FILE="$COMM_STACK_DIR/docker-compose.yml"
 
-for command_name in docker rclone sha256sum flock find sort xargs; do
+for command_name in docker rclone sha256sum flock find sort xargs cp; do
   command -v "$command_name" >/dev/null || { echo "Missing command: $command_name" >&2; exit 1; }
 done
 test -f "$COMPOSE_FILE"
@@ -67,6 +67,21 @@ write_manifest() {
 write_manifest "$COMM_PRIVATE_DIR" "$target/private-media.sha256"
 write_manifest "$COMM_DIRECTUS_UPLOADS_DIR" "$target/directus-uploads.sha256"
 
+stage_content_pool() {
+  local source_dir="$1" manifest="$2" pool_dir="$3"
+  mkdir -p "$pool_dir"
+  while read -r digest relative_path; do
+    test -n "${digest:-}" || continue
+    relative_path="${relative_path#./}"
+    test -f "$source_dir/$relative_path"
+    if test ! -e "$pool_dir/$digest"; then
+      cp --reflink=auto -- "$source_dir/$relative_path" "$pool_dir/$digest"
+    fi
+  done <"$manifest"
+}
+stage_content_pool "$COMM_PRIVATE_DIR" "$target/private-media.sha256" "$target/object-pool-private"
+stage_content_pool "$COMM_DIRECTUS_UPLOADS_DIR" "$target/directus-uploads.sha256" "$target/object-pool-directus"
+
 private_count="$(wc -l <"$target/private-media.sha256" | tr -d ' ')"
 directus_count="$(wc -l <"$target/directus-uploads.sha256" | tr -d ' ')"
 database_bytes="$(stat -c %s "$target/database.dump")"
@@ -82,15 +97,15 @@ EOF
 )
 manifest_sha256="$(sha256sum "$target/SHA256SUMS" | cut -d' ' -f1)"
 
-# UUID-backed files are immutable. Existing remote objects must match or the run fails.
-rclone copy "$COMM_PRIVATE_DIR" "$remote_root/objects/private" --config "$RCLONE_CONFIG" --immutable --checksum
-rclone copy "$COMM_DIRECTUS_UPLOADS_DIR" "$remote_root/objects/directus" --config "$RCLONE_CONFIG" --immutable --checksum
-rclone check "$COMM_PRIVATE_DIR" "$remote_root/objects/private" --config "$RCLONE_CONFIG" --one-way --checksum
-rclone check "$COMM_DIRECTUS_UPLOADS_DIR" "$remote_root/objects/directus" --config "$RCLONE_CONFIG" --one-way --checksum
+# Content-addressing keeps mutable operational filenames from overwriting an old object.
+rclone copy "$target/object-pool-private" "$remote_root/objects-v2/private" --config "$RCLONE_CONFIG" --immutable --checksum
+rclone copy "$target/object-pool-directus" "$remote_root/objects-v2/directus" --config "$RCLONE_CONFIG" --immutable --checksum
+rclone check "$target/object-pool-private" "$remote_root/objects-v2/private" --config "$RCLONE_CONFIG" --one-way --checksum
+rclone check "$target/object-pool-directus" "$remote_root/objects-v2/directus" --config "$RCLONE_CONFIG" --one-way --checksum
 
 # A snapshot only exists for recovery after its marker is uploaded last.
-rclone copy "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --immutable --checksum
-rclone check "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --one-way --download
+rclone copy "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --immutable --checksum --exclude '/object-pool-*/**'
+rclone check "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --one-way --download --exclude '/object-pool-*/**'
 printf '%s  SHA256SUMS\n' "$manifest_sha256" >"$target/_COMPLETE"
 # Beget/Ceph may return 403 for a HEAD request on a missing object. Directory
 # copy discovers the destination through ListObjects and remains immutable.

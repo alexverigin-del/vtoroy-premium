@@ -16,8 +16,11 @@ const [backup, health, restore, service, timer, schema, envExample, installer] =
 assert.match(backup, /flock -n/);
 assert.match(backup, /pg_dump[\s\S]*--format=custom/);
 assert.match(backup, /pg_restore --list/);
-assert.match(backup, /objects\/private/);
-assert.match(backup, /objects\/directus/);
+assert.match(backup, /objects-v2\/private/);
+assert.match(backup, /objects-v2\/directus/);
+assert.match(backup, /stage_content_pool/);
+assert.match(backup, /cp --reflink=auto/);
+assert.match(backup, /--exclude '\/object-pool-\*\/\*\*'/);
 assert.match(backup, /rclone check[\s\S]*--download/);
 assert.ok(
   backup.indexOf("rclone check") < backup.indexOf("_COMPLETE"),
@@ -39,6 +42,8 @@ assert.match(restore, /--network none/);
 assert.match(restore, /--memory 768m/);
 assert.match(restore, /pg_restore[\s\S]*--exit-on-error/);
 assert.match(restore, /sha256sum -c/);
+assert.match(restore, /restore_manifest/);
+assert.match(restore, /objects-v2\/directus/);
 assert.match(service, /ProtectSystem=strict/);
 assert.match(service, /ConditionPathExists=\/etc\/isvoi\/communications-backup\.env/);
 assert.match(timer, /OnCalendar=\*-\*-\* \*:00,30:00/);

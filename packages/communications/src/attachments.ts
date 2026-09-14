@@ -236,6 +236,16 @@ export function createAttachments(context: Context, service: any) {
       return { id: row.id, state: "quarantine", error_code: "SCANNER_UNAVAILABLE" };
     }
     const state = result === "clean" ? "ready" : "rejected";
+    if (result === "infected") {
+      try {
+        await storage.remove(row);
+      } catch {
+        await db("comm_attachments")
+          .where({ id: row.id, state: "scanning" })
+          .update({ state: "quarantine", error_code: "STORAGE_UNAVAILABLE", checked_at: null });
+        return { id: row.id, state: "quarantine", error_code: "STORAGE_UNAVAILABLE" };
+      }
+    }
     const changed = await db("comm_attachments")
       .where({ id: row.id, state: "scanning" })
       .update({

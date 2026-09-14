@@ -18,6 +18,10 @@ assert.match(backup, /pg_dump[\s\S]*--format=custom/);
 assert.match(backup, /pg_restore --list/);
 assert.match(backup, /bundles-v1\/private/);
 assert.match(backup, /bundles-v1\/directus/);
+assert.match(backup, /objects-v1\/private-s3/);
+assert.match(backup, /s3-media\.sha256/);
+assert.match(backup, /COMM_LIVE_S3_RCLONE_CONFIG/);
+assert.match(backup, /--immutable --size-only/);
 assert.match(backup, /write_bundle/);
 assert.match(backup, /directus-health-file/);
 assert.match(backup, /snapshot\.tar/);
@@ -40,6 +44,9 @@ assert.match(restore, /pg_restore[\s\S]*--exit-on-error/);
 assert.match(restore, /sha256sum -c/);
 assert.match(restore, /bundles-v1\/directus/);
 assert.match(restore, /bundles-v1\/private/);
+assert.match(restore, /objects-v1\/private-s3/);
+assert.match(restore, /--files-from/);
+assert.match(restore, /s3-media\.sha256/);
 assert.match(restore, /snapshot\.tar/);
 assert.match(service, /ProtectSystem=strict/);
 assert.match(service, /ConditionPathExists=\/etc\/isvoi\/communications-backup\.env/);
@@ -51,6 +58,7 @@ for (const column of [
   "database_bytes",
   "directus_file_count",
   "private_file_count",
+  "s3_file_count",
   "error_code",
 ]) assert.match(schema, new RegExp(`ADD COLUMN IF NOT EXISTS ${column}`));
 assert.match(envExample, /provider = Ceph/);
@@ -60,6 +68,8 @@ assert.doesNotMatch(envExample, /force_path_style = true/);
 assert.doesNotMatch(envExample, /[A-Za-z0-9]{24,}:[A-Za-z0-9/+]{24,}/);
 assert.match(installer, /apt-get install -y -qq rclone/);
 assert.match(installer, /chmod 0600 "\$ENV_FILE" "\$RCLONE_FILE"/);
+assert.match(installer, /COMM_LIVE_S3_REMOTE/);
+assert.match(installer, /communications-media-rclone\.conf/);
 assert.match(installer, /COMM_BACKUP_INSTALLED_AWAITING_PROTECTED_CREDENTIALS/);
 
 console.log("PASS communications S3 backup contract: deterministic media bundles, verified single-object snapshots, 30-minute timer, freshness check and isolated restore.");

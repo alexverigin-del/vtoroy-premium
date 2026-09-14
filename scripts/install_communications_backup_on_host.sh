@@ -6,6 +6,23 @@ ROOT="${ROOT:-/opt/isvoi}"
 STACK="$ROOT/infra/directus-beget"
 ENV_FILE="/etc/isvoi/communications-backup.env"
 RCLONE_FILE="/etc/isvoi/rclone.conf"
+LIVE_RCLONE_FILE="/etc/isvoi/communications-media-rclone.conf"
+LIVE_STORAGE_ENV="/etc/isvoi/communications-media-s3.env"
+
+set_env() {
+  local file=$1 key=$2 value=$3 temporary
+  [[ $key =~ ^[A-Z][A-Z0-9_]*$ ]] || exit 1
+  [[ $value != *$'\n'* && $value != *$'\r'* ]] || exit 1
+  temporary=$(mktemp)
+  awk -v key="$key" -v line="$key=$value" '
+    BEGIN { found=0 }
+    index($0, key "=")==1 { if (!found) print line; found=1; next }
+    { print }
+    END { if (!found) print line }
+  ' "$file" >"$temporary"
+  install -m 600 "$temporary" "$file"
+  rm -f "$temporary"
+}
 
 apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq rclone >/dev/null
@@ -25,6 +42,18 @@ docker compose -f "$STACK/docker-compose.yml" --project-directory "$STACK" exec 
 systemctl daemon-reload
 
 if test -f "$ENV_FILE" && test -f "$RCLONE_FILE"; then
+  if test -f "$LIVE_RCLONE_FILE" && test -f "$LIVE_STORAGE_ENV"; then
+    live_bucket="$(sed -n 's/^ISVOI_COMMUNICATIONS_S3_BUCKET=//p' "$LIVE_STORAGE_ENV" | tail -n 1)"
+    live_prefix="$(sed -n 's/^ISVOI_COMMUNICATIONS_S3_PREFIX=//p' "$LIVE_STORAGE_ENV" | tail -n 1)"
+    live_remote="$(/usr/local/bin/rclone listremotes --config "$LIVE_RCLONE_FILE")"
+    [[ $live_bucket =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]]
+    [[ $live_prefix =~ ^[A-Za-z0-9._/-]{1,200}$ && $live_prefix != /* && $live_prefix != */ ]]
+    [[ $live_remote =~ ^[A-Za-z0-9._-]+:$ ]]
+    set_env "$ENV_FILE" COMM_LIVE_S3_REMOTE "$live_remote$live_bucket/$live_prefix"
+    set_env "$ENV_FILE" COMM_LIVE_S3_RCLONE_CONFIG "$LIVE_RCLONE_FILE"
+    chown root:root "$LIVE_RCLONE_FILE" "$LIVE_STORAGE_ENV"
+    chmod 0600 "$LIVE_RCLONE_FILE" "$LIVE_STORAGE_ENV"
+  fi
   chown root:root "$ENV_FILE" "$RCLONE_FILE"
   chmod 0600 "$ENV_FILE" "$RCLONE_FILE"
   systemd-analyze verify /etc/systemd/system/isvoi-communications-backup.service /etc/systemd/system/isvoi-communications-backup.timer /etc/systemd/system/isvoi-communications-backup-health.service /etc/systemd/system/isvoi-communications-backup-health.timer

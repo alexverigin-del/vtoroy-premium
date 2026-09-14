@@ -254,13 +254,14 @@ CREATE TABLE IF NOT EXISTS comm_staff_drafts (
 CREATE TABLE IF NOT EXISTS comm_backups (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),started_at timestamptz NOT NULL DEFAULT now(),completed_at timestamptz,
  state text NOT NULL DEFAULT 'running' CHECK(state IN ('running','completed','failed')),manifest_sha256 char(64),external_verified boolean NOT NULL DEFAULT false,
- verified_at timestamptz,remote_key text,database_bytes bigint,directus_file_count integer,private_file_count integer,error_code text
+ verified_at timestamptz,remote_key text,database_bytes bigint,directus_file_count integer,private_file_count integer,s3_file_count integer,error_code text
 );
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS verified_at timestamptz;
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS remote_key text;
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS database_bytes bigint;
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS directus_file_count integer;
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS private_file_count integer;
+ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS s3_file_count integer;
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS error_code text;
 CREATE TABLE IF NOT EXISTS comm_file_gc (
  storage_key uuid PRIMARY KEY,storage_driver text NOT NULL DEFAULT 'local',

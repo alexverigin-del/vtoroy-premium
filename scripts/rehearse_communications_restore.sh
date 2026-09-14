@@ -24,6 +24,7 @@ work_dir="$(mktemp -d "${TMPDIR:-/tmp}/isvoi-communications-restore.XXXXXX")"
 snapshot_dir="$work_dir/snapshot"
 directus_dir="$work_dir/directus"
 private_dir="$work_dir/private"
+s3_dir="$work_dir/s3"
 container="isvoi-communications-restore-${COMM_RESTORE_BACKUP_ID:0:8}"
 cleanup() {
   docker rm -f "$container" >/dev/null 2>&1 || true
@@ -32,7 +33,7 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-mkdir -p "$snapshot_dir" "$directus_dir" "$private_dir"
+mkdir -p "$snapshot_dir" "$directus_dir" "$private_dir" "$s3_dir"
 remote_root="${COMM_OFFSITE_REMOTE%/}"
 remote_snapshot="$remote_root/snapshots/$COMM_RESTORE_BACKUP_ID"
 rclone copy "$remote_snapshot/snapshot.tar" "$snapshot_dir" --config "$RCLONE_CONFIG"
@@ -61,6 +62,13 @@ tar -xf "$work_dir/bundle-private/$private_bundle_sha256.tar" -C "$private_dir"
 if test -s "$snapshot_dir/private-media.sha256"; then
   (cd "$private_dir" && sha256sum -c "$snapshot_dir/private-media.sha256" >/dev/null)
 fi
+if test -f "$snapshot_dir/s3-media.sha256" && test -s "$snapshot_dir/s3-media.sha256"; then
+  awk '{print $2}' "$snapshot_dir/s3-media.sha256" >"$work_dir/s3-files.txt"
+  grep -Eqv '^[0-9a-f-]{36}$' "$work_dir/s3-files.txt" && exit 1
+  rclone copy "$remote_root/objects-v1/private-s3" "$s3_dir" \
+    --config "$RCLONE_CONFIG" --files-from "$work_dir/s3-files.txt"
+  (cd "$s3_dir" && sha256sum -c "$snapshot_dir/s3-media.sha256" >/dev/null)
+fi
 
 docker rm -f "$container" >/dev/null 2>&1 || true
 docker run -d --name "$container" --network none --memory 768m --cpus 0.75 \
@@ -74,5 +82,7 @@ docker exec -i "$container" pg_restore -U isvoi -d isvoi --no-owner --no-acl --e
 table_count="$(docker exec "$container" psql -U isvoi -d isvoi -XAtq -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")"
 test "$table_count" -gt 20
 elapsed="$(( $(date +%s) - started_epoch ))"
-printf 'COMM_RESTORE_REHEARSAL_PASSED backup_id=%s tables=%s directus_files=%s private_files=%s seconds=%s\n' \
-  "$COMM_RESTORE_BACKUP_ID" "$table_count" "$(wc -l <"$snapshot_dir/directus-uploads.sha256")" "$(wc -l <"$snapshot_dir/private-media.sha256")" "$elapsed"
+s3_count=0
+test ! -f "$snapshot_dir/s3-media.sha256" || s3_count="$(wc -l <"$snapshot_dir/s3-media.sha256" | tr -d ' ')"
+printf 'COMM_RESTORE_REHEARSAL_PASSED backup_id=%s tables=%s directus_files=%s private_files=%s s3_files=%s seconds=%s\n' \
+  "$COMM_RESTORE_BACKUP_ID" "$table_count" "$(wc -l <"$snapshot_dir/directus-uploads.sha256")" "$(wc -l <"$snapshot_dir/private-media.sha256")" "$s3_count" "$elapsed"

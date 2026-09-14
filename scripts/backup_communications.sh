@@ -76,7 +76,7 @@ write_bundle() {
   local source_dir="$1" output_file="$2" exclude_directus_health="$3"
   file_list "$source_dir" "$exclude_directus_health" | sort -z | (
     cd "$source_dir"
-    tar --null --files-from=- --no-recursion --mtime='@0' --owner=0 --group=0 --numeric-owner -cf "$output_file"
+    tar --null --no-recursion --mtime='@0' --owner=0 --group=0 --numeric-owner -cf "$output_file" --files-from=-
   )
   tar -tf "$output_file" >/dev/null
 }

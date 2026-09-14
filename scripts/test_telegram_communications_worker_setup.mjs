@@ -25,11 +25,19 @@ test("Telegram communications env is isolated from MAX and contains no legacy gr
     `),
     /TELEGRAM_BOT_ID_MISMATCH/,
   );
+  assert.match(
+    telegramCommunicationsEnv(`
+      TELEGRAM_BOT_TOKEN=${fakeToken}
+      TELEGRAM_DIRECTUS_TOKEN=${fakeWorker}
+      TELEGRAM_DIRECTUS_URL=http://127.0.0.1:8055/
+    `),
+    /COMM_DIRECTUS_URL=http:\/\/127\.0\.0\.1:8055/,
+  );
   assert.throws(
     () => telegramCommunicationsEnv(`
       TELEGRAM_BOT_TOKEN=${fakeToken}
       TELEGRAM_DIRECTUS_TOKEN=${fakeWorker}
-      TELEGRAM_DIRECTUS_URL=http://127.0.0.1:8055/
+      TELEGRAM_DIRECTUS_URL=http://api.isvoi.ru/
     `),
     /TELEGRAM_DIRECTUS_URL_INVALID/,
   );

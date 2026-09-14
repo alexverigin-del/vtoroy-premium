@@ -22,9 +22,14 @@ export function telegramCommunicationsEnv(source) {
   } catch {
     throw Error("TELEGRAM_DIRECTUS_URL_INVALID");
   }
+  const publicOrigin =
+    directus.protocol === "https:" && directus.hostname === "api.isvoi.ru" && !directus.port;
+  const loopbackOrigin =
+    directus.protocol === "http:" &&
+    ["127.0.0.1", "localhost"].includes(directus.hostname) &&
+    directus.port === "8055";
   if (
-    directus.protocol !== "https:" ||
-    directus.hostname !== "api.isvoi.ru" ||
+    (!publicOrigin && !loopbackOrigin) ||
     directus.username ||
     directus.password ||
     directus.search ||

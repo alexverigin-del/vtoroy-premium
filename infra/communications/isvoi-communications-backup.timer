@@ -1,8 +1,12 @@
 [Unit]
-Description=ISVOI communications backup every 30 minutes
+Description=ISVOI offsite backup every 30 minutes
+
 [Timer]
 OnCalendar=*-*-* *:00,30:00
 Persistent=true
 AccuracySec=30s
+RandomizedDelaySec=90s
+Unit=isvoi-communications-backup.service
+
 [Install]
 WantedBy=timers.target

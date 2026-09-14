@@ -1,0 +1,16 @@
+[Unit]
+Description=ISVOI offsite backup freshness and completion check
+After=network-online.target docker.service
+ConditionPathExists=/etc/isvoi/communications-backup.env
+
+[Service]
+Type=oneshot
+User=root
+EnvironmentFile=/etc/isvoi/communications-backup.env
+ExecStart=/usr/local/sbin/isvoi-communications-backup-health
+UMask=0077
+TimeoutStartSec=2min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict

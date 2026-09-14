@@ -1,10 +1,21 @@
 [Unit]
-Description=ISVOI database and private media offsite backup
-After=network-online.target
+Description=ISVOI PostgreSQL and immutable media offsite backup
+After=network-online.target docker.service
+Wants=network-online.target
+ConditionPathExists=/etc/isvoi/communications-backup.env
+
 [Service]
 Type=oneshot
-User=isvoi-backup
+User=root
 EnvironmentFile=/etc/isvoi/communications-backup.env
-ExecStart=/opt/isvoi/scripts/backup_communications.sh
+ExecStart=/usr/local/sbin/isvoi-communications-backup
 UMask=0077
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+TimeoutStartSec=25min
 NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/isvoi/backups/communications /opt/isvoi/infra/directus-beget/private-communications /opt/isvoi/var

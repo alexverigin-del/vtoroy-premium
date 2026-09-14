@@ -1,0 +1,11 @@
+[Unit]
+Description=Check ISVOI offsite backup freshness every 10 minutes
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=10min
+AccuracySec=30s
+Unit=isvoi-communications-backup-health.service
+
+[Install]
+WantedBy=timers.target

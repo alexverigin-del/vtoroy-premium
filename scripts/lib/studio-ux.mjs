@@ -18,6 +18,7 @@ export const navigationGroups = [
   ["isvoi_inventory", "Склад и сверка", "fact_check", "isvoi_operations", 10],
   ["isvoi_imports", "Импорт каталога", "upload_file", "isvoi_operations", 20],
   ["isvoi_channels", "Каналы продаж", "campaign", null, 90],
+  ["isvoi_telegram_current", "Telegram · текущий контур", "send", null, 95],
   ["isvoi_site_tools", "Интеграции и согласие", "extension", "isvoi_site_content", 60],
   ["isvoi_catalog_reference", "Справочники", "menu_book", "isvoi_catalog", 80],
 ];
@@ -35,6 +36,28 @@ export const collectionGroups = {
   product_categories: "isvoi_catalog_reference",
   device_models: "isvoi_catalog_reference",
   device_model_specifications: "isvoi_catalog_reference",
+  telegram_bot_settings: "isvoi_telegram_current",
+  telegram_notification_topics: "isvoi_telegram_current",
+  telegram_subscriptions: "isvoi_telegram_current",
+  telegram_subscription_events: "isvoi_telegram_current",
+  telegram_campaigns: "isvoi_telegram_current",
+  telegram_delivery_metrics: "isvoi_telegram_current",
+  telegram_routes: "isvoi_telegram_current",
+  telegram_staff: "isvoi_telegram_current",
+  telegram_deliveries: "isvoi_telegram_current",
+};
+
+export const collectionPresentation = {
+  telegram_bot_settings: ["Настройки Telegram", false, 10],
+  telegram_notification_topics: ["Темы подписок Telegram", false, 20],
+  telegram_subscriptions: ["Подписки Telegram", false, 30],
+  telegram_subscription_events: ["История подписок Telegram", false, 40],
+  telegram_campaigns: ["Кампании Telegram", false, 50],
+  telegram_delivery_metrics: ["Скорость доставки Telegram", false, 60],
+  telegram_routes: ["Маршруты Telegram · служебное", true, 70],
+  telegram_staff: ["Сотрудники Telegram · служебное", true, 80],
+  telegram_deliveries: ["Доставка Telegram · служебное", true, 90],
+  lead_conversations: ["Диалоги Telegram · текущий контур", true, 20],
 };
 
 export const defaults = {

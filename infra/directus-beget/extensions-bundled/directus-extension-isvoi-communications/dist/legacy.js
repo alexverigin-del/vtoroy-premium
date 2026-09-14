@@ -1444,7 +1444,124 @@ function createService(context) {
       "baseline_at",
       "last_backup_at"
     ]);
-    return { checked_at: (/* @__PURE__ */ new Date()).toISOString(), runtime, connections: result.rows };
+    const rows = [...result.rows];
+    const legacyBotId = String(env.ISVOI_TELEGRAM_BOT_ID || "");
+    const legacyAlreadyInCore = /^\d+$/.test(legacyBotId) ? await db("comm_connections").where({ platform: "telegram", external_id: legacyBotId }).whereIn("store_id", scopes).first("id") : null;
+    if (flag(env.ISVOI_TELEGRAM_ENABLED) && /^\d+$/.test(legacyBotId) && !legacyAlreadyInCore) {
+      const routes = await db("telegram_routes").where({ bot_id: legacyBotId, enabled: true }).whereIn("store_id", scopes).select("id");
+      const routeIds = routes.map((route) => route.id);
+      if (routeIds.length) {
+        const count = async (query) => Number((await query.count("* as value").first())?.value || 0);
+        const scalar = async (query) => (await query.first())?.value || null;
+        const newest = (...values) => {
+          const dates = values.filter(Boolean).map((value) => new Date(value));
+          return dates.length ? new Date(Math.max(...dates.map((value) => value.getTime()))).toISOString() : null;
+        };
+        const oldest = (...values) => {
+          const dates = values.filter(Boolean).map((value) => new Date(value));
+          return dates.length ? new Date(Math.min(...dates.map((value) => value.getTime()))).toISOString() : null;
+        };
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1e3);
+        const [
+          settings,
+          telegramRuntime,
+          accounts,
+          openConversations,
+          pendingMessages,
+          pendingCards,
+          uncertainMessages,
+          uncertainCards,
+          failedMessages,
+          failedCards,
+          lastInboundMessage,
+          lastOutboundMessage,
+          lastOutboxSent,
+          lastCardSent,
+          oldestMessage,
+          oldestCard
+        ] = await Promise.all([
+          db("telegram_bot_settings").where({ bot_id: legacyBotId }).first(),
+          db("telegram_runtime").where({ bot_id: legacyBotId }).first(),
+          count(db("telegram_client_sessions").where({ bot_id: legacyBotId })),
+          count(
+            db("lead_conversations as c").whereIn("c.route_id", routeIds).whereNull("c.closed_at")
+          ),
+          count(
+            db("telegram_message_outbox").where({ bot_id: legacyBotId }).whereIn("state", ["pending", "in_flight"])
+          ),
+          count(
+            db("telegram_deliveries").whereIn("route_id", routeIds).whereIn("state", ["pending", "in_flight"])
+          ),
+          count(db("telegram_message_outbox").where({ bot_id: legacyBotId, state: "uncertain" })),
+          count(
+            db("telegram_deliveries").whereIn("route_id", routeIds).where({ state: "uncertain" })
+          ),
+          count(
+            db("telegram_message_outbox").where({ bot_id: legacyBotId, state: "failed" }).where("created_at", ">=", since)
+          ),
+          count(
+            db("telegram_deliveries").whereIn("route_id", routeIds).where({ state: "failed" }).where("created_at", ">=", since)
+          ),
+          scalar(
+            db("lead_messages as m").join("lead_conversations as c", "c.id", "m.conversation_id").whereIn("c.route_id", routeIds).where("m.direction", "in").max("m.created_at as value")
+          ),
+          scalar(
+            db("lead_messages as m").join("lead_conversations as c", "c.id", "m.conversation_id").whereIn("c.route_id", routeIds).where("m.direction", "out").max("m.created_at as value")
+          ),
+          scalar(
+            db("telegram_message_outbox").where({ bot_id: legacyBotId, state: "done" }).max("sent_at as value")
+          ),
+          scalar(
+            db("telegram_deliveries").whereIn("route_id", routeIds).where({ state: "done" }).max("sent_at as value")
+          ),
+          scalar(
+            db("telegram_message_outbox").where({ bot_id: legacyBotId }).whereIn("state", ["pending", "in_flight"]).min("created_at as value")
+          ),
+          scalar(
+            db("telegram_deliveries").whereIn("route_id", routeIds).whereIn("state", ["pending", "in_flight"]).min("created_at as value")
+          )
+        ]);
+        const outboxPending = pendingMessages + pendingCards;
+        const uncertain = uncertainMessages + uncertainCards;
+        const oldestOutboxAt = oldest(oldestMessage, oldestCard);
+        const workerActive = telegramRuntime?.lease_until && new Date(telegramRuntime.lease_until).getTime() > Date.now();
+        const health = !workerActive ? "error" : uncertain ? "attention" : oldestOutboxAt && Date.now() - new Date(oldestOutboxAt).getTime() > 5 * 60 * 1e3 ? "delayed" : "ok";
+        rows.push({
+          id: `legacy-telegram-${legacyBotId}`,
+          name: "Telegram \xB7 I \u0421\u0412\u041E\u0418 \xB7 \u041F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0430",
+          platform: "telegram",
+          enabled: true,
+          mode: String(env.ISVOI_TELEGRAM_MODE || "production"),
+          bot_username: String(
+            env.ISVOI_TELEGRAM_BOT_USERNAME || settings?.public_username || ""
+          ).replace(/^@/, ""),
+          marketing_enabled: Boolean(settings?.notifications_enabled),
+          marketing_mode: settings?.pilot_mode ? "pilot" : "public",
+          last_received_at: newest(lastInboundMessage),
+          last_sent_at: newest(lastOutboundMessage, lastOutboxSent, lastCardSent),
+          error_code: workerActive ? null : "LEGACY_TELEGRAM_WORKER_INACTIVE",
+          send_after: telegramRuntime?.send_after || null,
+          accounts,
+          test_accounts: null,
+          open_conversations: openConversations,
+          inbound_pending: null,
+          inbound_failed_24: 0,
+          outbox_pending: outboxPending,
+          uncertain,
+          delivery_failed_24: failedMessages + failedCards,
+          delivery_partial_24: 0,
+          oldest_inbound_at: null,
+          oldest_outbox_at: oldestOutboxAt,
+          health,
+          source: "legacy_telegram",
+          migration_state: "awaiting_cutover"
+        });
+      }
+    }
+    rows.sort(
+      (left, right) => ["telegram", "max", "vk"].indexOf(left.platform) - ["telegram", "max", "vk"].indexOf(right.platform) || String(left.name).localeCompare(String(right.name), "ru")
+    );
+    return { checked_at: (/* @__PURE__ */ new Date()).toISOString(), runtime, connections: rows };
   }
   async function audience(a) {
     const scopes = await db("comm_staff").where({ user_id: a.user, enabled: true, can_manage: true }).pluck("store_id");

@@ -136,6 +136,33 @@ try {
         runtime: { active: true, sending_enabled: true, recovery_hold: false },
         connections: [
           {
+            id: "legacy-telegram-8694946838",
+            name: "Telegram · I СВОИ · Поддержка",
+            platform: "telegram",
+            enabled: true,
+            mode: "production",
+            bot_username: "isvoi_help_bot",
+            marketing_enabled: true,
+            marketing_mode: "pilot",
+            health: "ok",
+            source: "legacy_telegram",
+            migration_state: "awaiting_cutover",
+            last_received_at: "2026-09-13T17:57:00.000Z",
+            last_sent_at: "2026-09-13T17:59:00.000Z",
+            open_conversations: 1,
+            accounts: 1,
+            test_accounts: null,
+            inbound_pending: null,
+            inbound_failed_24: 0,
+            outbox_pending: 0,
+            oldest_inbound_at: null,
+            oldest_outbox_at: null,
+            uncertain: 0,
+            delivery_failed_24: 0,
+            delivery_partial_24: 0,
+            error_code: null,
+          },
+          {
             id: "max-test",
             name: "MAX · Поддержка",
             platform: "max",
@@ -201,9 +228,16 @@ try {
   await page.getByRole("button", { name: "Подключения", exact: true }).click();
   await page.getByRole("heading", { name: "Подключения площадок" }).waitFor();
   await page.getByText("MAX · Поддержка", { exact: true }).waitFor();
+  await page.getByText("Telegram · I СВОИ · Поддержка", { exact: true }).waitFor();
+  await page.getByText("Работает отдельно", { exact: true }).waitFor();
+  await page.getByText(/Перенос в общее ядро ещё не выполнен/).waitFor();
+  await page.getByText("Персональный маркетинг: закрытый пилот", { exact: true }).waitFor();
   await page.getByText("Работает", { exact: true }).waitFor();
   await page.getByText("Персональный маркетинг: выключен", { exact: true }).waitFor();
-  await page.screenshot({ path: resolve(output, "communications-connections.png"), fullPage: true });
+  await page.screenshot({
+    path: resolve(output, "communications-connections.png"),
+    fullPage: true,
+  });
   await page.getByRole("button", { name: "Обращения", exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: resolve(output, "communications-mobile.png"), fullPage: true });

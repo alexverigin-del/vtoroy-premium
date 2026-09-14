@@ -96,10 +96,7 @@ test("MAX addresses private messages by user_id and group messages by chat_id", 
       }),
       { type: "accepted", externalId: "max-1" },
     );
-    assert.equal(
-      calls[0].url,
-      "https://platform-api2.max.ru/messages?user_id=227941682",
-    );
+    assert.equal(calls[0].url, "https://platform-api2.max.ru/messages?user_id=227941682");
     assert.deepEqual(JSON.parse(calls[0].init.body), { text: "Личный ответ" });
 
     assert.deepEqual(
@@ -152,7 +149,11 @@ test("MAX media uses a provider upload slot and sends only its token", async () 
     assert.deepEqual(result, { type: "accepted", externalId: "max-message-7" });
     assert.equal(calls[0].url, "https://platform-api2.max.ru/uploads?type=image");
     assert.equal(calls[1].url, "https://iu.oneme.ru/upload.do?fixture=1");
-    assert.equal(calls[1].init.headers?.Authorization, undefined, "bot token is not sent to upload host");
+    assert.equal(
+      calls[1].init.headers?.Authorization,
+      undefined,
+      "bot token is not sent to upload host",
+    );
     assert.equal(calls[2].url, "https://platform-api2.max.ru/messages?user_id=900001");
     assert.deepEqual(JSON.parse(calls[2].init.body), {
       attachments: [{ type: "image", payload: { token: "max-upload-token" } }],
@@ -254,7 +255,10 @@ test("VK photo upload is saved and sent with a stable operation random_id", asyn
 
     calls.length = 0;
     await sendOperation("vk", "VK_TEST_TOKEN", op, file);
-    assert.equal(new URLSearchParams(calls[3].init.body).get("random_id"), firstSend.get("random_id"));
+    assert.equal(
+      new URLSearchParams(calls[3].init.body).get("random_id"),
+      firstSend.get("random_id"),
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -286,10 +290,7 @@ test("VK voice uses audio_message while video remains deliverable as a document"
   try {
     const voice = await run("voice", "audio/ogg; codecs=opus", "audio_message");
     assert.deepEqual(voice.outcome, { type: "accepted", externalId: "902" });
-    assert.equal(
-      new URLSearchParams(voice.calls[0].init.body).get("type"),
-      "audio_message",
-    );
+    assert.equal(new URLSearchParams(voice.calls[0].init.body).get("type"), "audio_message");
     assert.equal(new URLSearchParams(voice.calls[3].init.body).get("attachment"), "doc-8_19_key");
 
     const video = await run("video", "video/mp4", "doc");
@@ -504,6 +505,114 @@ test("private media transport pins exact hosts and rejects internal and reserved
     "api.telegram.org",
   );
 });
+test("connections reports a live legacy Telegram contour without creating a core duplicate", async (t) => {
+  const fixture = await testDatabase();
+  t.after(fixture.close);
+  const { db, pg } = fixture;
+  const store = randomUUID(),
+    role = randomUUID(),
+    manager = randomUUID(),
+    worker = randomUUID(),
+    route = randomUUID(),
+    legacyConversation = randomUUID();
+  await db("store_locations").insert({ id: store });
+  await db("directus_roles").insert({ id: role });
+  await db("directus_users").insert([
+    { id: manager, role, status: "active" },
+    { id: worker, role: null, status: "active" },
+  ]);
+  await db("comm_staff").insert({ user_id: manager, store_id: store, can_manage: true });
+  await pg.exec(`
+    CREATE TABLE telegram_routes(id uuid PRIMARY KEY,store_id uuid,bot_id bigint,enabled boolean);
+    CREATE TABLE telegram_bot_settings(bot_id bigint PRIMARY KEY,public_username text,notifications_enabled boolean,pilot_mode boolean);
+    CREATE TABLE telegram_runtime(bot_id bigint PRIMARY KEY,lease_until timestamptz,send_after timestamptz);
+    CREATE TABLE telegram_client_sessions(id uuid PRIMARY KEY,bot_id bigint);
+    CREATE TABLE lead_conversations(id uuid PRIMARY KEY,route_id uuid,closed_at timestamptz);
+    CREATE TABLE lead_messages(id uuid PRIMARY KEY,conversation_id uuid,direction text,created_at timestamptz);
+    CREATE TABLE telegram_message_outbox(id uuid PRIMARY KEY,bot_id bigint,state text,created_at timestamptz,sent_at timestamptz);
+    CREATE TABLE telegram_deliveries(id uuid PRIMARY KEY,route_id uuid,state text,created_at timestamptz,sent_at timestamptz);
+  `);
+  await db("telegram_routes").insert({
+    id: route,
+    store_id: store,
+    bot_id: "8694946838",
+    enabled: true,
+  });
+  await db("telegram_bot_settings").insert({
+    bot_id: "8694946838",
+    public_username: "isvoi_help_bot",
+    notifications_enabled: true,
+    pilot_mode: true,
+  });
+  await db("telegram_runtime").insert({
+    bot_id: "8694946838",
+    lease_until: new Date(Date.now() + 60_000),
+    send_after: new Date(),
+  });
+  await db("telegram_client_sessions").insert({ id: randomUUID(), bot_id: "8694946838" });
+  await db("lead_conversations").insert({ id: legacyConversation, route_id: route });
+  await db("lead_messages").insert({
+    id: randomUUID(),
+    conversation_id: legacyConversation,
+    direction: "in",
+    created_at: new Date(),
+  });
+  await db("telegram_message_outbox").insert({
+    id: randomUUID(),
+    bot_id: "8694946838",
+    state: "pending",
+    created_at: new Date(),
+  });
+  class ItemsService {}
+  const context = {
+    database: db,
+    services: { ItemsService },
+    getSchema: async () => ({}),
+    env: {
+      ISVOI_COMMUNICATIONS_ENABLED: true,
+      ISVOI_TELEGRAM_ENABLED: true,
+      ISVOI_TELEGRAM_BOT_ID: "8694946838",
+      ISVOI_TELEGRAM_BOT_USERNAME: "isvoi_help_bot",
+      ISVOI_TELEGRAM_MODE: "production",
+    },
+  };
+  const service = createService(context),
+    actor = await service.actor(manager);
+  let overview = await service.connections(actor);
+  assert.equal(overview.connections.length, 1);
+  assert.equal(overview.connections[0].source, "legacy_telegram");
+  assert.equal(overview.connections[0].migration_state, "awaiting_cutover");
+  assert.equal(overview.connections[0].health, "ok");
+  assert.equal(overview.connections[0].accounts, 1);
+  assert.equal(overview.connections[0].test_accounts, null);
+  assert.equal(overview.connections[0].open_conversations, 1);
+  assert.equal(overview.connections[0].outbox_pending, 1);
+  assert.equal("secret_ref" in overview.connections[0], false);
+  await db("comm_connections").insert({
+    platform: "telegram",
+    external_id: "8694946838",
+    name: "Telegram · common core",
+    enabled: true,
+    mode: "production",
+    store_id: store,
+    worker_user_id: worker,
+    secret_ref: "TELEGRAM_TOKEN_FILE",
+  });
+  overview = await service.connections(actor);
+  assert.equal(
+    overview.connections.filter((item) => item.platform === "telegram").length,
+    1,
+    JSON.stringify(
+      overview.connections.map(({ id, platform, external_id, source }) => ({
+        id,
+        platform,
+        external_id,
+        source,
+      })),
+    ),
+  );
+  assert.equal(overview.connections[0].source, undefined);
+});
 test("PostgreSQL: durable ingest, command replay, partial delivery and queue isolation", async (t) => {
   const fixture = await testDatabase();
   t.after(fixture.close);
@@ -713,8 +822,12 @@ test("PostgreSQL: durable ingest, command replay, partial delivery and queue iso
   });
   await db("comm_connections").where({ id: connection }).update({ platform: "telegram" });
   assert.equal(await delivery.next(connection, worker), null, "retry backoff is enforced");
-  await db("comm_outbox").where({ id: replyOutbox.id }).update({ due_at: new Date(0) });
-  await db("comm_connections").where({ id: connection }).update({ send_after: new Date(0) });
+  await db("comm_outbox")
+    .where({ id: replyOutbox.id })
+    .update({ due_at: new Date(0) });
+  await db("comm_connections")
+    .where({ id: connection })
+    .update({ send_after: new Date(0) });
   const attachmentRetry = await delivery.next(connection, worker);
   assert.equal(attachmentRetry.id, attachmentOperation.id);
   assert.equal(attachmentRetry.lease_version, attachmentOperation.lease_version + 1);

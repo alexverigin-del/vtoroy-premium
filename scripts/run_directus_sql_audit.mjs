@@ -28,6 +28,7 @@ const auditDefinitions = {
     zero: [
       "groups_invalid",
       "parents_invalid",
+      "presentation_invalid",
       "defaults_missing",
       "defaults_duplicate",
       "insights_test_leak",

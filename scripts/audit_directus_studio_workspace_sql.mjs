@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import {
   collectionGroups,
+  collectionPresentation,
   defaults,
   humanRoles,
   literal as q,
@@ -16,12 +17,21 @@ expected_defaults(collection,fields) AS (VALUES ${Object.entries(defaults)
 expected_parents(collection,parent) AS (VALUES ${Object.entries(collectionGroups)
   .map(([c, p]) => `(${q(c)},${q(p)})`)
   .join(",")}),
+expected_presentation(collection,label,hidden,sort) AS (VALUES ${Object.entries(
+  collectionPresentation,
+)
+  .map(([c, [label, hidden, sort]]) => `(${q(c)},${q(label)},${hidden},${sort})`)
+  .join(",")}),
 human_roles AS (SELECT id FROM directus_roles WHERE name IN (${humanRoles.map(q).join(",")}))
 SELECT 'studio_workspace.groups_invalid' AS check_name,count(*)::text AS value FROM expected_groups e
 LEFT JOIN directus_collections c ON c.collection=e.collection
 WHERE c.collection IS NULL OR c."group" IS DISTINCT FROM e.parent OR c.collapse<>'closed'
 UNION ALL
 SELECT 'studio_workspace.parents_invalid',count(*)::text FROM expected_parents e LEFT JOIN directus_collections c ON c.collection=e.collection WHERE c."group" IS DISTINCT FROM e.parent
+UNION ALL
+SELECT 'studio_workspace.presentation_invalid',count(*)::text FROM expected_presentation e LEFT JOIN directus_collections c ON c.collection=e.collection
+WHERE c.collection IS NULL OR c.hidden IS DISTINCT FROM e.hidden OR c.sort IS DISTINCT FROM e.sort
+OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(coalesce(c.translations::jsonb,'[]')) t WHERE t->>'language'='ru-RU' AND t->>'translation'=e.label)
 UNION ALL
 SELECT 'studio_workspace.defaults_missing',count(*)::text FROM expected_defaults e CROSS JOIN human_roles r
 WHERE (EXISTS(SELECT 1 FROM directus_access a JOIN directus_policies p ON p.id=a.policy WHERE a.role=r.id AND p.admin_access)

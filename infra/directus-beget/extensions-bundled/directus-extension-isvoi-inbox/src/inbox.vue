@@ -269,6 +269,10 @@ const healthName: Record<string, string> = {
   error: "Ошибка подключения",
   disabled: "Отключено",
 };
+const connectionHealthName = (item: any) =>
+  item.source === "legacy_telegram" && item.health === "ok"
+    ? "Работает отдельно"
+    : healthName[item.health] || item.health;
 const eventName: Record<string, string> = {
   first_seen: "Новые аккаунты",
   subscribed: "Подписки",
@@ -610,33 +614,64 @@ onBeforeUnmount(() => {
                   <span class="platform">{{ item.platform }}</span>
                   <h3>{{ item.name }}</h3>
                 </div>
-                <span :class="['health', item.health]">{{ healthName[item.health] || item.health }}</span>
+                <span :class="['health', item.health]">{{ connectionHealthName(item) }}</span>
               </header>
+              <p v-if="item.migration_state === 'awaiting_cutover'" class="migration-note">
+                Текущий Telegram-контур. Перенос в общее ядро ещё не выполнен; данные и очереди
+                учитываются отдельно.
+              </p>
               <dl>
-                <dt>Режим</dt><dd>{{ item.mode === "test" ? "Закрытый пилот" : "Рабочий" }}</dd>
-                <dt>Бот</dt><dd>{{ item.bot_username || "—" }}</dd>
-                <dt>Последнее входящее</dt><dd>{{ optionalDate(item.last_received_at) }}</dd>
-                <dt>Последняя отправка</dt><dd>{{ optionalDate(item.last_sent_at) }}</dd>
-                <dt>Открытые обращения</dt><dd>{{ item.open_conversations }}</dd>
-                <dt>Аккаунты</dt><dd>{{ item.accounts }} <small>тестовых: {{ item.test_accounts }}</small></dd>
+                <dt>Режим</dt>
+                <dd>{{ item.mode === "test" ? "Закрытый пилот" : "Рабочий" }}</dd>
+                <dt>Бот</dt>
+                <dd>{{ item.bot_username || "—" }}</dd>
+                <dt>Последнее входящее</dt>
+                <dd>{{ optionalDate(item.last_received_at) }}</dd>
+                <dt>Последняя отправка</dt>
+                <dd>{{ optionalDate(item.last_sent_at) }}</dd>
+                <dt>Открытые обращения</dt>
+                <dd>{{ item.open_conversations }}</dd>
+                <dt>Аккаунты</dt>
+                <dd>
+                  {{ item.accounts }}
+                  <small v-if="item.test_accounts !== null"
+                    >тестовых: {{ item.test_accounts }}</small
+                  ><small v-else>без отдельной legacy-метки теста</small>
+                </dd>
                 <dt>Очередь приёма</dt>
                 <dd>
-                  {{ item.inbound_pending }}
-                  <small v-if="item.oldest_inbound_at">с {{ optionalDate(item.oldest_inbound_at) }}</small>
+                  {{ item.inbound_pending === null ? "—" : item.inbound_pending }}
+                  <small v-if="item.source === 'legacy_telegram'"
+                    >long polling текущего контура</small
+                  >
+                  <small v-if="item.oldest_inbound_at"
+                    >с {{ optionalDate(item.oldest_inbound_at) }}</small
+                  >
                 </dd>
                 <dt>Очередь отправки</dt>
                 <dd>
                   {{ item.outbox_pending }}
-                  <small v-if="item.oldest_outbox_at">с {{ optionalDate(item.oldest_outbox_at) }}</small>
+                  <small v-if="item.oldest_outbox_at"
+                    >с {{ optionalDate(item.oldest_outbox_at) }}</small
+                  >
                 </dd>
-                <dt>Неизвестный результат</dt><dd>{{ item.uncertain }}</dd>
-                <dt>Частичная доставка за 24 часа</dt><dd>{{ item.delivery_partial_24 }}</dd>
+                <dt>Неизвестный результат</dt>
+                <dd>{{ item.uncertain }}</dd>
+                <dt>Частичная доставка за 24 часа</dt>
+                <dd>{{ item.delivery_partial_24 }}</dd>
                 <dt>Ошибки за 24 часа</dt>
                 <dd>{{ item.inbound_failed_24 + item.delivery_failed_24 }}</dd>
               </dl>
               <p v-if="item.error_code" class="connection-error">{{ item.error_code }}</p>
               <p class="marketing">
-                Персональный маркетинг: {{ item.marketing_enabled ? "включён" : "выключен" }}
+                Персональный маркетинг:
+                {{
+                  item.marketing_enabled
+                    ? item.marketing_mode === "pilot"
+                      ? "закрытый пилот"
+                      : "включён"
+                    : "выключен"
+                }}
               </p>
             </article>
           </div>
@@ -1004,7 +1039,8 @@ textarea {
   color: var(--theme--foreground-subdued, #687482);
 }
 .connection-error,
-.marketing {
+.marketing,
+.migration-note {
   margin: 16px 0 0;
   padding: 8px;
   border-radius: 4px;
@@ -1012,6 +1048,11 @@ textarea {
 }
 .marketing {
   background: var(--theme--background-subdued, #eef1f4);
+}
+.migration-note {
+  background: var(--theme--warning-background, #fff7d7);
+  color: var(--theme--warning, #7a5400);
+  line-height: 1.45;
 }
 .table-wrap {
   overflow: auto;

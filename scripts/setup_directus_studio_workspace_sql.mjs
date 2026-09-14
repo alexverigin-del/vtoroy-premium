@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import {
   collectionGroups,
+  collectionPresentation,
   defaults,
   humanRoles,
   literal as q,
@@ -26,6 +27,10 @@ ON CONFLICT(collection) DO UPDATE SET icon=EXCLUDED.icon,sort=EXCLUDED.sort,tran
 for (const [collection, parent] of Object.entries(collectionGroups))
   statements.push(
     `UPDATE directus_collections SET "group"=${q(parent)} WHERE collection=${q(collection)};`,
+  );
+for (const [collection, [label, hidden, sort]] of Object.entries(collectionPresentation))
+  statements.push(
+    `UPDATE directus_collections SET hidden=${hidden},sort=${sort},translations=${j([{ language: "ru-RU", translation: label }])} WHERE collection=${q(collection)};`,
   );
 
 // Defaults supplement personal presets; never delete a user's layout or bookmark.

@@ -117,3 +117,6 @@ else
 fi
 
 ls -lh "$TARGET_DIR"
+
+# Prune only after the new backup and any configured offsite copy pass verification.
+node "$REPO_ROOT/scripts/prune_directus_backups.mjs" --root="$BACKUP_DIR" --apply

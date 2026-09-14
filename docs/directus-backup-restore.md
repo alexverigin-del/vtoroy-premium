@@ -92,6 +92,12 @@ Recommended daily cron for the `deploy` user:
 17 2 * * * cd /opt/isvoi && bash scripts/backup_beget_directus.sh >> /opt/isvoi/backups/directus/backup.log 2>&1
 ```
 
+После успешной проверки новой копии скрипт применяет многоуровневое локальное хранение: все копии за 7 дней, последняя копия каждого дня до 30 дней, последняя копия каждой недели до 12 недель и последняя копия каждого месяца до одного года. Каталоги с нестандартным именем автоматически сохраняются. Предварительный расчёт без удаления:
+
+```bash
+node scripts/prune_directus_backups.mjs --root=/opt/isvoi/backups/directus
+```
+
 Recommended daily cron after the off-server remote is configured:
 
 ```cron

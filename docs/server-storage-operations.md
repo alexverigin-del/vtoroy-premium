@@ -58,3 +58,25 @@ The safe migration target is:
 
 Move to this layout as a dedicated web release. Do not move the active checkout,
 Directus bind mounts or PM2 working directory during routine storage cleanup.
+
+## Production maintenance record: 2026-09-14
+
+Release `d6e84f93e7d1797e94552516412cc3dc78ce6e5b` installed the host maintenance
+timer, journald limits and Docker log rotation. The operation reduced root disk
+usage from 17 GB (43%) to 11 GB (29%) and inode use from 8% to 6%.
+
+The retained rollback assets are:
+
+- `backups/web/20260911T135338Z-product-sticky-4743592`;
+- `backups/web/20260911T141249Z-product-full-sticky-d18a9d9`;
+- `var/releases/c35ae75`.
+
+The pre-change Directus backup is
+`backups/directus/20260914T185307Z`; its PostgreSQL dump, uploads archive and
+IndexNow state passed SHA-256 and archive validation. The cleanup manifest is
+`var/storage-cleanup-20260914T185306Z.txt` on the production host.
+
+The audit also found that `infra/directus-beget/.env` had become root-owned and
+the 2026-09-14 nightly backup could not read it. Ownership was restored to
+`deploy:deploy` with mode `0600`, a fresh backup succeeded under the same deploy
+identity as cron, and the existing 02:17 UTC schedule was retained.

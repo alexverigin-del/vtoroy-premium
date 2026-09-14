@@ -74,10 +74,10 @@ docker rm -f "$container" >/dev/null 2>&1 || true
 docker run -d --name "$container" --network none --memory 768m --cpus 0.75 \
   -e POSTGRES_USER=isvoi -e POSTGRES_PASSWORD=rehearsal -e POSTGRES_DB=isvoi "$POSTGRES_IMAGE" >/dev/null
 for _ in $(seq 1 60); do
-  docker exec "$container" pg_isready -U isvoi -d isvoi >/dev/null 2>&1 && break
+  docker exec "$container" psql -U isvoi -d isvoi -XAtqc 'SELECT 1' >/dev/null 2>&1 && break
   sleep 1
 done
-docker exec "$container" pg_isready -U isvoi -d isvoi >/dev/null
+docker exec "$container" psql -U isvoi -d isvoi -XAtqc 'SELECT 1' >/dev/null
 docker exec -i "$container" pg_restore -U isvoi -d isvoi --no-owner --no-acl --exit-on-error <"$snapshot_dir/database.dump" >/dev/null
 table_count="$(docker exec "$container" psql -U isvoi -d isvoi -XAtq -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")"
 test "$table_count" -gt 20

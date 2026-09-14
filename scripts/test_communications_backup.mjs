@@ -41,6 +41,8 @@ assert.match(health, /\^\[0-9a-f\]\{64\}\$/);
 assert.match(restore, /--network none/);
 assert.match(restore, /--memory 768m/);
 assert.match(restore, /pg_restore[\s\S]*--exit-on-error/);
+assert.match(restore, /psql -U isvoi -d isvoi -XAtqc 'SELECT 1'/);
+assert.doesNotMatch(restore, /pg_isready/);
 assert.match(restore, /sha256sum -c/);
 assert.match(restore, /bundles-v1\/directus/);
 assert.match(restore, /bundles-v1\/private/);

@@ -84,7 +84,7 @@ function providerAttachment(platform, outcome) {
   return value;
 }
 function createDelivery(context, service) {
-  const db = context.database;
+  const db = context.database, now = () => context.now ? new Date(context.now()) : /* @__PURE__ */ new Date();
   async function worker(trx, connectionId, user) {
     if (typeof user !== "string" || !UUID.test(user)) return fail("FORBIDDEN", 403);
     const connection = await trx("comm_connections").where({ id: connectionId, worker_user_id: user, enabled: true }).forUpdate().first();
@@ -170,7 +170,7 @@ function createDelivery(context, service) {
             await reject("CONSENT_WITHDRAWN");
             continue;
           }
-          const window = marketingWindow(/* @__PURE__ */ new Date());
+          const window = marketingWindow(now());
           if (!window.allowed) {
             await trx("comm_outbox").where({ id: b.id }).update({ due_at: window.next });
             continue;

@@ -268,6 +268,7 @@
     "communications:worker": "node scripts/run_communications_worker.mjs",
     "communications:rehearse": "node scripts/rehearse_communications.mjs",
     "communications:rehearse:production-schema": "node scripts/rehearse_communications_production_schema.mjs",
+    "communications:rehearse:production-data": "node scripts/rehearse_telegram_production_data.mjs",
     "communications:local:setup": "node scripts/setup_communications_local_fixture.mjs",
     "communications:local:api:test": "node scripts/test_communications_directus_api.mjs",
     "communications:local:compat:test": "node scripts/test_communications_legacy_api.mjs",

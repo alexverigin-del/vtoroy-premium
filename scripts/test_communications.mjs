@@ -639,13 +639,29 @@ test("connections reports a live legacy Telegram contour without creating a core
   await db("comm_connections").insert({
     platform: "telegram",
     external_id: "8694946838",
-    name: "Telegram · common core",
-    enabled: true,
+    name: "Telegram · подготовка переноса",
+    enabled: false,
     mode: "production",
     store_id: store,
     worker_user_id: worker,
     secret_ref: "TELEGRAM_TOKEN_FILE",
   });
+  overview = await service.connections(actor);
+  assert.equal(overview.connections.filter((item) => item.platform === "telegram").length, 2);
+  assert.equal(
+    overview.connections.find((item) => item.source === "legacy_telegram")?.migration_state,
+    "awaiting_cutover",
+  );
+  assert.equal(
+    overview.connections.find((item) => item.source !== "legacy_telegram")?.enabled,
+    false,
+  );
+  await db("comm_connections")
+    .where({ platform: "telegram", external_id: "8694946838" })
+    .update({ enabled: true });
+  overview = await service.connections(actor);
+  assert.equal(overview.connections.filter((item) => item.platform === "telegram").length, 2);
+  context.env.ISVOI_TELEGRAM_USE_COMMUNICATIONS = true;
   overview = await service.connections(actor);
   assert.equal(
     overview.connections.filter((item) => item.platform === "telegram").length,

@@ -39202,8 +39202,8 @@ function createService(context) {
     ]);
     const rows = [...result.rows];
     const legacyBotId = String(env2.ISVOI_TELEGRAM_BOT_ID || "");
-    const legacyAlreadyInCore = /^\d+$/.test(legacyBotId) ? await db("comm_connections").where({ platform: "telegram", external_id: legacyBotId }).whereIn("store_id", scopes).first("id") : null;
-    if (flag(env2.ISVOI_TELEGRAM_ENABLED) && /^\d+$/.test(legacyBotId) && !legacyAlreadyInCore) {
+    const legacyCutoverConnection = flag(env2.ISVOI_TELEGRAM_USE_COMMUNICATIONS) && /^\d+$/.test(legacyBotId) ? await db("comm_connections").where({ platform: "telegram", external_id: legacyBotId, enabled: true }).whereIn("store_id", scopes).first("id") : null;
+    if (flag(env2.ISVOI_TELEGRAM_ENABLED) && /^\d+$/.test(legacyBotId) && !legacyCutoverConnection) {
       const routes = await db("telegram_routes").where({ bot_id: legacyBotId, enabled: true }).whereIn("store_id", scopes).select("id");
       const routeIds = routes.map((route) => route.id);
       if (routeIds.length) {

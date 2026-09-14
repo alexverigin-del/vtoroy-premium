@@ -5,13 +5,12 @@ import type { Database } from "./types.js";
 /** Idempotent shadow backfill. Never enables workers or modifies legacy rows. */
 export async function backfillTelegram(db: Database, connectionId: string) {
   return db.transaction(async (trx: Database) => {
-    const runtime = await trx("comm_runtime").where({ id: 1 }).forUpdate().first();
-    if (runtime.active) return fail("BACKFILL_REQUIRES_INACTIVE_RUNTIME", 409);
     const n = await trx("comm_connections")
       .where({ id: connectionId, platform: "telegram" })
       .forUpdate()
       .first();
     if (!n) return fail("TELEGRAM_CONNECTION_REQUIRED");
+    if (n.enabled) return fail("BACKFILL_REQUIRES_DISABLED_CONNECTION", 409);
     const settings = await trx("telegram_bot_settings").where({ bot_id: n.external_id }).first();
     if (settings)
       await trx("comm_connections")

@@ -1,10 +1,14 @@
 import { createConnection } from "node:net";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile, unlink } from "node:fs/promises";
-import { resolve, join } from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import { fail, MAX_FILE_BYTES, UUID, digest } from "./policy.js";
 import type { Context, Actor } from "./types.js";
+import {
+  createAttachmentStorage,
+  StorageObjectMissingError,
+  StorageUnavailableError,
+} from "./storage.js";
+import type { StoredObject } from "./storage.js";
 
 const allowed = new Map([
   ["image/jpeg", "image"],
@@ -113,19 +117,13 @@ export async function scanClamAV(
 }
 export function createAttachments(context: Context, service: any) {
   const db = context.database,
-    root = resolve(
-      String(context.env.ISVOI_COMMUNICATIONS_PRIVATE_DIR || "/directus/private-communications"),
-    );
-  function path(key: string) {
-    if (!UUID.test(key)) return fail("INVALID_STORAGE_KEY");
-    return join(root, key);
-  }
+    storage = createAttachmentStorage(context.env);
   async function store(buffer: Buffer, metadata: any) {
     const inspected = await inspectFile(buffer, metadata.mime || "");
-    await mkdir(root, { recursive: true, mode: 0o700 });
     const key = randomUUID();
-    await writeFile(path(key), buffer, { flag: "wx", mode: 0o600 });
+    let stored: StoredObject | undefined;
     try {
+      stored = await storage.put(key, buffer, inspected.mime);
       const values = {
         ...metadata,
         mime: inspected.mime,
@@ -133,6 +131,9 @@ export function createAttachments(context: Context, service: any) {
         name: `${String(metadata.name || "file")
           .replace(/[\x00-\x1f/\\<>:"|?*]/g, "_")
           .slice(0, 140)}`,
+        storage_driver: stored.driver,
+        storage_version: stored.version,
+        object_etag: stored.etag,
         storage_key: key,
         sha256: digest(buffer),
         size: buffer.length,
@@ -144,14 +145,17 @@ export function createAttachments(context: Context, service: any) {
           .where({ id: metadata.id, state: "pending" })
           .update(values);
         if (!changed) {
-          await unlink(path(key));
+          await storage.remove({ storage_driver: stored.driver, storage_key: key });
           return fail("FILE_STATE_CHANGED", 409);
         }
         return { id: metadata.id, state: "quarantine" };
       }
       return (await db("comm_attachments").insert(values).returning(["id", "state", "name"]))[0];
     } catch (error) {
-      await unlink(path(key));
+      if (stored)
+        await storage
+          .remove({ storage_driver: stored.driver, storage_key: key })
+          .catch(() => undefined);
       throw error;
     }
   }
@@ -200,8 +204,14 @@ export function createAttachments(context: Context, service: any) {
     if (!row) return null;
     let bytes: Buffer;
     try {
-      bytes = await readFile(path(row.storage_key));
-    } catch {
+      bytes = await storage.getBuffer(row);
+    } catch (error) {
+      if (!(error instanceof StorageObjectMissingError)) {
+        await db("comm_attachments")
+          .where({ id: row.id, state: "scanning" })
+          .update({ state: "quarantine", error_code: "STORAGE_UNAVAILABLE", checked_at: null });
+        return { id: row.id, state: "quarantine", error_code: "STORAGE_UNAVAILABLE" };
+      }
       await db("comm_attachments")
         .where({ id: row.id, state: "scanning" })
         .update({ state: "rejected", error_code: "FILE_MISSING", checked_at: db.fn.now() });
@@ -242,7 +252,15 @@ export function createAttachments(context: Context, service: any) {
     if (!row) return fail("NOT_FOUND", 404);
     await service.permitted(db, a, row.conversation_id);
     if (row.state !== "ready") return fail("FILE_NOT_READY", 409);
-    return { ...row, path: path(row.storage_key) };
+    return row;
   }
-  return { store, upload, scanOne, get, path };
+  async function stream(row: any, start?: number, end?: number) {
+    try {
+      return await storage.getStream(row, start, end);
+    } catch (error) {
+      if (error instanceof StorageObjectMissingError) return fail("FILE_MISSING", 404);
+      return fail("STORAGE_UNAVAILABLE", 503);
+    }
+  }
+  return { store, upload, scanOne, get, stream };
 }

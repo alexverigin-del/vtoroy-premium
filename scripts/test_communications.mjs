@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { testDatabase } from "./lib/communications-test-db.mjs";
 import {
   createService,
@@ -20,7 +23,56 @@ import {
   mediaRoute,
   serviceDeadlines,
   defaultServiceLevel,
+  createAttachmentStorage,
+  StorageObjectMissingError,
+  StorageUnavailableError,
 } from "../packages/communications/dist/index.js";
+
+async function streamBytes(stream) {
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  return Buffer.concat(chunks);
+}
+
+test("attachment storage keeps legacy local objects readable and supports ranges", async () => {
+  const root = await mkdtemp(join(tmpdir(), "isvoi-storage-"));
+  const storage = createAttachmentStorage({
+    ISVOI_COMMUNICATIONS_STORAGE_DRIVER: "local",
+    ISVOI_COMMUNICATIONS_PRIVATE_DIR: root,
+  });
+  const key = randomUUID();
+  const source = Buffer.from("0123456789abcdefghijklmnopqrstuvwxyz");
+  try {
+    assert.deepEqual(await storage.put(key, source, "text/plain"), {
+      driver: "local",
+      version: null,
+      etag: null,
+    });
+    assert.deepEqual(
+      await storage.getBuffer({ storage_driver: "local", storage_key: key }),
+      source,
+    );
+    assert.equal(
+      (await streamBytes(await storage.getStream({ storage_key: key }, 10, 19))).toString(),
+      "abcdefghij",
+    );
+    await storage.remove({ storage_driver: "local", storage_key: key });
+    await assert.rejects(
+      storage.getStream({ storage_driver: "local", storage_key: key }),
+      StorageObjectMissingError,
+    );
+    await storage.remove({ storage_driver: "local", storage_key: key });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("attachment storage rejects unknown drivers instead of silently writing locally", () => {
+  assert.throws(
+    () => createAttachmentStorage({ ISVOI_COMMUNICATIONS_STORAGE_DRIVER: "typo" }),
+    StorageUnavailableError,
+  );
+});
 
 test("empty menus do not create invalid keyboard payloads", () => {
   assert.deepEqual(keyboard("telegram", []), {});

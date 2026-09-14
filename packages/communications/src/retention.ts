@@ -1,7 +1,10 @@
-import { unlink } from "node:fs/promises";
 import type { Database } from "./types.js";
+import type { StorageRecord } from "./storage.js";
 /** Run daily; only expired conversations are removed, never the permanent peer. */
-export async function retainCommunications(db: Database, attachmentPath: (key: string) => string) {
+export async function retainCommunications(
+  db: Database,
+  removeAttachment: (record: StorageRecord) => Promise<void>,
+) {
   const result = await db.transaction(async (trx: Database) => {
     await trx.raw("SELECT pg_advisory_xact_lock(73119,1)");
     if (await trx("comm_backups").where({ state: "running" }).first())
@@ -23,11 +26,15 @@ export async function retainCommunications(db: Database, attachmentPath: (key: s
             u.whereNull("message_id").whereRaw("created_at<=now()-interval '30 days'"),
           ),
       )
-      .select("id", "storage_key");
+      .select("id", "storage_key", "storage_driver", "storage_version");
     for (const f of media)
       if (f.storage_key)
         await trx("comm_file_gc")
-          .insert({ storage_key: f.storage_key })
+          .insert({
+            storage_key: f.storage_key,
+            storage_driver: f.storage_driver || "local",
+            storage_version: f.storage_version || null,
+          })
           .onConflict("storage_key")
           .ignore();
     await trx("comm_staff_drafts")
@@ -58,9 +65,9 @@ export async function retainCommunications(db: Database, attachmentPath: (key: s
     for (const f of await trx("comm_file_gc").orderBy("queued_at").limit(100)) {
       if (await trx("comm_attachments").where({ storage_key: f.storage_key }).first()) continue;
       try {
-        await unlink(attachmentPath(f.storage_key));
-      } catch (e: any) {
-        if (e.code !== "ENOENT") continue;
+        await removeAttachment(f);
+      } catch {
+        continue;
       }
       await trx("comm_file_gc").where({ storage_key: f.storage_key }).delete();
     }

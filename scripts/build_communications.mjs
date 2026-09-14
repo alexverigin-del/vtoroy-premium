@@ -23,6 +23,7 @@ await build({
   platform: "node",
   format: "esm",
   target: "node22",
+  mainFields: ["module", "main"],
   packages: "bundle",
   legalComments: "none",
   banner: {

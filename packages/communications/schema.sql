@@ -91,9 +91,25 @@ CREATE TABLE IF NOT EXISTS comm_attachments (
  kind text NOT NULL CHECK(kind IN ('image','voice','audio','video','document')),
  state text NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','quarantine','scanning','ready','rejected')),
  name text NOT NULL, mime text NOT NULL, size bigint CHECK(size>=0 AND size<=20000000),
- external_ref jsonb, storage_key text UNIQUE, sha256 char(64), error_code text,
+ external_ref jsonb, storage_driver text NOT NULL DEFAULT 'local' CHECK(storage_driver IN ('local','s3')),
+ storage_version text, object_etag text, storage_key text UNIQUE, sha256 char(64), error_code text,
  created_at timestamptz NOT NULL DEFAULT now(), checked_at timestamptz
 );
+ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS storage_driver text;
+ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS storage_version text;
+ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS object_etag text;
+UPDATE comm_attachments SET storage_driver='local' WHERE storage_driver IS NULL;
+ALTER TABLE comm_attachments ALTER COLUMN storage_driver SET DEFAULT 'local';
+ALTER TABLE comm_attachments ALTER COLUMN storage_driver SET NOT NULL;
+DO $$ BEGIN
+ IF NOT EXISTS(
+  SELECT 1 FROM pg_constraint
+  WHERE conrelid='comm_attachments'::regclass AND conname='comm_attachments_storage_driver_check'
+ ) THEN
+  ALTER TABLE comm_attachments ADD CONSTRAINT comm_attachments_storage_driver_check
+   CHECK(storage_driver IN ('local','s3'));
+ END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS comm_attachment_work_queue
  ON comm_attachments(connection_id,state,created_at)
  WHERE state IN ('pending','quarantine','scanning');
@@ -247,8 +263,14 @@ ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS directus_file_count integer;
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS private_file_count integer;
 ALTER TABLE comm_backups ADD COLUMN IF NOT EXISTS error_code text;
 CREATE TABLE IF NOT EXISTS comm_file_gc (
- storage_key uuid PRIMARY KEY,queued_at timestamptz NOT NULL DEFAULT now()
+ storage_key uuid PRIMARY KEY,storage_driver text NOT NULL DEFAULT 'local',
+ storage_version text,queued_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE comm_file_gc ADD COLUMN IF NOT EXISTS storage_driver text;
+ALTER TABLE comm_file_gc ADD COLUMN IF NOT EXISTS storage_version text;
+UPDATE comm_file_gc SET storage_driver='local' WHERE storage_driver IS NULL;
+ALTER TABLE comm_file_gc ALTER COLUMN storage_driver SET DEFAULT 'local';
+ALTER TABLE comm_file_gc ALTER COLUMN storage_driver SET NOT NULL;
 -- Release any database created before the short-lived scanner claim state existed.
 DO $$ DECLARE state_check text; BEGIN
  SELECT conname INTO state_check FROM pg_constraint

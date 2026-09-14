@@ -52,6 +52,9 @@ services:
       - ./uploads:/directus/uploads
       - ./extensions-bundled:/directus/extensions:ro
       - ./private-communications:/directus/private-communications
+    secrets:
+      - communications_s3_access_key
+      - communications_s3_secret_key
     logging: *default-logging
     environment:
       SECRET: ${SECRET}
@@ -84,6 +87,14 @@ services:
       # scoped worker identities have passed the release checks.
       ISVOI_COMMUNICATIONS_ENABLED: ${ISVOI_COMMUNICATIONS_ENABLED:-false}
       ISVOI_COMMUNICATIONS_PRIVATE_DIR: /directus/private-communications
+      ISVOI_COMMUNICATIONS_STORAGE_DRIVER: ${ISVOI_COMMUNICATIONS_STORAGE_DRIVER:-local}
+      ISVOI_COMMUNICATIONS_S3_ENDPOINT: ${ISVOI_COMMUNICATIONS_S3_ENDPOINT:-}
+      ISVOI_COMMUNICATIONS_S3_REGION: ${ISVOI_COMMUNICATIONS_S3_REGION:-ru1}
+      ISVOI_COMMUNICATIONS_S3_BUCKET: ${ISVOI_COMMUNICATIONS_S3_BUCKET:-}
+      ISVOI_COMMUNICATIONS_S3_PREFIX: ${ISVOI_COMMUNICATIONS_S3_PREFIX:-communications/objects}
+      ISVOI_COMMUNICATIONS_S3_FORCE_PATH_STYLE: ${ISVOI_COMMUNICATIONS_S3_FORCE_PATH_STYLE:-true}
+      ISVOI_COMMUNICATIONS_S3_ACCESS_KEY_FILE: /run/secrets/communications_s3_access_key
+      ISVOI_COMMUNICATIONS_S3_SECRET_KEY_FILE: /run/secrets/communications_s3_secret_key
       ISVOI_COMMUNICATIONS_CLAMAV_HOST: ${ISVOI_COMMUNICATIONS_CLAMAV_HOST:-clamav}
       ISVOI_MAX_SUPPORT_WEBHOOK_SECRET: ${ISVOI_MAX_SUPPORT_WEBHOOK_SECRET:-}
 
@@ -107,6 +118,12 @@ services:
       # CORS so the Next.js site can call the API from the browser.
       CORS_ENABLED: "true"
       CORS_ORIGIN: ${CORS_ORIGIN}
+
+secrets:
+  communications_s3_access_key:
+    file: ${ISVOI_COMMUNICATIONS_S3_ACCESS_KEY_HOST_FILE:-./empty-secret.example}
+  communications_s3_secret_key:
+    file: ${ISVOI_COMMUNICATIONS_S3_SECRET_KEY_HOST_FILE:-./empty-secret.example}
 
 # Named bind mounts above keep DB data, uploads and extensions on the host.
 # These directories are gitignored (see repo .gitignore).

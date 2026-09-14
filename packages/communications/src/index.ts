@@ -4,6 +4,7 @@ export * from "./normalize.js";
 export * from "./service.js";
 export * from "./delivery.js";
 export * from "./attachments.js";
+export * from "./storage.js";
 export * from "./transport.js";
 export * from "./staff.js";
 export * from "./legacy.js";

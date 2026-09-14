@@ -1,4 +1,3 @@
-import { createReadStream } from "node:fs";
 import { createService } from "./service.js";
 import { createDelivery } from "./delivery.js";
 import { createAttachments } from "./attachments.js";
@@ -140,7 +139,7 @@ export default {
           res.status(206).set("Content-Range", `bytes ${start}-${end}/${file.size}`);
         }
         res.set("Content-Length", String(end - start + 1));
-        const stream = createReadStream(file.path, { start, end });
+        const stream = await attachments.stream(file, start, end);
         stream.on("error", () => res.destroy());
         stream.pipe(res);
       }),
@@ -296,7 +295,7 @@ export default {
           "X-Media-Kind": f.kind,
           "X-Media-Name": encodeURIComponent(f.name),
         });
-        const stream = createReadStream(attachments.path(f.storage_key));
+        const stream = await attachments.stream(f);
         stream.on("error", () => res.destroy());
         stream.pipe(res);
       }),

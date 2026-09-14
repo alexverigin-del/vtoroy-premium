@@ -38055,7 +38055,7 @@ function createAttachments(context, service) {
       return fail("STORAGE_UNAVAILABLE", 503);
     }
   }
-  return { store, upload, scanOne, get: get2, stream };
+  return { store, upload, scanOne, get: get2, stream, remove: storage.remove };
 }
 var allowed, SanitizerUnavailableError, SanitizerRejectedError;
 var init_attachments = __esm({
@@ -39923,12 +39923,69 @@ ${text}${attachmentId ? "\n[\u0424\u043E\u0442\u043E \u043E\u0436\u0438\u0434\u0
   return { notify, process: process2, sweep };
 }
 
+// packages/communications/src/retention.ts
+async function retainCommunications(db, removeAttachment, force = false) {
+  const result = await db.transaction(async (trx) => {
+    await trx.raw("SELECT pg_advisory_xact_lock(73119,1)");
+    const runtime = await trx("comm_runtime").where({ id: 1 }).forUpdate().first();
+    if (!force && runtime?.retention_after && new Date(runtime.retention_after) > /* @__PURE__ */ new Date())
+      return { not_due: true };
+    if (await trx("comm_backups").where({ state: "running" }).first())
+      return { paused_for_backup: true };
+    const ids = await trx("comm_conversations").whereNotNull("closed_at").whereRaw("closed_at<=now()-interval '6 months'").pluck("id");
+    const stale = trx("comm_messages").whereNull("conversation_id").whereRaw("received_at<=now()-interval '30 days'").select("id");
+    const media2 = await trx("comm_attachments").where(
+      (q4) => q4.whereIn("conversation_id", ids).orWhereIn("message_id", stale).orWhere(
+        (u2) => u2.whereNull("message_id").whereRaw("created_at<=now()-interval '30 days'")
+      )
+    ).select("id", "storage_key", "storage_driver", "storage_version");
+    for (const f6 of media2)
+      if (f6.storage_key)
+        await trx("comm_file_gc").insert({
+          storage_key: f6.storage_key,
+          storage_driver: f6.storage_driver || "local",
+          storage_version: f6.storage_version || null
+        }).onConflict("storage_key").ignore();
+    await trx("comm_staff_drafts").whereIn("conversation_id", ids).orWhere("expires_at", "<", trx.fn.now()).delete();
+    await trx("comm_attachments").whereIn(
+      "id",
+      media2.map((f6) => f6.id)
+    ).delete();
+    await trx("comm_outbox").whereIn("conversation_id", ids).delete();
+    await trx("comm_messages").whereIn("id", stale).delete();
+    await trx("comm_conversations").whereIn("id", ids).delete();
+    const raw = await trx("comm_inbound").where({ state: "done" }).whereNotNull("event").whereRaw("processed_at<=now()-interval '7 days'").update({ event: null });
+    await trx("comm_link_tokens").where("expires_at", "<", trx.fn.now()).delete();
+    await trx("comm_runtime").where({ id: 1 }).update({
+      last_retention_at: trx.fn.now(),
+      retention_after: trx.raw("now()+interval '1 day'")
+    });
+    return { conversations: ids.length, files: media2.length, raw_events: raw };
+  });
+  if ("not_due" in result || "paused_for_backup" in result) return result;
+  await db.transaction(async (trx) => {
+    await trx.raw("SELECT pg_advisory_xact_lock(73119,1)");
+    if (await trx("comm_backups").where({ state: "running" }).first()) return;
+    for (const f6 of await trx("comm_file_gc").orderBy("queued_at").limit(100)) {
+      if (await trx("comm_attachments").where({ storage_key: f6.storage_key }).first()) continue;
+      try {
+        await removeAttachment(f6);
+      } catch {
+        continue;
+      }
+      await trx("comm_file_gc").where({ storage_key: f6.storage_key }).delete();
+    }
+  });
+  return result;
+}
+
 // packages/communications/src/endpoint.ts
 init_policy();
 var endpoint_default = {
   id: "isvoi-communications",
   handler(router, context) {
     const service = createService(context), delivery = createDelivery(context, service), attachments = createAttachments(context, service), staff = createStaff(context, service), db = context.database;
+    let retentionCheckAfter = 0;
     const handler = (fn) => async (req, res) => {
       try {
         if (!flag(context.env.ISVOI_COMMUNICATIONS_ENABLED)) fail("COMMUNICATIONS_DISABLED", 503);
@@ -40100,7 +40157,15 @@ var endpoint_default = {
         if (incoming) return res.json({ data: incoming });
         const connection = await db("comm_connections").where({ id: req.params.id, enabled: true }).first();
         if (!connection) return fail("CONNECTION_DISABLED", 403);
-        res.json({ data: await db.transaction((trx) => staff.sweep(trx, connection)) });
+        const swept = await db.transaction((trx) => staff.sweep(trx, connection));
+        if (swept) return res.json({ data: swept });
+        if (Date.now() >= retentionCheckAfter) {
+          retentionCheckAfter = Date.now() + 6e4;
+          const retained = await retainCommunications(db, attachments.remove);
+          if (!("not_due" in retained))
+            return res.json({ data: { result: "retention", ...retained } });
+        }
+        res.json({ data: null });
       })
     );
     router.post(

@@ -358,5 +358,5 @@ export function createAttachments(context: Context, service: any) {
       return fail("STORAGE_UNAVAILABLE", 503);
     }
   }
-  return { store, upload, scanOne, get, stream };
+  return { store, upload, scanOne, get, stream, remove: storage.remove };
 }

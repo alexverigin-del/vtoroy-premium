@@ -2,6 +2,7 @@ import { createService } from "./service.js";
 import { createDelivery } from "./delivery.js";
 import { createAttachments } from "./attachments.js";
 import { createStaff } from "./staff.js";
+import { retainCommunications } from "./retention.js";
 import { CommunicationError, flag, fail, UUID, verifySecret } from "./policy.js";
 
 export default {
@@ -12,6 +13,7 @@ export default {
       attachments = createAttachments(context, service),
       staff = createStaff(context, service),
       db = context.database;
+    let retentionCheckAfter = 0;
     const handler = (fn: any) => async (req: any, res: any) => {
       try {
         if (!flag(context.env.ISVOI_COMMUNICATIONS_ENABLED)) fail("COMMUNICATIONS_DISABLED", 503);
@@ -198,7 +200,15 @@ export default {
           .where({ id: req.params.id, enabled: true })
           .first();
         if (!connection) return fail("CONNECTION_DISABLED", 403);
-        res.json({ data: await db.transaction((trx: any) => staff.sweep(trx, connection)) });
+        const swept = await db.transaction((trx: any) => staff.sweep(trx, connection));
+        if (swept) return res.json({ data: swept });
+        if (Date.now() >= retentionCheckAfter) {
+          retentionCheckAfter = Date.now() + 60000;
+          const retained = await retainCommunications(db, attachments.remove);
+          if (!("not_due" in retained))
+            return res.json({ data: { result: "retention", ...retained } });
+        }
+        res.json({ data: null });
       }),
     );
     router.post(

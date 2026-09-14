@@ -4,9 +4,13 @@ import type { StorageRecord } from "./storage.js";
 export async function retainCommunications(
   db: Database,
   removeAttachment: (record: StorageRecord) => Promise<void>,
+  force = false,
 ) {
   const result = await db.transaction(async (trx: Database) => {
     await trx.raw("SELECT pg_advisory_xact_lock(73119,1)");
+    const runtime = await trx("comm_runtime").where({ id: 1 }).forUpdate().first();
+    if (!force && runtime?.retention_after && new Date(runtime.retention_after) > new Date())
+      return { not_due: true };
     if (await trx("comm_backups").where({ state: "running" }).first())
       return { paused_for_backup: true };
     const ids = await trx("comm_conversations")
@@ -56,8 +60,13 @@ export async function retainCommunications(
       .whereRaw("processed_at<=now()-interval '7 days'")
       .update({ event: null });
     await trx("comm_link_tokens").where("expires_at", "<", trx.fn.now()).delete();
+    await trx("comm_runtime").where({ id: 1 }).update({
+      last_retention_at: trx.fn.now(),
+      retention_after: trx.raw("now()+interval '1 day'"),
+    });
     return { conversations: ids.length, files: media.length, raw_events: raw };
   });
+  if ("not_due" in result || "paused_for_backup" in result) return result;
   // Hold the same lock as backup registration while deleting files. Failed deletion remains queued.
   await db.transaction(async (trx: Database) => {
     await trx.raw("SELECT pg_advisory_xact_lock(73119,1)");

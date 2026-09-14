@@ -4,9 +4,12 @@ SET LOCAL statement_timeout='60s';
 CREATE TABLE IF NOT EXISTS comm_runtime (
  id integer PRIMARY KEY CHECK(id=1), active boolean NOT NULL DEFAULT false,
  sending_enabled boolean NOT NULL DEFAULT false, cutover_at timestamptz,
- baseline_at timestamptz, last_backup_at timestamptz, recovery_hold boolean NOT NULL DEFAULT true
+ baseline_at timestamptz, last_backup_at timestamptz, recovery_hold boolean NOT NULL DEFAULT true,
+ retention_after timestamptz NOT NULL DEFAULT now(), last_retention_at timestamptz
 );
 INSERT INTO comm_runtime(id) VALUES(1) ON CONFLICT DO NOTHING;
+ALTER TABLE comm_runtime ADD COLUMN IF NOT EXISTS retention_after timestamptz NOT NULL DEFAULT now();
+ALTER TABLE comm_runtime ADD COLUMN IF NOT EXISTS last_retention_at timestamptz;
 CREATE TABLE IF NOT EXISTS comm_connections (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), platform text NOT NULL CHECK(platform IN ('telegram','max','vk')),
  external_id text NOT NULL, name text NOT NULL, enabled boolean NOT NULL DEFAULT false,

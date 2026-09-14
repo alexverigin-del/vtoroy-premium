@@ -9,6 +9,12 @@
 # nginx (see ./nginx/) terminates TLS and proxies the public site and the
 # api/admin subdomain to the Directus container.
 
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   database:
     image: postgres:16-alpine
@@ -19,6 +25,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+    logging: *default-logging
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_DATABASE}"]
       interval: 10s
@@ -30,6 +37,7 @@ services:
     restart: unless-stopped
     # Optional: Directus uses this for caching and rate-limiting when enabled.
     # Remove this service (and the CACHE_*/REDIS env in .env) if not needed.
+    logging: *default-logging
 
   directus:
     image: directus/directus:11.17.4
@@ -44,6 +52,7 @@ services:
       - ./uploads:/directus/uploads
       - ./extensions-bundled:/directus/extensions:ro
       - ./private-communications:/directus/private-communications
+    logging: *default-logging
     environment:
       SECRET: ${SECRET}
 

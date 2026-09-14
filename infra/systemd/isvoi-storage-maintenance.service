@@ -1,0 +1,12 @@
+[Unit]
+Description=ISVOI temporary release artifact retention
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/isvoi-prune-temp --apply
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateDevices=true
+PrivateTmp=false
+ReadWritePaths=/tmp

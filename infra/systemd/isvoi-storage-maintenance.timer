@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly ISVOI temporary release artifact retention
+
+[Timer]
+OnCalendar=Sun *-*-* 03:40:00 UTC
+RandomizedDelaySec=30m
+Persistent=true
+Unit=isvoi-storage-maintenance.service
+
+[Install]
+WantedBy=timers.target

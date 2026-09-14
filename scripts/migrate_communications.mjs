@@ -1,4 +1,5 @@
 import knex from "knex";
+import { readFile } from "node:fs/promises";
 import {
   communicationsSql,
   communicationsMetadataSql,
@@ -7,10 +8,26 @@ import { backfillTelegram, reconcileTelegram } from "../packages/communications/
 const mode = process.argv[2];
 if (!["schema", "backfill", "reconcile"].includes(mode))
   throw Error("Use schema | backfill | reconcile");
-if (!process.env.COMM_MIGRATION_DATABASE_URL) throw Error("COMM_MIGRATION_DATABASE_URL_REQUIRED");
+let connection;
+if (process.env.COMM_MIGRATION_DATABASE_URL) connection = process.env.COMM_MIGRATION_DATABASE_URL;
+else {
+  const required = ["DB_HOST", "DB_PORT", "DB_USER", "DB_DATABASE"];
+  if (required.some((key) => !process.env[key])) throw Error("COMM_MIGRATION_DATABASE_REQUIRED");
+  const password = process.env.DB_PASSWORD_FILE
+    ? (await readFile(process.env.DB_PASSWORD_FILE, "utf8")).trim()
+    : process.env.DB_PASSWORD;
+  if (!password) throw Error("COMM_MIGRATION_DATABASE_PASSWORD_REQUIRED");
+  connection = {
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password,
+    database: process.env.DB_DATABASE,
+  };
+}
 const db = knex({
   client: "pg",
-  connection: process.env.COMM_MIGRATION_DATABASE_URL,
+  connection,
   pool: { min: 0, max: 1 },
 });
 try {
@@ -24,6 +41,8 @@ try {
     const result =
       mode === "backfill" ? await backfillTelegram(db, id) : await reconcileTelegram(db, id);
     console.log(JSON.stringify(result, null, 2));
+    if (process.env.COMM_REQUIRE_DATA_READY === "true" && result.data_ready !== true)
+      throw Error(result.reason || "COMM_MIGRATION_NOT_READY");
   }
 } catch (e) {
   console.error(e.code || "COMM_MIGRATION_FAILED");

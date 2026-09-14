@@ -95,6 +95,13 @@ test("marketing rechecks consent and enforces two logical sends per seven days",
     },
   );
 
+  await db("comm_runtime").where({ id: 1 }).update({ recovery_hold: true });
+  assert.equal(await delivery.next(connection, worker), null);
+  assert.equal((await db("comm_outbox").where({ id: outboxes[0].id }).first()).state, "pending");
+  assert.equal(Number((await db("comm_frequency").count("* as n").first()).n), 0);
+  assert.equal((await db("comm_subscriptions").where({ identity_id: identity }).first()).consent, true);
+  await db("comm_runtime").where({ id: 1 }).update({ recovery_hold: false });
+
   for (let index = 0; index < 2; index += 1) {
     await db("comm_connections").where({ id: connection }).update({ send_after: new Date(0) });
     const operation = await delivery.next(connection, worker);

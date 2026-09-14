@@ -14,8 +14,10 @@ test -n "${backup_id:-}" || { echo 'COMM_BACKUP_CRITICAL no verified backup' >&2
 [[ "$backup_id" =~ ^[0-9a-f-]{36}$ ]]
 [[ "$age_seconds" =~ ^[0-9]+$ ]]
 test "$remote_key" = "snapshots/$backup_id"
-marker="$(rclone cat "${COMM_OFFSITE_REMOTE%/}/$remote_key/_COMPLETE" --config "$RCLONE_CONFIG")"
-test -n "$marker"
+marker="$(rclone cat "${COMM_OFFSITE_REMOTE%/}/completed/$backup_id/_COMPLETE" --config "$RCLONE_CONFIG")"
+manifest_sha256="$(printf '%s\n' "$marker" | awk '{print $1}')"
+[[ "$manifest_sha256" =~ ^[0-9a-f]{64}$ ]]
+test "$marker" = "$manifest_sha256  SHA256SUMS"
 age_minutes="$((age_seconds / 60))"
 if (( age_minutes >= COMM_BACKUP_WARN_MINUTES )); then
   echo "COMM_BACKUP_WARNING age_minutes=$age_minutes backup_id=$backup_id" >&2

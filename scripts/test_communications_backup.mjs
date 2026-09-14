@@ -32,18 +32,22 @@ assert.ok(
 );
 assert.match(backup, /--immutable/);
 assert.doesNotMatch(backup, /rclone copyto/);
-assert.match(backup, /rclone copy "\$target\/_COMPLETE" "\$remote_snapshot"/);
+assert.match(backup, /remote_completion="\$remote_root\/completed\/\$id"/);
+assert.match(backup, /rclone copy "\$target\/_COMPLETE" "\$remote_completion"/);
+assert.match(backup, /rclone cat "\$remote_completion\/_COMPLETE"/);
 assert.doesNotMatch(backup, /access_key_id\s*=/i);
 assert.doesNotMatch(backup, /secret_access_key\s*=/i);
 
 assert.match(health, /COMM_BACKUP_WARN_MINUTES:-45/);
-assert.match(health, /_COMPLETE/);
+assert.match(health, /completed\/\$backup_id\/_COMPLETE/);
+assert.match(health, /\^\[0-9a-f\]\{64\}\$/);
 assert.match(restore, /--network none/);
 assert.match(restore, /--memory 768m/);
 assert.match(restore, /pg_restore[\s\S]*--exit-on-error/);
 assert.match(restore, /sha256sum -c/);
 assert.match(restore, /restore_manifest/);
 assert.match(restore, /objects-v2\/directus/);
+assert.match(restore, /completed\/\$COMM_RESTORE_BACKUP_ID/);
 assert.match(service, /ProtectSystem=strict/);
 assert.match(service, /ConditionPathExists=\/etc\/isvoi\/communications-backup\.env/);
 assert.match(timer, /OnCalendar=\*-\*-\* \*:00,30:00/);

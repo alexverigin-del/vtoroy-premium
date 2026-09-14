@@ -43,6 +43,7 @@ SQL
 target="$COMM_BACKUP_ROOT/$id"
 remote_root="${COMM_OFFSITE_REMOTE%/}"
 remote_snapshot="$remote_root/snapshots/$id"
+remote_completion="$remote_root/completed/$id"
 mkdir "$target"
 
 fail_backup() {
@@ -107,10 +108,10 @@ rclone check "$target/object-pool-directus" "$remote_root/objects-v2/directus" -
 rclone copy "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --immutable --checksum --exclude '/object-pool-*/**'
 rclone check "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --one-way --download --exclude '/object-pool-*/**'
 printf '%s  SHA256SUMS\n' "$manifest_sha256" >"$target/_COMPLETE"
-# Beget/Ceph may return 403 for a HEAD request on a missing object. Directory
-# copy discovers the destination through ListObjects and remains immutable.
-rclone copy "$target/_COMPLETE" "$remote_snapshot" --config "$RCLONE_CONFIG" --immutable
-remote_complete="$(rclone cat "$remote_snapshot/_COMPLETE" --config "$RCLONE_CONFIG")"
+# Beget S3 rejects adding an object to an already populated snapshot prefix.
+# Keep the completion record in its own new immutable prefix and verify it by readback.
+rclone copy "$target/_COMPLETE" "$remote_completion" --config "$RCLONE_CONFIG" --immutable
+remote_complete="$(rclone cat "$remote_completion/_COMPLETE" --config "$RCLONE_CONFIG")"
 test "$remote_complete" = "$manifest_sha256  SHA256SUMS"
 
 printf "UPDATE comm_backups SET state='completed',completed_at=now(),external_verified=true,verified_at=now(),manifest_sha256='%s',remote_key='snapshots/%s',database_bytes=%s,directus_file_count=%s,private_file_count=%s,error_code=NULL WHERE id='%s'; UPDATE comm_runtime SET last_backup_at=now() WHERE id=1;\n" \

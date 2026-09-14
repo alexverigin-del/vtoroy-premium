@@ -91,7 +91,7 @@ function Wait-ComposeReady {
   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
   do {
     $database = Get-ContainerState -Container 'isvoi-communications-local-database-1' -Format '{{.State.Health.Status}}'
-    $clamav = Get-ContainerState -Container 'isvoi-communications-local-clamav-1' -Format '{{.State.Health.Status}}'
+    $sanitizer = Get-ContainerState -Container 'isvoi-communications-local-media-sanitizer-1' -Format '{{.State.Health.Status}}'
     $directus = Get-ContainerState -Container 'isvoi-communications-local-directus-1' -Format '{{.State.Status}}'
     $directusHealthy = $false
 
@@ -104,15 +104,15 @@ function Wait-ComposeReady {
       }
     }
 
-    if ($database -eq 'healthy' -and $clamav -eq 'healthy' -and $directusHealthy) {
-      Write-Host 'ISVOI services are ready: PostgreSQL=healthy, Directus=ok, ClamAV=healthy.'
+    if ($database -eq 'healthy' -and $sanitizer -eq 'healthy' -and $directusHealthy) {
+      Write-Host 'ISVOI services are ready: PostgreSQL=healthy, Directus=ok, Media sanitizer=healthy.'
       return
     }
 
     Start-Sleep -Seconds 5
   } while ((Get-Date) -lt $deadline)
 
-  throw "ISVOI services did not become ready within $TimeoutSeconds seconds (PostgreSQL=$database, Directus=$directus, ClamAV=$clamav)."
+  throw "ISVOI services did not become ready within $TimeoutSeconds seconds (PostgreSQL=$database, Directus=$directus, Media sanitizer=$sanitizer)."
 }
 
 function Move-SocketDirectory {
@@ -223,12 +223,12 @@ try {
       throw "Compose file not found: $composeFile"
     }
 
-    & $dockerExe compose -f $composeFile --profile files up -d
+    & $dockerExe compose -f $composeFile up -d
     if ($LASTEXITCODE -ne 0) {
       throw "Docker Compose failed with exit code $LASTEXITCODE."
     }
 
-    & $dockerExe compose -f $composeFile --profile files ps
+    & $dockerExe compose -f $composeFile ps
     if ($LASTEXITCODE -ne 0) {
       throw "Unable to read Compose status; exit code $LASTEXITCODE."
     }

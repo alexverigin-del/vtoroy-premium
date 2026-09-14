@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 const baseUrl = "http://127.0.0.1:8056",
   password = "local-isvoi-fixture-password",
   connection = "55555555-5555-4555-8555-555555555555",
-  scannerExpected = process.env.COMM_LOCAL_SCANNER === "ready";
+  sanitizerExpected = process.env.COMM_LOCAL_SANITIZER === "ready";
 
 async function call(path, { token, json, body, headers = {}, method = "GET" } = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -117,9 +117,12 @@ request = await call("/isvoi-communications/v1/commands", {
 assert.equal(request.response.status, 200, JSON.stringify(request.result));
 let version = request.result.data.version;
 
-const bytes = Buffer.from("safe local attachment\n", "utf8");
+const bytes = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64",
+);
 request = await call(
-  `/isvoi-communications/v1/attachments?conversation_id=${conversation.id}&name=fixture.txt&mime=text%2Fplain`,
+  `/isvoi-communications/v1/attachments?conversation_id=${conversation.id}&name=fixture.png&mime=image%2Fpng`,
   {
     method: "POST",
     token: manager,
@@ -134,48 +137,38 @@ assert.equal(attachment.state, "quarantine");
 request = await call(`/isvoi-communications/v1/attachments/${attachment.id}`, { token: manager });
 assert.equal(request.response.status, 409, "quarantined file must not be downloadable");
 
-if (scannerExpected) {
+if (sanitizerExpected) {
   assert.equal(
     (await scanUntilSettled(attachment.id, manager, worker)).state,
     "ready",
-    "scanner must eventually release the target file",
+    "sanitizer must eventually release the target file",
   );
   request = await call(`/isvoi-communications/v1/attachments/${attachment.id}`, { token: manager });
-  assert.equal(request.response.status, 200, "clean file must be downloadable after scanning");
-  assert.deepEqual(Buffer.from(request.result), bytes);
+  assert.equal(request.response.status, 200, "sanitized file must be downloadable");
+  assert.notDeepEqual(Buffer.from(request.result), bytes, "stored object must be a re-encoded derivative");
+  assert.equal(request.response.headers.get("content-type"), "image/png");
   assert.equal(request.response.headers.get("cache-control"), "private, no-store");
   assert.equal(request.response.headers.get("x-content-type-options"), "nosniff");
 
   const safeKinds = [
     {
-      name: "pixel.png",
-      mime: "image/png",
-      bytes: Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-        "base64",
-      ),
-    },
-    {
       name: "sample.wav",
       mime: "audio/wav",
-      bytes: Buffer.concat([
-        Buffer.from("RIFF"),
-        Buffer.from([36, 0, 0, 0]),
-        Buffer.from("WAVEfmt "),
-        Buffer.from([16, 0, 0, 0, 1, 0, 1, 0, 0x40, 0x1f, 0, 0, 0x40, 0x1f, 0, 0, 1, 0, 8, 0]),
-        Buffer.from("data"),
-        Buffer.alloc(8),
-      ]),
+      bytes: (() => {
+        const samples = Buffer.alloc(800);
+        for (let i = 0; i < samples.length; i++) samples[i] = 128 + Math.round(40 * Math.sin((i * Math.PI) / 10));
+        const header = Buffer.alloc(44);
+        header.write("RIFF", 0); header.writeUInt32LE(36 + samples.length, 4); header.write("WAVEfmt ", 8);
+        header.writeUInt32LE(16, 16); header.writeUInt16LE(1, 20); header.writeUInt16LE(1, 22);
+        header.writeUInt32LE(8000, 24); header.writeUInt32LE(8000, 28); header.writeUInt16LE(1, 32);
+        header.writeUInt16LE(8, 34); header.write("data", 36); header.writeUInt32LE(samples.length, 40);
+        return Buffer.concat([header, samples]);
+      })(),
     },
     {
-      name: "sample.mp4",
-      mime: "video/mp4",
-      bytes: Buffer.from("000000186674797069736f6d0000020069736f6d69736f32", "hex"),
-    },
-    {
-      name: "sample.pdf",
-      mime: "application/pdf",
-      bytes: Buffer.from("%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF"),
+      name: "sample.webm",
+      mime: "video/webm",
+      bytes: Buffer.from("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", "base64"),
     },
   ];
   for (const fixture of safeKinds) {
@@ -195,16 +188,7 @@ if (scannerExpected) {
     assert.equal((await scanUntilSettled(uploaded.result.data.id, manager, worker)).state, "ready");
   }
 
-  const opus = Buffer.concat([
-    Buffer.from("OggS"),
-    Buffer.from([0, 2]),
-    Buffer.alloc(20),
-    Buffer.from([1, 19]),
-    Buffer.from("OpusHead"),
-    Buffer.from([1, 1]),
-    Buffer.from([0x80, 0xbb, 0, 0]),
-    Buffer.alloc(9),
-  ]);
+  const opus = Buffer.from("T2dnUwACAAAAAAAAAAA5cscpAAAAADzCY+gBE09wdXNIZWFkAQE4AYC7AAAAAABPZ2dTAAAAAAAAAAAAADlyxykBAAAAUe918QE+T3B1c1RhZ3MNAAAATGF2ZjU5LjI3LjEwMAEAAAAdAAAAZW5jb2Rlcj1MYXZjNTkuMzcuMTAwIGxpYm9wdXNPZ2dTAAS4JgAAAAAAADlyxykCAAAAjt0N0AtzSlZUSU5US1RVQXiBe8YRdvR1AAAHjspp27vin9OsGw694P5LBvg9zQynkRg6XUvhyRTv/1IE8M+rjFyc92AAVxN7l6kEARCcTlmflhpBgtA/phZ4oC0P6PNAvD3MRCgY5jFvO8YeYCYyKC/ylWRWNEH/WSJ8TcNjTqTOiU14nh6h5/yVTUqet//ilnkUKGHySp9LOJ6jxSLxd+4p+UOGXd3vND1+cRx88HkERnUUMXyZWKr03MoCFCE47lLPy21iu+gT/PHh03iZwl9zLdIzOTU2ZBZmF8CPmIm5EqDrsu3jbvIPz+PSLAk9BUgczPnzjE+473F4TOyLliQhj5Vg5NG/CVDLbfZFNJ7pLW27VW/A8BlNKhwi4hG/XrdseJnCX3Mt0i3vaopvCPxD4teYgxJ11EzVMl7FYWUMgSzBXP+xLWDOHpp5kIfBckqo2d4XFxQ6RQ+O9Vt32SQx7WFDjVnLRV2TuGGsOOrr5xbwcf1YeJnCX3Mt0i2eXCrADM7IZww+BPTiOjEeisKd3x6ncfmo3CQc2piM+X1wE3S4MceamwvLcznW8pfTKj1pw9agM2mpaq0IujFJRniZwl91nPxLOVF3rxg/kbhnLuVofegtTT9V5S0OTb9DU5MbE83adv1x5mAoSNTHDsVTTvXqKOY3ALOPZU+Ebj6YUMtB9ePrlBoSIRmyb3iZwl9zLdIxSi/8EocPobgXcbiKKl27MnI75n146aeoCl+jSXy+5aMmAdu/0vTAtIauLJVQ4r2b4AKEVTIW7p4V14qsC0HD0FtY/WmC9IMrKXHhUHiZwl9zLdIzOTUxG2TwZWxB0UzqprgEdJjFqt53azRSkCYQKA3gjuqA8aCWxpCpRsO3NUNHQrRC/eTuwpxTDxasrgI16GJcS2/rZHiZwl91nPxJSjgKHWKL5YoPiL+i0xTWog75yzmjAezLZ20GEL9rVd6UPInD62Ce+F1evCB31RY+edprkwHWTsZl0VkArkOB9myrfNdl+pyAxp/uWWiZwl9zLdIxSuJmS96qZq/X4jjxBigVQkRoHVmisSo1U5TB26FID/4rzB813Pa7V7LKO3AWHw6VOkS9xjRGGmN3BYz8VYGB9gKIhk4FNHH79MAbzs5ogaQ2HrDLMbMBBhvHMRifig1FCMBqHcYuDdRmrxB83lV9WE2Uvf+ZGmmpjC0ggwTDBbUleLpq4lKOQjV5rQo20Q==", "base64");
   request = await call(`/isvoi-communications/v1/workers/${connection}/ingest`, {
     method: "POST",
     token: worker,
@@ -249,29 +233,21 @@ if (scannerExpected) {
   assert.equal(request.response.status, 200, JSON.stringify(request.result));
   assert.equal((await scanUntilSettled(media.result.data.id, manager, worker)).state, "ready");
 
-  const eicar = Buffer.from(
-    "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*",
-    "ascii",
-  );
+  const document = Buffer.from("%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF");
   request = await call(
-    `/isvoi-communications/v1/attachments?conversation_id=${conversation.id}&name=eicar.txt&mime=text%2Fplain`,
+    `/isvoi-communications/v1/attachments?conversation_id=${conversation.id}&name=document.pdf&mime=application%2Fpdf`,
     {
       method: "POST",
       token: manager,
-      body: eicar,
+      body: document,
       headers: {
         "content-type": "application/octet-stream",
-        "content-length": String(eicar.length),
+        "content-length": String(document.length),
       },
     },
   );
-  assert.equal(request.response.status, 201, JSON.stringify(request.result));
-  const infected = request.result.data;
-  const infectedStatus = await scanUntilSettled(infected.id, manager, worker);
-  assert.equal(infectedStatus.state, "rejected");
-  assert.equal(infectedStatus.error_code, "MALWARE_DETECTED");
-  request = await call(`/isvoi-communications/v1/attachments/${infected.id}`, { token: manager });
-  assert.equal(request.response.status, 409, "rejected file must never be downloadable");
+  assert.equal(request.response.status, 415, "documents are outside the safe-media profile");
+  assert.equal(request.result.errors[0].message, "FILE_FORMAT_NOT_ALLOWED");
 } else {
   request = await call(`/isvoi-communications/v1/workers/${connection}/scan`, {
     method: "POST",
@@ -280,7 +256,7 @@ if (scannerExpected) {
   });
   assert.equal(request.response.status, 200, JSON.stringify(request.result));
   assert.equal(request.result.data.state, "quarantine");
-  assert.equal(request.result.data.error_code, "SCANNER_UNAVAILABLE");
+  assert.equal(request.result.data.error_code, "SANITIZER_UNAVAILABLE");
 }
 
 request = await call("/isvoi-communications/v1/inbox", { token: manager });
@@ -329,5 +305,5 @@ request = await call("/isvoi-communications/v1/connections");
 assert.equal(request.response.status, 403, "connection operations must not be public");
 
 console.log(
-  `PASS Directus API: public denied, worker ingest/process, manager inbox/claim/reply/history/unread, quarantine hold, ${scannerExpected ? "ClamAV image/audio/video/document/Telegram voice release, EICAR rejection, private download" : "scanner outage"}, private collections, audience and connection operations (version ${version}).`,
+  `PASS Directus API: public denied, worker ingest/process, manager inbox/claim/reply/history/unread, quarantine hold, ${sanitizerExpected ? "safe-media image/audio/video/Telegram voice release, document rejection, private download" : "sanitizer outage"}, private collections, audience and connection operations (version ${version}).`,
 );

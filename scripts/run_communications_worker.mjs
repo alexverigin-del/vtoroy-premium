@@ -117,6 +117,8 @@ while (running) {
       const f = await api("media", undefined, "GET");
       if (f) {
         try {
+          if (!["image", "voice", "audio", "video"].includes(f.kind))
+            throw Error("FILE_FORMAT_NOT_ALLOWED");
           let url, hosts;
           if (platform === "telegram") {
             if (f.external_ref.size > 20000000) throw Error("FILE_TOO_LARGE");

@@ -1,4 +1,3 @@
-import { createConnection } from "node:net";
 import { randomUUID } from "node:crypto";
 import { fileTypeFromBuffer } from "file-type";
 import { fail, MAX_FILE_BYTES, UUID, digest } from "./policy.js";
@@ -14,39 +13,19 @@ const allowed = new Map([
   ["image/jpeg", "image"],
   ["image/png", "image"],
   ["image/webp", "image"],
-  ["image/gif", "image"],
   ["audio/ogg", "audio"],
   ["audio/ogg; codecs=opus", "audio"],
   ["audio/opus", "audio"],
   ["audio/mpeg", "audio"],
-  ["audio/mp4", "audio"],
   ["audio/wav", "audio"],
   ["audio/x-wav", "audio"],
-  ["audio/flac", "audio"],
   ["video/mp4", "video"],
   ["video/webm", "video"],
-  ["video/quicktime", "video"],
-  ["application/pdf", "document"],
-  ["application/msword", "document"],
-  ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "document"],
-  ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "document"],
-  ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "document"],
-  ["text/plain", "document"],
 ]);
 export async function inspectFile(buffer: Buffer, declared: string) {
   if (!buffer.length || buffer.length > MAX_FILE_BYTES) return fail("FILE_TOO_LARGE", 413);
   const detected = await fileTypeFromBuffer(buffer).catch(() => undefined);
   let mime = detected?.mime;
-  if (!mime && declared === "text/plain") {
-    try {
-      const text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
-      if (
-        !/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text) &&
-        !/<\s*(?:html|script|svg|iframe|!doctype)/i.test(text)
-      )
-        mime = "text/plain";
-    } catch {}
-  }
   if (!mime || !allowed.has(mime)) return fail("FILE_FORMAT_NOT_ALLOWED", 415);
   const declaredBase = declared.split(";", 1)[0].trim().toLowerCase(),
     detectedBase = mime.split(";", 1)[0].trim().toLowerCase();
@@ -72,48 +51,89 @@ export async function readBounded(stream: AsyncIterable<Uint8Array>, size?: unkn
   if (size !== undefined && length !== Number(size)) return fail("FILE_SIZE_MISMATCH");
   return Buffer.concat(chunks);
 }
-/** Clamd INSTREAM. A timeout/error leaves the object in quarantine. */
-export async function scanClamAV(
+export class SanitizerUnavailableError extends Error {
+  constructor() {
+    super("SANITIZER_UNAVAILABLE");
+  }
+}
+export class SanitizerRejectedError extends Error {
+  constructor(public code: string) {
+    super(code);
+  }
+}
+export type SanitizedMedia = {
+  bytes: Buffer;
+  mime: string;
+  extension: string;
+  kind: "image" | "voice" | "audio" | "video";
+  version: string;
+};
+export async function sanitizeMedia(
   buffer: Buffer,
-  host: string,
-  port = 3310,
-): Promise<"clean" | "infected"> {
-  return new Promise((resolveScan, reject) => {
-    const socket = createConnection({ host, port });
-    let result = "";
-    let settled = false;
-    const finish = (error?: Error, value?: "clean" | "infected") => {
-      if (settled) return;
-      settled = true;
-      socket.destroy();
-      error ? reject(error) : resolveScan(value!);
-    };
-    socket.setTimeout(30000, () => finish(new Error("SCANNER_UNAVAILABLE")));
-    socket.on("error", () => finish(new Error("SCANNER_UNAVAILABLE")));
-    socket.on("data", (chunk) => {
-      result += chunk.toString();
-      if (result.length > 4096) return finish(new Error("SCANNER_PROTOCOL"));
-      if (result.includes("\0")) {
-        if (/: OK\0/.test(result)) finish(undefined, "clean");
-        else if (/ FOUND\0/.test(result)) finish(undefined, "infected");
-        else finish(new Error("SCANNER_UNAVAILABLE"));
-      }
+  mime: string,
+  kind: "image" | "voice" | "audio" | "video",
+  configuredUrl: string,
+): Promise<SanitizedMedia> {
+  let endpoint: URL;
+  try {
+    const base = new URL(configuredUrl);
+    if (!(["http:", "https:"] as string[]).includes(base.protocol) || base.username || base.password)
+      throw new Error();
+    endpoint = new URL("/v1/sanitize", base);
+  } catch {
+    throw new SanitizerUnavailableError();
+  }
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": String(buffer.length),
+        "X-Input-Mime": mime,
+        "X-Input-Kind": kind,
+      },
+      body: buffer as any,
+      signal: AbortSignal.timeout(55_000),
+      redirect: "error",
     });
-    socket.on("end", () => {
-      if (!settled) finish(new Error("SCANNER_UNAVAILABLE"));
-    });
-    socket.on("connect", () => {
-      socket.write("zINSTREAM\0");
-      for (let i = 0; i < buffer.length; i += 65536) {
-        const part = buffer.subarray(i, i + 65536),
-          header = Buffer.alloc(4);
-        header.writeUInt32BE(part.length);
-        socket.write(header);
-        socket.write(part);
-      }
-      socket.write(Buffer.alloc(4));
-    });
+  } catch {
+    throw new SanitizerUnavailableError();
+  }
+  if (!response.ok) {
+    if (response.status >= 500 || response.status === 429)
+      throw new SanitizerUnavailableError();
+    let code = "MEDIA_SANITIZATION_FAILED";
+    try {
+      const body = await response.json();
+      if (/^[A-Z0-9_]{1,60}$/.test(String(body?.error_code))) code = String(body.error_code);
+    } catch {}
+    throw new SanitizerRejectedError(code);
+  }
+  if (!response.body) throw new SanitizerUnavailableError();
+  const outputMime = String(response.headers.get("content-type") || "").split(";", 1)[0],
+    extension = String(response.headers.get("x-sanitized-extension") || ""),
+    outputKind = String(response.headers.get("x-sanitized-kind") || ""),
+    version = String(response.headers.get("x-sanitizer-version") || "");
+  if (
+    !["image/jpeg", "image/png", "image/webp", "audio/ogg", "video/mp4"].includes(outputMime) ||
+    !["jpg", "png", "webp", "ogg", "mp4"].includes(extension) ||
+    outputKind !== kind ||
+    !/^isvoi-safe-media\/[0-9]+$/.test(version)
+  )
+    throw new SanitizerUnavailableError();
+  const bytes = await readBounded(
+    response.body as unknown as AsyncIterable<Uint8Array>,
+    response.headers.get("content-length") || undefined,
+  ).catch(() => {
+    throw new SanitizerUnavailableError();
   });
+  const inspected = await inspectFile(bytes, outputMime).catch(() => {
+    throw new SanitizerUnavailableError();
+  });
+  const inspectedKind = kind === "voice" && inspected.kind === "audio" ? "voice" : inspected.kind;
+  if (inspectedKind !== kind) throw new SanitizerUnavailableError();
+  return { bytes, mime: outputMime, extension, kind, version };
 }
 export function createAttachments(context: Context, service: any) {
   const db = context.database,
@@ -183,12 +203,12 @@ export function createAttachments(context: Context, service: any) {
   }
   async function scanOne(connectionId: string) {
     const row = await db.transaction(async (trx: any) => {
-      // Recover a process that died after claiming a file. Quarantine is safe to retry because
-      // scanning has no external delivery side effect.
+      // Recover a process that died after claiming a file. Sanitization has no external delivery
+      // side effect and writes a new immutable object before the database pointer is swapped.
       await trx("comm_attachments")
         .where({ state: "scanning", connection_id: connectionId })
         .andWhere("checked_at", "<", trx.raw("now()-interval '2 minutes'"))
-        .update({ state: "quarantine", error_code: "SCANNER_INTERRUPTED", checked_at: null });
+        .update({ state: "quarantine", error_code: "SANITIZER_INTERRUPTED", checked_at: null });
       const row = await trx("comm_attachments")
         .where({ state: "quarantine", connection_id: connectionId })
         .orderBy("created_at")
@@ -223,38 +243,104 @@ export function createAttachments(context: Context, service: any) {
         .update({ state: "rejected", error_code: "FILE_INTEGRITY", checked_at: db.fn.now() });
       return { id: row.id, state: "rejected" };
     }
-    let result;
+    let result: SanitizedMedia;
     try {
-      result = await scanClamAV(
+      result = await sanitizeMedia(
         bytes,
-        String(context.env.ISVOI_COMMUNICATIONS_CLAMAV_HOST || "clamav"),
+        row.mime,
+        row.kind,
+        String(context.env.ISVOI_COMMUNICATIONS_SANITIZER_URL || "http://media-sanitizer:8080"),
       );
-    } catch {
+    } catch (error) {
+      if (error instanceof SanitizerRejectedError) {
+        const changed = await db.transaction(async (trx: any) => {
+          await trx("comm_file_gc")
+            .insert({
+              storage_key: row.storage_key,
+              storage_driver: row.storage_driver || "local",
+              storage_version: row.storage_version || null,
+            })
+            .onConflict("storage_key")
+            .ignore();
+          return trx("comm_attachments")
+            .where({ id: row.id, state: "scanning" })
+            .update({
+              state: "rejected",
+              error_code: error.code,
+              checked_at: trx.fn.now(),
+              source_sha256: row.sha256,
+              storage_key: null,
+              storage_version: null,
+              object_etag: null,
+            });
+        });
+        if (!changed) return fail("FILE_STATE_CHANGED", 409);
+        try {
+          await storage.remove(row);
+          await db("comm_file_gc").where({ storage_key: row.storage_key }).delete();
+        } catch {}
+        return { id: row.id, state: "rejected", error_code: error.code };
+      }
       await db("comm_attachments")
         .where({ id: row.id, state: "scanning" })
-        .update({ state: "quarantine", error_code: "SCANNER_UNAVAILABLE", checked_at: null });
-      return { id: row.id, state: "quarantine", error_code: "SCANNER_UNAVAILABLE" };
+        .update({ state: "quarantine", error_code: "SANITIZER_UNAVAILABLE", checked_at: null });
+      return { id: row.id, state: "quarantine", error_code: "SANITIZER_UNAVAILABLE" };
     }
-    const state = result === "clean" ? "ready" : "rejected";
-    if (result === "infected") {
-      try {
-        await storage.remove(row);
-      } catch {
+    const newKey = randomUUID();
+    let replacement: StoredObject | undefined;
+    try {
+      replacement = await storage.put(newKey, result.bytes, result.mime);
+      const changed = await db.transaction(async (trx: any) => {
+        await trx("comm_file_gc")
+          .insert({
+            storage_key: row.storage_key,
+            storage_driver: row.storage_driver || "local",
+            storage_version: row.storage_version || null,
+          })
+          .onConflict("storage_key")
+          .ignore();
+        const baseName = String(row.name || "file")
+          .replace(/\.[^.]{1,12}$/u, "")
+          .replace(/[\x00-\x1f/\\<>:"|?*]/g, "_")
+          .slice(0, 125);
+        return trx("comm_attachments")
+          .where({ id: row.id, state: "scanning" })
+          .update({
+            state: "ready",
+            checked_at: trx.fn.now(),
+            error_code: null,
+            name: `${baseName || "file"}.${result.extension}`,
+            mime: result.mime,
+            size: result.bytes.length,
+            sha256: digest(result.bytes),
+            source_sha256: row.sha256,
+            sanitized_at: trx.fn.now(),
+            sanitizer_version: result.version,
+            storage_driver: replacement!.driver,
+            storage_version: replacement!.version,
+            object_etag: replacement!.etag,
+            storage_key: newKey,
+          });
+      });
+      if (!changed) return fail("FILE_STATE_CHANGED", 409);
+    } catch (error) {
+      if (replacement)
+        await storage
+          .remove({ storage_driver: replacement.driver, storage_key: newKey, storage_version: replacement.version })
+          .catch(() => undefined);
+      if (error instanceof StorageUnavailableError) {
         await db("comm_attachments")
           .where({ id: row.id, state: "scanning" })
           .update({ state: "quarantine", error_code: "STORAGE_UNAVAILABLE", checked_at: null });
         return { id: row.id, state: "quarantine", error_code: "STORAGE_UNAVAILABLE" };
       }
+      throw error;
     }
-    const changed = await db("comm_attachments")
-      .where({ id: row.id, state: "scanning" })
-      .update({
-        state,
-        checked_at: db.fn.now(),
-        error_code: result === "clean" ? null : "MALWARE_DETECTED",
-      });
-    if (!changed) return fail("FILE_STATE_CHANGED", 409);
-    return { id: row.id, state };
+    try {
+      await storage.remove(row);
+      await db("comm_file_gc").where({ storage_key: row.storage_key }).delete();
+    } catch {}
+    return { id: row.id, state: "ready" };
   }
   async function get(a: Actor, id: string) {
     if (!UUID.test(id)) return fail("NOT_FOUND", 404);

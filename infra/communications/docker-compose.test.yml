@@ -1,5 +1,22 @@
 name: isvoi-communications-local
 services:
+  media-sanitizer:
+    build:
+      context: ./media-sanitizer
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 1.0
+    networks: [sanitizer]
+    healthcheck:
+      test: [CMD, python3, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2).read()"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
   database:
     image: postgres:16-alpine
     environment:
@@ -27,11 +44,14 @@ services:
   directus:
     image: directus/directus:11.17.4
     ports: ["127.0.0.1:8056:8055"]
+    networks: [default, sanitizer]
     depends_on:
       database:
         condition: service_healthy
       private-init:
         condition: service_completed_successfully
+      media-sanitizer:
+        condition: service_healthy
     environment:
       SECRET: local-isvoi-communications-fixture-only
       ADMIN_EMAIL: admin@example.com
@@ -49,7 +69,7 @@ services:
       MARKETPLACE_TRUST: sandbox
       ISVOI_COMMUNICATIONS_ENABLED: "true"
       ISVOI_COMMUNICATIONS_PRIVATE_DIR: /directus/private-communications
-      ISVOI_COMMUNICATIONS_CLAMAV_HOST: clamav
+      ISVOI_COMMUNICATIONS_SANITIZER_URL: http://media-sanitizer:8080
       ISVOI_TELEGRAM_USE_COMMUNICATIONS: "true"
       ISVOI_TELEGRAM_ENABLED: "true"
       ISVOI_TELEGRAM_BOT_ID: "8908725708"
@@ -59,18 +79,9 @@ services:
       - ../directus-beget/extensions-bundled:/directus/extensions:ro
       - communications-test-private:/directus/private-communications
     mem_limit: 1g
-  clamav:
-    image: clamav/clamav:1.4
-    profiles: [files]
-    mem_limit: 4g
-    volumes:
-      - communications-test-signatures:/var/lib/clamav
-    healthcheck:
-      test: [CMD, clamdcheck.sh]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 volumes:
   communications-test-db:
   communications-test-private:
-  communications-test-signatures:
+networks:
+  sanitizer:
+    internal: true

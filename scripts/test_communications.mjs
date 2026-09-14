@@ -483,7 +483,7 @@ test("normalizes private messages, media and availability; rejects group ingress
     `/start ${token}`,
   );
 });
-test("file validation uses content, rejects active formats and bounds streamed bytes", async () => {
+test("file validation accepts only safe-media inputs and bounds streamed bytes", async () => {
   const opus = Buffer.concat([
     Buffer.from("OggS"),
     Buffer.from([0, 2]),
@@ -499,17 +499,13 @@ test("file validation uses content, rejects active formats and bounds streamed b
     kind: "audio",
     extension: "opus",
   });
-  assert.equal(
-    (await inspectFile(Buffer.from("Тестовый документ"), "text/plain")).kind,
-    "document",
-  );
   await assert.rejects(
-    inspectFile(Buffer.from("<svg><script>alert(1)</script></svg>"), "text/plain"),
+    inspectFile(Buffer.from("Тестовый документ"), "text/plain"),
     /FILE_FORMAT_NOT_ALLOWED/,
   );
   await assert.rejects(
     inspectFile(Buffer.from("%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF"), "image/jpeg"),
-    /FILE_TYPE_MISMATCH/,
+    /FILE_FORMAT_NOT_ALLOWED/,
   );
   await assert.rejects(
     readBounded(

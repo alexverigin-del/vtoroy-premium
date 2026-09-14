@@ -258,6 +258,7 @@
     "directus:test:inventory-manager-editability": "node scripts/test_directus_inventory_manager_editability.mjs",
     "directus:catalog-guard:test": "node scripts/test_directus_catalog_guard_extension.mjs",
     "communications:build": "node scripts/build_communications.mjs",
+    "communications:sanitizer:test": "node scripts/test_media_sanitizer_container.mjs",
     "communications:local:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start_isvoi_docker.ps1",
     "communications:test": "node node_modules/typescript/bin/tsc -p packages/communications/tsconfig.json && node --test scripts/test_communications.mjs scripts/test_communications_provider_preflight.mjs scripts/test_communications_backup.mjs",
     "communications:max:preflight": "node scripts/communications_provider_preflight.mjs --platform max",

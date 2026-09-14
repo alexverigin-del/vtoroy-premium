@@ -92,12 +92,16 @@ CREATE TABLE IF NOT EXISTS comm_attachments (
  state text NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','quarantine','scanning','ready','rejected')),
  name text NOT NULL, mime text NOT NULL, size bigint CHECK(size>=0 AND size<=20000000),
  external_ref jsonb, storage_driver text NOT NULL DEFAULT 'local' CHECK(storage_driver IN ('local','s3')),
- storage_version text, object_etag text, storage_key text UNIQUE, sha256 char(64), error_code text,
- created_at timestamptz NOT NULL DEFAULT now(), checked_at timestamptz
+ storage_version text, object_etag text, storage_key text UNIQUE, sha256 char(64), source_sha256 char(64),
+ error_code text, created_at timestamptz NOT NULL DEFAULT now(), checked_at timestamptz,
+ sanitized_at timestamptz, sanitizer_version text
 );
 ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS storage_driver text;
 ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS storage_version text;
 ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS object_etag text;
+ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS source_sha256 char(64);
+ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS sanitized_at timestamptz;
+ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS sanitizer_version text;
 UPDATE comm_attachments SET storage_driver='local' WHERE storage_driver IS NULL;
 ALTER TABLE comm_attachments ALTER COLUMN storage_driver SET DEFAULT 'local';
 ALTER TABLE comm_attachments ALTER COLUMN storage_driver SET NOT NULL;

@@ -69,6 +69,8 @@ const errorText = (e: any) => {
         COMMUNICATIONS_DISABLED: "Коммуникации ещё не включены. Выполняется подготовка выпуска.",
         FILE_TOO_LARGE: "Файл должен быть не больше 20 МБ.",
         FILE_TYPE_MISMATCH: "Содержимое файла не соответствует его формату.",
+        FILE_FORMAT_NOT_ALLOWED:
+          "Поддерживаются JPEG, PNG, WebP, OGG/Opus, MP3, WAV, MP4 и WebM. Документы пока недоступны.",
         ATTACHMENT_NOT_READY: "Дождитесь проверки вложений.",
       } as any
     )[code] || "Не удалось выполнить действие. Текст сохранён. Проверьте соединение и повторите."
@@ -441,9 +443,10 @@ onBeforeUnmount(() => {
                 >Прикрепить файл<input
                   type="file"
                   multiple
+                  accept="image/jpeg,image/png,image/webp,audio/ogg,audio/mpeg,audio/wav,video/mp4,video/webm"
                   :disabled="busy"
                   @change="upload" /></label
-              ><small>До 20 МБ · файл проверяется перед отправкой</small
+              ><small>До 20 МБ · фото, аудио и видео очищаются перед отправкой</small
               ><button type="submit" class="primary" :disabled="!canSend">
                 {{ busy ? "Сохранение…" : note ? "Сохранить заметку" : "Отправить" }}
               </button>

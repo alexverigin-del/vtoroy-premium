@@ -11,7 +11,7 @@ try {
  (SELECT count(*) FROM comm_outbox WHERE state IN ('uncertain','partial')) AS delivery_attention,
  (SELECT count(*) FROM comm_inbound WHERE state='failed') AS failed_events,
  (SELECT extract(epoch FROM now()-min(received_at)) FROM comm_inbound WHERE state='pending') AS oldest_inbound_seconds,
- (SELECT count(*) FROM comm_attachments WHERE state='quarantine' AND created_at<now()-interval '5 minutes') AS scanner_backlog`)
+ (SELECT count(*) FROM comm_attachments WHERE state='quarantine' AND created_at<now()-interval '5 minutes') AS media_backlog`)
   ).rows[0];
   const alert =
     r.backup_age_minutes === null ||
@@ -19,7 +19,7 @@ try {
     Number(r.delivery_attention) > 0 ||
     Number(r.failed_events) > 0 ||
     Number(r.oldest_inbound_seconds) > 30 ||
-    Number(r.scanner_backlog) > 0;
+    Number(r.media_backlog) > 0;
   console.log(JSON.stringify({ state: alert ? "attention" : "ok", ...r }));
   if (alert) process.exitCode = 2;
 } finally {

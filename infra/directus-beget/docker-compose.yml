@@ -16,6 +16,27 @@ x-default-logging: &default-logging
     max-file: "3"
 
 services:
+  media-sanitizer:
+    build:
+      context: ../communications/media-sanitizer
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 1.0
+    networks: [sanitizer]
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=2).read()"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
   database:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -48,6 +69,7 @@ services:
     ports:
       # Bind to localhost only; nginx proxies to it. Adjust if running without nginx.
       - "127.0.0.1:8055:8055"
+    networks: [default, sanitizer]
     volumes:
       - ./uploads:/directus/uploads
       - ./extensions-bundled:/directus/extensions:ro
@@ -95,7 +117,7 @@ services:
       ISVOI_COMMUNICATIONS_S3_FORCE_PATH_STYLE: ${ISVOI_COMMUNICATIONS_S3_FORCE_PATH_STYLE:-true}
       ISVOI_COMMUNICATIONS_S3_ACCESS_KEY_FILE: /run/secrets/communications_s3_access_key
       ISVOI_COMMUNICATIONS_S3_SECRET_KEY_FILE: /run/secrets/communications_s3_secret_key
-      ISVOI_COMMUNICATIONS_CLAMAV_HOST: ${ISVOI_COMMUNICATIONS_CLAMAV_HOST:-clamav}
+      ISVOI_COMMUNICATIONS_SANITIZER_URL: ${ISVOI_COMMUNICATIONS_SANITIZER_URL:-http://media-sanitizer:8080}
       ISVOI_MAX_SUPPORT_WEBHOOK_SECRET: ${ISVOI_MAX_SUPPORT_WEBHOOK_SECRET:-}
 
       # Realtime / WebSockets.
@@ -124,6 +146,10 @@ secrets:
     file: ${ISVOI_COMMUNICATIONS_S3_ACCESS_KEY_HOST_FILE:-./empty-secret.example}
   communications_s3_secret_key:
     file: ${ISVOI_COMMUNICATIONS_S3_SECRET_KEY_HOST_FILE:-./empty-secret.example}
+
+networks:
+  sanitizer:
+    internal: true
 
 # Named bind mounts above keep DB data, uploads and extensions on the host.
 # These directories are gitignored (see repo .gitignore).

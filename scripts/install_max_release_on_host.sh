@@ -152,7 +152,7 @@ chown deploy:deploy "$STACK/private-communications"
 chmod 700 "$STACK/private-communications"
 ENV_CHANGED=true
 set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_ENABLED true
-set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_CLAMAV_HOST clamav
+set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_SANITIZER_URL http://media-sanitizer:8080
 set_env "$DIRECTUS_ENV" ISVOI_MAX_SUPPORT_WEBHOOK_SECRET "$MAX_WEBHOOK_SECRET"
 cat > "$WORKER_ENV" <<EOF
 COMM_DIRECTUS_URL=http://127.0.0.1:8055

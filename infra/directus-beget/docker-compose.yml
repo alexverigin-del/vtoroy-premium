@@ -104,6 +104,9 @@ services:
       ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED: ${ISVOI_TELEGRAM_NOTIFICATIONS_ENABLED:-false}
       ISVOI_TELEGRAM_BOT_USERNAME: ${ISVOI_TELEGRAM_BOT_USERNAME:-}
       ISVOI_TELEGRAM_INTAKE_USER_ID: ${ISVOI_TELEGRAM_INTAKE_USER_ID:-}
+      # Activates the legacy Telegram API adapter backed by the common
+      # communications tables. Set only during the controlled cutover.
+      ISVOI_TELEGRAM_USE_COMMUNICATIONS: ${ISVOI_TELEGRAM_USE_COMMUNICATIONS:-false}
 
       # Omnichannel endpoint. Keep disabled until the additive schema and
       # scoped worker identities have passed the release checks.

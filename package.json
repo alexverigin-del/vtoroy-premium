@@ -260,7 +260,7 @@
     "communications:build": "node scripts/build_communications.mjs",
     "communications:sanitizer:test": "node scripts/test_media_sanitizer_container.mjs",
     "communications:local:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start_isvoi_docker.ps1",
-    "communications:test": "node node_modules/typescript/bin/tsc -p packages/communications/tsconfig.json && node --test scripts/test_communications.mjs scripts/test_communications_provider_preflight.mjs scripts/test_communications_backup.mjs scripts/test_communications_change_journal.mjs scripts/test_communications_marketing.mjs scripts/test_communications_retention.mjs scripts/test_telegram_communications_worker_setup.mjs",
+    "communications:test": "node node_modules/typescript/bin/tsc -p packages/communications/tsconfig.json && node --test scripts/test_communications.mjs scripts/test_communications_provider_preflight.mjs scripts/test_communications_backup.mjs scripts/test_communications_change_journal.mjs scripts/test_communications_marketing.mjs scripts/test_communications_retention.mjs scripts/test_telegram_communications_worker_setup.mjs scripts/test_telegram_communications_cutover.mjs",
     "communications:max:preflight": "node scripts/communications_provider_preflight.mjs --platform max",
     "communications:max:webhook": "node scripts/configure_max_webhook.mjs",
     "communications:vk:preflight": "node scripts/communications_provider_preflight.mjs --platform vk",

@@ -8,6 +8,8 @@ DIRECTUS_ENV="$STACK/.env"
 STORAGE_ENV=${ISVOI_COMMUNICATIONS_STORAGE_ENV:-/etc/isvoi/communications-media-s3.env}
 ACCESS_SECRET=/etc/isvoi/secrets/communications_s3_access_key
 SECRET_SECRET=/etc/isvoi/secrets/communications_s3_secret_key
+ACCESS_CONTAINER_SECRET=/etc/isvoi/secrets/communications_s3_access_key.directus
+SECRET_CONTAINER_SECRET=/etc/isvoi/secrets/communications_s3_secret_key.directus
 BACKUP="$ROOT/backups/communications-storage-$(date -u +%Y%m%dT%H%M%SZ)"
 ENV_BACKUP="$BACKUP/directus.env"
 ENV_CHANGED=false
@@ -57,6 +59,14 @@ trap rollback ERR EXIT
 for secret in "$ACCESS_SECRET" "$SECRET_SECRET"; do
   [[ -f $secret && $(stat -c %a "$secret") == 600 ]] || fail STORAGE_SECRET_NOT_PRIVATE
 done
+DIRECTUS_UID=$(compose exec -T directus id -u)
+DIRECTUS_GID=$(compose exec -T directus id -g)
+[[ $DIRECTUS_UID =~ ^[1-9][0-9]*$ && $DIRECTUS_GID =~ ^[1-9][0-9]*$ ]] \
+  || fail DIRECTUS_IDENTITY_INVALID
+install -o "$DIRECTUS_UID" -g "$DIRECTUS_GID" -m 400 \
+  "$ACCESS_SECRET" "$ACCESS_CONTAINER_SECRET"
+install -o "$DIRECTUS_UID" -g "$DIRECTUS_GID" -m 400 \
+  "$SECRET_SECRET" "$SECRET_CONTAINER_SECRET"
 
 ENDPOINT=$(value ISVOI_COMMUNICATIONS_S3_ENDPOINT)
 REGION=$(value ISVOI_COMMUNICATIONS_S3_REGION)
@@ -103,8 +113,8 @@ set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_REGION "$REGION"
 set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_BUCKET "$BUCKET"
 set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_PREFIX "$PREFIX"
 set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_FORCE_PATH_STYLE "$FORCE_PATH_STYLE"
-set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_ACCESS_KEY_HOST_FILE "$ACCESS_SECRET"
-set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_SECRET_KEY_HOST_FILE "$SECRET_SECRET"
+set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_ACCESS_KEY_HOST_FILE "$ACCESS_CONTAINER_SECRET"
+set_env "$DIRECTUS_ENV" ISVOI_COMMUNICATIONS_S3_SECRET_KEY_HOST_FILE "$SECRET_CONTAINER_SECRET"
 
 compose config --quiet
 compose up -d --force-recreate --no-deps directus >/dev/null
@@ -114,6 +124,9 @@ for _ in $(seq 1 60); do
 done
 curl --fail --silent --max-time 2 http://127.0.0.1:8055/server/ping >/dev/null \
   || fail DIRECTUS_RESTART_TIMEOUT
+compose exec -T directus sh -lc \
+  'test -r /run/secrets/communications_s3_access_key && test -r /run/secrets/communications_s3_secret_key' \
+  || fail DIRECTUS_SECRETS_NOT_READABLE
 [[ $(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 10 \
   http://127.0.0.1:8055/isvoi-communications/v1/inbox) == 403 ]] \
   || fail PUBLIC_INBOX_NOT_DENIED

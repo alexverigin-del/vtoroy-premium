@@ -2,6 +2,18 @@
 export const changeJournalSql = String.raw`
 BEGIN;
 CREATE OR REPLACE FUNCTION comm_capture_legacy_change() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+ IF TG_OP='UPDATE' THEN
+  IF to_jsonb(NEW) IS NOT DISTINCT FROM to_jsonb(OLD) THEN
+   RETURN NEW;
+  END IF;
+  -- The legacy worker renews its lease every polling cycle. Only the cursor is
+  -- relevant to Telegram migration; journaling lease heartbeats would grow the
+  -- temporary table by tens of thousands of rows per day.
+  IF TG_TABLE_NAME='telegram_runtime'
+     AND (to_jsonb(NEW)->>'update_offset') IS NOT DISTINCT FROM (to_jsonb(OLD)->>'update_offset') THEN
+   RETURN NEW;
+  END IF;
+ END IF;
  INSERT INTO comm_migration_changes(collection,operation,row_id) VALUES(TG_TABLE_NAME,TG_OP,coalesce(to_jsonb(NEW)->>'id',to_jsonb(OLD)->>'id',to_jsonb(NEW)->>'token_hash',to_jsonb(OLD)->>'token_hash',to_jsonb(NEW)->>'bot_id',to_jsonb(OLD)->>'bot_id'));
  RETURN coalesce(NEW,OLD); END $$;
 DO $$ DECLARE name text; BEGIN

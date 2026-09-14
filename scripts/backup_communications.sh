@@ -92,7 +92,9 @@ rclone check "$COMM_DIRECTUS_UPLOADS_DIR" "$remote_root/objects/directus" --conf
 rclone copy "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --immutable --checksum
 rclone check "$target" "$remote_snapshot" --config "$RCLONE_CONFIG" --one-way --download
 printf '%s  SHA256SUMS\n' "$manifest_sha256" >"$target/_COMPLETE"
-rclone copyto "$target/_COMPLETE" "$remote_snapshot/_COMPLETE" --config "$RCLONE_CONFIG" --immutable
+# Beget/Ceph may return 403 for a HEAD request on a missing object. Directory
+# copy discovers the destination through ListObjects and remains immutable.
+rclone copy "$target/_COMPLETE" "$remote_snapshot" --config "$RCLONE_CONFIG" --immutable
 remote_complete="$(rclone cat "$remote_snapshot/_COMPLETE" --config "$RCLONE_CONFIG")"
 test "$remote_complete" = "$manifest_sha256  SHA256SUMS"
 

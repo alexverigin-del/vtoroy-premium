@@ -28,6 +28,8 @@ assert.ok(
   "database state must be completed only after the remote marker",
 );
 assert.match(backup, /--immutable/);
+assert.doesNotMatch(backup, /rclone copyto/);
+assert.match(backup, /rclone copy "\$target\/_COMPLETE" "\$remote_snapshot"/);
 assert.doesNotMatch(backup, /access_key_id\s*=/i);
 assert.doesNotMatch(backup, /secret_access_key\s*=/i);
 

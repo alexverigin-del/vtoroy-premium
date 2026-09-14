@@ -7,25 +7,27 @@ Production-контур сохраняет каждые 30 минут:
 - полный PostgreSQL dump в custom format;
 - SHA-256-манифест всех файлов Directus;
 - SHA-256-манифест приватных вложений коммуникаций;
+- SHA-256-манифест объектов отдельного live S3;
 - детерминированные архивы медиа и самопроверяемый `snapshot.tar`.
 
-Файлы собираются в архивы и находятся в неизменяемых пулах `bundles-v1/directus` и `bundles-v1/private`, где именем объекта служит SHA-256 содержимого. Служебный `directus-health-file` не входит в архив. При неизменном составе файлов архив повторно не загружается. Dump, манифесты соответствия путей и ссылки на media-bundles упакованы в один объект `snapshots/<backup-id>/snapshot.tar`. Такая компоновка не создаёт сотни S3-объектов для одной библиотеки Directus.
+Локальные файлы собираются в архивы и находятся в неизменяемых пулах `bundles-v1/directus` и `bundles-v1/private`, где именем объекта служит SHA-256 содержимого. Объекты рабочего S3 копируются один раз в `objects-v1/private-s3/<uuid>` и не перезаписываются; снимок хранит только список UUID и ожидаемые SHA-256. Служебный `directus-health-file` не входит в архив. Dump, манифесты соответствия путей и ссылки на media-bundles упакованы в один объект `snapshots/<backup-id>/snapshot.tar` формата v3.
 
 Снимок пригоден для восстановления только при одновременном выполнении условий:
 
 1. в `comm_backups` установлены `state = completed` и `external_verified = true`;
 2. в S3 присутствует `snapshots/<backup-id>/snapshot.tar`;
 3. SHA-256 объекта совпадает со значением `manifest_sha256` в `comm_backups`;
-4. внутренний `SHA256SUMS`, media-bundles и `pg_restore --list` проходят проверку.
+4. внутренний `SHA256SUMS`, media-bundles, список live S3 и `pg_restore --list` проходят проверку.
 
 ## Закрытая конфигурация production
 
 Бакет должен быть приватным. Публичная политика, CORS и собственный публичный домен для backup bucket не нужны. Репозиторий содержит только шаблон [`communications-backup.env.example`](../infra/communications/communications-backup.env.example).
 
-На сервере используются два файла с владельцем `root:root` и правами `0600`:
+На сервере используются закрытые файлы с владельцем `root:root` и правами `0600`:
 
 - `/etc/isvoi/communications-backup.env` — пути и имя бакета;
 - `/etc/isvoi/rclone.conf` — Access key и Secret key.
+- `/etc/isvoi/communications-media-rclone.conf` — отдельная пара ключей live S3 для копирования объектов в backup bucket.
 
 Для Beget используется backend `provider = Ceph` с пустыми `region`, `location_constraint` и `acl`. Параметр `no_check_bucket = true` обязателен: Beget разрешает создавать и удалять бакеты только из панели управления. Без этого параметра новый `rclone` перед `PutObject` может вызвать `CreateBucket` и получить `403 AccessDenied`, хотя список существующих объектов читается корректно.
 
@@ -50,7 +52,7 @@ systemctl list-timers 'isvoi-communications-backup*'
 
 ## Проверка восстановления
 
-Репетиция скачивает последний подтверждённый `snapshot.tar`, проверяет SHA-256, получает из S3 два media-bundle и восстанавливает dump в одноразовый PostgreSQL 16 container с ограничением 768 МБ памяти и 0,75 CPU:
+Репетиция скачивает последний подтверждённый `snapshot.tar`, проверяет SHA-256, получает два media-bundle и все UUID из S3-манифеста выбранного снимка, полностью сверяет их SHA-256 и восстанавливает dump в одноразовый PostgreSQL 16 container с ограничением 768 МБ памяти и 0,75 CPU:
 
 ```bash
 set -a

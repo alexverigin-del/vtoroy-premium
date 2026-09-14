@@ -98,4 +98,6 @@ export interface Context {
   services: Services;
   getSchema: () => Promise<unknown>;
   env: Record<string, unknown>;
+  /** Optional deterministic clock for isolated contracts. Runtime uses the system clock. */
+  now?: () => Date;
 }

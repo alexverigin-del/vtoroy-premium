@@ -28,7 +28,8 @@ function providerAttachment(platform: string, outcome: Outcome) {
 
 /** A lease authorizes ONE HTTP attempt. Expiry never means safe to resend. */
 export function createDelivery(context: Context, service: any) {
-  const db = context.database;
+  const db = context.database,
+    now = () => (context.now ? new Date(context.now()) : new Date());
   async function worker(trx: Database, connectionId: string, user: unknown) {
     if (typeof user !== "string" || !UUID.test(user)) return fail("FORBIDDEN", 403);
     const connection = await trx("comm_connections")
@@ -163,7 +164,7 @@ export function createDelivery(context: Context, service: any) {
             await reject("CONSENT_WITHDRAWN");
             continue;
           }
-          const window = marketingWindow(new Date());
+          const window = marketingWindow(now());
           if (!window.allowed) {
             await trx("comm_outbox").where({ id: b.id }).update({ due_at: window.next });
             continue;

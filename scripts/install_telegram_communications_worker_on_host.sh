@@ -3,7 +3,7 @@ set -euo pipefail
 
 [[ $EUID -eq 0 ]] || { echo TELEGRAM_WORKER_INSTALL_REQUIRES_ROOT >&2; exit 1; }
 ROOT=/opt/isvoi
-LEGACY_ENV=$ROOT/work/private/telegram.env
+LEGACY_ENV=${ISVOI_LEGACY_TELEGRAM_ENV:-$ROOT/infra/telegram/.env}
 TARGET_ENV=/etc/isvoi/communications-telegram.env
 UNIT=/etc/systemd/system/isvoi-communications-telegram@.service
 

@@ -17,12 +17,16 @@ const example = await readFile(
 
 test("Telegram production cutover is explicit, bounded and keeps MAX workers isolated", () => {
   assert.match(cutover, /Use preflight \| apply \| rollback-before-ingress/);
-  assert.match(cutover, /systemctl start isvoi-communications-backup\.service/);
+  assert.doesNotMatch(cutover, /systemctl start isvoi-communications-backup\.service/);
+  assert.match(cutover, /isvoi-communications-backup-health/);
   assert.match(cutover, /COMM_REQUIRE_DATA_READY=true/);
   assert.match(cutover, /pm2_deploy stop isvoi-telegram/);
   assert.match(cutover, /ISVOI_TELEGRAM_USE_COMMUNICATIONS true/);
   assert.match(cutover, /isvoi-communications-telegram@receive\.service/);
-  assert.match(cutover, /ROLLBACK_REFUSED_AFTER_INGRESS/);
+  assert.match(cutover, /ROLLBACK_REFUSED_AFTER_NEW_WORK/);
+  assert.match(cutover, /systemctl stop isvoi-communications-telegram@receive\.service/);
+  assert.match(cutover, /comm_inbound WHERE connection_id/);
+  assert.match(cutover, /comm_outbox WHERE connection_id/);
   assert.match(cutover, /TELEGRAM_CUTOVER_REQUIRES_FIX_FORWARD/);
   assert.doesNotMatch(cutover, /disable --now isvoi-communications@(process|send|media)/);
   assert.doesNotMatch(cutover, /UPDATE comm_runtime SET sending_enabled=false/);

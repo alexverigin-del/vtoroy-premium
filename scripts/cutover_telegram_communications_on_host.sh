@@ -61,13 +61,23 @@ wait_directus() {
   fail DIRECTUS_RESTART_TIMEOUT
 }
 
-new_ingress_count() {
+new_work_count() {
+  local since=$1
+  [[ $since =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || fail CUTOVER_TIMESTAMP_INVALID
   cat <<SQL | db_query | sed '/^$/d' | tail -1
-SELECT count(*)::int
-FROM comm_inbound i
-JOIN comm_connections c ON c.id=i.connection_id
-WHERE i.connection_id='$CONNECTION_ID'
-  AND i.received_at >= (c.settings->>'cutover_at')::timestamptz;
+SELECT
+ (SELECT count(*) FROM comm_inbound WHERE connection_id='$CONNECTION_ID' AND received_at >= '$since'::timestamptz) +
+ (SELECT count(*) FROM comm_outbox WHERE connection_id='$CONNECTION_ID' AND created_at >= '$since'::timestamptz) +
+ (SELECT count(*) FROM comm_messages WHERE thread_id IN
+   (SELECT id FROM comm_threads WHERE connection_id='$CONNECTION_ID')
+   AND received_at >= '$since'::timestamptz) +
+ (SELECT count(*) FROM comm_consent_events WHERE identity_id IN
+   (SELECT id FROM comm_identities WHERE connection_id='$CONNECTION_ID')
+   AND created_at >= '$since'::timestamptz) +
+ (SELECT count(*) FROM comm_subscriptions WHERE identity_id IN
+   (SELECT id FROM comm_identities WHERE connection_id='$CONNECTION_ID')
+   AND updated_at >= '$since'::timestamptz)
+ AS work_count;
 SQL
 }
 
@@ -122,13 +132,23 @@ SQL
 }
 
 rollback_before_ingress() {
-  local ingress
+  local work since
   PHASE=rollback
   [[ $EUID -eq 0 ]] || fail ROOT_REQUIRED
   [[ -f $STATE ]] || fail CUTOVER_STATE_REQUIRED
-  ingress=$(new_ingress_count)
-  [[ $ingress == 0 ]] || fail ROLLBACK_REFUSED_AFTER_INGRESS
-  # Stop the receiver first. No new platform event can enter after this point.
+  [[ ! -e $LOCK ]] || fail CUTOVER_ALREADY_RUNNING
+  mkdir "$LOCK" || fail CUTOVER_ALREADY_RUNNING
+  LOCKED=true
+  # Wait for the receiver to finish its current poll and journal write.
+  systemctl stop isvoi-communications-telegram@receive.service >/dev/null
+  since=$(sed -n 's/^CUTOVER_AT=//p' "$STATE" | tail -1)
+  work=$(new_work_count "$since")
+  if [[ $work != 0 ]]; then
+    systemctl start isvoi-communications-telegram@receive.service >/dev/null
+    rmdir "$LOCK"
+    LOCKED=false
+    fail ROLLBACK_REFUSED_AFTER_NEW_WORK
+  fi
   systemctl disable --now \
     isvoi-communications-telegram@receive.service \
     isvoi-communications-telegram@process.service \
@@ -151,11 +171,13 @@ SQL
   pm2_deploy restart isvoi-telegram --update-env >/dev/null
   [[ $(pm2_deploy pid isvoi-telegram | tail -1) =~ ^[1-9][0-9]*$ ]] || fail LEGACY_TELEGRAM_RESTART_FAILED
   rm -f "$STATE"
+  rmdir "$LOCK"
+  LOCKED=false
   printf 'TELEGRAM_CUTOVER_ROLLED_BACK_BEFORE_INGRESS\n'
 }
 
 automatic_failure() {
-  local code=$?
+  local code=$? work since
   trap - ERR EXIT
   if [[ $LOCKED == true ]]; then
     if [[ $RECEIVE_STARTED == false && -n $ENV_BACKUP && -f $ENV_BACKUP ]]; then
@@ -165,6 +187,17 @@ automatic_failure() {
         isvoi-communications-telegram@process.service \
         isvoi-communications-telegram@send.service \
         isvoi-communications-telegram@media.service >/dev/null 2>&1
+      since=$(sed -n 's/^CUTOVER_AT=//p' "$STATE" 2>/dev/null | tail -1)
+      if [[ -n $since ]]; then
+        work=$(new_work_count "$since" 2>/dev/null)
+      else
+        work=0
+      fi
+      if [[ ! $work =~ ^[0-9]+$ || $work != 0 ]]; then
+        printf 'TELEGRAM_CUTOVER_REQUIRES_FIX_FORWARD phase=%s\n' "$PHASE" >&2
+        rmdir "$LOCK" >/dev/null 2>&1 || true
+        exit "$code"
+      fi
       install -m 600 "$ENV_BACKUP" "$DIRECTUS_ENV"
       cat <<SQL | db_query >/dev/null 2>&1
 UPDATE comm_connections SET enabled=false, name='Telegram · подготовка переноса',
@@ -195,8 +228,8 @@ apply_cutover() {
   trap automatic_failure ERR EXIT
 
   PHASE=backup
-  systemctl start isvoi-communications-backup.service
-  systemctl is-failed --quiet isvoi-communications-backup.service && fail CUTOVER_BACKUP_FAILED
+  # A full offsite copy is prepared before the agreed window. The 30-minute
+  # timer keeps it fresh; do not spend the ten-minute cutover waiting for S3.
   /usr/local/sbin/isvoi-communications-backup-health >/dev/null || fail CUTOVER_BACKUP_NOT_VERIFIED
   ENV_BACKUP="$ROOT/backups/telegram-cutover-$(date -u +%Y%m%dT%H%M%SZ).env"
   install -m 600 "$DIRECTUS_ENV" "$ENV_BACKUP"
@@ -228,6 +261,8 @@ apply_cutover() {
 
   PHASE=connection-switch
   cutover_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  printf 'ENV_BACKUP=%s\n' "$ENV_BACKUP" >"$STATE"
+  printf 'CUTOVER_AT=%s\n' "$cutover_at" >>"$STATE"
   cat <<SQL | db_query >/dev/null
 BEGIN;
 UPDATE comm_connections SET enabled=true, name='Telegram', error_code=NULL,
@@ -243,8 +278,6 @@ DO \$\$ BEGIN
 END \$\$;
 COMMIT;
 SQL
-  printf 'ENV_BACKUP=%s\n' "$ENV_BACKUP" >"$STATE"
-  printf 'CUTOVER_AT=%s\n' "$cutover_at" >>"$STATE"
 
   PHASE=workers
   systemctl enable --now \

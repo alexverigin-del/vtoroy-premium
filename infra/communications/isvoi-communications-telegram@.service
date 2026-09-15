@@ -9,6 +9,7 @@ User=deploy
 Group=deploy
 WorkingDirectory=/opt/isvoi
 EnvironmentFile=/etc/isvoi/communications-telegram.env
+Environment=NODE_OPTIONS=--dns-result-order=ipv4first
 ExecStart=/usr/bin/node /opt/isvoi/scripts/run_communications_worker.mjs %i
 Restart=on-failure
 RestartSec=5

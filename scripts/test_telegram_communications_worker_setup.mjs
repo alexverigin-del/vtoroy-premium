@@ -49,6 +49,7 @@ test("Telegram systemd unit uses a dedicated closed environment", async () => {
     readFile(new URL("./install_telegram_communications_worker_on_host.sh", import.meta.url), "utf8"),
   ]);
   assert.match(unit, /EnvironmentFile=\/etc\/isvoi\/communications-telegram\.env/);
+  assert.match(unit, /Environment=NODE_OPTIONS=--dns-result-order=ipv4first/);
   assert.match(unit, /run_communications_worker\.mjs %i/);
   assert.match(unit, /User=deploy/);
   assert.match(unit, /ProtectSystem=strict/);

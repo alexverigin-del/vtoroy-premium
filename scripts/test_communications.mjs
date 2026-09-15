@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { EventEmitter } from "node:events";
 import { testDatabase } from "./lib/communications-test-db.mjs";
 import {
   createService,
@@ -17,6 +18,7 @@ import {
   inspectFile,
   readBounded,
   sendOperation,
+  telegramJSONRequest,
   publicIPv4,
   validateMediaURL,
   validateProviderUploadURL,
@@ -130,6 +132,37 @@ test("Telegram Opus voice is sent as voice instead of a generic document", async
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("Telegram JSON transport pins IPv4, bounds the request, and preserves the provider receipt", async () => {
+  let options;
+  let sentBody;
+  const fakeRequest = (value, onResponse) => {
+    options = value;
+    const req = new EventEmitter();
+    req.end = (body) => {
+      sentBody = body;
+      const response = new EventEmitter();
+      response.statusCode = 200;
+      queueMicrotask(() => {
+        onResponse(response);
+        response.emit("data", Buffer.from('{"ok":true,"result":{"message_id":77}}'));
+        response.emit("end");
+        req.emit("close");
+      });
+    };
+    req.destroy = (error) => req.emit("error", error);
+    return req;
+  };
+  const result = await telegramJSONRequest("TEST_TOKEN", "sendMessage", {
+    chat_id: "-1001234567890",
+    text: "Проверка",
+  }, fakeRequest);
+  assert.equal(options.hostname, "api.telegram.org");
+  assert.equal(options.family, 4);
+  assert.equal(options.method, "POST");
+  assert.equal(options.headers["content-length"], Buffer.byteLength(sentBody));
+  assert.deepEqual(result, { status: 200, data: { ok: true, result: { message_id: 77 } } });
 });
 
 test("MAX addresses private messages by user_id and group messages by chat_id", async () => {

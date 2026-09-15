@@ -1,4 +1,4 @@
-import { request } from "node:https";
+import { Agent, request } from "node:https";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { createMaxApiFetch } from "../max-api-fetch.mjs";
@@ -8,6 +8,57 @@ import type { MediaKind, Platform, Outcome, ProviderResume } from "./types.js";
 
 type OutgoingFile = { bytes: Buffer; mime: string; kind: MediaKind; name: string };
 type ProviderResponse = { status: number; data: any };
+
+const telegramAgent = new Agent({ keepAlive: true, family: 4, maxSockets: 4 });
+
+export function telegramJSONRequest(
+  token: string,
+  method: string,
+  payload: any,
+  requestImpl: typeof request = request,
+): Promise<ProviderResponse> {
+  const body = JSON.stringify(payload);
+  const limit = 4 * 1024 * 1024;
+  return new Promise((resolve, reject) => {
+    const req = requestImpl(
+      {
+        hostname: "api.telegram.org",
+        port: 443,
+        path: `/bot${token}/${method}`,
+        method: "POST",
+        family: 4,
+        agent: telegramAgent,
+        headers: {
+          "content-type": "application/json",
+          "content-length": Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        const parts: Buffer[] = [];
+        let received = 0;
+        res.on("data", (part: Buffer) => {
+          received += part.length;
+          if (received > limit) {
+            req.destroy(new Error("TELEGRAM_RESPONSE_TOO_LARGE"));
+            return;
+          }
+          parts.push(part);
+        });
+        res.on("end", () => {
+          try {
+            resolve({ status: res.statusCode ?? 0, data: JSON.parse(Buffer.concat(parts).toString("utf8")) });
+          } catch {
+            reject(new Error("TELEGRAM_RESPONSE_INVALID"));
+          }
+        });
+      },
+    );
+    const timeout = setTimeout(() => req.destroy(new Error("TELEGRAM_REQUEST_TIMEOUT")), method === "getUpdates" ? 40000 : 30000);
+    req.on("close", () => clearTimeout(timeout));
+    req.on("error", () => reject(new Error("TELEGRAM_REQUEST_FAILED")));
+    req.end(body);
+  });
+}
 
 class PreparationError extends Error {
   constructor(public outcome: Outcome) {
@@ -176,9 +227,7 @@ export async function providerJSON(
       ].includes(method)
     )
       return fail("UNSUPPORTED_METHOD");
-    url = `https://api.telegram.org/bot${token}/${method}`;
-    body = JSON.stringify(payload);
-    headers = { "content-type": "application/json" };
+    return telegramJSONRequest(token, method, payload);
   } else if (platform === "max") {
     if (!["messages", "answers", "uploads"].includes(method)) return fail("UNSUPPORTED_METHOD");
     const { chat_id, user_id, type, ...rest } = payload;

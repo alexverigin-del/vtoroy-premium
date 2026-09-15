@@ -180,6 +180,11 @@ automatic_failure() {
   local code=$? work since
   trap - ERR EXIT
   if [[ $LOCKED == true ]]; then
+    if [[ -z $ENV_BACKUP ]]; then
+      printf 'TELEGRAM_CUTOVER_ABORTED_BEFORE_LEGACY_STOP phase=%s\n' "$PHASE" >&2
+      rmdir "$LOCK" >/dev/null 2>&1 || true
+      exit "$code"
+    fi
     if [[ $RECEIVE_STARTED == false && -n $ENV_BACKUP && -f $ENV_BACKUP ]]; then
       set +e
       systemctl disable --now \
@@ -230,7 +235,14 @@ apply_cutover() {
   PHASE=backup
   # A full offsite copy is prepared before the agreed window. The 30-minute
   # timer keeps it fresh; do not spend the ten-minute cutover waiting for S3.
-  /usr/local/sbin/isvoi-communications-backup-health >/dev/null || fail CUTOVER_BACKUP_NOT_VERIFIED
+  [[ -f /etc/isvoi/communications-backup.env ]] || fail CUTOVER_BACKUP_ENV_REQUIRED
+  (
+    set -a
+    # The health command is normally called by a systemd service that loads
+    # this protected file. The cutover invokes it directly under root.
+    source /etc/isvoi/communications-backup.env
+    /usr/local/sbin/isvoi-communications-backup-health >/dev/null
+  ) || fail CUTOVER_BACKUP_NOT_VERIFIED
   ENV_BACKUP="$ROOT/backups/telegram-cutover-$(date -u +%Y%m%dT%H%M%SZ).env"
   install -m 600 "$DIRECTUS_ENV" "$ENV_BACKUP"
 

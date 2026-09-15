@@ -19,6 +19,8 @@ test("Telegram production cutover is explicit, bounded and keeps MAX workers iso
   assert.match(cutover, /Use preflight \| apply \| rollback-before-ingress/);
   assert.doesNotMatch(cutover, /systemctl start isvoi-communications-backup\.service/);
   assert.match(cutover, /isvoi-communications-backup-health/);
+  assert.match(cutover, /source \/etc\/isvoi\/communications-backup\.env/);
+  assert.match(cutover, /TELEGRAM_CUTOVER_ABORTED_BEFORE_LEGACY_STOP/);
   assert.match(cutover, /COMM_REQUIRE_DATA_READY=true/);
   assert.match(cutover, /pm2_deploy stop isvoi-telegram/);
   assert.match(cutover, /ISVOI_TELEGRAM_USE_COMMUNICATIONS true/);

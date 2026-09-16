@@ -99,6 +99,22 @@ CREATE TABLE IF NOT EXISTS comm_attachments (
  error_code text, created_at timestamptz NOT NULL DEFAULT now(), checked_at timestamptz,
  sanitized_at timestamptz, sanitizer_version text
 );
+UPDATE comm_connections
+SET settings=jsonb_set(settings,'{config_version}',to_jsonb(COALESCE((settings->>'config_version')::integer,1)),true)
+WHERE NOT settings ? 'config_version';
+DO $$ BEGIN
+ IF to_regclass('telegram_bot_settings') IS NOT NULL THEN
+  EXECUTE $copy$
+   UPDATE comm_connections connection
+   SET settings=jsonb_set(connection.settings,'{welcome_file_id}',to_jsonb(settings.welcome_photo_file),true)
+   FROM telegram_bot_settings settings
+   WHERE connection.platform='telegram'
+     AND connection.external_id=settings.bot_id::text
+     AND settings.welcome_photo_file IS NOT NULL
+     AND NOT connection.settings ? 'welcome_file_id'
+  $copy$;
+ END IF;
+END $$;
 ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS storage_driver text;
 ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS storage_version text;
 ALTER TABLE comm_attachments ADD COLUMN IF NOT EXISTS object_etag text;
@@ -171,6 +187,7 @@ CREATE TABLE IF NOT EXISTS comm_variants (
  cta_label text, cta_url text, attachment_id uuid REFERENCES comm_attachments(id), version integer NOT NULL DEFAULT 1,
  UNIQUE(content_id,platform)
 );
+ALTER TABLE comm_variants ADD COLUMN IF NOT EXISTS asset_file_id uuid;
 CREATE TABLE IF NOT EXISTS comm_campaigns (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, content_id uuid REFERENCES comm_content(id),
  topic_key text REFERENCES comm_topics(key), state text NOT NULL DEFAULT 'draft' CHECK(state IN ('draft','review','approved','sending','completed','cancelled')),
@@ -178,6 +195,9 @@ CREATE TABLE IF NOT EXISTS comm_campaigns (
  approved_at timestamptz, scheduled_at timestamptz NOT NULL DEFAULT now(), snapshot jsonb,
  created_at timestamptz NOT NULL DEFAULT now(), is_test boolean NOT NULL DEFAULT true
 );
+ALTER TABLE comm_campaigns ADD COLUMN IF NOT EXISTS store_id uuid REFERENCES store_locations(id);
+ALTER TABLE comm_campaigns ADD COLUMN IF NOT EXISTS version integer NOT NULL DEFAULT 1;
+ALTER TABLE comm_campaigns ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 CREATE TABLE IF NOT EXISTS comm_destinations (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), connection_id uuid NOT NULL REFERENCES comm_connections(id),
  name text NOT NULL, external_id text NOT NULL, kind text NOT NULL CHECK(kind IN ('channel','vk_wall','staff')),
@@ -190,6 +210,8 @@ CREATE TABLE IF NOT EXISTS comm_targets (
  snapshot jsonb, external_id text, error_code text, published_at timestamptz,
  CHECK((kind='publication')=(destination_id IS NOT NULL))
 );
+CREATE UNIQUE INDEX IF NOT EXISTS comm_subscriber_target_unique
+ ON comm_targets(campaign_id,connection_id) WHERE kind='subscribers';
 CREATE TABLE IF NOT EXISTS comm_outbox (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), connection_id uuid NOT NULL REFERENCES comm_connections(id),
  thread_id uuid REFERENCES comm_threads(id), conversation_id uuid REFERENCES comm_conversations(id),
@@ -202,6 +224,13 @@ CREATE TABLE IF NOT EXISTS comm_outbox (
  created_by uuid REFERENCES directus_users(id), expected_version integer,
  UNIQUE(campaign_id,contact_id)
 );
+ALTER TABLE comm_outbox ADD COLUMN IF NOT EXISTS test_delivery boolean NOT NULL DEFAULT false;
+ALTER TABLE comm_outbox DROP CONSTRAINT IF EXISTS comm_outbox_campaign_id_contact_id_unique;
+ALTER TABLE comm_outbox DROP CONSTRAINT IF EXISTS comm_outbox_campaign_id_contact_id_key;
+CREATE UNIQUE INDEX IF NOT EXISTS comm_campaign_recipient_unique
+ ON comm_outbox(campaign_id,contact_id) WHERE campaign_id IS NOT NULL AND test_delivery=false;
+CREATE UNIQUE INDEX IF NOT EXISTS comm_campaign_test_recipient_unique
+ ON comm_outbox(campaign_id,identity_id) WHERE campaign_id IS NOT NULL AND test_delivery=true;
 CREATE TABLE IF NOT EXISTS comm_operations (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), outbox_id uuid NOT NULL REFERENCES comm_outbox(id) ON DELETE CASCADE,
  position integer NOT NULL DEFAULT 0, method text NOT NULL, payload jsonb NOT NULL,

@@ -437,6 +437,19 @@ function resumedVkAttachment(value: unknown) {
     : null;
 }
 
+export function validRemoteImageURL(value: unknown) {
+  try {
+    const url = new URL(String(value || ""));
+    return (
+      url.protocol === "https:" &&
+      (url.hostname === "isvoi.ru" || url.hostname.endsWith(".isvoi.ru")) &&
+      /^\/assets\/[0-9a-f-]{36}$/i.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function sendOperation(
   platform: Platform,
   token: string,
@@ -444,8 +457,13 @@ export async function sendOperation(
   file?: OutgoingFile,
 ): Promise<Outcome> {
   // All local validation occurs before the external API call. No token-bearing errors escape.
-  if (!["text", "attachment", "topic"].includes(op.method))
+  if (!["text", "attachment", "topic", "remote_image"].includes(op.method))
     return { type: "rejected", code: "UNSUPPORTED_OPERATION" };
+  if (op.method === "remote_image") {
+    if (platform !== "telegram") return { type: "rejected", code: "UNSUPPORTED_OPERATION" };
+    if (!validRemoteImageURL(op.payload?.photo))
+      return { type: "rejected", code: "INVALID_REMOTE_IMAGE" };
+  }
   if (op.method === "attachment" && !file) return { type: "rejected", code: "FILE_NOT_AVAILABLE" };
   if (platform === "max") {
     const hasUserId = op.payload?.user_id !== undefined && op.payload?.user_id !== null;
@@ -514,7 +532,9 @@ export async function sendOperation(
         platform === "telegram"
           ? op.method === "topic"
             ? "createForumTopic"
-            : "sendMessage"
+            : op.method === "remote_image"
+              ? "sendPhoto"
+              : "sendMessage"
           : platform === "max"
             ? "messages"
             : "messages.send",

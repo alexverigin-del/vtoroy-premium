@@ -146,17 +146,24 @@ export function createDelivery(context: Context, service: any) {
         if (b.purpose === "marketing") {
           const campaign = await trx("comm_campaigns").where({ id: b.campaign_id }).first();
           const identity = await trx("comm_identities").where({ id: b.identity_id }).first();
-          if (
-            !n.marketing_enabled ||
-            !campaign ||
-            !["approved", "sending"].includes(campaign.state) ||
-            identity.contact_id !== b.contact_id ||
-            identity.is_test !== campaign.is_test
-          ) {
+          const pilot =
+            identity &&
+            (identity.is_test ||
+              (n.settings?.pilot_user_ids || [])
+                .map(String)
+                .includes(String(identity.external_user_id)));
+          const campaignAllowed = b.test_delivery
+            ? campaign && ["draft", "review", "approved", "sending"].includes(campaign.state) && pilot
+            : n.marketing_enabled &&
+              campaign &&
+              ["approved", "sending"].includes(campaign.state) &&
+              (campaign.is_test ? pilot : !identity?.is_test);
+          if (!identity || !campaignAllowed || identity.contact_id !== b.contact_id) {
             await reject("CAMPAIGN_NOT_ALLOWED");
             continue;
           }
           if (
+            !b.test_delivery &&
             !(await trx("comm_subscriptions")
               .where({ identity_id: b.identity_id, topic_key: campaign.topic_key, consent: true })
               .first())
@@ -165,12 +172,15 @@ export function createDelivery(context: Context, service: any) {
             continue;
           }
           const window = marketingWindow(now());
-          if (!window.allowed) {
+          if (b.test_delivery) {
+            // Explicit manager tests are confined to the pilot allowlist and do not consume
+            // the recipient's marketing frequency allowance.
+          } else if (!window.allowed) {
             await trx("comm_outbox").where({ id: b.id }).update({ due_at: window.next });
             continue;
           }
-          await trx("comm_contacts").where({ id: b.contact_id }).forUpdate().first();
-          if (!(await trx("comm_frequency").where({ outbox_id: b.id }).first())) {
+          if (!b.test_delivery) await trx("comm_contacts").where({ id: b.contact_id }).forUpdate().first();
+          if (!b.test_delivery && !(await trx("comm_frequency").where({ outbox_id: b.id }).first())) {
             const count = await trx("comm_frequency")
               .where({ contact_id: b.contact_id })
               .whereNull("released_at")
@@ -351,6 +361,16 @@ export function createDelivery(context: Context, service: any) {
             .update({ [`${op.payload.draft_stage}_message_id`]: outcome.externalId });
       }
       const result = await summary(trx, b.id);
+      if (b.campaign_id && !b.test_delivery) {
+        const active = await trx("comm_outbox")
+          .where({ campaign_id: b.campaign_id, test_delivery: false })
+          .whereIn("state", ["pending", "sending", "partial", "uncertain"])
+          .first();
+        if (!active)
+          await trx("comm_campaigns")
+            .where({ id: b.campaign_id, state: "sending" })
+            .update({ state: "completed", updated_at: trx.fn.now() });
+      }
       if (outcome.type === "accepted" && b.message_id && b.purpose === "service") {
         const message = await trx("comm_messages").where({ id: b.message_id }).first();
         const conversation = await trx("comm_conversations")

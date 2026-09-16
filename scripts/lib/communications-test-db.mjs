@@ -28,6 +28,7 @@ export async function testDatabase() {
   await pg.exec(`CREATE TABLE store_locations(id uuid PRIMARY KEY);
     CREATE TABLE directus_roles(id uuid PRIMARY KEY,parent uuid);
     CREATE TABLE directus_users(id uuid PRIMARY KEY,status text,role uuid);
+    CREATE TABLE directus_files(id uuid PRIMARY KEY,type text,filesize bigint,filename_download text);
     CREATE TABLE directus_policies(id uuid PRIMARY KEY,admin_access boolean);
     CREATE TABLE directus_access(id uuid PRIMARY KEY,"user" uuid,role uuid,policy uuid);
     CREATE TABLE leads(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),kind text,status text,assigned_to uuid,store_location_id uuid,is_test boolean,reference_code text,contact text,contact_channel text,message text,source text,source_path text);

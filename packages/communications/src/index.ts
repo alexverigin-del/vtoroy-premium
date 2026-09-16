@@ -11,3 +11,4 @@ export * from "./legacy.js";
 export * from "./migration.js";
 export * from "./sla.js";
 export * from "./retention.js";
+export * from "./management.js";

@@ -19,6 +19,7 @@ export async function backfillTelegram(db: Database, connectionId: string) {
           bot_username: settings.public_username,
           settings: {
             welcome_text: settings.welcome_text,
+            welcome_file_id: settings.welcome_photo_file,
             consent_text: settings.consent_text,
             consent_version: settings.consent_version,
             subscriptions_enabled: settings.notifications_enabled,

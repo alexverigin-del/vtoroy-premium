@@ -17,13 +17,38 @@ const rows = ref<any[]>([]),
   assignee = ref(""),
   tab = ref("inbox"),
   audience = ref<any>(null),
+  audienceContacts = ref<any[]>([]),
+  audienceSelected = ref<any>(null),
+  audienceSearch = ref(""),
+  audienceStatus = ref(""),
+  audiencePlatform = ref(""),
+  audienceTopic = ref(""),
   connections = ref<any>(null),
+  management = ref<any>(null),
+  settingsConnection = ref(""),
+  settingsForm = ref<any>({}),
+  campaigns = ref<any[]>([]),
+  campaignForm = ref<any>({
+    id: null,
+    expected_version: null,
+    name: "",
+    topic_key: "news_promotions",
+    connection_ids: [],
+    is_test: true,
+    scheduled_at: "",
+    asset_file_id: null,
+    variants: {},
+  }),
+  testRecipient = ref(""),
   refreshing = ref(false),
   hasOlder = ref(false);
 let timer: ReturnType<typeof setTimeout> | undefined,
   alive = true,
   selection = 0;
 const media = ref<Record<string, string>>({});
+const audienceTopics = computed(() => [
+  ...new Set((audience.value?.topics || []).map((topic: any) => topic.topic_key)),
+]);
 const status: Record<string, string> = {
   pending: "В очереди",
   sending: "Отправляется",
@@ -72,6 +97,13 @@ const errorText = (e: any) => {
         FILE_FORMAT_NOT_ALLOWED:
           "Поддерживаются JPEG, PNG, WebP, OGG/Opus, MP3, WAV, MP4 и WebM. Документы пока недоступны.",
         ATTACHMENT_NOT_READY: "Дождитесь проверки вложений.",
+        STALE_CONFIGURATION: "Настройки изменились. Обновите страницу и повторите действие.",
+        MARKETING_CONFIRMATION_REQUIRED: "Подтвердите изменение режима маркетинга.",
+        CONSENT_CONFIGURATION_REQUIRED: "Для подписок нужны текст и версия согласия.",
+        CAMPAIGN_APPROVAL_REQUIRED: "Кампанию нужно передать на проверку и явно подтвердить запуск.",
+        MARKETING_DISABLED: "Маркетинг выключен хотя бы у одного выбранного подключения.",
+        PLATFORM_MEDIA_NOT_READY: "Медиа для MAX и VK будет включено после отдельного живого пилота.",
+        TEST_RECIPIENT_NOT_ALLOWED: "Выберите разрешённого участника закрытого пилота.",
       } as any
     )[code] || "Не удалось выполнить действие. Текст сохранён. Проверьте соединение и повторите."
   );
@@ -230,10 +262,25 @@ async function openFile(f: any) {
 async function showAudience() {
   tab.value = "audience";
   try {
-    audience.value = (await api.get(`${base}/audience`)).data.data;
+    [audience.value, audienceContacts.value] = await Promise.all([
+      api.get(`${base}/audience`).then((response) => response.data.data),
+      api
+        .get(`${base}/audience/contacts`, {
+          params: {
+            ...(audienceSearch.value ? { search: audienceSearch.value } : {}),
+            ...(audienceStatus.value ? { status: audienceStatus.value } : {}),
+            ...(audiencePlatform.value ? { platform: audiencePlatform.value } : {}),
+            ...(audienceTopic.value ? { topic: audienceTopic.value } : {}),
+          },
+        })
+        .then((response) => response.data.data),
+    ]);
   } catch (e) {
     error.value = errorText(e);
   }
+}
+async function showContact(contact: any) {
+  audienceSelected.value = (await api.get(`${base}/audience/contacts/${contact.id}`)).data.data;
 }
 async function showConnections() {
   tab.value = "connections";
@@ -243,9 +290,183 @@ async function showConnections() {
     error.value = errorText(e);
   }
 }
+function selectSettingsConnection(id: string) {
+  settingsConnection.value = id;
+  const connection = management.value?.connections.find((item: any) => item.id === id);
+  settingsForm.value = connection
+    ? { ...connection.settings, marketing_enabled: connection.marketing_enabled }
+    : {};
+}
+async function showSettings() {
+  tab.value = "settings";
+  try {
+    management.value = (await api.get(`${base}/management`)).data.data;
+    selectSettingsConnection(
+      management.value.connections.some((item: any) => item.id === settingsConnection.value)
+        ? settingsConnection.value
+        : management.value.connections[0]?.id || "",
+    );
+  } catch (e) {
+    error.value = errorText(e);
+  }
+}
+async function uploadManagedImage(event: Event, destination: "settings" | "campaign") {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/") || file.size > 5_000_000) {
+    error.value = "Нужно изображение JPEG, PNG или WebP до 5 МБ.";
+    return;
+  }
+  const form = new FormData();
+  form.append("file", file);
+  try {
+    const id = (await api.post("/files", form)).data.data.id;
+    if (destination === "settings") settingsForm.value.welcome_file_id = id;
+    else campaignForm.value.asset_file_id = id;
+  } catch (e) {
+    error.value = errorText(e);
+  } finally {
+    input.value = "";
+  }
+}
+async function saveSettings() {
+  if (!settingsConnection.value || busy.value) return;
+  busy.value = true;
+  error.value = "";
+  try {
+    await api.post(`${base}/management/connections/${settingsConnection.value}`, {
+      ...settingsForm.value,
+      expected_version: settingsForm.value.config_version,
+      confirm_marketing: true,
+      key: crypto.randomUUID(),
+    });
+    await showSettings();
+  } catch (e) {
+    error.value = errorText(e);
+  } finally {
+    busy.value = false;
+  }
+}
+async function showCampaigns() {
+  tab.value = "campaigns";
+  try {
+    [management.value, campaigns.value] = await Promise.all([
+      api.get(`${base}/management`).then((response) => response.data.data),
+      api.get(`${base}/campaigns`).then((response) => response.data.data),
+    ]);
+    for (const connection of management.value.connections)
+      campaignForm.value.variants[connection.platform] ||= { text: "", cta_label: "", cta_url: "" };
+  } catch (e) {
+    error.value = errorText(e);
+  }
+}
+async function saveCampaign() {
+  busy.value = true;
+  error.value = "";
+  try {
+    const selectedConnections = management.value.connections.filter((connection: any) =>
+      campaignForm.value.connection_ids.includes(connection.id),
+    );
+    const selectedPlatforms = [...new Set(selectedConnections.map((connection: any) => connection.platform))];
+    await api.post(`${base}/campaigns`, {
+      key: crypto.randomUUID(),
+      id: campaignForm.value.id,
+      expected_version: campaignForm.value.expected_version,
+      name: campaignForm.value.name,
+      topic_key: campaignForm.value.topic_key,
+      connection_ids: campaignForm.value.connection_ids,
+      is_test: campaignForm.value.is_test,
+      scheduled_at: campaignForm.value.scheduled_at
+        ? new Date(campaignForm.value.scheduled_at).toISOString()
+        : undefined,
+      asset_file_id: campaignForm.value.asset_file_id,
+      variants: selectedPlatforms.map((platform) => ({
+        platform,
+        ...campaignForm.value.variants[platform],
+      })),
+    });
+    resetCampaignForm();
+    await showCampaigns();
+  } catch (e) {
+    error.value = errorText(e);
+  } finally {
+    busy.value = false;
+  }
+}
+function resetCampaignForm() {
+  campaignForm.value = {
+    id: null,
+    expected_version: null,
+    name: "",
+    topic_key: "news_promotions",
+    connection_ids: [],
+    is_test: true,
+    scheduled_at: "",
+    asset_file_id: null,
+    variants: {},
+  };
+  for (const connection of management.value?.connections || [])
+    campaignForm.value.variants[connection.platform] ||= {
+      text: "",
+      cta_label: "",
+      cta_url: "",
+    };
+}
+function editCampaign(campaign: any) {
+  const variants: Record<string, any> = {};
+  for (const connection of management.value.connections)
+    variants[connection.platform] = { text: "", cta_label: "", cta_url: "" };
+  for (const item of campaign.variants)
+    variants[item.platform] = {
+      text: item.text,
+      cta_label: item.cta_label || "",
+      cta_url: item.cta_url || "",
+    };
+  campaignForm.value = {
+    id: campaign.id,
+    expected_version: campaign.version,
+    name: campaign.name,
+    topic_key: campaign.topic_key,
+    connection_ids: campaign.targets.map((target: any) => target.connection_id),
+    is_test: campaign.is_test,
+    scheduled_at: campaign.scheduled_at
+      ? new Date(campaign.scheduled_at).toISOString().slice(0, 16)
+      : "",
+    asset_file_id: campaign.variants.find((item: any) => item.asset_file_id)?.asset_file_id || null,
+    variants,
+  };
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function campaignAction(campaign: any, action: string) {
+  if (
+    action === "approve" &&
+    !window.confirm(
+      `Запустить кампанию «${campaign.name}»? Перед отправкой система повторно проверит согласие, лимит и доступность каждого получателя.`,
+    )
+  )
+    return;
+  busy.value = true;
+  error.value = "";
+  try {
+    await api.post(`${base}/campaigns/${campaign.id}/actions`, {
+      key: crypto.randomUUID(),
+      action,
+      ...(action === "test" ? { identity_id: testRecipient.value } : {}),
+      ...(action === "approve" ? { confirm: true } : {}),
+    });
+    await showCampaigns();
+  } catch (e) {
+    error.value = errorText(e);
+  } finally {
+    busy.value = false;
+  }
+}
 async function refreshCurrent() {
   if (tab.value === "audience") return showAudience();
   if (tab.value === "connections") return showConnections();
+  if (tab.value === "settings") return showSettings();
+  if (tab.value === "campaigns") return showCampaigns();
   return load();
 }
 const date = (value: string) =>
@@ -318,6 +539,12 @@ onBeforeUnmount(() => {
         </button>
         <button :aria-current="tab === 'connections' ? 'page' : undefined" @click="showConnections">
           Подключения
+        </button>
+        <button :aria-current="tab === 'settings' ? 'page' : undefined" @click="showSettings">
+          Настройки ботов
+        </button>
+        <button :aria-current="tab === 'campaigns' ? 'page' : undefined" @click="showCampaigns">
+          Кампании
         </button>
       </nav>
       <p v-if="error" class="error" role="alert">
@@ -590,9 +817,82 @@ onBeforeUnmount(() => {
             Начальный снимок: {{ date(audience.baseline_at) }}. Даты старых подписок не
             восстановлены искусственно.
           </p>
+          <div class="audience-directory">
+            <div class="directory-list">
+              <header class="section-heading">
+                <div>
+                  <h3>Контакты аудитории</h3>
+                  <p>Один человек может иметь несколько аккаунтов площадок.</p>
+                </div>
+                <div class="directory-filters">
+                  <input v-model="audienceSearch" placeholder="Имя или ID аккаунта" @keyup.enter="showAudience" />
+                  <select v-model="audienceStatus" @change="showAudience">
+                    <option value="">Все статусы</option>
+                    <option value="subscribed">Подписаны</option>
+                    <option value="active_7">Активны 7 дней</option>
+                    <option value="blocked">Есть блокировка</option>
+                  </select>
+                  <select v-model="audiencePlatform" aria-label="Площадка аудитории" @change="showAudience">
+                    <option value="">Все площадки</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="max">MAX</option>
+                    <option value="vk">VK</option>
+                  </select>
+                  <select v-model="audienceTopic" aria-label="Тема подписки" @change="showAudience">
+                    <option value="">Все темы</option>
+                    <option v-for="topic in audienceTopics" :key="topic" :value="topic">{{ topic }}</option>
+                  </select>
+                  <button @click="showAudience">Найти</button>
+                </div>
+              </header>
+              <table v-if="audienceContacts.length">
+                <thead><tr><th>Контакт</th><th>Площадки</th><th>Подписка</th><th>Последняя активность</th><th>Обращения</th></tr></thead>
+                <tbody>
+                  <tr v-for="contact in audienceContacts" :key="contact.id" @click="showContact(contact)">
+                    <th><button class="link-button" @click.stop="showContact(contact)">{{ contact.name || 'Без имени' }}</button></th>
+                    <td>{{ contact.accounts.map((account: any) => account.platform).join(', ') }}</td>
+                    <td>{{ contact.subscribed ? 'Есть' : 'Нет' }}</td>
+                    <td>{{ optionalDate(contact.last_active_at) }}</td>
+                    <td>{{ contact.conversations }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p v-else class="empty compact">Контакты по выбранным условиям не найдены.</p>
+            </div>
+            <aside v-if="audienceSelected" class="subscriber-card">
+              <button class="close-card" @click="audienceSelected = null">Закрыть</button>
+              <h3>{{ audienceSelected.contact.name || 'Карточка подписчика' }}</h3>
+              <p>Лимит маркетинга за 7 дней: {{ audienceSelected.frequency_7d }} из 2</p>
+              <h4>Аккаунты</h4>
+              <dl v-for="identity in audienceSelected.identities" :key="identity.id">
+                <dt>{{ identity.platform }}</dt><dd>{{ identity.external_user_id }}</dd>
+                <dt>Подключение</dt><dd>{{ identity.connection_name }}</dd>
+                <dt>Источник</dt><dd>{{ identity.source || '—' }}</dd>
+                <dt>Доступность</dt><dd>{{ identity.availability }}</dd>
+                <dt>Последняя активность</dt><dd>{{ optionalDate(identity.last_active_at) }}</dd>
+              </dl>
+              <h4>Подписки</h4>
+              <p v-for="subscription in audienceSelected.subscriptions" :key="subscription.id">
+                {{ subscription.label }} — {{ subscription.consent ? 'подписан' : 'отказ' }}
+              </p>
+              <h4>Обращения</h4>
+              <p v-for="conversation in audienceSelected.conversations" :key="conversation.id">
+                <a :href="`/admin/content/leads/${conversation.lead_id}`">{{ conversation.reference_code || 'Заявка' }}</a>
+                · {{ status[conversation.handling] || conversation.handling }}
+              </p>
+              <h4>Кампании</h4>
+              <p v-for="delivery in audienceSelected.deliveries" :key="delivery.id">
+                {{ delivery.campaign_name }} · {{ status[delivery.state] || delivery.state }}
+              </p>
+              <h4>История согласий</h4>
+              <p v-for="event in audienceSelected.consent_events" :key="event.id">
+                {{ event.topic_key }} · {{ event.consent ? 'согласие' : 'отказ' }} · {{ date(event.created_at) }}
+              </p>
+            </aside>
+          </div>
         </div>
       </section>
-      <section v-else class="connections-view">
+      <section v-else-if="tab === 'connections'" class="connections-view">
         <header class="section-heading">
           <div>
             <h2>Подключения площадок</h2>
@@ -680,6 +980,51 @@ onBeforeUnmount(() => {
           </div>
         </template>
       </section>
+      <section v-else-if="tab === 'settings'" class="management-view">
+        <header class="section-heading"><div><h2>Настройки ботов</h2><p>Общие правила и отдельное включение маркетинга для каждого подключения.</p></div></header>
+        <template v-if="management">
+          <label>Подключение<select :value="settingsConnection" @change="selectSettingsConnection(($event.target as HTMLSelectElement).value)">
+            <option v-for="connection in management.connections" :key="connection.id" :value="connection.id">{{ connection.name }} · {{ connection.platform }}</option>
+          </select></label>
+          <form class="settings-form" @submit.prevent="saveSettings">
+            <label>Приветствие<textarea v-model="settingsForm.welcome_text" maxlength="2000" rows="4" /></label>
+            <label>Стартовая картинка<input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadManagedImage($event, 'settings')" /><small v-if="settingsForm.welcome_file_id">Файл назначен: {{ settingsForm.welcome_file_id }}</small></label>
+            <label>Текст согласия<textarea v-model="settingsForm.consent_text" maxlength="4000" rows="4" /></label>
+            <label>Версия согласия<input v-model="settingsForm.consent_version" maxlength="100" /></label>
+            <label class="checkbox"><input v-model="settingsForm.subscriptions_enabled" type="checkbox" /> Подписки включены</label>
+            <label class="checkbox"><input v-model="settingsForm.subscriptions_pilot_only" type="checkbox" /> Только участники пилота</label>
+            <label class="checkbox warning"><input v-model="settingsForm.marketing_enabled" type="checkbox" /> Разрешить маркетинговую отправку для этого подключения</label>
+            <button class="primary" type="submit" :disabled="busy">Сохранить настройки</button>
+          </form>
+        </template>
+      </section>
+      <section v-else-if="tab === 'campaigns'" class="campaigns-view">
+        <header class="section-heading"><div><h2>Омниканальные кампании</h2><p>Один материал, отдельная версия для каждой площадки и независимые результаты доставки.</p></div></header>
+        <form v-if="management" class="campaign-form" @submit.prevent="saveCampaign">
+          <label>Название<input v-model="campaignForm.name" maxlength="200" required /></label>
+          <label>Тема<select v-model="campaignForm.topic_key"><option v-for="topic in management.topics" :key="topic.key" :value="topic.key">{{ topic.label }}</option></select></label>
+          <label>Начать не раньше<input v-model="campaignForm.scheduled_at" type="datetime-local" /></label>
+          <fieldset><legend>Подключения</legend><label v-for="connection in management.connections" :key="connection.id" class="checkbox"><input v-model="campaignForm.connection_ids" type="checkbox" :value="connection.id" /> {{ connection.name }} · маркетинг {{ connection.marketing_enabled ? 'включён' : 'выключен' }}</label></fieldset>
+          <fieldset v-for="platformName in [...new Set(management.connections.filter((connection: any) => campaignForm.connection_ids.includes(connection.id)).map((connection: any) => connection.platform))]" :key="platformName"><legend>Версия {{ platformName }}</legend>
+            <textarea v-model="campaignForm.variants[platformName].text" maxlength="3500" rows="5" placeholder="Текст сообщения" />
+            <input v-model="campaignForm.variants[platformName].cta_label" maxlength="80" placeholder="Подпись кнопки" />
+            <input v-model="campaignForm.variants[platformName].cta_url" maxlength="1000" placeholder="https://isvoi.ru/..." />
+          </fieldset>
+          <label>Изображение для Telegram<input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadManagedImage($event, 'campaign')" /></label>
+          <label class="checkbox"><input v-model="campaignForm.is_test" type="checkbox" /> Закрытая пилотная аудитория</label>
+          <div class="campaign-actions"><button class="primary" type="submit" :disabled="busy">{{ campaignForm.id ? 'Сохранить черновик' : 'Создать черновик' }}</button><button v-if="campaignForm.id" type="button" @click="resetCampaignForm">Отменить редактирование</button></div>
+        </form>
+        <div class="campaign-toolbar"><label>Получатель теста<select v-model="testRecipient"><option value="">Выберите участника пилота</option><option v-for="recipient in management?.test_recipients || []" :key="recipient.id" :value="recipient.id">{{ recipient.label }}</option></select></label></div>
+        <div class="campaign-list">
+          <article v-for="campaign in campaigns" :key="campaign.id" class="campaign-card">
+            <header><div><span class="platform">{{ campaign.topic_key }}</span><h3>{{ campaign.name }}</h3></div><strong>{{ campaign.state }}</strong></header>
+            <p>{{ campaign.targets.map((target: any) => target.platform).join(', ') }} · {{ campaign.is_test ? 'пилот' : 'рабочая аудитория' }}</p>
+            <p>Прогноз аудитории: {{ campaign.estimated_recipients }} · старт не раньше {{ optionalDate(campaign.scheduled_at) }}</p>
+            <p v-for="result in campaign.results" :key="result.state">{{ status[result.state] || result.state }}: {{ result.count }}</p>
+            <div class="campaign-actions"><button v-if="campaign.state === 'draft'" :disabled="busy" @click="editCampaign(campaign)">Редактировать</button><button v-if="campaign.state === 'draft'" :disabled="!testRecipient || busy" @click="campaignAction(campaign, 'test')">Отправить тест</button><button v-if="campaign.state === 'draft'" :disabled="busy" @click="campaignAction(campaign, 'review')">На проверку</button><button v-if="campaign.state === 'review'" :disabled="busy" @click="campaignAction(campaign, 'approve')">Подтвердить и запустить</button><button v-if="!['completed','cancelled'].includes(campaign.state)" :disabled="busy" @click="campaignAction(campaign, 'cancel')">Отменить</button></div>
+          </article>
+        </div>
+      </section>
     </div>
   </private-view>
 </template>
@@ -691,7 +1036,8 @@ onBeforeUnmount(() => {
 }
 button,
 select,
-textarea {
+textarea,
+input {
   font: inherit;
   color: inherit;
 }
@@ -715,14 +1061,117 @@ button:disabled {
 button:focus-visible,
 a:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+input:focus-visible {
   outline: 2px solid var(--theme--primary, #6644ff);
   outline-offset: 2px;
 }
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+}
+.management-view,
+.campaigns-view,
+.audience-directory {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.settings-form,
+.campaign-form {
+  display: grid;
+  gap: 16px;
+  max-width: 900px;
+  margin-top: 18px;
+}
+.settings-form label,
+.campaign-form label {
+  display: grid;
+  gap: 6px;
+}
+.settings-form textarea,
+.settings-form input:not([type='checkbox']):not([type='file']),
+.campaign-form textarea,
+.campaign-form input:not([type='checkbox']):not([type='file']),
+.directory-filters input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  background: var(--theme--background, #fff);
+}
+.checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+.warning {
+  padding: 12px;
+  background: var(--theme--warning-background, #fff8df);
+  border-radius: 6px;
+}
+.campaign-form fieldset {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+}
+.campaign-list,
+.connection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.campaign-card,
+.subscriber-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--theme--background, #fff);
+}
+.campaign-card header,
+.campaign-actions,
+.directory-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.campaign-card header {
+  justify-content: space-between;
+}
+.audience-directory {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 18px;
+  margin-top: 18px;
+}
+.directory-list {
+  min-width: 0;
+  overflow: auto;
+}
+.directory-list tbody tr {
+  cursor: pointer;
+}
+.link-button {
+  border: 0;
+  padding: 0;
+  color: var(--theme--primary, #6644ff);
+}
+.subscriber-card {
+  max-height: 720px;
+  overflow: auto;
+}
+.subscriber-card dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+}
+.close-card {
+  float: right;
 }
 .tabs [aria-current="page"],
 .primary {
@@ -1143,8 +1592,15 @@ td {
   .queue {
     border: 0;
   }
-  .selection-empty {
+.selection-empty {
     display: none;
-  }
+}
+.audience-directory {
+  display: block;
+  padding: 12px;
+}
+.subscriber-card {
+  margin-top: 16px;
+}
 }
 </style>

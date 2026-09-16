@@ -62,6 +62,41 @@ try {
   ];
   const receipts = new Map(),
     requests = [];
+  const management = {
+    connections: [
+      {
+        id: "telegram-core",
+        name: "Telegram · Поддержка",
+        platform: "telegram",
+        enabled: true,
+        mode: "production",
+        marketing_enabled: false,
+        settings: {
+          welcome_text: "Добро пожаловать",
+          welcome_file_id: "welcome-file",
+          consent_text: "Согласие",
+          consent_version: "pilot-v1",
+          subscriptions_enabled: true,
+          subscriptions_pilot_only: true,
+          config_version: 1,
+        },
+      },
+      {
+        id: "max-test",
+        name: "MAX · Поддержка",
+        platform: "max",
+        enabled: true,
+        mode: "test",
+        marketing_enabled: false,
+        settings: { welcome_text: "MAX", config_version: 1 },
+      },
+    ],
+    topics: [{ key: "news_promotions", label: "Новости и акции" }],
+    test_recipients: [
+      { id: "77777777-7777-4777-8777-777777777777", connection_id: "telegram-core", platform: "telegram", label: "Telegram · ••••0123" },
+    ],
+  };
+  const campaigns = [];
   let dropReply = true;
   await page.route("**/isvoi-communications/v1/**", async (route) => {
     const req = route.request(),
@@ -108,6 +143,18 @@ try {
       data = { id: "55555555-5555-4555-8555-555555555555", name: "note.txt", state: "quarantine" };
     else if (path.endsWith("/status"))
       data = { id: "55555555-5555-4555-8555-555555555555", name: "note.txt", state: "ready" };
+    else if (path.endsWith("/audience/contacts/contact-1"))
+      data = {
+        contact: { id: "contact-1", name: "Иван" },
+        identities: [{ id: "identity-1", platform: "telegram", external_user_id: "12345", availability: "allowed", last_active_at: new Date().toISOString() }],
+        subscriptions: [{ id: "subscription-1", label: "Новости и акции", consent: true }],
+        consent_events: [{ id: "event-1", topic_key: "news_promotions", consent: true, created_at: new Date().toISOString() }],
+        conversations: [{ id: "conversation-1", lead_id: c.lead_id, reference_code: c.reference_code, handling: "agent" }],
+        deliveries: [],
+        frequency_7d: 0,
+      };
+    else if (path.endsWith("/audience/contacts"))
+      data = [{ id: "contact-1", name: "Иван", accounts: [{ platform: "telegram" }], subscribed: true, last_active_at: new Date().toISOString(), conversations: 1 }];
     else if (path.endsWith("/audience"))
       data = {
         connections: [
@@ -130,7 +177,25 @@ try {
         ],
         baseline_at: "2026-09-01T09:00:00.000Z",
       };
-    else if (path.endsWith("/connections"))
+    else if (path.endsWith("/management")) data = management;
+    else if (path.includes("/management/connections/")) {
+      const connection = management.connections.find((item) => path.endsWith(item.id));
+      Object.assign(connection.settings, req.postDataJSON(), { config_version: connection.settings.config_version + 1 });
+      data = { ok: true, settings: connection.settings };
+    } else if (path.endsWith("/campaigns") && req.method() === "GET") data = campaigns;
+    else if (path.endsWith("/campaigns") && req.method() === "POST") {
+      const body = req.postDataJSON();
+      const campaign = { id: crypto.randomUUID(), name: body.name, topic_key: body.topic_key, state: "draft", is_test: body.is_test, targets: body.connection_ids.map((id) => ({ connection_id: id, platform: management.connections.find((item) => item.id === id).platform })), variants: body.variants, results: [] };
+      campaigns.unshift(campaign);
+      data = { ok: true, id: campaign.id, version: 1 };
+    } else if (path.includes("/campaigns/") && path.endsWith("/actions")) {
+      const campaign = campaigns.find((item) => path.includes(item.id));
+      const action = req.postDataJSON().action;
+      if (action === "review") campaign.state = "review";
+      if (action === "approve") campaign.state = "sending";
+      if (action === "cancel") campaign.state = "cancelled";
+      data = { ok: true, action };
+    } else if (path.endsWith("/connections"))
       data = {
         checked_at: "2026-09-13T18:00:00.000Z",
         runtime: { active: true, sending_enabled: true, recovery_hold: false },
@@ -221,9 +286,13 @@ try {
   await page.screenshot({ path: resolve(output, "communications-desktop.png"), fullPage: true });
   await page.getByRole("button", { name: "Аудитория", exact: true }).click();
   await page.getByRole("heading", { name: "Подписчики по темам" }).waitFor();
-  await page.getByText("offers", { exact: true }).waitFor();
+  await page.getByRole("cell", { name: "offers", exact: true }).waitFor();
   await page.getByText("Новые аккаунты", { exact: true }).waitFor();
   await page.getByText(/Начальный снимок:/).waitFor();
+  await page.getByRole("heading", { name: "Контакты аудитории" }).waitFor();
+  await page.getByRole("button", { name: "Иван", exact: true }).click();
+  await page.getByRole("heading", { name: "Иван", exact: true }).waitFor();
+  await page.getByText("Лимит маркетинга за 7 дней: 0 из 2", { exact: true }).waitFor();
   await page.screenshot({ path: resolve(output, "communications-audience.png"), fullPage: true });
   await page.getByRole("button", { name: "Подключения", exact: true }).click();
   await page.getByRole("heading", { name: "Подключения площадок" }).waitFor();
@@ -238,6 +307,16 @@ try {
     path: resolve(output, "communications-connections.png"),
     fullPage: true,
   });
+  await page.getByRole("button", { name: "Настройки ботов", exact: true }).click();
+  await page.getByRole("heading", { name: "Настройки ботов", exact: true }).waitFor();
+  assert.equal(await page.getByLabel("Приветствие", { exact: true }).inputValue(), "Добро пожаловать");
+  await page.getByRole("button", { name: "Кампании", exact: true }).click();
+  await page.getByRole("heading", { name: "Омниканальные кампании" }).waitFor();
+  await page.getByLabel("Название").fill("Тестовая новость");
+  await page.getByText("Telegram · Поддержка · маркетинг выключен", { exact: true }).click();
+  await page.getByPlaceholder("Текст сообщения").fill("Новость для Telegram");
+  await page.getByRole("button", { name: "Создать черновик", exact: true }).click();
+  await page.getByRole("heading", { name: "Тестовая новость", exact: true }).waitFor();
   await page.getByRole("button", { name: "Обращения", exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: resolve(output, "communications-mobile.png"), fullPage: true });

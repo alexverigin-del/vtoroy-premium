@@ -3,6 +3,7 @@ import { createDelivery } from "./delivery.js";
 import { createAttachments } from "./attachments.js";
 import { createStaff } from "./staff.js";
 import { retainCommunications } from "./retention.js";
+import { createManagement } from "./management.js";
 import { CommunicationError, flag, fail, UUID, verifySecret } from "./policy.js";
 
 export default {
@@ -12,6 +13,7 @@ export default {
       delivery = createDelivery(context, service),
       attachments = createAttachments(context, service),
       staff = createStaff(context, service),
+      management = createManagement(context),
       db = context.database;
     let retentionCheckAfter = 0;
     const handler = (fn: any) => async (req: any, res: any) => {
@@ -65,9 +67,75 @@ export default {
       ),
     );
     router.get(
+      "/v1/audience/contacts",
+      handler(async (req: any, res: any) =>
+        res.json({
+          data: await service.audienceContacts(
+            await service.actor(req.accountability?.user),
+            req.query,
+          ),
+        }),
+      ),
+    );
+    router.get(
+      "/v1/audience/contacts/:id",
+      handler(async (req: any, res: any) =>
+        res.json({
+          data: await service.audienceContact(
+            await service.actor(req.accountability?.user),
+            req.params.id,
+          ),
+        }),
+      ),
+    );
+    router.get(
       "/v1/connections",
       handler(async (req: any, res: any) =>
         res.json({ data: await service.connections(await service.actor(req.accountability?.user)) }),
+      ),
+    );
+    router.get(
+      "/v1/management",
+      handler(async (req: any, res: any) =>
+        res.json({ data: await management.overview(await service.actor(req.accountability?.user)) }),
+      ),
+    );
+    router.post(
+      "/v1/management/connections/:id",
+      handler(async (req: any, res: any) =>
+        res.json({
+          data: await management.updateConnection(
+            await service.actor(req.accountability?.user),
+            req.params.id,
+            req.body,
+          ),
+        }),
+      ),
+    );
+    router.get(
+      "/v1/campaigns",
+      handler(async (req: any, res: any) =>
+        res.json({ data: await management.listCampaigns(await service.actor(req.accountability?.user)) }),
+      ),
+    );
+    router.post(
+      "/v1/campaigns",
+      handler(async (req: any, res: any) =>
+        res.status(201).json({
+          data: await management.saveCampaign(await service.actor(req.accountability?.user), req.body),
+        }),
+      ),
+    );
+    router.post(
+      "/v1/campaigns/:id/actions",
+      handler(async (req: any, res: any) =>
+        res.json({
+          data: await management.action(
+            await service.actor(req.accountability?.user),
+            req.params.id,
+            req.body,
+          ),
+        }),
       ),
     );
     router.get(

@@ -162,21 +162,24 @@ function createDelivery(context, service) {
         if (b.purpose === "marketing") {
           const campaign = await trx("comm_campaigns").where({ id: b.campaign_id }).first();
           const identity = await trx("comm_identities").where({ id: b.identity_id }).first();
-          if (!n.marketing_enabled || !campaign || !["approved", "sending"].includes(campaign.state) || identity.contact_id !== b.contact_id || identity.is_test !== campaign.is_test) {
+          const pilot = identity && (identity.is_test || (n.settings?.pilot_user_ids || []).map(String).includes(String(identity.external_user_id)));
+          const campaignAllowed = b.test_delivery ? campaign && ["draft", "review", "approved", "sending"].includes(campaign.state) && pilot : n.marketing_enabled && campaign && ["approved", "sending"].includes(campaign.state) && (campaign.is_test ? pilot : !identity?.is_test);
+          if (!identity || !campaignAllowed || identity.contact_id !== b.contact_id) {
             await reject("CAMPAIGN_NOT_ALLOWED");
             continue;
           }
-          if (!await trx("comm_subscriptions").where({ identity_id: b.identity_id, topic_key: campaign.topic_key, consent: true }).first()) {
+          if (!b.test_delivery && !await trx("comm_subscriptions").where({ identity_id: b.identity_id, topic_key: campaign.topic_key, consent: true }).first()) {
             await reject("CONSENT_WITHDRAWN");
             continue;
           }
           const window = marketingWindow(now());
-          if (!window.allowed) {
+          if (b.test_delivery) {
+          } else if (!window.allowed) {
             await trx("comm_outbox").where({ id: b.id }).update({ due_at: window.next });
             continue;
           }
-          await trx("comm_contacts").where({ id: b.contact_id }).forUpdate().first();
-          if (!await trx("comm_frequency").where({ outbox_id: b.id }).first()) {
+          if (!b.test_delivery) await trx("comm_contacts").where({ id: b.contact_id }).forUpdate().first();
+          if (!b.test_delivery && !await trx("comm_frequency").where({ outbox_id: b.id }).first()) {
             const count = await trx("comm_frequency").where({ contact_id: b.contact_id }).whereNull("released_at").andWhere("reserved_at", ">", trx.raw("now()-interval '7 days'")).count("* as count").first();
             if (Number(count.count) >= 2) {
               await reject("FREQUENCY_LIMIT");
@@ -303,6 +306,11 @@ function createDelivery(context, service) {
           await trx("comm_staff_drafts").where({ id: op.payload.draft_id }).update({ [`${op.payload.draft_stage}_message_id`]: outcome.externalId });
       }
       const result = await summary(trx, b.id);
+      if (b.campaign_id && !b.test_delivery) {
+        const active = await trx("comm_outbox").where({ campaign_id: b.campaign_id, test_delivery: false }).whereIn("state", ["pending", "sending", "partial", "uncertain"]).first();
+        if (!active)
+          await trx("comm_campaigns").where({ id: b.campaign_id, state: "sending" }).update({ state: "completed", updated_at: trx.fn.now() });
+      }
       if (outcome.type === "accepted" && b.message_id && b.purpose === "service") {
         const message = await trx("comm_messages").where({ id: b.message_id }).first();
         const conversation = await trx("comm_conversations").where({ id: b.conversation_id }).forUpdate().first("first_agent_response_at", "lead_id");
@@ -739,6 +747,35 @@ function createService(context) {
     await trx("comm_operations").insert({ outbox_id: outbox.id, method: "text", payload });
     return outbox;
   }
+  async function welcome(trx, connection, thread) {
+    const welcomeText = String(
+      connection.settings?.welcome_text || "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435! \u042D\u0442\u043E I \u0421\u0412\u041E\u0418. \u041F\u043E\u043C\u043E\u0436\u0435\u043C \u043F\u043E\u0434\u043E\u0431\u0440\u0430\u0442\u044C, \u043F\u0440\u043E\u0434\u0430\u0442\u044C \u0438\u043B\u0438 \u043E\u0431\u043C\u0435\u043D\u044F\u0442\u044C \u0442\u0435\u0445\u043D\u0438\u043A\u0443 \u0438 \u043E\u0442\u0432\u0435\u0442\u0438\u043C \u043D\u0430 \u0432\u043E\u043F\u0440\u043E\u0441\u044B."
+    );
+    const fileId = connection.settings?.welcome_file_id;
+    const origin = String(env.PUBLIC_URL || "").replace(/\/$/, "");
+    if (connection.platform !== "telegram" || typeof fileId !== "string" || !UUID.test(fileId) || !origin.startsWith("https://"))
+      return enqueue(trx, connection, thread, welcomeText, {}, menu);
+    const id = randomUUID2();
+    const [outbox] = await trx("comm_outbox").insert({
+      id,
+      connection_id: connection.id,
+      thread_id: thread.id,
+      identity_id: thread.identity_id,
+      purpose: "service",
+      dedupe_key: `welcome:${id}`
+    }).returning("*");
+    await trx("comm_operations").insert({
+      outbox_id: outbox.id,
+      method: "remote_image",
+      payload: {
+        chat_id: thread.external_peer_id,
+        photo: `${origin}/assets/${fileId}`,
+        caption: welcomeText,
+        ...keyboard(connection.platform, menu)
+      }
+    });
+    return outbox;
+  }
   async function ingest(connectionId, raw) {
     enabled();
     const n = await db("comm_connections").where({ id: connectionId, enabled: true }).first();
@@ -798,6 +835,10 @@ function createService(context) {
     if (!thread)
       [thread] = await trx("comm_threads").insert({ connection_id: n.id, identity_id: identity.id, external_peer_id: e.peerId }).returning("*");
     if (thread.identity_id !== identity.id) return fail("THREAD_IDENTITY_CONFLICT", 409);
+    await trx("comm_identities").where({ id: identity.id }).update({
+      last_active_at: e.occurredAt,
+      ...e.kind !== "availability" ? { availability: "allowed", availability_at: e.occurredAt } : {}
+    });
     return { identity, thread };
   }
   async function makeLead(trx, n, thread, e, kind = "support") {
@@ -1020,16 +1061,7 @@ function createService(context) {
       } else if (start || ["/help", "main", "/start"].includes(text) || e.kind === "started") {
         if (start?.[1] && start[1].length < 65)
           await trx("comm_identities").where({ id: identity.id }).whereNull("source").update({ source: start[1] });
-        await enqueue(
-          trx,
-          n,
-          thread,
-          String(
-            n.settings?.welcome_text || "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435! \u042D\u0442\u043E I \u0421\u0412\u041E\u0418. \u041F\u043E\u043C\u043E\u0436\u0435\u043C \u043F\u043E\u0434\u043E\u0431\u0440\u0430\u0442\u044C, \u043F\u0440\u043E\u0434\u0430\u0442\u044C \u0438\u043B\u0438 \u043E\u0431\u043C\u0435\u043D\u044F\u0442\u044C \u0442\u0435\u0445\u043D\u0438\u043A\u0443 \u0438 \u043E\u0442\u0432\u0435\u0442\u0438\u043C \u043D\u0430 \u0432\u043E\u043F\u0440\u043E\u0441\u044B."
-          ),
-          {},
-          menu
-        );
+        await welcome(trx, n, thread);
         handled = true;
         resultCode = "selected";
       }
@@ -1597,6 +1629,70 @@ function createService(context) {
       baseline_at: (await db("comm_runtime").where({ id: 1 }).first())?.baseline_at
     };
   }
+  async function audienceContacts(a, query = {}) {
+    const scopes = await db("comm_staff").where({ user_id: a.user, enabled: true, can_manage: true }).pluck("store_id");
+    if (!scopes.length) return fail("FORBIDDEN", 403);
+    let rows = db("comm_contacts as contact").join("comm_identities as identity", "identity.contact_id", "contact.id").join("comm_connections as connection", "connection.id", "identity.connection_id").whereIn("connection.store_id", scopes).groupBy("contact.id").select(
+      "contact.id",
+      "contact.name",
+      db.raw("min(identity.first_seen_at) as first_seen_at"),
+      db.raw("max(identity.last_active_at) as last_active_at"),
+      db.raw("count(distinct identity.id)::int as account_count"),
+      db.raw("bool_or(identity.availability='blocked') as has_blocked_account"),
+      db.raw("bool_or(exists(select 1 from comm_subscriptions subscription where subscription.identity_id=identity.id and subscription.consent)) as subscribed"),
+      db.raw("coalesce(jsonb_agg(distinct jsonb_build_object('platform',connection.platform,'connection_id',connection.id,'external_user_id',identity.external_user_id,'availability',identity.availability)),'[]'::jsonb) as accounts"),
+      db.raw("(select count(*)::int from comm_threads thread join comm_conversations conversation on conversation.thread_id=thread.id where thread.identity_id in (select related.id from comm_identities related where related.contact_id=contact.id)) as conversations")
+    );
+    if (query.include_test !== "true") rows = rows.where({ "identity.is_test": false });
+    if (["telegram", "max", "vk"].includes(query.platform))
+      rows = rows.where("connection.platform", query.platform);
+    if (query.search) {
+      const search = `%${String(query.search).slice(0, 100).replace(/[\\%_]/g, "\\$&")}%`;
+      rows = rows.where(
+        (builder) => builder.whereILike("contact.name", search).orWhereILike("identity.external_user_id", search)
+      );
+    }
+    if (query.topic)
+      rows = rows.whereExists(
+        db("comm_subscriptions as selected_subscription").select(1).whereRaw("selected_subscription.identity_id=identity.id").where({ topic_key: String(query.topic).slice(0, 100), consent: true })
+      );
+    if (query.status === "subscribed")
+      rows = rows.havingRaw("bool_or(exists(select 1 from comm_subscriptions subscription where subscription.identity_id=identity.id and subscription.consent))");
+    else if (query.status === "blocked")
+      rows = rows.havingRaw("bool_or(identity.availability='blocked')");
+    else if (query.status === "active_7")
+      rows = rows.havingRaw("max(identity.last_active_at)>=now()-interval '7 days'");
+    return rows.orderByRaw("max(identity.last_active_at) desc nulls last").limit(100);
+  }
+  async function audienceContact(a, contactId) {
+    if (!UUID.test(contactId)) return fail("NOT_FOUND", 404);
+    const scopes = await db("comm_staff").where({ user_id: a.user, enabled: true, can_manage: true }).pluck("store_id");
+    if (!scopes.length) return fail("FORBIDDEN", 403);
+    const identities = await db("comm_identities as identity").join("comm_connections as connection", "connection.id", "identity.connection_id").where({ "identity.contact_id": contactId }).whereIn("connection.store_id", scopes).select(
+      "identity.*",
+      "connection.name as connection_name",
+      "connection.platform",
+      "connection.store_id"
+    );
+    if (!identities.length) return fail("NOT_FOUND", 404);
+    const identityIds = identities.map((identity) => identity.id);
+    const threads = await db("comm_threads").whereIn("identity_id", identityIds).select("id");
+    const threadIds = threads.map((thread) => thread.id);
+    const subscriptions2 = await db("comm_subscriptions as subscription").join("comm_topics as topic", "topic.key", "subscription.topic_key").whereIn("subscription.identity_id", identityIds).select("subscription.*", "topic.label");
+    const conversations = threadIds.length ? await db("comm_conversations as conversation").join("comm_threads as thread", "thread.id", "conversation.thread_id").join("leads as lead", "lead.id", "conversation.lead_id").whereIn("conversation.thread_id", threadIds).orderBy("conversation.created_at", "desc").select("conversation.id", "conversation.handling", "conversation.created_at", "conversation.last_inbound_at", "lead.id as lead_id", "lead.reference_code", "lead.status") : [];
+    return {
+      contact: await db("comm_contacts").where({ id: contactId }).first(),
+      identities,
+      subscriptions: subscriptions2,
+      consent_events: await db("comm_consent_events").whereIn("identity_id", identityIds).orderBy("created_at", "desc").limit(100),
+      events: await db("comm_events").whereIn("identity_id", identityIds).orderBy("occurred_at", "desc").limit(100),
+      conversations,
+      deliveries: await db("comm_outbox as outbox").leftJoin("comm_campaigns as campaign", "campaign.id", "outbox.campaign_id").whereIn("outbox.identity_id", identityIds).whereNotNull("outbox.campaign_id").orderBy("outbox.created_at", "desc").limit(100).select("outbox.id", "outbox.state", "outbox.error_code", "outbox.accepted_at", "outbox.created_at", "outbox.test_delivery", "campaign.name as campaign_name"),
+      frequency_7d: Number(
+        (await db("comm_frequency").where({ contact_id: contactId }).whereNull("released_at").andWhere("reserved_at", ">", db.raw("now()-interval '7 days'")).count("* as count").first())?.count || 0
+      )
+    };
+  }
   return {
     actor,
     permitted,
@@ -1608,6 +1704,8 @@ function createService(context) {
     messages,
     connections,
     audience,
+    audienceContacts,
+    audienceContact,
     enqueue,
     event,
     setStaffProcessor,

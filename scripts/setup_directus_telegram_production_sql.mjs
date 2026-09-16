@@ -13,7 +13,7 @@ export function productionIdentitySql(workerToken) {
   const scope = { _and: [{ is_test: { _eq: false } }, { _or: [{ store_location_id: { _eq: p.store } }, { store_location_id: { _null: true } }] }] };
   const permissions = [
     ['leads','read','id,status,assigned_to,kind,device,reference_code,store_location_id,is_test',scope,{}],
-    ['leads','update','assigned_to,status',{_and:[scope,{_or:[{assigned_to:{_null:true}},{assigned_to:{_eq:'$CURRENT_USER'}}]}]}, {assigned_to:{_eq:'$CURRENT_USER'},status:{_eq:'in_progress'}}],
+    ['leads','update','assigned_to,status',{_and:[scope,{_or:[{assigned_to:{_null:true}},{assigned_to:{_eq:'$CURRENT_USER'}}]}]}, {assigned_to:{_eq:'$CURRENT_USER'},status:{_in:['in_progress','waiting','closed']}}],
     ['lead_comments','create','id,lead,created_by,outcome,comment',{}, {created_by:{_eq:'$CURRENT_USER'},outcome:{_eq:'note'},lead:{_nnull:true}}],
   ].map(([collection,action,fields,filter,validation]) => `(${literal(p.policy)},${literal(collection)},${literal(action)},${literal(fields)},${literal(JSON.stringify(filter))}::json,${literal(JSON.stringify(validation))}::json)`).join(',\n');
   return `BEGIN;

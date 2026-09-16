@@ -95,6 +95,10 @@ services:
       # Public URL Directus advertises (used for links, assets, OAuth, etc.).
       PUBLIC_URL: ${PUBLIC_URL}
 
+      # Studio previews sanitized private audio/video through authenticated Blob URLs.
+      # Keep media restricted to this origin and in-memory Blob objects only.
+      CONTENT_SECURITY_POLICY_DIRECTIVES__MEDIA_SRC: "array:'self',blob:"
+
       # Optional Telegram endpoint. The separate worker owns the Telegram token.
       ISVOI_TELEGRAM_ENABLED: ${ISVOI_TELEGRAM_ENABLED:-false}
       ISVOI_TELEGRAM_BOT_ID: ${ISVOI_TELEGRAM_BOT_ID:-}

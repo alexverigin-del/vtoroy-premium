@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { telegramCommunicationsEnv } from "./prepare_telegram_communications_env.mjs";
+import { productionIdentitySql } from "./setup_directus_telegram_production_sql.mjs";
 
 const fakeToken = `8694946838:${"A".repeat(40)}`;
 const fakeWorker = "worker_" + "b".repeat(40);
@@ -56,4 +57,32 @@ test("Telegram systemd unit uses a dedicated closed environment", async () => {
   assert.doesNotMatch(unit, /communications\.env\s*$/m);
   assert.match(installer, /systemctl disable/);
   assert.doesNotMatch(installer, /systemctl enable|systemctl start/);
+});
+
+test("communications staff can move assigned leads through the supported lifecycle", async () => {
+  const sql = productionIdentitySql("a".repeat(64));
+  assert.match(sql, /"status":\{"_in":\["in_progress","waiting","closed"\]\}/);
+  assert.doesNotMatch(sql, /"status":\{"_eq":"in_progress"\}/);
+
+  const fix = await readFile(
+    new URL("./fix_communications_lead_status_permission.sql", import.meta.url),
+    "utf8",
+  );
+  assert.match(fix, /Expected exactly one communications lead update permission/);
+  assert.match(fix, /"waiting","closed"/);
+});
+
+test("Directus Studio permits only same-origin and Blob media previews", async () => {
+  const compose = await readFile(
+    new URL("../infra/directus-beget/docker-compose.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    compose,
+    /CONTENT_SECURITY_POLICY_DIRECTIVES__MEDIA_SRC:\s*"array:'self',blob:"/,
+  );
+  assert.doesNotMatch(
+    compose,
+    /CONTENT_SECURITY_POLICY_DIRECTIVES__MEDIA_SRC:[^\n]*(?:https:\/\/\*|data:)/,
+  );
 });

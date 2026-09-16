@@ -243,6 +243,33 @@ try {
     Number((await db("comm_messages").where({ direction: "out" }).count("* as n").first()).n),
     1,
   );
+  const legacyLead = randomUUID();
+  await db("leads").insert({
+    id: legacyLead,
+    status: "in_progress",
+    assigned_to: null,
+    kind: "support",
+    reference_code: "LEGACY-NULL-STORE",
+    store_location_id: null,
+  });
+  await db("comm_conversations").insert({
+    id: randomUUID(),
+    thread_id: c.thread_id,
+    lead_id: legacyLead,
+    handling: "queued",
+  });
+  await db("leads").where({ id: legacyLead }).update({ assigned_to: owner.user });
+  await db("lead_comments").insert({
+    lead: legacyLead,
+    created_by: owner.user,
+    comment: "Legacy lead reply audit",
+    outcome: "note",
+  });
+  assert.equal(
+    Number((await db("lead_comments").where({ lead: legacyLead }).count("* as n").first()).n),
+    1,
+    "legacy communication lead inherits its connection store for assignment and comments",
+  );
   const deniedActor = await service.actor(deniedManager);
   const deny = {
     type: "note",

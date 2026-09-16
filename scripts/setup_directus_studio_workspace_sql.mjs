@@ -19,10 +19,10 @@ SET LOCAL lock_timeout='3s';
 SET LOCAL statement_timeout='60s';`,
 ];
 
-for (const [collection, label, icon, parent, sort] of navigationGroups) {
+for (const [collection, label, icon, parent, sort, hidden = false] of navigationGroups) {
   statements.push(`INSERT INTO directus_collections(collection,icon,note,hidden,singleton,sort,translations,collapse,"group")
-VALUES(${q(collection)},${q(icon)},${q(label)},false,false,${sort},${j([{ language: "ru-RU", translation: label }])},'closed',${q(parent)})
-ON CONFLICT(collection) DO UPDATE SET icon=EXCLUDED.icon,sort=EXCLUDED.sort,translations=EXCLUDED.translations,collapse='closed',"group"=EXCLUDED."group";`);
+VALUES(${q(collection)},${q(icon)},${q(label)},${hidden},false,${sort},${j([{ language: "ru-RU", translation: label }])},'closed',${q(parent)})
+ON CONFLICT(collection) DO UPDATE SET icon=EXCLUDED.icon,note=EXCLUDED.note,hidden=EXCLUDED.hidden,sort=EXCLUDED.sort,translations=EXCLUDED.translations,collapse='closed',"group"=EXCLUDED."group";`);
 }
 for (const [collection, parent] of Object.entries(collectionGroups))
   statements.push(

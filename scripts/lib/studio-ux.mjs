@@ -18,7 +18,7 @@ export const navigationGroups = [
   ["isvoi_inventory", "Склад и сверка", "fact_check", "isvoi_operations", 10],
   ["isvoi_imports", "Импорт каталога", "upload_file", "isvoi_operations", 20],
   ["isvoi_channels", "Каналы продаж", "campaign", null, 90],
-  ["isvoi_telegram_current", "Telegram · текущий контур", "send", null, 95],
+  ["isvoi_telegram_current", "Telegram · архив миграции", "archive", null, 95, true],
   ["isvoi_site_tools", "Интеграции и согласие", "extension", "isvoi_site_content", 60],
   ["isvoi_catalog_reference", "Справочники", "menu_book", "isvoi_catalog", 80],
 ];
@@ -48,12 +48,15 @@ export const collectionGroups = {
 };
 
 export const collectionPresentation = {
-  telegram_bot_settings: ["Настройки Telegram", false, 10],
-  telegram_notification_topics: ["Темы подписок Telegram", false, 20],
-  telegram_subscriptions: ["Подписки Telegram", false, 30],
-  telegram_subscription_events: ["История подписок Telegram", false, 40],
-  telegram_campaigns: ["Кампании Telegram", false, 50],
-  telegram_delivery_metrics: ["Скорость доставки Telegram", false, 60],
+  // Telegram is operated through the Communications module after cutover. These
+  // collections remain grouped and readable as migration evidence, but must not
+  // reappear as a second operator workspace when Studio metadata is reapplied.
+  telegram_bot_settings: ["Настройки Telegram · архив", true, 10],
+  telegram_notification_topics: ["Темы подписок Telegram · архив", true, 20],
+  telegram_subscriptions: ["Подписки Telegram · архив", true, 30],
+  telegram_subscription_events: ["История подписок Telegram · архив", true, 40],
+  telegram_campaigns: ["Кампании Telegram · архив", true, 50],
+  telegram_delivery_metrics: ["Скорость доставки Telegram · архив", true, 60],
   telegram_routes: ["Маршруты Telegram · служебное", true, 70],
   telegram_staff: ["Сотрудники Telegram · служебное", true, 80],
   telegram_deliveries: ["Доставка Telegram · служебное", true, 90],

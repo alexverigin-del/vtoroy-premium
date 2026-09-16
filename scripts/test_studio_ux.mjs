@@ -71,6 +71,26 @@ for (const script of [
       /UPDATE (?:page_sections|site_pages|products|leads|directus_permissions|directus_policies)\s/i,
     );
     assert.match(result.stdout, /"user" IS NULL/);
+    assert.match(
+      result.stdout,
+      /VALUES\('isvoi_telegram_current','archive','Telegram · архив миграции',true/,
+    );
+    for (const collection of [
+      "telegram_bot_settings",
+      "telegram_notification_topics",
+      "telegram_subscriptions",
+      "telegram_subscription_events",
+      "telegram_campaigns",
+      "telegram_delivery_metrics",
+      "telegram_routes",
+      "telegram_staff",
+      "telegram_deliveries",
+    ]) {
+      assert.match(
+        result.stdout,
+        new RegExp(`UPDATE directus_collections SET hidden=true,sort=\\d+,translations=.* WHERE collection='${collection}';`),
+      );
+    }
   }
   if (script.includes("content") && script.startsWith("setup")) {
     assert.match(result.stdout, /IF NOT EXISTS\(SELECT 1 FROM information_schema.columns/);
@@ -83,6 +103,14 @@ for (const script of [
 const tradeAudit = fs.readFileSync("scripts/audit_directus_trade_page_sql.mjs", "utf8");
 assert.doesNotMatch(tradeAudit, /marketing-pages\.json|expectedCopyRows|copy_mismatch/);
 assert.match(tradeAudit, /\/privacy#trade-in-consent/);
+const telegramRetirement = fs.readFileSync("scripts/retire_legacy_telegram_studio.sql", "utf8");
+assert.match(telegramRetirement, /platform = 'telegram' AND enabled = true/);
+assert.match(telegramRetirement, /ISVOI Editor/);
+assert.match(telegramRetirement, /collection = 'telegram_campaigns'/);
+assert.doesNotMatch(
+  telegramRetirement,
+  /(?:DELETE|TRUNCATE)\s+(?:FROM\s+)?(?:telegram_|lead_conversations|lead_messages)/i,
+);
 console.log(
   "Studio UX: content equivalence, explicit deletion, malformed values, SQL generation and legal guard tests passed.",
 );

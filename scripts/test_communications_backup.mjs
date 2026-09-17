@@ -31,6 +31,8 @@ assert.ok(
   "database state must be completed only after remote snapshot readback",
 );
 assert.match(backup, /--immutable/);
+assert.match(backup, /external_verified AND completed_at/);
+assert.doesNotMatch(backup, /find "\$COMM_BACKUP_ROOT"[\s\S]*-exec rm -rf/);
 assert.doesNotMatch(backup, /_COMPLETE/);
 assert.doesNotMatch(backup, /access_key_id\s*=/i);
 assert.doesNotMatch(backup, /secret_access_key\s*=/i);
@@ -64,6 +66,7 @@ for (const column of [
   "error_code",
 ]) assert.match(schema, new RegExp(`ADD COLUMN IF NOT EXISTS ${column}`));
 assert.match(envExample, /provider = Ceph/);
+assert.match(envExample, /COMM_LOCAL_RETENTION_HOURS=6/);
 assert.match(envExample, /no_check_bucket = true/);
 assert.match(envExample, /# region =\r?\n/);
 assert.doesNotMatch(envExample, /force_path_style = true/);

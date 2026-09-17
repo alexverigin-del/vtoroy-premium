@@ -10,7 +10,7 @@ umask 077
 
 COMM_PRIVATE_DIR="${COMM_PRIVATE_DIR:-$COMM_STACK_DIR/private-communications}"
 COMM_DIRECTUS_UPLOADS_DIR="${COMM_DIRECTUS_UPLOADS_DIR:-$COMM_STACK_DIR/uploads}"
-COMM_LOCAL_RETENTION_HOURS="${COMM_LOCAL_RETENTION_HOURS:-48}"
+COMM_LOCAL_RETENTION_HOURS="${COMM_LOCAL_RETENTION_HOURS:-6}"
 COMM_LIVE_S3_REMOTE="${COMM_LIVE_S3_REMOTE:-}"
 COMM_LIVE_S3_RCLONE_CONFIG="${COMM_LIVE_S3_RCLONE_CONFIG:-}"
 COMPOSE_FILE="$COMM_STACK_DIR/docker-compose.yml"
@@ -27,6 +27,8 @@ test -f "$COMPOSE_FILE"
 test -f "$RCLONE_CONFIG"
 test -z "$COMM_LIVE_S3_RCLONE_CONFIG" || test -f "$COMM_LIVE_S3_RCLONE_CONFIG"
 test -d "$COMM_DIRECTUS_UPLOADS_DIR"
+[[ "$COMM_LOCAL_RETENTION_HOURS" =~ ^[1-9][0-9]*$ ]] \
+  || { echo "COMM_LOCAL_RETENTION_HOURS must be a positive integer" >&2; exit 1; }
 mkdir -p "$COMM_BACKUP_ROOT" "$COMM_PRIVATE_DIR"
 
 exec 9>"$COMM_BACKUP_ROOT/.backup.lock"
@@ -162,6 +164,17 @@ printf "UPDATE comm_backups SET state='completed',completed_at=now(),external_ve
 test -z "$combined_rclone_config" || rm -f "$combined_rclone_config"
 trap - EXIT
 
-find "$COMM_BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -mmin "+$((COMM_LOCAL_RETENTION_HOURS * 60))" -exec rm -rf -- {} +
+# Keep incomplete or unverified local snapshots for investigation. Only a directory whose
+# database receipt confirms successful S3 readback may leave the fast local restore window.
+while IFS= read -r expired_id; do
+  [[ "$expired_id" =~ ^[0-9a-f-]{36}$ ]] || { echo "Invalid backup id during pruning" >&2; exit 1; }
+  expired_target="$COMM_BACKUP_ROOT/$expired_id"
+  if test -d "$expired_target" && ! test -L "$expired_target"; then
+    rm -rf -- "$expired_target"
+  fi
+done < <(
+  printf "SELECT id FROM comm_backups WHERE external_verified AND completed_at < now()-make_interval(hours => %s);\n" \
+    "$COMM_LOCAL_RETENTION_HOURS" | db_query
+)
 printf 'COMM_BACKUP_VERIFIED %s snapshot_sha256=%s database_bytes=%s directus_files=%s private_files=%s s3_files=%s\n' \
   "$id" "$snapshot_sha256" "$database_bytes" "$directus_count" "$private_count" "$s3_count"

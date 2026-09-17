@@ -9,6 +9,9 @@ consolidated.
 - Directus backups use `scripts/prune_directus_backups.mjs` after a verified
   backup. The default policy keeps recent, daily, weekly and monthly recovery
   points.
+- Communications backups keep six hours of externally verified snapshots on
+  the production disk for fast restore. Their full immutable history remains in
+  S3; incomplete and unverified local snapshots are never pruned automatically.
 - Keep no more than two verified compiled web rollback builds. Store them below
   `/opt/isvoi/backups/web` and name them with a leading UTC timestamp.
 - Keep only the current and one previous immutable application release after the

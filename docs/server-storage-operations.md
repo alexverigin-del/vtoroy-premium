@@ -83,3 +83,22 @@ The audit also found that `infra/directus-beget/.env` had become root-owned and
 the 2026-09-14 nightly backup could not read it. Ownership was restored to
 `deploy:deploy` with mode `0600`, a fresh backup succeeded under the same deploy
 identity as cron, and the existing 02:17 UTC schedule was retained.
+
+## Production maintenance record: 2026-09-17
+
+The 30-minute communications backup was retaining 48 hours of full local media
+bundles even though every completed snapshot had already passed S3 readback.
+Ninety-nine local staging directories consumed 13 GB. Local retention is now
+six hours and pruning uses the `comm_backups.external_verified` receipt rather
+than directory age alone; incomplete and unverified snapshots remain untouched.
+
+The verified cleanup reduced root filesystem use from 26 GB (69%) to 15 GB
+(39%). Thirteen recent local communications recovery points use 1.7 GB, while
+the immutable S3 history contains 145 verified snapshots. Four audited dangling
+anonymous Docker volumes and empty directories from the failed legacy nightly
+Directus job were removed. That redundant cron entry was retired; its historical
+Directus daily/weekly/monthly recovery points remain under the standard
+retention policy. The final backup and backup-health services succeeded, web and
+Directus returned HTTP 200, and all seven Telegram/MAX workers remained active.
+
+Cleanup manifest: `/opt/isvoi/var/storage-cleanup-20260917T141136Z.txt`.

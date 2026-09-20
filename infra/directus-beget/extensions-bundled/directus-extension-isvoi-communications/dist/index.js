@@ -38589,7 +38589,7 @@ function createService(context) {
     });
     return { identity, thread };
   }
-  async function makeLead(trx, n4, thread, e6, kind = "support") {
+  async function makeLead(trx, n4, thread, e6, identity, kind = "support") {
     if (!n4.service_user_id) return fail("INTAKE_NOT_CONFIGURED", 503);
     const accountability = await userAccountability(trx, n4.service_user_id);
     const service = await itemService(trx, "leads", accountability);
@@ -38602,7 +38602,7 @@ function createService(context) {
       source: n4.platform,
       source_path: `bot:${n4.external_id}`,
       store_location_id: n4.store_id,
-      is_test: n4.mode === "test"
+      is_test: identity.is_test
     });
     await trx("comm_service_levels").insert({ store_id: n4.store_id }).onConflict("store_id").ignore();
     const configured = await trx("comm_service_levels").where({ store_id: n4.store_id }).first();
@@ -38622,15 +38622,15 @@ function createService(context) {
       lead_id: id,
       kind: "lead_created",
       dedupe_key: `lead:${id}`,
-      is_test: n4.mode === "test"
+      is_test: identity.is_test
     });
     return c6;
   }
   async function subscriptions(trx, n4, thread, selected, source) {
     const settings = n4.settings || {};
+    const identity = await trx("comm_identities").where({ id: thread.identity_id }).first();
     if (settings.subscriptions_pilot_only) {
-      const i6 = await trx("comm_identities").where({ id: thread.identity_id }).first();
-      if (!(settings.pilot_user_ids || []).map(String).includes(i6.external_user_id))
+      if (!(settings.pilot_user_ids || []).map(String).includes(identity.external_user_id))
         return enqueue(
           trx,
           n4,
@@ -38681,7 +38681,7 @@ function createService(context) {
           kind: consent ? "subscribed" : "unsubscribed",
           dedupe_key: `consent:${source}:${topic.key}`,
           facts: { topic: topic.key },
-          is_test: n4.mode === "test"
+          is_test: identity.is_test
         });
       }
       await trx("comm_threads").where({ id: thread.id }).update({ subscription_draft: null });
@@ -38925,7 +38925,7 @@ function createService(context) {
         if (c6 && !await trx("comm_access_grants").where({ identity_id: identity.id, lead_id: c6.lead_id }).whereNull("revoked_at").first())
           c6 = null;
         if (!c6 || !activeLead(lead))
-          c6 = await makeLead(trx, n4, thread, e6, thread.pending_kind || "support");
+          c6 = await makeLead(trx, n4, thread, e6, identity, thread.pending_kind || "support");
         const [message] = await trx("comm_messages").insert({
           thread_id: thread.id,
           conversation_id: c6.id,

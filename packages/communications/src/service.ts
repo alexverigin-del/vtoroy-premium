@@ -324,6 +324,7 @@ export function createService(context: Context) {
     n: Connection,
     thread: any,
     e: IncomingEvent,
+    identity: any,
     kind = "support",
   ) {
     if (!n.service_user_id) return fail("INTAKE_NOT_CONFIGURED", 503);
@@ -338,7 +339,7 @@ export function createService(context: Context) {
       source: n.platform,
       source_path: `bot:${n.external_id}`,
       store_location_id: n.store_id,
-      is_test: n.mode === "test",
+      is_test: identity.is_test,
     });
     await trx("comm_service_levels")
       .insert({ store_id: n.store_id })
@@ -368,7 +369,7 @@ export function createService(context: Context) {
       lead_id: id,
       kind: "lead_created",
       dedupe_key: `lead:${id}`,
-      is_test: n.mode === "test",
+      is_test: identity.is_test,
     });
     return c;
   }
@@ -380,9 +381,9 @@ export function createService(context: Context) {
     source: string,
   ) {
     const settings = n.settings || {};
+    const identity = await trx("comm_identities").where({ id: thread.identity_id }).first();
     if (settings.subscriptions_pilot_only) {
-      const i = await trx("comm_identities").where({ id: thread.identity_id }).first();
-      if (!((settings.pilot_user_ids as string[]) || []).map(String).includes(i.external_user_id))
+      if (!((settings.pilot_user_ids as string[]) || []).map(String).includes(identity.external_user_id))
         return enqueue(
           trx,
           n,
@@ -441,7 +442,7 @@ export function createService(context: Context) {
           kind: consent ? "subscribed" : "unsubscribed",
           dedupe_key: `consent:${source}:${topic.key}`,
           facts: { topic: topic.key },
-          is_test: n.mode === "test",
+          is_test: identity.is_test,
         });
       }
       await trx("comm_threads").where({ id: thread.id }).update({ subscription_draft: null });
@@ -799,7 +800,7 @@ export function createService(context: Context) {
         )
           c = null;
         if (!c || !activeLead(lead))
-          c = await makeLead(trx, n, thread, e, thread.pending_kind || "support");
+          c = await makeLead(trx, n, thread, e, identity, thread.pending_kind || "support");
         const [message] = await trx("comm_messages")
           .insert({
             thread_id: thread.id,

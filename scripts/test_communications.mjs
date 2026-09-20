@@ -710,6 +710,77 @@ test("connections reports a live legacy Telegram contour without creating a core
   );
   assert.equal(overview.connections[0].source, undefined);
 });
+test("PostgreSQL: pilot identity stays excluded after a connection enters production", async (t) => {
+  const fixture = await testDatabase();
+  t.after(fixture.close);
+  const { db } = fixture;
+  const store = randomUUID();
+  const intake = randomUUID();
+  const worker = randomUUID();
+  const connection = randomUUID();
+  await db("store_locations").insert({ id: store });
+  await db("directus_users").insert([intake, worker].map((id) => ({ id, status: "active" })));
+  await db("comm_connections").insert({
+    id: connection,
+    platform: "telegram",
+    external_id: "pilot-bot",
+    name: "Pilot",
+    enabled: true,
+    mode: "test",
+    store_id: store,
+    worker_user_id: worker,
+    service_user_id: intake,
+    secret_ref: "PILOT",
+    settings: { pilot_user_ids: ["123"] },
+  });
+  class ItemsService {
+    constructor(table, options) {
+      this.table = table;
+      this.db = options.knex;
+    }
+    async createOne(values) {
+      return (await this.db(this.table).insert(values).returning("id"))[0].id;
+    }
+  }
+  const service = createService({
+    database: db,
+    services: { ItemsService },
+    getSchema: async () => ({}),
+    env: { ISVOI_COMMUNICATIONS_ENABLED: true },
+  });
+  const incoming = (update, user) => ({
+    update_id: update,
+    message: {
+      message_id: update,
+      date: 1700000000 + update,
+      from: { id: user },
+      chat: { id: user, type: "private" },
+      text: `Question ${update}`,
+    },
+  });
+  await service.ingest(connection, incoming(1, 123));
+  await service.processIncoming(connection);
+  const pilotLead = await db("leads").first();
+  assert.equal(pilotLead.is_test, true);
+  await db("leads").where({ id: pilotLead.id }).update({ status: "closed" });
+  await db("comm_connections").where({ id: connection }).update({ mode: "production" });
+
+  await service.ingest(connection, incoming(2, 123));
+  await service.processIncoming(connection);
+  const pilotLeads = await db("leads").where({ contact: "telegram:123" });
+  assert.equal(pilotLeads.length, 2);
+  assert.ok(pilotLeads.every((lead) => lead.is_test));
+
+  await service.ingest(connection, incoming(3, 456));
+  await service.processIncoming(connection);
+  const liveLead = await db("leads").where({ contact: "telegram:456" }).first();
+  assert.equal(liveLead.is_test, false);
+  assert.equal(
+    (await db("comm_identities").where({ external_user_id: "456" }).first()).is_test,
+    false,
+  );
+});
+
 test("PostgreSQL: durable ingest, command replay, partial delivery and queue isolation", async (t) => {
   const fixture = await testDatabase();
   t.after(fixture.close);

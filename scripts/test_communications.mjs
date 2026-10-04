@@ -762,7 +762,7 @@ test("PostgreSQL: pilot identity stays excluded after a connection enters produc
   await service.processIncoming(connection);
   const pilotLead = await db("leads").first();
   assert.equal(pilotLead.is_test, true);
-  await db("leads").where({ id: pilotLead.id }).update({ status: "closed" });
+  await db("leads").where({ id: pilotLead.id }).update({ status: "closed", assigned_to: intake });
   await db("comm_connections").where({ id: connection }).update({ mode: "production" });
 
   await service.ingest(connection, incoming(2, 123));
@@ -770,6 +770,28 @@ test("PostgreSQL: pilot identity stays excluded after a connection enters produc
   const pilotLeads = await db("leads").where({ contact: "telegram:123" });
   assert.equal(pilotLeads.length, 2);
   assert.ok(pilotLeads.every((lead) => lead.is_test));
+  const reopenedLead = pilotLeads.find((lead) => lead.id !== pilotLead.id);
+  assert.equal(
+    (await db("comm_conversations").where({ lead_id: reopenedLead.id }).first()).handling,
+    "queued",
+  );
+  const pilotThread = await db("comm_threads")
+    .join("comm_identities", "comm_identities.id", "comm_threads.identity_id")
+    .where("comm_identities.external_user_id", "123")
+    .select("comm_threads.id")
+    .first();
+  assert.equal(
+    Number((await db("comm_outbox").where({ thread_id: pilotThread.id }).count("* as n").first()).n),
+    2,
+    "a newly opened case receives an acknowledgement even after an assigned closed case",
+  );
+  await service.ingest(connection, incoming(4, 123));
+  await service.processIncoming(connection);
+  assert.equal(
+    Number((await db("comm_outbox").where({ thread_id: pilotThread.id }).count("* as n").first()).n),
+    2,
+    "another message in the active case does not repeat the acknowledgement",
+  );
 
   await service.ingest(connection, incoming(3, 456));
   await service.processIncoming(connection);

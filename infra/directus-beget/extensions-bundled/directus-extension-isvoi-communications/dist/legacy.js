@@ -1176,7 +1176,8 @@ function createService(context) {
         const lead = c ? await trx("leads").where({ id: c.lead_id }).first() : null;
         if (c && !await trx("comm_access_grants").where({ identity_id: identity.id, lead_id: c.lead_id }).whereNull("revoked_at").first())
           c = null;
-        if (!c || !activeLead(lead))
+        const createdConversation = !c || !activeLead(lead);
+        if (createdConversation)
           c = await makeLead(trx, n, thread, e, identity, thread.pending_kind || "support");
         const [message] = await trx("comm_messages").insert({
           thread_id: thread.id,
@@ -1207,10 +1208,11 @@ function createService(context) {
         await trx("comm_conversations").where({ id: c.id }).update({
           last_inbound_at: e.occurredAt,
           awaiting_since: c.awaiting_since || e.occurredAt,
-          handling: lead?.assigned_to ? "agent" : "queued",
+          handling: !createdConversation && lead?.assigned_to ? "agent" : "queued",
           version: trx.raw("version+1")
         });
-        if (!lead) await enqueue(trx, n, thread, "\u041E\u0431\u0440\u0430\u0449\u0435\u043D\u0438\u0435 \u043F\u0440\u0438\u043D\u044F\u0442\u043E. \u041E\u0442\u0432\u0435\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0430 \u043F\u0440\u0438\u0434\u0451\u0442 \u0441\u044E\u0434\u0430.");
+        if (createdConversation)
+          await enqueue(trx, n, thread, "\u041E\u0431\u0440\u0430\u0449\u0435\u043D\u0438\u0435 \u043F\u0440\u0438\u043D\u044F\u0442\u043E. \u041E\u0442\u0432\u0435\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0430 \u043F\u0440\u0438\u0434\u0451\u0442 \u0441\u044E\u0434\u0430.");
         resultCode = "received";
       }
       await event(trx, {

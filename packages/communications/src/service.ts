@@ -799,7 +799,8 @@ export function createService(context: Context) {
             .first())
         )
           c = null;
-        if (!c || !activeLead(lead))
+        const createdConversation = !c || !activeLead(lead);
+        if (createdConversation)
           c = await makeLead(trx, n, thread, e, identity, thread.pending_kind || "support");
         const [message] = await trx("comm_messages")
           .insert({
@@ -839,10 +840,11 @@ export function createService(context: Context) {
           .update({
             last_inbound_at: e.occurredAt,
             awaiting_since: c.awaiting_since || e.occurredAt,
-            handling: lead?.assigned_to ? "agent" : "queued",
+            handling: !createdConversation && lead?.assigned_to ? "agent" : "queued",
             version: trx.raw("version+1"),
           });
-        if (!lead) await enqueue(trx, n, thread, "Обращение принято. Ответ менеджера придёт сюда.");
+        if (createdConversation)
+          await enqueue(trx, n, thread, "Обращение принято. Ответ менеджера придёт сюда.");
         resultCode = "received";
       }
       await event(trx, {

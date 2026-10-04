@@ -22,7 +22,7 @@ Current Next routes:
 - `/blog/category/[slug]`
 - `/blog/[slug]`
 - `/blog/rss.xml`
-- `/device/[slug]`
+- `/product/[slug]`
 - `/lead-intake` (POST only)
 
 Compatibility redirects live in `apps/web/next.config.mjs`:
@@ -34,6 +34,9 @@ Compatibility redirects live in `apps/web/next.config.mjs`:
 - `/trade/index.html` -> `/trade`
 - `/club/index.html` -> `/club`
 - `/device/:slug/index.html` -> `/device/:slug`
+
+`/device/[slug]` is a compatibility route that returns HTTP 301 to
+`/product/[slug]`. Use `/product/` for direct product-page HTTP checks.
 
 ## Repository Layout
 

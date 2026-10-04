@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "checked_on": "2026-10-04",
+  "scope": "model_hardware_reference_not_avito_catalog_validation",
+  "models": {
+    "iPhone 15 Pro Max": {
+      "attributes": { "RamSize": "8 ГБ" },
+      "source_title": "iFixit: iPhone 15 Pro Max Chip ID, Step 3",
+      "source_url": "https://www.ifixit.com/Teardown/iPhone+15+Pro+Max+Chip+ID/165320"
+    },
+    "iPhone 14 Pro Max": {
+      "attributes": { "RamSize": "6 ГБ" },
+      "source_title": "iFixit: iPhone 14 Pro Max Chip ID, Step 4",
+      "source_url": "https://www.ifixit.com/Teardown/iPhone+14+Pro+Max+Chip+ID/153224"
+    }
+  }
+}

@@ -1,10 +1,464 @@
 # Project Operating Decisions
 
-Last updated: 2026-09-11.
+Last updated: 2026-10-04.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Avito Pilot Feed Release Authorization (2026-10-04)
+
+- Owner requested the next implementation stage: release the three-phone feed
+  for т11/т29/т12. This authorizes the site release and three Directus channel
+  records, not saving a source in Avito, starting autoload, moderation or payment.
+- Git reconciliation found origin/master at 7989dba, production at 414336e and
+  the local communications branch at 2b5dbf3. Product code at local/production
+  is identical but commit histories differ. Release is isolated from 414336e
+  and preserves already deployed communication changes; original local work
+  is not reset or swept into this release. Origin master can fast-forward.
+- Full web:verify passes in the isolated release checkout, including build,
+  formatting, lint/types and unchanged bundle budgets. Added an operator guard
+  and five activation tests; 79 Python and 30 feed tests are the focused gates.
+- Verified VPS backup: /opt/isvoi/backups/directus/20261004T205415Z, database,
+  uploads and IndexNow state passed SHA-256 and archive checks. The standard
+  script cannot read the protected infra env as deploy; backup was made through
+  existing Docker access with explicit nonsecret database names instead. No
+  secret file permissions changed; offsite remains deferred.
+- scripts/activate_avito_pilot.py pins the approved XML SHA-256 and exactly three
+  existing channel IDs, guards live prices/stock/diagnostics under row locks,
+  supports transactional rehearsal, saves protected before-state and provides
+  conflict-aware rollback. It never changes products/inventory or calls Avito.
+  Use a separate confirmed pilot mapping, leaving default category mappings
+  and every nonpilot channel record unchanged. The existing server-only catalog
+  service token has the required read access; Public/Editor permissions are unchanged.
+- Feed activation and postrelease verification are recorded in the follow-up
+  release result. Historical preactivation entries below describe their own
+  timepoints and are superseded by this authorization, not publication approval.
+
+## Avito Preactivation Refresh And Old Listing Disposition (2026-10-04)
+
+- Fresh READ ONLY catalog snapshot 2026-10-04T23:37:49.660516+03:00 covers
+  32 records with no private identifier redactions. т11/т29/т12 remain matched,
+  eligible, stock 1 each and prices 57900/51599/57900; all selected source facts
+  and approved copy are unchanged. Refreshed workbook/XML in a separate
+  preactivation/ directory rather than overwriting the validator input.
+  Rebuilt XML SHA-256 is identical to the expected input recorded above/below.
+- Fresh public checks pass three canonical product pages, three public
+  certificates and all 18 JPEG transforms, including MIME/bytes/decode checks.
+  Public feed GET remains 503 avito_feed_disabled. No feed activation or CMS write.
+- Avito read-only check 2026-10-04T23:38:26.924607+03:00: authentication/self
+  succeed, all-five-status listing pagination is complete with one old and zero
+  active listings. Profile and both exact ID-link methods still return 403.
+  Added safe GET listing details: old 8312555394 has no autoload_item_id.
+  Provided detail contract does not expose description/photos/serial identity;
+  unknown historical IDs and URLs remain private. Four new tests pass.
+- Owner supplied the transition-to-URL form with an empty visible URL field and
+  hourly schedule description. It does not prove persisted sources, saved
+  schedule or whether autoload is enabled. Owner subsequently explicitly
+  confirmed the form is unsaved, there is no active file autoload and no other
+  saved URLs. This closes the operator source-settings question, not the API
+  profile 403. First authorized URL setup must preserve that single-pilot scope;
+  do not save this form before authorized activation.
+- Owner then explicitly stated that old listing 8312555394 is inactive and will
+  not be reactivated. Record the operational disposition: leave it untouched,
+  exclude it from the three-device pilot and do not assign its AvitoId to any SKU.
+  This supersedes requiring exact old-SKU identification as a prerequisite for
+  this pilot; it does not establish exact identity or clear historical matching.
+  If future reactivation/migration is requested, exact matching is required again.
+  The owner's disposition is not permission to publish the new pilot.
+- Evidence and readiness are recorded in ignored preactivation/readiness.json,
+  preactivation-account-preflight.json and the refreshed artifacts. Validation:
+  74 Python + 30 feed tests pass (104 total), encoding/scoped formatting/diff
+  checks pass. Frontend is unchanged in this follow-up; prior full web:verify
+  limitation (35 unrelated formatting failures) remains a release prerequisite.
+- No publication, paid operation, source-setting change, production write,
+  commit/push/deploy. Source-settings confirmation and old-listing operational
+  disposition are now recorded. Remaining steps are release gates, remaining
+  account-specific QA and explicit rollout/publication authorization; do not
+  keep asking for the old SKU or already confirmed absence of other sources.
+
+## Avito Official Format Validator Passed (2026-10-04)
+
+- Owner supplied the Avito XML-file check report: XML соответствует формату,
+  three checked ads, displayed file acceptance time 04.10.2026 23:32:59 (timezone
+  not shown). All reported IDs match the т29/т11/т12 pilot; each informational
+  message derives visible condition Отличное from screen/case/battery inputs.
+  Keep XML Condition=Б/у and the source used-device condition unchanged: Отличное
+  is not an input category or a new diagnostic measurement.
+- Recorded ignored format-validator-evidence.json beside the pilot artifacts.
+  The expected local XML SHA-256 remains
+  269b73e93db8a4113033f5b764dc724ce1f454e1a784314c5ee8a19712cd632c.
+  File association is based on the owner's response and exact ID set; the report
+  does not display an uploaded-file hash, so do not claim independent hash proof.
+  Retain this separate evidence record: regenerating the offline manifest is not
+  a new official validation and must not silently transfer acceptance to changed XML.
+- The report explicitly excludes photo checks and warns that moderation/history
+  errors may arise during actual autoload. This closes the format-check step only,
+  not account ingestion, historical duplicate reconciliation or publication QA.
+  Old listing 8312555394 still has no confirmed SKU association. Before rollout,
+  inspect all profile sources/schedule and recheck current stock and JPEGs.
+- Updated the pilot review, workflow and activation checklist. No product,
+  channel/mapping, input Condition, schema/feed flag, production or Avito listing
+  was changed; no publication, paid operation, commit/push/deploy was authorized.
+
+## Avito Minimal Generator And Validator Handoff (2026-10-04)
+
+- Owner provided a screenshot of the separate Avito help-page XML v.3 validator,
+  with file/URL/XML-text input. This establishes availability of the checker UI,
+  not acceptance of our XML, account-dependent catalog QA or publication consent.
+  The existing local schema-review example can be submitted only to this separate
+  format checker; do not configure it as an autoload source or launch a load.
+- Aligned the main feed generator with the minimal review contract: Set and its
+  dependent BoxSealed are not allowed in defaults or listing attributes. Any such
+  key fails the eligible pilot closed, including BoxSealed=Нет/null. Confirmed
+  kit stays in description; XLSX BoxSealed=Нет evidence remains valid and unchanged.
+  No mapping flags, channel statuses, feed settings or production content changed.
+- Added three regressions for default/listing box rejection, preserved kit copy
+  and prevention of a partial pilot. Validation: 70 Python + 30 feed tests pass
+  (100 total); separate web lint and typecheck pass. Full web:verify passes prior
+  gates but stops at the existing 35 unrelated web formatting failures; do not
+  claim a green release gate or format unrelated files in this task.
+  Separate production build and bundle budget also pass (889.6/286.6/247.4 kB
+  raw/gzip/Brotli total). Scoped formatting, encoding and git diff checks pass.
+  Webpack cache snapshot warnings are nonfatal; no runtime release was performed.
+- Added docs/avito-pilot-activation-checklist.md with exact pilot IDs, dictionary
+  candidates, input XML hash, separate validator instructions, historical listing
+  reconciliation and a separately authorized activation procedure. Await the
+  checker result; successful syntax alone cannot enable the feed or prove absence
+  of duplicates. Old listing 8312555394 still has no confirmed SKU association.
+- No marketplace call, upload, paid operation, production write, commit/push/deploy
+  was performed in this follow-up. Earlier browser/API access restrictions were
+  not retried or bypassed.
+
+## Avito Offline XML Schema Review (2026-10-04)
+
+- Continued preparation without activating production or Avito. The official
+  template page could not be opened (non-retryable tool error); no browser/shell
+  workaround was used. Read the full Set/BoxSealed/DeviceFlaws field documents
+  through the already allowed authenticated category GET endpoint instead.
+- Raw API confirms Set is optional checkbox/string but supplies no concrete XML
+  list encoding. BoxSealed has Set=Коробка dependency and additional text referring
+  to new condition. DeviceFlaws still has contradictory string/integer rules.
+  Do not invent Set child tags or treat documentation discovery as schema QA.
+- Prepared ignored ISVOI_Avito_SCHEMA_REVIEW_2026-10-04.xml for т11/т29/т12
+  and xml-review-manifest.json. This is an OFFLINE SCHEMA REVIEW example, NOT
+  approved for upload or use as a feed. Omit optional Set and dependent BoxSealed;
+  confirmed device/box/cable remains in Description. Omit unconfirmed SIM/private
+  IMEI and historical AvitoId. Keep open-box evidence in XLSX, not an orphan XML tag.
+- New serializer uses ElementTree and reuses full catalog/copy/inventory guards
+  against the sanitized current snapshot. It does not manufacture confirmed
+  mapping or active channel flags, relax live feed gates or change source records.
+  A well-formed XML round-trip does not prove official schema/catalog acceptance.
+  Account/dependent catalog QA, historical association and
+  separately authorized channel/mapping rollout remain pending in the manifest.
+- Owner separately approved the exact balanced description for т12, limited to
+  description copy only. All three pilot descriptions are now approved; the
+  original т37 approval remains recorded but does not expand the pilot or its
+  eligibility. Regenerated both XLSX workbooks, pilot JSON and XML review manifest;
+  this supersedes the pending т12 copy approval in earlier sections below.
+- Validation: 70 Python + 27 feed tests pass (97 total). XML round-trip preserves
+  three exact IDs/prices/descriptions and six JPEG images each, excludes private
+  identifiers, and retains ready_to_upload=false. Full web:verify was not rerun:
+  no frontend change in this follow-up.
+- No publication, paid operation, upload, production write, commit/push/deploy.
+  Current public feed generator is unchanged in this follow-up; prior checks/gates
+  remain in force. Before eventual activation, align its minimal XML fields with
+  the reviewed example and do not emit BoxSealed without verified Set support.
+
+## Avito RAM And Open Boxes Follow-up (2026-10-04)
+
+- Owner clarified that all current site devices are used and boxes are open.
+  Record this as current-catalog preparation evidence, not a default for future
+  stock or permission to alter Directus condition/inventory. All eligible XLSX
+  rows remain Condition=Б/у; BoxSealed=Нет only when the confirmed kit has a box.
+  This does not confirm screen/case for devices outside the original three.
+- Added data/avito-phone-model-reference.json with iFixit's primary chip
+  teardowns: iPhone 15 Pro Max RAM 8 ГБ, iPhone 14 Pro Max 6 ГБ. Fill reference
+  values in preparation with source comments; do not confuse RAM with storage,
+  unit measurements or account catalog acceptance. Other models remain unfilled.
+- Refreshed both existing XLSX artifacts: three pilot rows and 16 full-catalog
+  candidates. All filled pilot dictionary choices pass, splitting the documented
+  kit separator into individually valid values. Flat lists do not establish
+  dependent model/memory/color/RAM combinations or XML validity.
+- Live authenticated read-only preflight 20:09:12Z still returns one old listing
+  and no active owner listings. Both GET /autoload/v2/items/ad_ids and
+  GET /autoload/v2/items/avito_ids return 403, as does profile. Token/self/items
+  and category fields remain successful. Historical SKU association stays unknown;
+  no duplicate QA completion, reassociation or automatic AvitoId assignment.
+- Added exact GET-only ID-link checks to the read-only client. Unknown historical
+  autoload IDs are never exported, only presence and exact pilot comparisons.
+  Per-endpoint 403/missing rows remain explicit; no marketplace POST beyond token.
+- Validation: 64 Python + 27 feed tests pass (91 total), reopened workbooks have
+  preserved dropdowns/dictionary/IDs/prices and no full IMEI/formulas/errors.
+  No frontend change or web:verify rerun in this follow-up. Feed/schema gates
+  remain disabled; no production content change, commit, push, deploy or upload.
+
+## Avito Three-device Pilot Review (2026-10-04)
+
+- Continued local preparation with т11/т29/т12, replacing unmatched т37 only
+  in the review workbook. No live allowlist, channel records or feed changes.
+  Fresh Beget READ ONLY snapshot 20:01:33Z confirms all selected facts unchanged
+  from 19:27:44Z; normalize only null/empty attrs representation. Public HTTP
+  evidence is explicitly reused, not newly measured. Assess global ID collisions
+  before selecting the three rows; preserve existing external IDs and prices.
+- Owner confirmed current screen/case without defects, device/box/cable and
+  unchanged battery readings for all three. Set XLSX AC/AD to Без дефектов;
+  preserve 100%/0 cycles and August report dates. Owner confirmation is not
+  a new diagnostic report, box-sealed confirmation or publication approval.
+- Owner confirmed the old Avito listing-to-SKU association is still unknown.
+  Do not assign AvitoId by model/price or claim historical duplicate QA passed.
+  Balanced copy approval remains limited to т11/т29; т12 needs text approval.
+- Added a safe explicit 1-3 SKU workbook builder and ignored pilot-review outputs.
+  Full 16-candidate workbook remains unchanged. Exact dependent catalog/RAM,
+  conditional box/XML and account ingestion QA remain open; schema/feed gates
+  stay disabled. Details: docs/avito-pilot-review-2026-10-04.md.
+- No production content write, publication, paid operation, commit, push or deploy.
+- Validation: 52 Python and 27 feed tests passed (79 total), plus text encoding,
+  scoped Markdown formatting and git diff --check. Reopened XLSX verifies exactly
+  three rows/IDs/prices, six JPEG URLs each, confirmed AC/AD, 18 dropdowns and
+  hidden dictionary; no formulas/errors/full 15-digit values or historical
+  contacts/IMEI. Full web:verify was not rerun; this iteration changes only
+  local preparation scripts, documents and ignored artifacts.
+
+## Avito Whole Catalog Review (2026-10-04)
+
+- Owner requested rechecking every device on the site and refreshing Avito
+  preparation using balanced descriptions. READ ONLY production snapshot covers
+  32 device records: 24 published/ready, 19 available, 5 sold, 4 draft and
+  4 archived. No duplicate published SKU/product/channel ID or linked serial;
+  no photo asset sharing across devices was found. Avito history is not reconciled.
+- SKU matches inventory on all 24 published cards. All 24 inventory rows have
+  internal barcodes and none are duplicates among the linked published rows;
+  raw barcode values were not exported or used to replace stable channel IDs.
+- Public checks passed 24 canonical /product pages, 24 public certificates and
+  139 JPEG transforms (1600x1200, maximum 278705 bytes). /device is a 301
+  compatibility route; fixed the strict audit URL and documented it in README.
+  Five devices have five rather than six images; this is not an export blocker.
+- 24 original certificates returned 403 without tokens. A server-side HTML
+  check against all known private serial/IMEI passed all 24 pages. Generic
+  15-digit matching initially misclassified the public footer OGRN; exclude only
+  exact published legal IDs, never an actual matching private identifier.
+- 16 available products pass basic catalog/inventory/public checks. т34/т36/т37
+  remain unmatched with no linked or exact-serial receipt; do not falsify status.
+  т7 passes the current not_applicable/operator-review guard but is flagged
+  because a serial is present. Sold т8/т21/т10/т19/т28 have zero site/offer stock
+  but positive historical inventory snapshots; exclude, do not resurrect them.
+- Prepared ignored outputs/avito-catalog-2026-10-04/: sanitized snapshot,
+  public/privacy evidence, full 19-entry balanced channel-copy JSON and
+  ISVOI_Avito_PREPARATION_2026-10-04.xlsx. Official sheet holds 16 candidates;
+  separate sheets explain all 32 records and include all 19 available texts.
+  Preserve existing channel IDs/manual prices. Clear historical IMEI/contacts;
+  keep unconfirmed RAM/screen/case/box/catalog fields blank or marked for QA.
+- This workbook is NOT publication-ready. Mapping/catalog/conditional XML and
+  historical-listing checks remain open. Feed stays disabled; the 1-3 ID pilot
+  restriction is unchanged. No production write, deploy, feed activation,
+  paid operation or Avito publication. Scripts and details:
+  docs/avito-catalog-review-2026-10-04.md.
+- Validation: 27 feed + 21 catalog/copy/privacy + 22 credential/read-only tests
+  passed (70 total), plus text encoding and git diff --check. Reopened final
+  XLSX: 16 main rows, 19 descriptions, 32 audit rows, 18 dropdowns and hidden
+  reference preserved, no formulas/errors/full 15-digit values; IMEI remains
+  blank, photo/kit delimiters and prices match evidence. Full web:verify was
+  not rerun; unrelated previously recorded format failures remain unresolved.
+
+## Avito Device Copy Review (2026-10-04)
+
+- Owner subsequently selected and approved the balanced descriptions for all
+  three candidates. Record copy-only approval in ignored proposal/preparation
+  JSON and selected-channel-copy.json; this does not approve titles, inventory
+  eligibility, production writes, feed activation, deploy or Avito publication.
+  The existing generator already prefers product_channel_listings.description_override;
+  use that field when channel draft changes are separately authorized. Do not
+  overwrite products.short_description. т37 remains unmatched and blocked.
+- Owner requested continued pilot preparation and description improvements based
+  on the supplied XLSX. Reviewed G5/H5 only for editorial content; do not copy
+  contact/IMEI cells. Detailed recommendations and three balanced examples:
+  docs/avito-device-copy-review-2026-10-04.md. Nine local draft texts (short,
+  balanced, Passport-first for each candidate) are in the ignored pilot outputs.
+- Recommend device-specific facts before store promotions: model/storage/color,
+  verified condition, dated battery readings, functional checks, scoped component
+  authenticity, confirmed box/cable, store warranty 90 days and Passport.
+  No unconfirmed gift/discount, future Split, returns or Avito Delivery promise.
+  Price/stock stay in structured fields. SIM configuration is absent; omit it.
+- READ ONLY public store check confirmed Belgorod, Kostyukova 67A, Victoria,
+  floor 2. Diagnostics dates are August 5/10/21, not October measurements.
+  Battery/cycles: т11 100%/0, т29 100%/0, т37 97%/275. Disclose dates and
+  recheck physical condition before feed activation. Zero cycles do not prove new.
+- More precise т37 evidence: inventory has serial, no IMEI, no linked receipt,
+  no exact serial match in loaded receipts and no open issue. This is missing
+  reconciliation, not a proven conflicting identity; leave unmatched unchanged.
+  Require the actual receipt source/operator reconciliation or agreed replacement.
+- Draft copy is not XML/catalog approval. Channel records remain draft, feed
+  disabled; operator-configured URL rollout is still the chosen path after QA.
+  No Directus/Avito write, commit, push or deploy was performed in this iteration.
+- Validation passed for all nine local copy variants: title/description limits,
+  report dates, battery/cycles, confirmed completeness, absent HTML/control
+  characters/obvious identifiers and unconfirmed promotional claims. Re-ran
+  27 feed tests and 22 credential/read-only tests: all passed. Text encoding
+  audit and git diff --check passed. This documentation iteration did not rerun
+  web:verify; its previous unrelated formatting failures are still unresolved.
+
+## Avito Live Read-only Preflight (2026-10-04)
+
+- Owner confirmed completion of masked credential setup and requested continuation.
+  Protected server file existence, exact fields, owner, file 600 and directory
+  700 were verified without exposing any values. POST /token and GET self
+  succeeded; saved account ID matched. Actual token TTL was 86400 seconds.
+- GET /core/v1/items with active/removed/old/blocked/rejected returned one
+  old listing, no active listings, complete page 1. Its details have no
+  autoload_item_id; no exact association with our inventory was inferred.
+  The method covers the authenticated owner, not all company employees.
+- GET /autoload/v2/profile returned HTTP 403. This does not establish the
+  cause or a broken secret: other account methods succeeded. Owner must check
+  Autoload/API enablement in the account or with support. No upload, settings,
+  paid operations, content/schema changes, commit, push or deploy were performed.
+- Official API tree and mobile-phone fields were readable: node_slug
+  mobilnye_telefony, 83 fields. Category=Телефоны, GoodsType=Мобильные телефоны
+  and Condition=Б/у are confirmed. Model/memory/color/RAM remain catalog fields
+  without concrete combinations in this response. Checkbox XML, dependent
+  BoxSealed and ambiguous DeviceFlaws rules still require account XML QA.
+  Keep AVITO_PHONE_SCHEMA_VERIFIED disabled, not inferred from tag presence.
+- Refreshed READ ONLY inventory confirms т11/т29 matched, but т37 unmatched.
+  All three are available with quantity 1, eligible and operator-reviewed,
+  yet the strict feed intentionally blocks т37. Do not change identity status
+  merely to pass export. Their channel listings remain draft and mappings absent.
+- Public JPEG preflight passed 18/18 images without tokens: real JPEG MIME,
+  bytes and Pillow decode, 1600x1200, maximum 225622 bytes. Site WebP unchanged.
+  The ignored pilot preparation JSON now distinguishes confirmed checks from
+  the remaining 403, catalog, duplicate-link and identity blockers.
+- Added safe reusable Python read-only account/image preflight scripts and
+  11 account preflight tests. Full evidence, limits and support request text:
+  docs/avito-account-preflight-2026-10-04.md. This section supersedes earlier
+  unverified credential/JPEG notes; the feed is still not approved for upload.
+- Owner subsequently confirmed that the account UI offers both file upload
+  and URL-based autoload. Use operator-configured URL autoload for the first
+  pilot after XML/inventory QA; HTTP 403 of the profile API is not a prerequisite
+  blocker for that UI path. It still blocks API profile management/upload
+  orchestration; UI availability does not establish permission to those methods
+  or successful ingestion. Verify all existing URLs, schedule and publication
+  settings in the UI before enabling anything. No settings were changed.
+
+## Avito Local Hardening And Account Identity (2026-10-04)
+
+- This supersedes the documentation-only generator/test notes in the earlier
+  preparation section below. No Avito publication, profile update, Directus
+  content/schema write, push or site deployment was performed by the agent.
+- Read-only comparison observed local `2b5dbf3`, origin/master `7989dba`
+  and production `/opt/isvoi` `414336e`; histories are not identical.
+  Production's previous Avito generator matched the local pre-change file.
+  Existing communications changes and unrelated untracked files are preserved.
+- Local feed changes enforce an explicit 1-3 ID pilot allowlist, the disabled
+  `AVITO_PHONE_SCHEMA_VERIFIED` gate, category/inventory approval checks,
+  text/price/stock/attribute validation and private-identifier leak checks.
+  Invalid exportable rows suppress the whole pilot rather than emit partial XML.
+  JPEG URLs preserve site WebP files; real MIME/bytes checks remain outstanding.
+- Read-only inventory selected candidates `т11`, `т29`, `т37`, with stock 1
+  and draft channel listings. The ignored local preparation JSON in
+  `outputs/avito-pilot-2026-10-04/` is not a publication-ready upload.
+  Official XML tags/model combinations, account entitlements and historical
+  listing reconciliation still block pilot activation. Do not infer an exact
+  existing listing identity from matching model, price or battery alone.
+- Feed tests passed 27 cases; web lint, typecheck, build, bundle budget,
+  text/legacy/content ownership audits and scoped formatting passed during
+  this local iteration. Full `web:verify` is NOT green: its format gate
+  reported 35 unrelated existing files. They were not reformatted here.
+  Only reviewed Avito strings were added to the ownership baseline.
+- The owner supplied `user_swagger.json`: `GET /core/v1/accounts/self`
+  returns the numeric account `id`, supports client_credentials, and requires
+  Bearer authorization. Source hashes/contracts are in the API review.
+  Neither email, Client ID, ad ID nor the profile URL hash is AVITO_USER_ID.
+- `scripts/configure_avito_credentials.ps1` now prompts for only Client ID
+  and Client Secret in user-controlled masked PowerShell input. Values travel
+  via SSH stdin, not chat, command arguments or local credential files.
+  On the server it exchanges the keys at `/token`, reads `/core/v1/accounts/self`
+  and saves the verified ID with the keys in
+  `/home/deploy/.config/isvoi/avito.env` (deploy, directory 700, file 600).
+  Existing files/symlinks are refused; no automatic rotation or overwrite.
+- HTTPS redirects and environment proxies are disabled; requests time out
+  after 20 seconds without automatic retries. Failures have sanitized output
+  and do not create the new credential file. Access token, email and phone
+  data are not persisted or printed. Secret strings still exist briefly in
+  process memory; this is not a protected-chat or vault feature.
+- Eleven installer tests passed with simulated API responses, including numeric
+  ID validation, safe errors, token response bounds, private-field omission
+  and no-overwrite behavior. Windows mocks POSIX mode checks; the real Linux
+  installation verifies owner/mode. PowerShell syntax is checked separately.
+  Actual credential setup/account authorization is not yet confirmed; the
+  user must finish the masked input. That flow does not change advertisements,
+  autoload settings or paid services and does not enable the feed.
+- The first user-entered attempt failed before Python execution: Windows
+  PowerShell 5.1 stripped nested double quotes around the encoded script.
+  The attached traceback contains encoded source, not API keys; it does not
+  establish successful authorization or credential persistence.
+  Fixed by passing the encoded code as a shell-safe `sys.argv[1]` argument.
+  Added a fixed-fixture SSH/stdin preflight before requesting any secrets.
+  `scripts/test_avito_credentials_transport.ps1` passed against Beget using
+  real Windows PowerShell 5.1.26100.9444, with no API calls or file writes.
+
+## Avito Paid Pilot Preparation (2026-10-04)
+
+- The owner reported an expanded Avito subscription for one month and supplied
+  the current catalog URL `https://www.avito.ru/developers/api-catalog`.
+  Account entitlements, activation and expiration dates are not yet verified.
+- Continue the existing Directus/XML pilot. The API layer should use only
+  methods confirmed by the account's official specification; direct JSON
+  creation of smartphone listings has not been established.
+- The September 17 inventory counts and pilot candidates are historical.
+  Recheck current stock and existing Avito listings before enabling export;
+  candidates `т10`, `т11`, `т12` are not a current publication approval.
+- The owner clarified that the official catalog offers individual method
+  documentation, not a unified OpenAPI download. A unified export is not a
+  prerequisite; inspect the relevant authorization, autoload and result
+  operations individually and record their actual contracts.
+- API credentials belong in protected server configuration,
+  not chat or Git. Follow `docs/inventory-avito-workflow.md` for the pilot.
+- The owner subsequently supplied the official Item (11 operations) and
+  Messenger (13 operations) OpenAPI 3.0.0 files. Their contracts and SHA-256
+  hashes are recorded in `docs/avito-api-contract-review.md`. The Item file
+  provides price updates, listing/status reads and statistics, but no item
+  creation or removal operation.
+- The owner then supplied Autoload (22 operations) and Authorization
+  (3 operations) specifications plus a mobile-phone XLSX export/template.
+  File hashes and reviewed contracts are recorded in the API review and
+  `docs/avito-phone-template-review.md`. The workbook itself is not committed:
+  it contains contacts, a full IMEI and one existing expired listing.
+- Use client_credentials for the owner's account, profile v2 with feeds_data,
+  and result endpoints v4. Deprecated result methods v2/v3 document reduced
+  data from 2026-09-08 and shutdown from 2027-03-08. Token renewal uses actual
+  expires_in; the token specification has invisible U+200E path suffixes that
+  must not be reproduced in generated client URLs.
+- API upload runs at most once per hour and bypasses profile publication
+  limits. Check all profile feeds and restrict the pilot at the feed source;
+  do not assume a profile rate of three limits an API-triggered upload.
+  Preserve existing schedule/feeds when changing settings. Initial agreement
+  to the autoload rules remains the owner's explicit decision.
+- The workbook references template 129639, with category Phones and mobile
+  phone type in Russian. It supplies flat dictionaries, not complete model
+  dependencies or every XML field name. Confirm those through category fields
+  API or an official XML template before marking the mapping confirmed.
+- Before pilot activation add JPEG/PNG image variants (up to 10), category
+  validation, title/description limits and private-field filtering. Used
+  Condition is Б/у, not the derived visible Отличное from the exported row.
+  Preserve an existing verified autoload Id instead of blindly assigning a
+  new isvoi UUID Id. Full IMEI remains private even though optional in Avito.
+- Current feed unit fixtures contain illustrative category/condition values,
+  not a validated official phone example. This source review does not claim
+  that the current generator is ready for account publication.
+- The existing feed regression passed via `node scripts/test_avito_feed.mjs`
+  on local Node 24.19.0. The npm command was unavailable in this shell;
+  no build, production smoke, account request or publication was performed.
+  Documentation whitespace checks passed. The original workbook is unchanged.
+- The supplied Messenger specification explicitly requires the Maximum
+  subscription for Goods. Expanded alone does not establish access to our
+  product chats; defer that adapter while proceeding with the XML pilot.
+- Keep XML `external_id` separate from the numeric Avito listing ID.
+  Autoload v2 ID mapping and `ItemInfoAvito.autoload_item_id` can confirm an exact association after
+  publication. Local feed activation and observed marketplace status remain
+  separate states. Avito is not yet an adapter in the communications core.
+- The web reader could not load the official catalog. Browser access was
+  explicitly blocked by the browser tool's site-safety policy and was not
+  circumvented. No account capability or tariff terms were inferred from
+  inaccessible documentation. This update changes local documentation only.
 
 ## Impeccable Technical Release (2026-09-10)
 
@@ -266,13 +720,13 @@ baseline from this machine, not field Core Web Vitals or a post-deploy result.
 
 Median LCP in milliseconds with only necessary cookies selected:
 
-| Route | Desktop first / repeat | Mobile first / repeat |
-| --- | --- | --- |
-| `/` | 2664 / 456 | 2644 / 460 |
-| `/catalog` | 2884 / 652 | 2904 / 560 |
-| `/store` | 3356 / 456 | 2576 / 448 |
-| `/blog` | 2432 / 448 | 2408 / 456 |
-| `/blog/chto-pokazyvaet-diagnostika-iphone` | 4056 / 556 | 3484 / 580 |
+| Route                                      | Desktop first / repeat | Mobile first / repeat |
+| ------------------------------------------ | ---------------------- | --------------------- |
+| `/`                                        | 2664 / 456             | 2644 / 460            |
+| `/catalog`                                 | 2884 / 652             | 2904 / 560            |
+| `/store`                                   | 3356 / 456             | 2576 / 448            |
+| `/blog`                                    | 2432 / 448             | 2408 / 456            |
+| `/blog/chto-pokazyvaet-diagnostika-iphone` | 4056 / 556             | 3484 / 580            |
 
 - All old release budgets pass; CLS was 0 in all samples. Only `/blog`
   meets the <=2500ms first-visit target in both viewport/cookie states.
@@ -4204,13 +4658,13 @@ Next content-editing priorities:
   Business on 2026-09-01: published/ready used smartphones, positive product
   stock, a published available Belgorod offer with positive stock and price,
   and a public listing image. Accepted category IDs remain `101` (`iPhone с
-  пробегом`) and `102` (`Samsung Galaxy с пробегом`). Other brands/categories
+пробегом`) and `102` (`Samsung Galaxy с пробегом`). Other brands/categories
   require a separate checked Yandex rollout instead of automatic inclusion.
 - The feed contains stable product IDs, current offer prices, public Directus
   image transforms and product URLs with `utm_source=yandex_business`. It never
   includes purchase cost, margin, full serial/IMEI, private inventory notes or
   private diagnostic certificates. It returns `X-Robots-Tag: noindex,
-  nofollow` and uses a five-minute shared cache.
+nofollow` and uses a five-minute shared cache.
 - Live comparison against the accepted XLSX snapshot passed for all 17 offers:
   two categories, 17 unique IDs, no missing/extra rows, and no price, product
   URL or image URL differences. All 17 product pages and JPEG image URLs
@@ -4347,8 +4801,7 @@ Next content-editing priorities:
   `/opt/isvoi/backups/web/20260902T144009Z-seo-indexnow`.
 - Production now has `INDEXNOW_ENABLED=1`, a dedicated privately generated key,
   and `/opt/isvoi/var/indexnow` (directory 0700, state 0600). Public ownership
-  proof returned the exact key with HTTP 200/text/plain/noindex; Club returned
-  404. Baseline initialization inspected 35 pages and submitted zero URLs.
+  proof returned the exact key with HTTP 200/text/plain/noindex; Club returned 404. Baseline initialization inspected 35 pages and submitted zero URLs.
   Preview returned no changes or pending removals.
 - `isvoi-indexnow.timer` is enabled and active. Its service passed systemd
   verification and real execution with exit 0. A fresh authenticated cache
@@ -4580,6 +5033,7 @@ Next content-editing priorities:
   eight screenshots and JSON result convention is under
   `output/playwright/model-specifications` on the server. These are verification
   artifacts, not tracked content or another deployment.
+
 ## Telegram Bot Notifications Pilot · 2026-09-05
 
 - Approved implementation scope: the production bot gains a five-action welcome, automatic support intake for the first unclassified message, `/news` subscriptions, Directus-managed campaigns, and a site/footer deep link with source `site`.

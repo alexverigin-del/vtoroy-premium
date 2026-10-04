@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-10T19:10:02.951Z",
+  "updatedAt": "2026-10-04T18:22:46.025Z",
   "note": "Baseline of reviewed Russian strings that intentionally remain in code as system, accessibility or fallback copy. New user-facing copy should live in Directus.",
   "scanRoots": [
     "apps/web/app",
@@ -7968,6 +7968,307 @@
       "line": 163,
       "text": "Фактическое состояние показано на фотографиях. Полный Passport устройства доступен в магазине.",
       "id": "978f67ecde6c23ff"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 46,
+      "text": "Другое",
+      "id": "104c611d03cf75e6"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 47,
+      "text": "бежевый",
+      "id": "80704da2ae9781d7"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 48,
+      "text": "белый",
+      "id": "a675714f6293896f"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 49,
+      "text": "голубой",
+      "id": "d0954c759cde229d"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 50,
+      "text": "желтый",
+      "id": "baeff0f9f66a0608"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 51,
+      "text": "зеленый",
+      "id": "da8170df4867565f"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 52,
+      "text": "золотистый",
+      "id": "e5128aef60f6bc48"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 53,
+      "text": "коричневый",
+      "id": "c68178470040228c"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 54,
+      "text": "красный",
+      "id": "6fca23ec29d9408c"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 55,
+      "text": "оранжевый",
+      "id": "4bb41e7b3d30ff53"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 56,
+      "text": "розовый",
+      "id": "30bcb9bf7ee1b589"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 57,
+      "text": "серебристый",
+      "id": "b69112fd40176701"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 58,
+      "text": "серый",
+      "id": "49bfe28e111814a7"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 59,
+      "text": "синий",
+      "id": "170365eee704c27a"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 60,
+      "text": "темно-серый",
+      "id": "8ec73c36f8fb9575"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 61,
+      "text": "фиолетовый",
+      "id": "816ced6513502b42"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 62,
+      "text": "черный",
+      "id": "913b0ef6666de9c9"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 65,
+      "text": "Без дефектов",
+      "id": "b7095ed527b6e2e0"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 66,
+      "text": "1–2 мелкие царапины",
+      "id": "0da12614cb65bc99"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 67,
+      "text": "Много мелких царапин",
+      "id": "09e326619e98cd71"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 68,
+      "text": "Глубокие царапины",
+      "id": "33ef15d8b07a4dd8"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 69,
+      "text": "Сколы, трещины",
+      "id": "401b8af73326ec7b"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 70,
+      "text": "Полосы и битые пиксели",
+      "id": "7981a585b7d0e6d0"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 71,
+      "text": "Пятна, блики или выгорание",
+      "id": "b61a43652b9b56c6"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 72,
+      "text": "Был заменен",
+      "id": "382b9186a5ed5a6a"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 76,
+      "text": "Мелкие царапины",
+      "id": "b1a3985ca2bbe5fb"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 79,
+      "text": "Щели, зазоры",
+      "id": "011a6641e9e76541"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 80,
+      "text": "Изгиб",
+      "id": "d7f4f015cb339bbd"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 81,
+      "text": "Вмятины",
+      "id": "9cd18a05d7437eb5"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 82,
+      "text": "Отслоение краски",
+      "id": "e3392e4d4eed3be9"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 245,
+      "text": "Телефоны",
+      "id": "87cf7b3bcaef1483"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 246,
+      "text": "Мобильные телефоны",
+      "id": "8b1bdded74db5428"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 279,
+      "text": "Б/у",
+      "id": "8031c7860ea3a2e4"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 279,
+      "text": "Новое",
+      "id": "2acca0129d1714d7"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 312,
+      "text": "Товар приобретен на продажу",
+      "id": "f2f785773923828a"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 320,
+      "text": "Включается",
+      "id": "c04ea83d58de7281"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 320,
+      "text": "Не включается",
+      "id": "ced0da39e13ceb43"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 333,
+      "text": "Да",
+      "id": "a76ef8d3c7847d4a"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 333,
+      "text": "Нет",
+      "id": "577314c657b2c086"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 360,
+      "text": "<Category>Телефоны</Category>",
+      "id": "7ae2f54653652223"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "jsx-text",
+      "line": 360,
+      "text": "Телефоны",
+      "id": "abc887c45aea821e"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "string",
+      "line": 361,
+      "text": "<GoodsType>Мобильные телефоны</GoodsType>",
+      "id": "d88aef53a0e74ed2"
+    },
+    {
+      "file": "apps/web/lib/avito-feed.ts",
+      "kind": "jsx-text",
+      "line": 361,
+      "text": "Мобильные телефоны",
+      "id": "7784373d9b58961a"
     }
   ]
 }

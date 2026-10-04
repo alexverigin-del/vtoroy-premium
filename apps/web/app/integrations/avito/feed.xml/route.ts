@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { buildAvitoFeed, type AvitoListingRow } from "@/lib/avito-feed";
+import { parseAvitoPilotIds, prepareAvitoFeed, type AvitoListingRow } from "@/lib/avito-feed";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,6 +20,13 @@ export async function GET() {
   if (process.env.AVITO_FEED_ENABLED !== "1") {
     return privateError("avito_feed_disabled", 503);
   }
+  if (process.env.AVITO_PHONE_SCHEMA_VERIFIED !== "1") {
+    return privateError("avito_phone_schema_not_verified", 503);
+  }
+  const allowedIds = parseAvitoPilotIds(process.env.AVITO_FEED_ALLOWED_IDS || "");
+  if (!allowedIds.length) {
+    return privateError("avito_pilot_not_configured", 503);
+  }
   const directusUrl = (process.env.DIRECTUS_URL || "").replace(/\/+$/, "");
   const publicUrl = (
     process.env.NEXT_PUBLIC_DIRECTUS_URL ||
@@ -33,11 +40,14 @@ export async function GET() {
   }
 
   const fields = [
+    "channel",
+    "status",
     "external_id",
     "title_override",
     "description_override",
     "price_override",
     "category_mapping.channel",
+    "category_mapping.product_category",
     "category_mapping.external_category",
     "category_mapping.external_goods_type",
     "category_mapping.default_attributes",
@@ -46,6 +56,8 @@ export async function GET() {
     "category_mapping.is_confirmed",
     "attributes",
     "product.id",
+    "product.category.id",
+    "product.category.slug",
     "product.status",
     "product.content_status",
     "product.stock_status",
@@ -56,26 +68,45 @@ export async function GET() {
     "product.short_description",
     "product.warranty_text",
     "product.completeness",
+    "product.listing_file",
     "product.images.status",
     "product.images.image.id",
     "product.images.sort",
+    "product.images.role",
+    "product.inventory_item.product",
+    "product.inventory_item.quantity",
+    "product.inventory_item.eligibility_status",
+    "product.inventory_item.authenticity_status",
+    "product.inventory_item.identity_status",
+    "product.inventory_item.review_override",
+    "product.inventory_item.review_note",
+    "product.inventory_item.serial_full",
+    "product.inventory_item.imei_full",
   ].join(",");
   const params = new URLSearchParams({
     "filter[channel][_eq]": "avito",
-    "filter[status][_eq]": "active",
+    "filter[external_id][_in]": allowedIds.join(","),
     fields,
-    limit: "500",
+    limit: "4",
   });
-  const response = await fetch(`${directusUrl}/items/product_channel_listings?${params}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
-  if (!response.ok) {
+  let report;
+  try {
+    const response = await fetch(`${directusUrl}/items/product_channel_listings?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) return privateError("avito_feed_source_failed", 502);
+    const payload = (await response.json()) as DirectusResponse<AvitoListingRow[]>;
+    if (!Array.isArray(payload.data)) return privateError("avito_feed_source_failed", 502);
+    report = prepareAvitoFeed(payload.data, publicUrl, { allowedIds });
+  } catch {
     return privateError("avito_feed_source_failed", 502);
   }
-  const payload = (await response.json()) as DirectusResponse<AvitoListingRow[]>;
-  const feed = buildAvitoFeed(payload.data ?? [], publicUrl);
-  return new NextResponse(feed, {
+  if (report.errors.length || !report.xml) {
+    return privateError("avito_feed_validation_failed", 503);
+  }
+  return new NextResponse(report.xml, {
     status: 200,
     headers: {
       "Content-Type": "application/xml; charset=utf-8",

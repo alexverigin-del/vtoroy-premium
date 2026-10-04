@@ -60,6 +60,9 @@ export async function retainCommunications(
       .whereRaw("processed_at<=now()-interval '7 days'")
       .update({ event: null });
     await trx("comm_link_tokens").where("expires_at", "<", trx.fn.now()).delete();
+    await trx("comm_frequency_carryovers").whereIn("frequency_id",
+      trx("comm_frequency").whereRaw("reserved_at<=now()-interval '7 days'").select("id"),
+    ).delete();
     await trx("comm_runtime").where({ id: 1 }).update({
       last_retention_at: trx.fn.now(),
       retention_after: trx.raw("now()+interval '1 day'"),

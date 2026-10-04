@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fail, flag, marketingWindow, UUID } from "./policy.js";
 import type { Context, Database, Outcome } from "./types.js";
+import { identityLock, frequencyCount } from "./identities.js";
 
 function providerAttachment(platform: string, outcome: Outcome) {
   if (!("resume" in outcome) || !outcome.resume || outcome.resume.platform !== platform)
@@ -65,6 +66,7 @@ export function createDelivery(context: Context, service: any) {
     if (!flag(context.env.ISVOI_COMMUNICATIONS_ENABLED))
       return fail("COMMUNICATIONS_DISABLED", 503);
     return db.transaction(async (trx: Database) => {
+      await identityLock(trx);
       const n = await worker(trx, connectionId, user);
       const runtime = await trx("comm_runtime").where({ id: 1 }).first();
       if (!runtime?.active || !runtime.sending_enabled || runtime.recovery_hold) return null;
@@ -123,6 +125,14 @@ export function createDelivery(context: Context, service: any) {
             await reject("RECIPIENT_CHANGED");
             continue;
           }
+          if (b.purpose === "service" && b.conversation_id) {
+            const conversation = await trx("comm_conversations").where({ id: b.conversation_id }).first();
+            if (!conversation || !await trx("comm_access_grants")
+              .where({ identity_id: b.identity_id, lead_id: conversation.lead_id }).whereNull("revoked_at").first()) {
+              await reject("LINK_ACCESS_REVOKED");
+              continue;
+            }
+          }
         }
         if (b.created_by && b.purpose === "service") {
           try {
@@ -144,6 +154,11 @@ export function createDelivery(context: Context, service: any) {
           }
         }
         if (b.purpose === "marketing") {
+          const contact = await trx("comm_contacts").where({ id: b.contact_id }).first();
+          if (!contact || contact.marketing_opt_out) {
+            await reject("GLOBAL_OPT_OUT");
+            continue;
+          }
           const campaign = await trx("comm_campaigns").where({ id: b.campaign_id }).first();
           const identity = await trx("comm_identities").where({ id: b.identity_id }).first();
           const pilot =
@@ -181,13 +196,7 @@ export function createDelivery(context: Context, service: any) {
           }
           if (!b.test_delivery) await trx("comm_contacts").where({ id: b.contact_id }).forUpdate().first();
           if (!b.test_delivery && !(await trx("comm_frequency").where({ outbox_id: b.id }).first())) {
-            const count = await trx("comm_frequency")
-              .where({ contact_id: b.contact_id })
-              .whereNull("released_at")
-              .andWhere("reserved_at", ">", trx.raw("now()-interval '7 days'"))
-              .count("* as count")
-              .first();
-            if (Number(count.count) >= 2) {
+            if (await frequencyCount(trx, b.contact_id) >= 2) {
               await reject("FREQUENCY_LIMIT");
               continue;
             }

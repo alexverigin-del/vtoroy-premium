@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { canonical, digest, fail, UUID } from "./policy.js";
 import type { Actor, Connection, Context, Database } from "./types.js";
+import { identityLock } from "./identities.js";
 
 const allowedPlatforms = new Set(["telegram", "max", "vk"]);
 const terminalStates = ["accepted", "failed", "uncertain", "blocked", "cancelled", "suppressed"];
@@ -76,6 +77,7 @@ export function createManagement(context: Context) {
     input: unknown,
     operation: () => Promise<any>,
   ) {
+    await identityLock(trx);
     if (typeof key !== "string" || !UUID.test(key)) return fail("COMMAND_KEY_REQUIRED");
     const fingerprint = digest(canonical(input));
     await trx("comm_command_receipts")
@@ -124,8 +126,11 @@ export function createManagement(context: Context) {
           )
           .whereNot("availability", "blocked")
       : [];
+    const refused = new Set(await source("comm_contacts")
+      .whereIn("id", identities.map((i: any) => i.contact_id)).where({ marketing_opt_out: true }).pluck("id"));
     const recipients = new Map<string, any>();
     for (const identity of identities) {
+      if (refused.has(identity.contact_id)) continue;
       const connection = connections.find(
         (candidate: any) => candidate.id === identity.connection_id,
       );
@@ -469,6 +474,8 @@ export function createManagement(context: Context) {
             !pilotRecipient(connection, identity)
           )
             return fail("TEST_RECIPIENT_NOT_ALLOWED", 403);
+          if ((await trx("comm_contacts").where({ id: identity.contact_id }).first())?.marketing_opt_out)
+            return fail("GLOBAL_OPT_OUT", 409);
           const target = await trx("comm_targets")
             .where({ campaign_id: id, connection_id: connection.id, kind: "subscribers" })
             .first();

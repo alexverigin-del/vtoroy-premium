@@ -15,6 +15,9 @@ const rows = ref<any[]>([]),
   files = ref<any[]>([]),
   staff = ref<any[]>([]),
   assignee = ref(""),
+  linkTargets = ref<any[]>([]),
+  linkTarget = ref(""),
+  linkNotice = ref(""),
   tab = ref("inbox"),
   audience = ref<any>(null),
   audienceContacts = ref<any[]>([]),
@@ -104,6 +107,14 @@ const errorText = (e: any) => {
         MARKETING_DISABLED: "Маркетинг выключен хотя бы у одного выбранного подключения.",
         PLATFORM_MEDIA_NOT_READY: "Медиа для MAX и VK будет включено после отдельного живого пилота.",
         TEST_RECIPIENT_NOT_ALLOWED: "Выберите разрешённого участника закрытого пилота.",
+        LINK_UNAVAILABLE: "Связь недоступна: проверьте площадку, состояние заявки и доступ клиента.",
+        LINK_TARGET_REQUIRED: "Выберите площадку для приглашения.",
+        LINK_ACCESS_REVOKED: "Доступ этого аккаунта к заявке отозван. Выберите доступный чат клиента.",
+        LINK_GROUP_CONFLICT: "Аккаунт уже входит в другую группу или эта площадка уже связана.",
+        STALE_CONTACT: "Карточка клиента изменилась. Обновите её и повторите действие.",
+        IDENTITY_DELIVERY_BUSY: "Есть незавершённая отправка. Сначала проверьте её результат.",
+        IDENTITY_NOT_LINKED: "Этот аккаунт уже находится в отдельной карточке.",
+        GLOBAL_OPT_OUT: "Клиент отключил персональные рассылки для всех связанных аккаунтов.",
       } as any
     )[code] || "Не удалось выполнить действие. Текст сохранён. Проверьте соединение и повторите."
   );
@@ -160,13 +171,19 @@ async function choose(row: any) {
   )
     return;
   selection++;
+  const rowSelection = selection;
   selected.value = row;
+  linkTarget.value = "";
+  linkNotice.value = "";
+  linkTargets.value = [];
   history.value = [];
   draft.value = "";
   files.value = [];
   error.value = "";
   try {
     await loadHistory();
+    const options = await api.get(`${base}/conversations/${row.id}/link-options`);
+    if (selection === rowSelection) linkTargets.value = options.data.data;
     await api.post(`${base}/commands`, {
       type: "read",
       key: crypto.randomUUID(),
@@ -203,6 +220,7 @@ async function command(type: string, payload: any = {}) {
     const { data } = await api.post(`${base}/commands`, { ...body, key });
     selected.value.version = data.data.version;
     pending = null;
+    if (type === "link_start") linkNotice.value = "Приглашение отправлено в текущий бот. Клиенту нужно подтвердить связь в обоих чатах в течение 15 минут.";
     if (type === "reply" || type === "note") {
       draft.value = "";
       files.value = [];
@@ -280,7 +298,45 @@ async function showAudience() {
   }
 }
 async function showContact(contact: any) {
-  audienceSelected.value = (await api.get(`${base}/audience/contacts/${contact.id}`)).data.data;
+  try {
+    if (contactPending.value && contactPending.value.contactId !== contact.id) {
+      error.value = "Сначала повторите незавершённое действие текущей карточки.";
+      return;
+    }
+    audienceSelected.value = (await api.get(`${base}/audience/contacts/${contact.id}`)).data.data;
+  } catch (e) { error.value = errorText(e); }
+}
+async function openClient() {
+  if (!selected.value?.contact_id) return;
+  const id = selected.value.contact_id;
+  await showAudience();
+  await showContact({ id });
+}
+const contactPending = ref<{ fingerprint: string; contactId: string; body: any } | null>(null);
+async function contactAction(action: string, identityId: string) {
+  const card = audienceSelected.value;
+  if (!card || busy.value) return;
+  const fingerprint = JSON.stringify({ contactId: card.contact.id, action, identityId });
+  if (contactPending.value && contactPending.value.fingerprint !== fingerprint) {
+    error.value = "Сначала повторите незавершённое действие с тем же содержанием.";
+    return;
+  }
+  if (!contactPending.value && action === "unlink" && !window.confirm("Отвязать аккаунт и отозвать полученный через связь доступ к заявкам? Собственные обращения сохранятся.")) return;
+  if (!contactPending.value && action === "stop_marketing" && !window.confirm("Отключить персональные рассылки на всех связанных аккаунтах клиента?")) return;
+  const body = contactPending.value?.body || { key: crypto.randomUUID(), expected_version: card.contact.version, action, identity_id: identityId };
+  contactPending.value = { fingerprint, contactId: card.contact.id, body };
+  busy.value = true;
+  error.value = "";
+  try {
+    await api.post(`${base}/audience/contacts/${card.contact.id}/actions`, body);
+    contactPending.value = null;
+    await showContact({ id: card.contact.id });
+    await showAudience();
+    await load();
+  } catch (e: any) {
+    error.value = errorText(e);
+    if (e.response) contactPending.value = null;
+  } finally { busy.value = false; }
 }
 async function showConnections() {
   tab.value = "connections";
@@ -614,6 +670,7 @@ onBeforeUnmount(() => {
                       : "Менеджер"
                 }}
                 · {{ date(message.occurred_at) }}
+                <span v-if="message.platform">· {{ message.platform.toUpperCase() }}</span>
                 <span v-if="message.edited_at">· изменено</span></small
               >
               <p>{{ message.text }}</p>
@@ -714,6 +771,16 @@ onBeforeUnmount(() => {
           ><button :disabled="!assignee || busy" @click="command('assign', { user_id: assignee })">
             Передать
           </button>
+          <button v-if="selected.contact_id" :disabled="busy" @click="openClient">Открыть карточку клиента</button>
+          <h3>Связать аккаунты</h3>
+          <p>Приглашение придёт в текущий бот. Клиент подтверждает связь в обоих чатах. Доступ — только к этой заявке.</p>
+          <label>Площадка для связи<select v-model="linkTarget" aria-label="Площадка для связи">
+            <option value="">Выберите площадку</option>
+            <option v-for="target in linkTargets" :key="target.id" :value="target.id">{{ target.name }}</option>
+          </select></label>
+          <button :disabled="busy || !linkTarget" @click="command('link_start', { target_connection_id: linkTarget })">Отправить приглашение</button>
+          <p v-if="linkNotice" role="status">{{ linkNotice }}</p>
+          <p v-if="!linkTargets.length">Другие подключённые площадки этого магазина пока недоступны.</p>
           <button :disabled="busy" @click="command('handling', { state: 'waiting' })">
             Ожидаем клиента</button
           ><button :disabled="busy" @click="command('handling', { state: 'agent' })">
@@ -863,6 +930,9 @@ onBeforeUnmount(() => {
               <button class="close-card" @click="audienceSelected = null">Закрыть</button>
               <h3>{{ audienceSelected.contact.name || 'Карточка подписчика' }}</h3>
               <p>Лимит маркетинга за 7 дней: {{ audienceSelected.frequency_7d }} из 2</p>
+              <p>{{ audienceSelected.contact.marketing_opt_out ? 'Все персональные рассылки отключены' : 'Персональные рассылки требуют согласия на тему' }}</p>
+              <button v-if="contactPending?.contactId === audienceSelected.contact.id" :disabled="busy" @click="contactAction(contactPending.body.action, contactPending.body.identity_id)">Повторить незавершённое действие</button>
+              <button :disabled="busy || audienceSelected.contact.marketing_opt_out" @click="contactAction('stop_marketing', audienceSelected.identities[0].id)">Отключить все рассылки</button>
               <h4>Аккаунты</h4>
               <dl v-for="identity in audienceSelected.identities" :key="identity.id">
                 <dt>{{ identity.platform }}</dt><dd>{{ identity.external_user_id }}</dd>
@@ -870,6 +940,9 @@ onBeforeUnmount(() => {
                 <dt>Источник</dt><dd>{{ identity.source || '—' }}</dd>
                 <dt>Доступность</dt><dd>{{ identity.availability }}</dd>
                 <dt>Последняя активность</dt><dd>{{ optionalDate(identity.last_active_at) }}</dd>
+                <dt>Предпочтительная площадка</dt><dd>{{ identity.preferred ? 'Да' : 'Нет' }}</dd>
+                <dd><button :disabled="busy || identity.preferred" @click="contactAction('prefer', identity.id)">Выбрать предпочтительной</button>
+                  <button v-if="audienceSelected.identities.length > 1" :disabled="busy" @click="contactAction('unlink', identity.id)">Отвязать аккаунт {{ identity.platform.toUpperCase() }}</button></dd>
               </dl>
               <h4>Подписки</h4>
               <p v-for="subscription in audienceSelected.subscriptions" :key="subscription.id">

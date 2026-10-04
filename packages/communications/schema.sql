@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS comm_contacts (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now(),
  merged_into uuid REFERENCES comm_contacts(id), CHECK(merged_into IS NULL OR merged_into<>id)
 );
+ALTER TABLE comm_contacts ADD COLUMN IF NOT EXISTS version integer NOT NULL DEFAULT 1;
+ALTER TABLE comm_contacts ADD COLUMN IF NOT EXISTS marketing_opt_out boolean NOT NULL DEFAULT false;
 CREATE TABLE IF NOT EXISTS comm_identities (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), contact_id uuid NOT NULL REFERENCES comm_contacts(id),
  connection_id uuid NOT NULL REFERENCES comm_connections(id), external_user_id text NOT NULL,
@@ -50,6 +52,8 @@ CREATE TABLE IF NOT EXISTS comm_identities (
  source text, is_test boolean NOT NULL DEFAULT false, preferred boolean NOT NULL DEFAULT false,
  UNIQUE(connection_id,external_user_id)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS comm_contact_preferred_unique
+ ON comm_identities(contact_id) WHERE preferred;
 CREATE TABLE IF NOT EXISTS comm_threads (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), connection_id uuid NOT NULL REFERENCES comm_connections(id),
  identity_id uuid NOT NULL REFERENCES comm_identities(id), external_peer_id text NOT NULL,
@@ -101,7 +105,7 @@ CREATE TABLE IF NOT EXISTS comm_attachments (
 );
 UPDATE comm_connections
 SET settings=jsonb_set(settings,'{config_version}',to_jsonb(COALESCE((settings->>'config_version')::integer,1)),true)
-WHERE NOT settings ? 'config_version';
+WHERE NOT jsonb_exists(settings,'config_version');
 DO $$ BEGIN
  IF to_regclass('telegram_bot_settings') IS NOT NULL THEN
   EXECUTE $copy$
@@ -111,7 +115,7 @@ DO $$ BEGIN
    WHERE connection.platform='telegram'
      AND connection.external_id=settings.bot_id::text
      AND settings.welcome_photo_file IS NOT NULL
-     AND NOT connection.settings ? 'welcome_file_id'
+     AND NOT jsonb_exists(connection.settings,'welcome_file_id')
   $copy$;
  END IF;
 END $$;
@@ -256,11 +260,30 @@ CREATE TABLE IF NOT EXISTS comm_link_tokens (
  expires_at timestamptz NOT NULL, state text NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','confirm','done','revoked')),
  created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE comm_link_tokens ADD COLUMN IF NOT EXISTS target_connection_id uuid REFERENCES comm_connections(id);
+ALTER TABLE comm_link_tokens ADD COLUMN IF NOT EXISTS target_confirmed_at timestamptz;
+ALTER TABLE comm_link_tokens ADD COLUMN IF NOT EXISTS source_confirmed_at timestamptz;
+ALTER TABLE comm_link_tokens DROP CONSTRAINT IF EXISTS comm_link_tokens_state_check;
+ALTER TABLE comm_link_tokens ADD CONSTRAINT comm_link_tokens_state_check
+ CHECK(state IN ('pending','target_confirm','confirm','done','revoked'));
+CREATE TABLE IF NOT EXISTS comm_identity_links (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(), hash char(64) NOT NULL UNIQUE,
+ source_identity_id uuid NOT NULL REFERENCES comm_identities(id),
+ target_identity_id uuid NOT NULL REFERENCES comm_identities(id), lead_id uuid NOT NULL REFERENCES leads(id),
+ created_at timestamptz NOT NULL DEFAULT now(), revoked_at timestamptz,
+ CHECK(source_identity_id<>target_identity_id)
+);
+CREATE TABLE IF NOT EXISTS comm_frequency_carryovers (
+ contact_id uuid NOT NULL REFERENCES comm_contacts(id),
+ frequency_id uuid NOT NULL REFERENCES comm_frequency(id) ON DELETE CASCADE,
+ PRIMARY KEY(contact_id,frequency_id)
+);
 CREATE TABLE IF NOT EXISTS comm_access_grants (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  identity_id uuid NOT NULL REFERENCES comm_identities(id), lead_id uuid NOT NULL REFERENCES leads(id),
  created_at timestamptz NOT NULL DEFAULT now(), revoked_at timestamptz
 );
+ALTER TABLE comm_access_grants ADD COLUMN IF NOT EXISTS link_id uuid REFERENCES comm_identity_links(id);
 CREATE TABLE IF NOT EXISTS comm_legacy_map (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  collection text NOT NULL, legacy_id text NOT NULL, new_id uuid NOT NULL,

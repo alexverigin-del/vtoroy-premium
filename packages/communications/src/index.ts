@@ -12,3 +12,4 @@ export * from "./migration.js";
 export * from "./sla.js";
 export * from "./retention.js";
 export * from "./management.js";
+export * from "./identities.js";

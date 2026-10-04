@@ -283,6 +283,62 @@ try {
     Number((await db("comm_messages").where({ text: "Must roll back" }).count("* as n").first()).n),
     0,
   );
+  // Link flow uses real PostgreSQL locks and Directus permissions; no provider API calls.
+  const targetConnection = randomUUID(), targetContact = randomUUID(), targetIdentity = randomUUID(), targetThread = randomUUID();
+  await db("comm_connections").where({ id: connection }).update({ bot_username: "fixture_bot" });
+  await db("comm_connections").insert({ id: targetConnection, platform: "max", external_id: "fixture-max",
+    name: "MAX fixture", enabled: true, mode: "production", store_id: store,
+    worker_user_id: worker, secret_ref: "UNUSED_FIXTURE", bot_username: "fixture_max_bot" });
+  await db("comm_contacts").insert({ id: targetContact });
+  const sourceIdentity = (await db("comm_threads").where({ id: c.thread_id }).first()).identity_id;
+  const source = await db("comm_identities").where({ id: sourceIdentity }).first();
+  await db("comm_identities").insert({ id: targetIdentity, contact_id: targetContact, connection_id: targetConnection,
+    external_user_id: "max-fixture", is_test: source.is_test, availability: "allowed" });
+  await db("comm_threads").insert({ id: targetThread, connection_id: targetConnection,
+    identity_id: targetIdentity, external_peer_id: "max-fixture-chat" });
+  assert.equal((await service.linkOptions(owner, c.id))[0].id, targetConnection);
+  const invitation = { type: "link_start", key: randomUUID(), conversation_id: c.id,
+    expected_version: (await db("comm_conversations").where({ id: c.id }).first()).version,
+    payload: { target_connection_id: targetConnection } };
+  const issued = await service.commands(owner, invitation);
+  assert.deepEqual(await service.commands(owner, invitation), issued);
+  assert.equal("url" in issued, false, "Studio command receipt never reveals the capability");
+  const notice = await db("comm_operations").whereRaw("payload->>'text' like '%start=%'").first();
+  const token = notice.payload.text.match(/start=([A-Za-z0-9_-]{43})/)[1];
+  const link = await db("comm_link_tokens").where({ source_identity_id: sourceIdentity, state: "pending" }).first();
+  const hash = Buffer.from(link.hash, "hex").toString("base64url");
+  const postIdentity = async (identityId, text, kind = "callback") => {
+    const identity = await db("comm_identities").where({ id: identityId }).first();
+    const n = await db("comm_connections").where({ id: identity.connection_id }).first();
+    const t = await db("comm_threads").where({ identity_id: identityId }).first();
+    const id = randomUUID();
+    await db("comm_inbound").insert({ connection_id: n.id, external_id: id,
+      event: { id, kind, text, platform: n.platform, actorId: identity.external_user_id,
+        peerId: t.external_peer_id, callbackData: kind === "callback" ? text : null,
+        attachments: [], externalMessageId: id, occurredAt: new Date().toISOString() } });
+    await service.processIncoming(n.id);
+    assert.equal((await db("comm_inbound").where({ external_id: id }).first()).state, "done");
+  };
+  await postIdentity(targetIdentity, `/start ${token}`, "message");
+  await postIdentity(targetIdentity, `link:t:${hash}`);
+  assert.equal((await db("comm_identities").where({ id: targetIdentity }).first()).contact_id, targetContact);
+  await postIdentity(sourceIdentity, `link:s:${hash}`);
+  const card = await service.audienceContact(owner, source.contact_id);
+  assert.equal(card.identities.length, 2);
+  assert.equal(await db("comm_access_grants").where({ identity_id: targetIdentity, lead_id: legacyLead }).first(), undefined);
+  const changes = await Promise.allSettled(actors.map(actor => service.contactAction(actor, source.contact_id, {
+    key: randomUUID(), expected_version: card.contact.version, identity_id: targetIdentity, action: "prefer",
+  })));
+  assert.equal(changes.filter(result => result.status === "fulfilled").length, 1, "one preference update wins among five operators");
+  const latestCard = await service.audienceContact(owner, source.contact_id);
+  const split = await service.contactAction(owner, source.contact_id, { key: randomUUID(),
+    expected_version: latestCard.contact.version, identity_id: targetIdentity, action: "unlink" });
+  assert.ok(split.detached_contact_id);
+  assert.ok((await db("comm_access_grants").where({ identity_id: targetIdentity, lead_id: c.lead_id }).first()).revoked_at);
+  await postIdentity(targetIdentity, "/dialogs", "message");
+  const menu = await db("comm_operations as op").join("comm_outbox as out", "out.id", "op.outbox_id")
+    .where("out.thread_id", targetThread).orderBy("out.created_at", "desc").select("op.payload").first();
+  assert.equal(JSON.stringify(menu.payload).includes(c.lead_id), false, "revoked shared case is hidden from bot dialog picker");
   await db("comm_staff").where({ user_id: owner.user }).update({ enabled: false });
   await assert.rejects(service.messages(owner, c.thread_id, { conversation_id: c.id }));
   await assert.rejects(service.commands(owner, reply));
@@ -324,7 +380,7 @@ try {
   });
   assert.equal((await db("comm_operations").where({ id: first.id }).first()).state, "accepted");
   console.log(
-    "PASS native Directus/PostgreSQL: repeat migration, cutover reconciliation gate, roleless service policy, intake dedupe, five-operator race, audit actor, command replay, permission denial rollback, access revocation, private upload scope, worker/public denied, unknown lease and late receipt.",
+    "PASS native Directus/PostgreSQL: repeat migration, cutover gate, intake dedupe, five-operator claim and preference races, two-party identity link, scoped grant, unlink, replay, permission rollback, private upload, worker/public denied, unknown lease and late receipt.",
   );
 } finally {
   await db.destroy();

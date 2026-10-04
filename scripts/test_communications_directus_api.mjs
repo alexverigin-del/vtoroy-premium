@@ -117,6 +117,29 @@ request = await call("/isvoi-communications/v1/commands", {
 assert.equal(request.response.status, 200, JSON.stringify(request.result));
 let version = request.result.data.version;
 
+request = await call(`/isvoi-communications/v1/conversations/${conversation.id}/link-options`, { token: manager });
+assert.equal(request.response.status, 200, JSON.stringify(request.result));
+assert.ok(Array.isArray(request.result.data));
+for (const target of request.result.data) assert.deepEqual(Object.keys(target).sort(), ["id", "name", "platform"]);
+request = await call(`/isvoi-communications/v1/conversations/${conversation.id}/link-options`, { token: worker });
+assert.equal(request.response.status, 403, "worker must not inspect account-link destinations");
+request = await call(`/isvoi-communications/v1/audience/contacts/${conversation.contact_id}`, { token: manager });
+assert.equal(request.response.status, 200, JSON.stringify(request.result));
+const contactAction = { key: randomUUID(), expected_version: request.result.data.contact.version,
+  identity_id: conversation.identity_id, action: "prefer" };
+const contactActionPath = `/isvoi-communications/v1/audience/contacts/${conversation.contact_id}/actions`;
+request = await call(contactActionPath, { method: "POST", json: contactAction });
+assert.equal(request.response.status, 403);
+request = await call(contactActionPath, { token: worker, method: "POST", json: contactAction });
+assert.equal(request.response.status, 403);
+request = await call(contactActionPath, { token: manager, method: "POST", json: contactAction });
+assert.equal(request.response.status, 200, JSON.stringify(request.result));
+const contactResult = request.result.data;
+request = await call(contactActionPath, { token: manager, method: "POST", json: contactAction });
+assert.deepEqual(request.result.data, contactResult, "HTTP retry cannot apply contact mutation twice");
+request = await call(contactActionPath, { token: manager, method: "POST", json: { ...contactAction, key: randomUUID() } });
+assert.equal(request.response.status, 409, "stale contact version must be rejected");
+
 const bytes = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
   "base64",
@@ -305,5 +328,5 @@ request = await call("/isvoi-communications/v1/connections");
 assert.equal(request.response.status, 403, "connection operations must not be public");
 
 console.log(
-  `PASS Directus API: public denied, worker ingest/process, manager inbox/claim/reply/history/unread, quarantine hold, ${sanitizerExpected ? "safe-media image/audio/video/Telegram voice release, document rejection, private download" : "sanitizer outage"}, private collections, audience and connection operations (version ${version}).`,
+  `PASS Directus API: public denied, worker ingest/process, manager inbox/claim/reply/history/unread, link destination scope, contact action replay and stale version, quarantine hold, ${sanitizerExpected ? "safe-media image/audio/video/Telegram voice release, document rejection, private download" : "sanitizer outage"}, private collections, audience and connection operations (version ${version}).`,
 );

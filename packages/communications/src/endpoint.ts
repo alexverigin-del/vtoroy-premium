@@ -94,6 +94,12 @@ export default {
         res.json({ data: await service.connections(await service.actor(req.accountability?.user)) }),
       ),
     );
+    router.get("/v1/conversations/:id/link-options", handler(async (req: any, res: any) =>
+      res.json({ data: await service.linkOptions(await service.actor(req.accountability?.user), req.params.id) }),
+    ));
+    router.post("/v1/audience/contacts/:id/actions", handler(async (req: any, res: any) =>
+      res.json({ data: await service.contactAction(await service.actor(req.accountability?.user), req.params.id, req.body) }),
+    ));
     router.get(
       "/v1/management",
       handler(async (req: any, res: any) =>

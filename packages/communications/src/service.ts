@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import type { Actor, Command, Connection, Context, Database, IncomingEvent } from "./types.js";
 import {
   canonical,
@@ -10,9 +10,11 @@ import {
   nextHandling,
   UUID,
   validText,
+  CommunicationError,
 } from "./policy.js";
 import { normalize } from "./normalize.js";
 import { defaultServiceLevel, serviceDeadlines, type ServiceLevel } from "./sla.js";
+import { createIdentities, identityLock, frequencyCount } from "./identities.js";
 
 const activeLead = (lead: any) => ["new", "in_progress", "waiting"].includes(lead?.status);
 const incomingKinds = new Set([
@@ -46,6 +48,7 @@ const menu = [
   ["Задать вопрос", "kind:support"],
   ["Мои заявки", "dialogs"],
   ["Подписки", "news"],
+  ["Мои аккаунты", "account"],
 ];
 export function keyboard(platform: string, rows: string[][]): Record<string, unknown> {
   if (!rows.length) return {};
@@ -83,6 +86,7 @@ export function createService(context: Context) {
   const enabled = () => {
     if (!flag(env.ISVOI_COMMUNICATIONS_ENABLED)) fail("COMMUNICATIONS_DISABLED", 503);
   };
+  const identities = createIdentities(context, { enqueue, event });
   let staffProcessor: ((trx: Database, n: Connection, row: any) => Promise<any>) | undefined;
   const setStaffProcessor = (fn: typeof staffProcessor) => {
     staffProcessor = fn;
@@ -487,29 +491,11 @@ export function createService(context: Context) {
       .first();
     if (!link) return false;
     const lead = await trx("leads").where({ id: link.lead_id }).first();
-    if (!activeLead(lead) || lead.store_location_id !== n.store_id) return false;
+    if (!activeLead(lead) || (link.source_identity_id
+      ? lead.store_location_id && lead.store_location_id !== n.store_id
+      : lead.store_location_id !== n.store_id)) return false;
     if (link.source_identity_id) {
-      if (link.source_identity_id === thread.identity_id) return false;
-      await trx("comm_link_tokens")
-        .where({ hash: link.hash })
-        .update({ target_identity_id: thread.identity_id, state: "confirm" });
-      const source = await trx("comm_threads")
-        .where({ identity_id: link.source_identity_id })
-        .first();
-      const sourceConnection = await trx("comm_connections")
-        .where({ id: source.connection_id })
-        .first();
-      // The confirmation is bound to the source identity; forwarding this button cannot grant access.
-      await enqueue(
-        trx,
-        sourceConnection,
-        source,
-        `Подтвердите продолжение этой заявки в ${n.platform}.`,
-        {},
-        [["Подтвердить", `link:${Buffer.from(link.hash, "hex").toString("base64url")}`]],
-      );
-      await enqueue(trx, n, thread, "Подтвердите связь в исходном чате. История пока недоступна.");
-      return true;
+      return identities.bind(trx, n, thread, link);
     }
     const [c] = await trx("comm_conversations")
       .insert({ thread_id: thread.id, lead_id: lead.id })
@@ -530,6 +516,7 @@ export function createService(context: Context) {
   async function processIncoming(connectionId: string) {
     enabled();
     return db.transaction(async (trx: Database) => {
+      await identityLock(trx);
       const n: Connection = await trx("comm_connections")
         .where({ id: connectionId, enabled: true })
         .forUpdate()
@@ -599,7 +586,12 @@ export function createService(context: Context) {
       if (e.kind === "callback" && text.startsWith("conv:")) text = `dialog:${text.slice(5)}`;
       const start = text.match(/^\/start(?:@\w+)?(?:\s+(\S+))?$/);
       if (start?.[1] && /^[A-Za-z0-9_-]{43}$/.test(start[1])) {
-        const linked = await bindToken(trx, n, thread, start[1]);
+        let linked = false;
+        try {
+          linked = await trx.transaction((sub: Database) => bindToken(sub, n, thread, start[1]));
+        } catch (error) {
+          if (!(error instanceof CommunicationError)) throw error;
+        }
         resultCode = linked ? "linked" : "invalid_link";
         if (!linked)
           await enqueue(
@@ -621,61 +613,16 @@ export function createService(context: Context) {
         handled = true;
         resultCode = "selected";
       }
-      if (e.kind === "callback" && text.startsWith("link:")) {
-        const hash = Buffer.from(text.slice(5), "base64url").toString("hex"),
-          link = await trx("comm_link_tokens")
-            .where({ hash, state: "confirm", source_identity_id: identity.id })
-            .andWhere("expires_at", ">", trx.fn.now())
-            .forUpdate()
-            .first();
-        if (link) {
-          const ids = [identity.id, link.target_identity_id].sort();
-          const identities = await trx("comm_identities")
-            .whereIn("id", ids)
-            .orderBy("id")
-            .forUpdate();
-          const target = identities.find((i: any) => i.id === link.target_identity_id);
-          const contacts = await trx("comm_contacts")
-            .whereIn("id", [identity.contact_id, target.contact_id])
-            .orderBy("id")
-            .forUpdate();
-          if (contacts.some((c: any) => c.merged_into)) return fail("CONTACT_ALREADY_MERGED", 409);
-          if (target.contact_id !== identity.contact_id) {
-            await trx("comm_identities")
-              .where({ contact_id: target.contact_id })
-              .update({ contact_id: identity.contact_id });
-            await trx("comm_frequency")
-              .where({ contact_id: target.contact_id })
-              .update({ contact_id: identity.contact_id });
-            await trx("comm_outbox")
-              .where({ contact_id: target.contact_id, purpose: "marketing", state: "pending" })
-              .update({ state: "cancelled", error_code: "IDENTITY_LINK_RECHECK" });
-            await trx("comm_contacts")
-              .where({ id: target.contact_id })
-              .update({ merged_into: identity.contact_id });
-          }
-          const targetThread = await trx("comm_threads").where({ identity_id: target.id }).first();
-          const [c] = await trx("comm_conversations")
-            .insert({ thread_id: targetThread.id, lead_id: link.lead_id })
-            .onConflict(["thread_id", "lead_id"])
-            .merge({ thread_id: targetThread.id })
-            .returning("*");
-          await trx("comm_access_grants")
-            .insert({ identity_id: target.id, lead_id: link.lead_id })
-            .onConflict(["identity_id", "lead_id"])
-            .merge({ revoked_at: null });
-          await trx("comm_threads")
-            .where({ id: targetThread.id })
-            .update({ selected_conversation_id: c.id });
-          await trx("comm_link_tokens").where({ hash }).update({ state: "done" });
-          await event(trx, {
-            identity_id: identity.id,
-            kind: "identity_linked",
-            dedupe_key: `link:${hash}`,
-            facts: { target: target.id, lead: link.lead_id },
-            is_test: identity.is_test,
-          });
-          await enqueue(trx, n, thread, "Связь подтверждена для выбранной заявки.");
+      if ((e.kind === "callback" && (text.startsWith("link:") || text.startsWith("account:"))) ||
+        ["account", "/account"].includes(text)) {
+        try {
+          const handledAccount = await trx.transaction((sub: Database) => identities.customer(sub, n, thread, text, `account:${row.id}`));
+          if (!handledAccount) await enqueue(trx, n, thread, "Приглашение недоступно. Попросите менеджера выдать новую ссылку.");
+        } catch (error) {
+          if (!(error instanceof CommunicationError)) throw error;
+          await enqueue(trx, n, thread, error.code === "IDENTITY_DELIVERY_BUSY"
+            ? "Есть незавершённая отправка. Повторите действие после её проверки менеджером."
+            : "Действие недоступно или приглашение истекло. Откройте «Мои аккаунты» или обратитесь к менеджеру.");
         }
         handled = true;
       }
@@ -715,6 +662,8 @@ export function createService(context: Context) {
         const choices = await trx("comm_conversations as c")
           .join("leads as l", "l.id", "c.lead_id")
           .where("c.thread_id", thread.id)
+          .whereExists(trx("comm_access_grants as g").select(1)
+            .whereRaw("g.lead_id=c.lead_id").where({ "g.identity_id": identity.id }).whereNull("g.revoked_at"))
           .whereIn("l.status", ["new", "in_progress", "waiting"])
           .select("c.id", "l.reference_code");
         await enqueue(
@@ -864,6 +813,7 @@ export function createService(context: Context) {
   async function commands(a: Actor, command: Command, transaction?: Database) {
     if (!UUID.test(command.key || "")) return fail("COMMAND_KEY_REQUIRED");
     const execute = async (trx: Database) => {
+      if (command.type === "link_start") await identityLock(trx);
       const fingerprint = digest(canonical(command));
       await trx("comm_command_receipts")
         .insert({
@@ -933,6 +883,9 @@ export function createService(context: Context) {
       } else if (command.type === "reply" || command.type === "note") {
         if (command.type === "reply" && (!activeLead(lead) || lead.assigned_to !== a.user))
           return fail("CLAIM_REQUIRED", 403);
+        if (command.type === "reply" && !await trx("comm_access_grants")
+          .where({ identity_id: thread.identity_id, lead_id: lead.id }).whereNull("revoked_at").first())
+          return fail("LINK_ACCESS_REVOKED", 409);
         const text = validText(p.text ?? "");
         const ids = Array.isArray(p.attachment_ids) ? p.attachment_ids : [];
         if (ids.length > 10 || ids.some((id: unknown) => typeof id !== "string" || !UUID.test(id)))
@@ -999,15 +952,7 @@ export function createService(context: Context) {
         else if (handling === "agent") await service.updateOne(lead.id, { status: "in_progress" });
       } else if (command.type === "link_start") {
         if (lead.assigned_to !== a.user) return fail("CLAIM_REQUIRED", 403);
-        const token = randomBytes(32).toString("base64url");
-        await trx("comm_link_tokens").insert({
-          hash: digest(token),
-          source_identity_id: thread.identity_id,
-          lead_id: lead.id,
-          expires_at: new Date(Date.now() + 15 * 60000),
-        });
-        // A staff command initiates the flow; the source customer must still confirm in their chat.
-        result = { ok: true, token, expires_in: 900 };
+        result = await identities.invite(trx, n, thread, lead, p.target_connection_id);
       } else return fail("UNKNOWN_COMMAND");
       if (command.type !== "read")
         await trx("comm_conversations").where({ id: c.id }).increment("version", 1);
@@ -1066,6 +1011,8 @@ export function createService(context: Context) {
         "l.assigned_to",
         "n.platform",
         "i.external_user_id",
+        "i.contact_id",
+        "i.id as identity_id",
         db.raw(`CASE
           WHEN c.first_agent_response_at IS NOT NULL AND c.first_response_due_at IS NOT NULL
             THEN CASE WHEN c.first_agent_response_at<=c.first_response_due_at THEN 'met' ELSE 'breached' END
@@ -1093,12 +1040,17 @@ export function createService(context: Context) {
     const conversationId = String(query.conversation_id || "");
     const { c } = await permitted(db, a, conversationId);
     if (c.thread_id !== threadId) return fail("FORBIDDEN", 403);
-    let q = db("comm_messages").where({ conversation_id: c.id }).whereNull("deleted_at");
+    const related = db("comm_conversations as related").join("comm_threads as rt", "rt.id", "related.thread_id")
+      .join("comm_connections as rn", "rn.id", "rt.connection_id")
+      .where({ "related.lead_id": c.lead_id, "rn.store_id": c.store_id }).select("related.id");
+    let q = db("comm_messages as m").join("comm_threads as mt", "mt.id", "m.thread_id")
+      .join("comm_connections as mn", "mn.id", "mt.connection_id")
+      .whereIn("m.conversation_id", related).whereNull("m.deleted_at").select("m.*", "mn.platform");
     if (query.before) {
       if (!/^\d+$/.test(String(query.before))) return fail("INVALID_CURSOR");
-      q = q.where("sequence", "<", query.before);
+      q = q.where("m.sequence", "<", query.before);
     }
-    const rows = await q.orderBy("sequence", "desc").limit(50);
+    const rows = await q.orderBy("m.sequence", "desc").limit(50);
     const files = rows.length
       ? await db("comm_attachments")
           .whereIn(
@@ -1478,6 +1430,9 @@ export function createService(context: Context) {
         .orderBy("occurred_at", "desc")
         .limit(100),
       conversations,
+      links: await db("comm_identity_links")
+        .whereIn("source_identity_id", identityIds).whereIn("target_identity_id", identityIds)
+        .select("id", "source_identity_id", "target_identity_id", "lead_id", "created_at", "revoked_at"),
       deliveries: await db("comm_outbox as outbox")
         .leftJoin("comm_campaigns as campaign", "campaign.id", "outbox.campaign_id")
         .whereIn("outbox.identity_id", identityIds)
@@ -1485,17 +1440,15 @@ export function createService(context: Context) {
         .orderBy("outbox.created_at", "desc")
         .limit(100)
         .select("outbox.id", "outbox.state", "outbox.error_code", "outbox.accepted_at", "outbox.created_at", "outbox.test_delivery", "campaign.name as campaign_name"),
-      frequency_7d: Number(
-        (
-          await db("comm_frequency")
-            .where({ contact_id: contactId })
-            .whereNull("released_at")
-            .andWhere("reserved_at", ">", db.raw("now()-interval '7 days'"))
-            .count("* as count")
-            .first()
-        )?.count || 0,
-      ),
+      frequency_7d: await frequencyCount(db, contactId),
     };
+  }
+  async function linkOptions(a: Actor, conversationId: string) {
+    const { c } = await permitted(db, a, conversationId);
+    const source = await db("comm_connections").where({ id: c.connection_id }).first();
+    return db("comm_connections").where({ store_id: c.store_id, enabled: true })
+      .whereNot("platform", source.platform).whereNotNull("bot_username")
+      .select("id", "name", "platform");
   }
   return {
     actor,
@@ -1510,6 +1463,8 @@ export function createService(context: Context) {
     audience,
     audienceContacts,
     audienceContact,
+    linkOptions,
+    contactAction: identities.action,
     enqueue,
     event,
     setStaffProcessor,

@@ -43,6 +43,8 @@ try {
     reference_code: "ISV-0101",
     platform: "telegram",
     external_user_id: "123",
+    contact_id: "contact-1",
+    identity_id: "identity-1",
     handling: "queued",
     unread_count: 1,
     version: 1,
@@ -97,6 +99,16 @@ try {
     ],
   };
   const campaigns = [];
+  const contactCard = {
+    contact: { id: "contact-1", name: "Иван", version: 1, marketing_opt_out: false },
+    identities: [
+      { id: "identity-1", platform: "telegram", external_user_id: "12345", availability: "allowed", preferred: true },
+      { id: "identity-2", platform: "max", external_user_id: "67890", availability: "allowed", preferred: false },
+    ],
+    subscriptions: [], consent_events: [], conversations: [], deliveries: [], frequency_7d: 0,
+  };
+  const contactRequests = [];
+  let dropContactAction = true;
   let dropReply = true;
   await page.route("**/isvoi-communications/v1/**", async (route) => {
     const req = route.request(),
@@ -114,6 +126,7 @@ try {
         },
       ];
     else if (path.endsWith("/messages")) data = history;
+    else if (path.endsWith("/link-options")) data = [{ id: "max-test", name: "MAX · Поддержка", platform: "max" }];
     else if (path.endsWith("/commands")) {
       const body = req.postDataJSON();
       requests.push(body);
@@ -143,16 +156,18 @@ try {
       data = { id: "55555555-5555-4555-8555-555555555555", name: "note.txt", state: "quarantine" };
     else if (path.endsWith("/status"))
       data = { id: "55555555-5555-4555-8555-555555555555", name: "note.txt", state: "ready" };
-    else if (path.endsWith("/audience/contacts/contact-1"))
-      data = {
-        contact: { id: "contact-1", name: "Иван" },
-        identities: [{ id: "identity-1", platform: "telegram", external_user_id: "12345", availability: "allowed", last_active_at: new Date().toISOString() }],
-        subscriptions: [{ id: "subscription-1", label: "Новости и акции", consent: true }],
-        consent_events: [{ id: "event-1", topic_key: "news_promotions", consent: true, created_at: new Date().toISOString() }],
-        conversations: [{ id: "conversation-1", lead_id: c.lead_id, reference_code: c.reference_code, handling: "agent" }],
-        deliveries: [],
-        frequency_7d: 0,
-      };
+    else if (path.endsWith("/audience/contacts/contact-1/actions")) {
+      const body = req.postDataJSON();
+      contactRequests.push(body);
+      if (!receipts.has(body.key)) {
+        if (body.action === "prefer") contactCard.identities.forEach(i => i.preferred = i.id === body.identity_id);
+        if (body.action === "unlink") contactCard.identities = contactCard.identities.filter(i => i.id !== body.identity_id);
+        if (body.action === "stop_marketing") contactCard.contact.marketing_opt_out = true;
+        receipts.set(body.key, { ok: true, version: ++contactCard.contact.version });
+        if (dropContactAction) { dropContactAction = false; await route.abort("failed"); return; }
+      }
+      data = receipts.get(body.key);
+    } else if (path.endsWith("/audience/contacts/contact-1")) data = contactCard;
     else if (path.endsWith("/audience/contacts"))
       data = [{ id: "contact-1", name: "Иван", accounts: [{ platform: "telegram" }], subscribed: true, last_active_at: new Date().toISOString(), conversations: 1 }];
     else if (path.endsWith("/audience"))
@@ -264,6 +279,11 @@ try {
   console.log("browser faults", faults);
   await page.getByRole("button", { name: /ISV-0101/ }).click();
   await page.getByRole("button", { name: "Принять в работу", exact: true }).click();
+  await page.getByLabel("Площадка для связи").selectOption("max-test");
+  await page.getByRole("button", { name: "Отправить приглашение", exact: true }).click();
+  await page.getByText(/Приглашение отправлено в текущий бот/).waitFor();
+  assert.equal(requests.filter(r => r.type === "link_start").length, 1);
+  assert.equal(requests.find(r => r.type === "link_start").payload.target_connection_id, "max-test");
   await page.getByLabel("Текст сообщения").fill("Да, поможем. Какой бюджет?");
   await page.getByRole("button", { name: "Отправить", exact: true }).click();
   await page.getByRole("alert").waitFor();
@@ -293,6 +313,18 @@ try {
   await page.getByRole("button", { name: "Иван", exact: true }).click();
   await page.getByRole("heading", { name: "Иван", exact: true }).waitFor();
   await page.getByText("Лимит маркетинга за 7 дней: 0 из 2", { exact: true }).waitFor();
+  const prefer = page.getByRole("button", { name: "Выбрать предпочтительной", exact: true }).last();
+  await prefer.click();
+  await page.getByRole("alert").waitFor();
+  await page.getByRole("button", { name: "Иван", exact: true }).click();
+  await page.getByRole("button", { name: "Повторить незавершённое действие", exact: true }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.subscriber-card dl')[1]?.querySelector('button')?.disabled);
+  assert.equal(contactRequests.length, 2);
+  assert.deepEqual(contactRequests[0], contactRequests[1], "contact retry preserves key and version after response loss");
+  page.on("dialog", dialog => dialog.accept());
+  await page.getByRole("button", { name: "Отвязать аккаунт MAX", exact: true }).click();
+  await page.getByRole("button", { name: "Отвязать аккаунт MAX", exact: true }).waitFor({ state: "hidden" });
+  assert.equal(contactCard.identities.length, 1);
   await page.screenshot({ path: resolve(output, "communications-audience.png"), fullPage: true });
   await page.getByRole("button", { name: "Подключения", exact: true }).click();
   await page.getByRole("heading", { name: "Подключения площадок" }).waitFor();
@@ -325,13 +357,18 @@ try {
     true,
     "mobile horizontal overflow",
   );
+  await page.getByRole("button", { name: "Открыть карточку клиента", exact: true }).click();
+  await page.getByRole("heading", { name: "Иван", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Отключить все рассылки", exact: true }).click();
+  await page.getByText("Все персональные рассылки отключены", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Обращения", exact: true }).click();
   assert.equal(
     await page.getByRole("button", { name: "← Очередь", exact: true }).isVisible(),
     true,
   );
   assert.deepEqual(faults, []);
   console.log(
-    "PASS UI: actual Vue module, claim/reply/note/upload, retry key after network failure, audience, connection operations, desktop and mobile layout.",
+    "PASS UI: actual Vue module, claim/reply/note/upload, invitation, contact action retry key after response loss, preferred channel, unlink, global refusal, audience, desktop and mobile layout.",
   );
 } finally {
   await browser.close();

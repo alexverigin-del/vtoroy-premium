@@ -68,6 +68,288 @@ function marketingWindow(now) {
   return { allowed: false, next };
 }
 
+// packages/communications/src/identities.ts
+import { randomBytes } from "node:crypto";
+async function identityLock(trx) {
+  await trx.raw("SELECT pg_advisory_xact_lock(73121,1)");
+}
+async function frequencyCount(trx, contactId) {
+  const row = await trx("comm_frequency as f").where((q) => q.where("f.contact_id", contactId).orWhereExists(
+    trx("comm_frequency_carryovers as h").select(1).whereRaw("h.frequency_id=f.id").where("h.contact_id", contactId)
+  )).whereNull("f.released_at").andWhere("f.reserved_at", ">", trx.raw("now()-interval '7 days'")).count("* as count").first();
+  return Number(row?.count || 0);
+}
+var active = (lead) => ["new", "in_progress", "waiting"].includes(lead?.status);
+var masked = (value) => `\u2022\u2022\u2022\u2022${String(value).slice(-4)}`;
+var callbackHash = (hash) => Buffer.from(hash, "hex").toString("base64url");
+function createIdentities(context, service) {
+  const db = context.database;
+  async function audit(trx, identity, kind, key, facts) {
+    await service.event(trx, {
+      identity_id: identity.id,
+      connection_id: identity.connection_id,
+      kind,
+      dedupe_key: key,
+      facts,
+      is_test: identity.is_test
+    });
+  }
+  async function cancelMarketing(trx, ids, code) {
+    const cancelled = await trx("comm_outbox").whereIn("identity_id", ids).where({ purpose: "marketing", state: "pending" }).update({ state: "cancelled", error_code: code }).returning("id");
+    if (cancelled.length) await trx("comm_operations").whereIn("outbox_id", cancelled.map((row) => row.id)).where({ state: "pending" }).update({ state: "cancelled", error_code: code });
+  }
+  async function members(trx, contactId) {
+    return trx("comm_identities as i").join("comm_connections as n", "n.id", "i.connection_id").where("i.contact_id", contactId).select("i.*", "n.platform", "n.store_id", "n.enabled");
+  }
+  async function available(trx, ids) {
+    if (await trx("comm_outbox").whereIn("identity_id", ids).whereIn("purpose", ["marketing", "service"]).whereIn("state", ["sending", "uncertain", "partial"]).first())
+      return fail("IDENTITY_DELIVERY_BUSY", 409);
+  }
+  async function touch(trx, contactId) {
+    await trx("comm_contacts").where({ id: contactId }).increment("version", 1);
+  }
+  async function prefer(trx, identity, key) {
+    await trx("comm_identities").where({ contact_id: identity.contact_id }).update({ preferred: false });
+    await trx("comm_identities").where({ id: identity.id }).update({ preferred: true });
+    await cancelMarketing(trx, (await members(trx, identity.contact_id)).map((i) => i.id), "PREFERRED_CHANNEL_CHANGED");
+    await touch(trx, identity.contact_id);
+    await audit(trx, identity, "preferred_channel_changed", key, {});
+  }
+  async function stopMarketing(trx, identity, key) {
+    const ids = (await members(trx, identity.contact_id)).map((i) => i.id);
+    await trx("comm_contacts").where({ id: identity.contact_id }).update({ marketing_opt_out: true });
+    await cancelMarketing(trx, ids, "GLOBAL_OPT_OUT");
+    await touch(trx, identity.contact_id);
+    await audit(trx, identity, "marketing_opt_out", key, { scope: "all_linked_accounts" });
+  }
+  async function detach(trx, identity, key) {
+    const group = await members(trx, identity.contact_id);
+    if (group.length < 2) return fail("IDENTITY_NOT_LINKED", 409);
+    await available(trx, group.map((i) => i.id));
+    const old = await trx("comm_contacts").where({ id: identity.contact_id }).first();
+    const [next] = await trx("comm_contacts").insert({ name: old.name, marketing_opt_out: old.marketing_opt_out }).returning("*");
+    const history = await trx("comm_frequency as f").where((q) => q.where("f.contact_id", old.id).orWhereExists(
+      trx("comm_frequency_carryovers as h").select(1).whereRaw("h.frequency_id=f.id").where("h.contact_id", old.id)
+    )).andWhere("f.reserved_at", ">", trx.raw("now()-interval '7 days'")).select("f.id");
+    if (history.length) await trx("comm_frequency_carryovers").insert(
+      history.map((f) => ({ contact_id: next.id, frequency_id: f.id }))
+    ).onConflict(["contact_id", "frequency_id"]).ignore();
+    const nativeLeads = await trx("comm_access_grants").where({ identity_id: identity.id }).whereNull("link_id").whereNull("revoked_at").pluck("lead_id");
+    const revoked = await trx("comm_access_grants").whereNotNull("link_id").whereNull("revoked_at").where((q) => q.where("identity_id", identity.id).orWhereIn("lead_id", nativeLeads)).update({ revoked_at: trx.fn.now() }).returning(["identity_id", "lead_id"]);
+    for (const grant of revoked) {
+      const threads = await trx("comm_threads").where({ identity_id: grant.identity_id }).pluck("id");
+      const conversations = await trx("comm_conversations").whereIn("thread_id", threads).where({ lead_id: grant.lead_id }).pluck("id");
+      await trx("comm_threads").whereIn("id", threads).whereIn("selected_conversation_id", conversations).update({ selected_conversation_id: null, pending_kind: null });
+      const cancelled = await trx("comm_outbox").whereIn("conversation_id", conversations).where({ state: "pending", purpose: "service" }).update({ state: "cancelled", error_code: "LINK_ACCESS_REVOKED" }).returning("id");
+      if (cancelled.length) await trx("comm_operations").whereIn("outbox_id", cancelled.map((o) => o.id)).where({ state: "pending" }).update({ state: "cancelled", error_code: "LINK_ACCESS_REVOKED" });
+    }
+    await cancelMarketing(trx, group.map((i) => i.id), "IDENTITY_UNLINKED");
+    await trx("comm_link_tokens").whereIn("state", ["pending", "target_confirm", "confirm"]).where((q) => q.where("source_identity_id", identity.id).orWhere("target_identity_id", identity.id)).update({ state: "revoked" });
+    await trx("comm_identity_links").whereNull("revoked_at").where((q) => q.where("source_identity_id", identity.id).orWhere("target_identity_id", identity.id)).update({ revoked_at: trx.fn.now() });
+    await trx("comm_identities").where({ id: identity.id }).update({ contact_id: next.id, preferred: true });
+    const remaining = group.filter((i) => i.id !== identity.id);
+    if (!remaining.some((i) => i.preferred)) await trx("comm_identities").where({ id: remaining[0].id }).update({ preferred: true });
+    await touch(trx, old.id);
+    await audit(trx, identity, "identity_unlinked", key, { previous_contact_id: old.id, contact_id: next.id });
+    return next.id;
+  }
+  async function validateLink(trx, link, n, target) {
+    const source = await trx("comm_identities").where({ id: link.source_identity_id }).first();
+    const sourceConnection = source && await trx("comm_connections").where({ id: source.connection_id }).first();
+    const lead = await trx("leads").where({ id: link.lead_id }).first();
+    if (!source || !sourceConnection?.enabled || !n.enabled || !active(lead) || sourceConnection.store_id !== n.store_id || lead.store_location_id && lead.store_location_id !== n.store_id || sourceConnection.platform === n.platform || source.id === target.id || source.is_test !== target.is_test || link.target_connection_id && link.target_connection_id !== n.id || !await trx("comm_access_grants").where({ identity_id: source.id, lead_id: lead.id }).whereNull("revoked_at").first())
+      return fail("LINK_UNAVAILABLE", 409);
+    const sourceGroup = await members(trx, source.contact_id);
+    const targetGroup = await members(trx, target.contact_id);
+    if (target.contact_id !== source.contact_id && (targetGroup.length !== 1 || sourceGroup.some((i) => i.platform === n.platform) || sourceGroup.some((i) => i.store_id !== n.store_id)))
+      return fail("LINK_GROUP_CONFLICT", 409);
+    return { source, sourceConnection, lead, sourceGroup, targetGroup };
+  }
+  async function invite(trx, n, thread, lead, targetId) {
+    if (typeof targetId !== "string" || !UUID.test(targetId)) return fail("LINK_TARGET_REQUIRED");
+    const target = await trx("comm_connections").where({ id: targetId, enabled: true }).first();
+    const username = String(target?.bot_username || "").replace(/^@/, "");
+    if (!active(lead) || !target || target.store_id !== n.store_id || target.platform === n.platform || !/^[A-Za-z0-9_.-]{2,64}$/.test(username)) return fail("LINK_UNAVAILABLE", 409);
+    const token = randomBytes(32).toString("base64url");
+    const expires = new Date(Date.now() + 9e5);
+    await trx("comm_link_tokens").where({ source_identity_id: thread.identity_id, lead_id: lead.id }).whereIn("state", ["pending", "target_confirm", "confirm"]).update({ state: "revoked" });
+    await trx("comm_link_tokens").insert({
+      hash: digest(token),
+      source_identity_id: thread.identity_id,
+      target_connection_id: target.id,
+      lead_id: lead.id,
+      expires_at: expires
+    });
+    const url = target.platform === "telegram" ? `https://t.me/${username}?start=${token}` : target.platform === "max" ? `https://max.ru/${username}?start=${token}` : `https://vk.me/${username}?ref=${token}&ref_source=account_link`;
+    await service.enqueue(
+      trx,
+      n,
+      thread,
+      `\u0427\u0442\u043E\u0431\u044B \u0441\u0432\u044F\u0437\u0430\u0442\u044C \u0432\u0430\u0448 \u0430\u043A\u043A\u0430\u0443\u043D\u0442 \u0441 ${target.platform.toUpperCase()}, \u043E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \u0441\u0441\u044B\u043B\u043A\u0443 \u043D\u0430 \u0441\u0432\u043E\u0451\u043C \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u0435: ${url}
+\u0421\u0441\u044B\u043B\u043A\u0430 \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 15 \u043C\u0438\u043D\u0443\u0442. \u041F\u043E\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044F \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0432 \u043E\u0431\u043E\u0438\u0445 \u0447\u0430\u0442\u0430\u0445; \u0434\u043E\u0441\u0442\u0443\u043F \u0432\u044B\u0434\u0430\u0451\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u044D\u0442\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0435.`,
+      { expires_at: expires }
+    );
+    return { ok: true, issued: true, expires_in: 900 };
+  }
+  async function bind(trx, n, thread, link) {
+    const target = await trx("comm_identities").where({ id: thread.identity_id }).first();
+    const checked = await validateLink(trx, link, n, target);
+    await trx("comm_link_tokens").where({ hash: link.hash }).update({ target_identity_id: target.id, state: "target_confirm" });
+    const h = callbackHash(link.hash);
+    await service.enqueue(
+      trx,
+      n,
+      thread,
+      `\u0421\u0432\u044F\u0437\u0430\u0442\u044C \u044D\u0442\u043E\u0442 \u0430\u043A\u043A\u0430\u0443\u043D\u0442 \u0441 ${checked.sourceConnection.platform.toUpperCase()} ${masked(checked.source.external_user_id)}? \u041F\u043E\u0441\u043B\u0435 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u044F \u0432 \u043E\u0431\u043E\u0438\u0445 \u0447\u0430\u0442\u0430\u0445 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u0443\u0432\u0438\u0434\u0438\u0442 \u043E\u0431\u0449\u0443\u044E \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0443. \u0414\u043E\u0441\u0442\u0443\u043F \u0431\u0443\u0434\u0435\u0442 \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0435.`,
+      { expires_at: link.expires_at },
+      [["\u0414\u0430, \u044D\u0442\u043E \u043C\u043E\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u044B", `link:t:${h}`], ["\u041E\u0442\u043C\u0435\u043D\u0430", `link:x:${h}`]]
+    );
+    return true;
+  }
+  async function confirm(trx, n, thread, action2, hash) {
+    const link = await trx("comm_link_tokens").where({ hash }).andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
+    if (!link || !["target_confirm", "confirm"].includes(link.state)) return fail("LINK_UNAVAILABLE", 409);
+    const who = thread.identity_id;
+    if (action2 === "x") {
+      if (![link.source_identity_id, link.target_identity_id].includes(who)) return fail("LINK_UNAVAILABLE", 409);
+      await trx("comm_link_tokens").where({ hash }).update({ state: "revoked" });
+      return service.enqueue(trx, n, thread, "\u041F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E.");
+    }
+    const target = await trx("comm_identities").where({ id: link.target_identity_id }).first();
+    const targetConnection = await trx("comm_connections").where({ id: target.connection_id }).first();
+    const { source, sourceConnection, lead, sourceGroup, targetGroup } = await validateLink(trx, link, targetConnection, target);
+    const sourceThread = await trx("comm_threads").where({ identity_id: source.id }).first();
+    if (action2 === "t" && link.state === "target_confirm" && who === target.id) {
+      await trx("comm_link_tokens").where({ hash }).update({ state: "confirm", target_confirmed_at: trx.fn.now() });
+      await service.enqueue(
+        trx,
+        sourceConnection,
+        sourceThread,
+        `\u0410\u043A\u043A\u0430\u0443\u043D\u0442 ${targetConnection.platform.toUpperCase()} ${masked(target.external_user_id)} \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u043B \u0441\u0432\u044F\u0437\u044C. \u042D\u0442\u043E \u0432\u0430\u0448 \u0430\u043A\u043A\u0430\u0443\u043D\u0442?`,
+        { expires_at: link.expires_at },
+        [["\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044C \u0441\u0432\u044F\u0437\u044C", `link:s:${callbackHash(hash)}`], ["\u041E\u0442\u043C\u0435\u043D\u0430", `link:x:${callbackHash(hash)}`]]
+      );
+      return service.enqueue(trx, n, thread, "\u041E\u0436\u0438\u0434\u0430\u0435\u043C \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u043C \u0447\u0430\u0442\u0435. \u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u043A\u0430 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u0430.");
+    }
+    if (action2 !== "s" || link.state !== "confirm" || who !== source.id || !link.target_confirmed_at)
+      return fail("LINK_UNAVAILABLE", 409);
+    await available(trx, [...sourceGroup, ...targetGroup].map((i) => i.id));
+    const sourceContact = await trx("comm_contacts").where({ id: source.contact_id }).first();
+    const targetContact = await trx("comm_contacts").where({ id: target.contact_id }).first();
+    if (sourceContact.merged_into || targetContact.merged_into) return fail("LINK_UNAVAILABLE", 409);
+    await cancelMarketing(trx, [...sourceGroup, ...targetGroup].map((i) => i.id), "IDENTITY_LINK_RECHECK");
+    if (source.contact_id !== target.contact_id) {
+      const carryovers = await trx("comm_frequency_carryovers").where({ contact_id: target.contact_id });
+      if (carryovers.length) await trx("comm_frequency_carryovers").insert(carryovers.map((h) => ({
+        contact_id: source.contact_id,
+        frequency_id: h.frequency_id
+      }))).onConflict(["contact_id", "frequency_id"]).ignore();
+      await trx("comm_identities").where({ id: target.id }).update({ contact_id: source.contact_id, preferred: false });
+      await trx("comm_frequency").where({ contact_id: target.contact_id }).update({ contact_id: source.contact_id });
+      await trx("comm_contacts").where({ id: target.contact_id }).update({ merged_into: source.contact_id });
+      await trx("comm_contacts").where({ id: source.contact_id }).update({ marketing_opt_out: sourceContact.marketing_opt_out || targetContact.marketing_opt_out });
+      if (!sourceGroup.some((i) => i.preferred)) await trx("comm_identities").where({ id: source.id }).update({ preferred: true });
+    }
+    const [record] = await trx("comm_identity_links").insert({
+      hash,
+      source_identity_id: source.id,
+      target_identity_id: target.id,
+      lead_id: link.lead_id
+    }).returning("*");
+    const targetThread = await trx("comm_threads").where({ identity_id: target.id }).first();
+    const [c] = await trx("comm_conversations").insert({
+      thread_id: targetThread.id,
+      lead_id: link.lead_id,
+      handling: lead.status === "waiting" ? "waiting" : lead.assigned_to ? "agent" : "queued"
+    }).onConflict(["thread_id", "lead_id"]).merge({ thread_id: targetThread.id }).returning("*");
+    const grant = await trx("comm_access_grants").where({ identity_id: target.id, lead_id: link.lead_id }).first();
+    if (!grant) await trx("comm_access_grants").insert({ identity_id: target.id, lead_id: link.lead_id, link_id: record.id });
+    else if (grant.revoked_at) await trx("comm_access_grants").where({ id: grant.id }).update({ revoked_at: null, link_id: record.id });
+    await trx("comm_threads").where({ id: targetThread.id }).update({ selected_conversation_id: c.id });
+    await trx("comm_link_tokens").where({ hash }).update({ state: "done", source_confirmed_at: trx.fn.now() });
+    await touch(trx, source.contact_id);
+    await audit(trx, source, "identity_linked", `link:${hash}`, { target: target.id, lead: link.lead_id });
+    await service.enqueue(trx, sourceConnection, sourceThread, "\u0410\u043A\u043A\u0430\u0443\u043D\u0442\u044B \u0441\u0432\u044F\u0437\u0430\u043D\u044B. \u0414\u043E\u0441\u0442\u0443\u043F \u043E\u0442\u043A\u0440\u044B\u0442 \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0435.");
+    await service.enqueue(trx, targetConnection, targetThread, "\u0410\u043A\u043A\u0430\u0443\u043D\u0442\u044B \u0441\u0432\u044F\u0437\u0430\u043D\u044B. \u041D\u0430\u043F\u0438\u0448\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043F\u043E \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0435.");
+  }
+  async function customer(trx, n, thread, text, key) {
+    const identity = await trx("comm_identities").where({ id: thread.identity_id }).first();
+    if (/^link:[tsx]:[A-Za-z0-9_-]{43}$/.test(text)) {
+      await confirm(trx, n, thread, text[5], Buffer.from(text.slice(7), "base64url").toString("hex"));
+    } else if (text === "account:prefer") {
+      await prefer(trx, identity, key);
+      await service.enqueue(trx, n, thread, "\u042D\u0442\u0430 \u043F\u043B\u043E\u0449\u0430\u0434\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u043F\u0440\u0435\u0434\u043F\u043E\u0447\u0442\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0434\u043B\u044F \u0440\u0430\u0437\u0440\u0435\u0448\u0451\u043D\u043D\u044B\u0445 \u0440\u0430\u0441\u0441\u044B\u043B\u043E\u043A.");
+    } else if (text === "account:stop") {
+      await stopMarketing(trx, identity, key);
+      await service.enqueue(trx, n, thread, "\u041F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u044C\u043D\u044B\u0435 \u0440\u0430\u0441\u0441\u044B\u043B\u043A\u0438 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B \u0434\u043B\u044F \u0432\u0441\u0435\u0445 \u0441\u0432\u044F\u0437\u0430\u043D\u043D\u044B\u0445 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u043E\u0432. \u041E\u0431\u0440\u0430\u0449\u0435\u043D\u0438\u044F \u0440\u0430\u0431\u043E\u0442\u0430\u044E\u0442.");
+    } else if (text === "account:unlink") {
+      await service.enqueue(
+        trx,
+        n,
+        thread,
+        "\u041E\u0442\u0432\u044F\u0437\u0430\u0442\u044C \u044D\u0442\u043E\u0442 \u0430\u043A\u043A\u0430\u0443\u043D\u0442? \u0414\u043E\u0441\u0442\u0443\u043F \u043A \u0437\u0430\u044F\u0432\u043A\u0430\u043C, \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043D\u044B\u0439 \u0447\u0435\u0440\u0435\u0437 \u0441\u0432\u044F\u0437\u044C, \u0431\u0443\u0434\u0435\u0442 \u043E\u0442\u043E\u0437\u0432\u0430\u043D. \u0412\u0430\u0448\u0438 \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u043D\u044B\u0435 \u043E\u0431\u0440\u0430\u0449\u0435\u043D\u0438\u044F \u0441\u043E\u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F.",
+        {},
+        [["\u041E\u0442\u0432\u044F\u0437\u0430\u0442\u044C \u044D\u0442\u043E\u0442 \u0430\u043A\u043A\u0430\u0443\u043D\u0442", "account:unlink_confirm"], ["\u041E\u0442\u043C\u0435\u043D\u0430", "account"]]
+      );
+    } else if (text === "account:unlink_confirm") {
+      await detach(trx, identity, key);
+      await service.enqueue(trx, n, thread, "\u0410\u043A\u043A\u0430\u0443\u043D\u0442 \u043E\u0442\u0432\u044F\u0437\u0430\u043D. \u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043D\u044B\u0439 \u0447\u0435\u0440\u0435\u0437 \u0441\u0432\u044F\u0437\u044C \u0434\u043E\u0441\u0442\u0443\u043F \u043E\u0442\u043E\u0437\u0432\u0430\u043D.");
+    } else if (["account", "/account"].includes(text)) {
+      const group = await members(trx, identity.contact_id);
+      const contact = await trx("comm_contacts").where({ id: identity.contact_id }).first();
+      await service.enqueue(
+        trx,
+        n,
+        thread,
+        `\u0412\u0430\u0448\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u044B: ${group.map((i) => `${i.platform.toUpperCase()} ${masked(i.external_user_id)}${i.preferred ? " (\u043F\u0440\u0435\u0434\u043F\u043E\u0447\u0442\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439)" : ""}`).join(", ")}.
+` + (contact.marketing_opt_out ? "\u041F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u044C\u043D\u044B\u0435 \u0440\u0430\u0441\u0441\u044B\u043B\u043A\u0438 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B." : "\u0420\u0430\u0441\u0441\u044B\u043B\u043A\u0438 \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B \u0442\u043E\u043B\u044C\u043A\u043E \u0441 \u0432\u0430\u0448\u0438\u043C \u0441\u043E\u0433\u043B\u0430\u0441\u0438\u0435\u043C."),
+        {},
+        [
+          ["\u041F\u0440\u0435\u0434\u043F\u043E\u0447\u0438\u0442\u0430\u0442\u044C \u044D\u0442\u0443 \u043F\u043B\u043E\u0449\u0430\u0434\u043A\u0443", "account:prefer"],
+          ["\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435 \u0440\u0430\u0441\u0441\u044B\u043B\u043A\u0438", "account:stop"],
+          ...group.length > 1 ? [["\u041E\u0442\u0432\u044F\u0437\u0430\u0442\u044C \u044D\u0442\u043E\u0442 \u0430\u043A\u043A\u0430\u0443\u043D\u0442", "account:unlink"]] : [],
+          ["\u0413\u043B\u0430\u0432\u043D\u043E\u0435 \u043C\u0435\u043D\u044E", "main"]
+        ]
+      );
+    } else return false;
+    return true;
+  }
+  async function action(actor, contactId, input) {
+    if (!UUID.test(contactId) || !UUID.test(input?.key || "")) return fail("COMMAND_KEY_REQUIRED");
+    return db.transaction(async (trx) => {
+      await identityLock(trx);
+      const group = await members(trx, contactId);
+      if (!group.length) return fail("NOT_FOUND", 404);
+      for (const member of group) if (!await trx("comm_staff").where({ user_id: actor.user, store_id: member.store_id, enabled: true, can_manage: true }).first())
+        return fail("FORBIDDEN", 403);
+      const type = `contact_${String(input.action || "unknown")}`;
+      const fingerprint = digest(canonical({ contactId, ...input }));
+      await trx("comm_command_receipts").insert({ actor_id: actor.user, command_type: type, command_key: input.key, fingerprint }).onConflict(["actor_id", "command_type", "command_key"]).ignore();
+      const receipt = await trx("comm_command_receipts").where({ actor_id: actor.user, command_type: type, command_key: input.key }).forUpdate().first();
+      if (receipt.fingerprint !== fingerprint) return fail("IDEMPOTENCY_PARAMETER_MISMATCH", 409);
+      if (receipt.result) return receipt.result;
+      const contact = await trx("comm_contacts").where({ id: contactId }).forUpdate().first();
+      if (input.expected_version !== contact.version) return fail("STALE_CONTACT", 409);
+      const identity = group.find((i) => i.id === input.identity_id);
+      if (!identity) return fail("IDENTITY_NOT_FOUND", 404);
+      let nextId = contactId;
+      if (input.action === "prefer") await prefer(trx, identity, `contact:${receipt.id}`);
+      else if (input.action === "unlink") nextId = await detach(trx, identity, `contact:${receipt.id}`);
+      else if (input.action === "stop_marketing") await stopMarketing(trx, identity, `contact:${receipt.id}`);
+      else return fail("UNKNOWN_COMMAND");
+      const result = {
+        ok: true,
+        contact_id: contactId,
+        detached_contact_id: nextId !== contactId ? nextId : null,
+        version: (await trx("comm_contacts").where({ id: contactId }).first()).version
+      };
+      await trx("comm_command_receipts").where({ id: receipt.id }).update({ result });
+      return result;
+    });
+  }
+  return { invite, bind, customer, action };
+}
+
 // packages/communications/src/delivery.ts
 function providerAttachment(platform, outcome) {
   if (!("resume" in outcome) || !outcome.resume || outcome.resume.platform !== platform)
@@ -111,6 +393,7 @@ function createDelivery(context, service) {
     if (!flag(context.env.ISVOI_COMMUNICATIONS_ENABLED))
       return fail("COMMUNICATIONS_DISABLED", 503);
     return db.transaction(async (trx) => {
+      await identityLock(trx);
       const n = await worker(trx, connectionId, user);
       const runtime = await trx("comm_runtime").where({ id: 1 }).first();
       if (!runtime?.active || !runtime.sending_enabled || runtime.recovery_hold) return null;
@@ -142,6 +425,13 @@ function createDelivery(context, service) {
             await reject("RECIPIENT_CHANGED");
             continue;
           }
+          if (b.purpose === "service" && b.conversation_id) {
+            const conversation = await trx("comm_conversations").where({ id: b.conversation_id }).first();
+            if (!conversation || !await trx("comm_access_grants").where({ identity_id: b.identity_id, lead_id: conversation.lead_id }).whereNull("revoked_at").first()) {
+              await reject("LINK_ACCESS_REVOKED");
+              continue;
+            }
+          }
         }
         if (b.created_by && b.purpose === "service") {
           try {
@@ -160,6 +450,11 @@ function createDelivery(context, service) {
           }
         }
         if (b.purpose === "marketing") {
+          const contact = await trx("comm_contacts").where({ id: b.contact_id }).first();
+          if (!contact || contact.marketing_opt_out) {
+            await reject("GLOBAL_OPT_OUT");
+            continue;
+          }
           const campaign = await trx("comm_campaigns").where({ id: b.campaign_id }).first();
           const identity = await trx("comm_identities").where({ id: b.identity_id }).first();
           const pilot = identity && (identity.is_test || (n.settings?.pilot_user_ids || []).map(String).includes(String(identity.external_user_id)));
@@ -180,8 +475,7 @@ function createDelivery(context, service) {
           }
           if (!b.test_delivery) await trx("comm_contacts").where({ id: b.contact_id }).forUpdate().first();
           if (!b.test_delivery && !await trx("comm_frequency").where({ outbox_id: b.id }).first()) {
-            const count = await trx("comm_frequency").where({ contact_id: b.contact_id }).whereNull("released_at").andWhere("reserved_at", ">", trx.raw("now()-interval '7 days'")).count("* as count").first();
-            if (Number(count.count) >= 2) {
+            if (await frequencyCount(trx, b.contact_id) >= 2) {
               await reject("FREQUENCY_LIMIT");
               continue;
             }
@@ -307,8 +601,8 @@ function createDelivery(context, service) {
       }
       const result = await summary(trx, b.id);
       if (b.campaign_id && !b.test_delivery) {
-        const active = await trx("comm_outbox").where({ campaign_id: b.campaign_id, test_delivery: false }).whereIn("state", ["pending", "sending", "partial", "uncertain"]).first();
-        if (!active)
+        const active2 = await trx("comm_outbox").where({ campaign_id: b.campaign_id, test_delivery: false }).whereIn("state", ["pending", "sending", "partial", "uncertain"]).first();
+        if (!active2)
           await trx("comm_campaigns").where({ id: b.campaign_id, state: "sending" }).update({ state: "completed", updated_at: trx.fn.now() });
       }
       if (outcome.type === "accepted" && b.message_id && b.purpose === "service") {
@@ -347,7 +641,7 @@ function createDelivery(context, service) {
 }
 
 // packages/communications/src/service.ts
-import { randomBytes, randomUUID as randomUUID2 } from "node:crypto";
+import { randomUUID as randomUUID2 } from "node:crypto";
 
 // packages/communications/src/normalize.ts
 var date = (value, milliseconds = false) => {
@@ -623,7 +917,8 @@ var menu = [
   ["\u041F\u0440\u043E\u0434\u0430\u0442\u044C / \u043E\u0431\u043C\u0435\u043D\u044F\u0442\u044C", "kind:trade"],
   ["\u0417\u0430\u0434\u0430\u0442\u044C \u0432\u043E\u043F\u0440\u043E\u0441", "kind:support"],
   ["\u041C\u043E\u0438 \u0437\u0430\u044F\u0432\u043A\u0438", "dialogs"],
-  ["\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0438", "news"]
+  ["\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0438", "news"],
+  ["\u041C\u043E\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u044B", "account"]
 ];
 function keyboard(platform, rows) {
   if (!rows.length) return {};
@@ -661,6 +956,7 @@ function createService(context) {
   const enabled = () => {
     if (!flag(env.ISVOI_COMMUNICATIONS_ENABLED)) fail("COMMUNICATIONS_DISABLED", 503);
   };
+  const identities = createIdentities(context, { enqueue, event });
   let staffProcessor;
   const setStaffProcessor = (fn) => {
     staffProcessor = fn;
@@ -946,8 +1242,8 @@ function createService(context) {
         menu
       );
     }
-    const active = await trx("comm_subscriptions").where({ identity_id: thread.identity_id, consent: true }).pluck("topic_key");
-    const draft = thread.subscription_draft ?? active;
+    const active2 = await trx("comm_subscriptions").where({ identity_id: thread.identity_id, consent: true }).pluck("topic_key");
+    const draft = thread.subscription_draft ?? active2;
     const topics = await trx("comm_topics").where({ active: true }).orderBy("sort");
     const rows = topics.map((t) => [
       `${draft.includes(t.key) ? "\u2713 " : "\u25CB "}${t.label}`,
@@ -973,22 +1269,9 @@ function createService(context) {
     const link = await trx("comm_link_tokens").where({ hash: digest(token), state: "pending" }).andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
     if (!link) return false;
     const lead = await trx("leads").where({ id: link.lead_id }).first();
-    if (!activeLead(lead) || lead.store_location_id !== n.store_id) return false;
+    if (!activeLead(lead) || (link.source_identity_id ? lead.store_location_id && lead.store_location_id !== n.store_id : lead.store_location_id !== n.store_id)) return false;
     if (link.source_identity_id) {
-      if (link.source_identity_id === thread.identity_id) return false;
-      await trx("comm_link_tokens").where({ hash: link.hash }).update({ target_identity_id: thread.identity_id, state: "confirm" });
-      const source = await trx("comm_threads").where({ identity_id: link.source_identity_id }).first();
-      const sourceConnection = await trx("comm_connections").where({ id: source.connection_id }).first();
-      await enqueue(
-        trx,
-        sourceConnection,
-        source,
-        `\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0435\u043D\u0438\u0435 \u044D\u0442\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0438 \u0432 ${n.platform}.`,
-        {},
-        [["\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044C", `link:${Buffer.from(link.hash, "hex").toString("base64url")}`]]
-      );
-      await enqueue(trx, n, thread, "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0441\u0432\u044F\u0437\u044C \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u043C \u0447\u0430\u0442\u0435. \u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u043A\u0430 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u0430.");
-      return true;
+      return identities.bind(trx, n, thread, link);
     }
     const [c] = await trx("comm_conversations").insert({ thread_id: thread.id, lead_id: lead.id }).onConflict(["thread_id", "lead_id"]).merge({ thread_id: thread.id }).returning("*");
     await trx("comm_access_grants").insert({ identity_id: thread.identity_id, lead_id: lead.id }).onConflict(["identity_id", "lead_id"]).merge({ revoked_at: null });
@@ -1000,6 +1283,7 @@ function createService(context) {
   async function processIncoming(connectionId) {
     enabled();
     return db.transaction(async (trx) => {
+      await identityLock(trx);
       const n = await trx("comm_connections").where({ id: connectionId, enabled: true }).forUpdate().first();
       if (!n) return null;
       const row = await trx("comm_inbound").where({ connection_id: n.id, state: "pending" }).orderBy("received_at").forUpdate().skipLocked().first();
@@ -1046,7 +1330,12 @@ function createService(context) {
       if (e.kind === "callback" && text.startsWith("conv:")) text = `dialog:${text.slice(5)}`;
       const start = text.match(/^\/start(?:@\w+)?(?:\s+(\S+))?$/);
       if (start?.[1] && /^[A-Za-z0-9_-]{43}$/.test(start[1])) {
-        const linked = await bindToken(trx, n, thread, start[1]);
+        let linked = false;
+        try {
+          linked = await trx.transaction((sub) => bindToken(sub, n, thread, start[1]));
+        } catch (error) {
+          if (!(error instanceof CommunicationError)) throw error;
+        }
         resultCode = linked ? "linked" : "invalid_link";
         if (!linked)
           await enqueue(
@@ -1065,33 +1354,13 @@ function createService(context) {
         handled = true;
         resultCode = "selected";
       }
-      if (e.kind === "callback" && text.startsWith("link:")) {
-        const hash = Buffer.from(text.slice(5), "base64url").toString("hex"), link = await trx("comm_link_tokens").where({ hash, state: "confirm", source_identity_id: identity.id }).andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
-        if (link) {
-          const ids = [identity.id, link.target_identity_id].sort();
-          const identities = await trx("comm_identities").whereIn("id", ids).orderBy("id").forUpdate();
-          const target = identities.find((i) => i.id === link.target_identity_id);
-          const contacts = await trx("comm_contacts").whereIn("id", [identity.contact_id, target.contact_id]).orderBy("id").forUpdate();
-          if (contacts.some((c2) => c2.merged_into)) return fail("CONTACT_ALREADY_MERGED", 409);
-          if (target.contact_id !== identity.contact_id) {
-            await trx("comm_identities").where({ contact_id: target.contact_id }).update({ contact_id: identity.contact_id });
-            await trx("comm_frequency").where({ contact_id: target.contact_id }).update({ contact_id: identity.contact_id });
-            await trx("comm_outbox").where({ contact_id: target.contact_id, purpose: "marketing", state: "pending" }).update({ state: "cancelled", error_code: "IDENTITY_LINK_RECHECK" });
-            await trx("comm_contacts").where({ id: target.contact_id }).update({ merged_into: identity.contact_id });
-          }
-          const targetThread = await trx("comm_threads").where({ identity_id: target.id }).first();
-          const [c] = await trx("comm_conversations").insert({ thread_id: targetThread.id, lead_id: link.lead_id }).onConflict(["thread_id", "lead_id"]).merge({ thread_id: targetThread.id }).returning("*");
-          await trx("comm_access_grants").insert({ identity_id: target.id, lead_id: link.lead_id }).onConflict(["identity_id", "lead_id"]).merge({ revoked_at: null });
-          await trx("comm_threads").where({ id: targetThread.id }).update({ selected_conversation_id: c.id });
-          await trx("comm_link_tokens").where({ hash }).update({ state: "done" });
-          await event(trx, {
-            identity_id: identity.id,
-            kind: "identity_linked",
-            dedupe_key: `link:${hash}`,
-            facts: { target: target.id, lead: link.lead_id },
-            is_test: identity.is_test
-          });
-          await enqueue(trx, n, thread, "\u0421\u0432\u044F\u0437\u044C \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0430 \u0434\u043B\u044F \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0438.");
+      if (e.kind === "callback" && (text.startsWith("link:") || text.startsWith("account:")) || ["account", "/account"].includes(text)) {
+        try {
+          const handledAccount = await trx.transaction((sub) => identities.customer(sub, n, thread, text, `account:${row.id}`));
+          if (!handledAccount) await enqueue(trx, n, thread, "\u041F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E. \u041F\u043E\u043F\u0440\u043E\u0441\u0438\u0442\u0435 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0430 \u0432\u044B\u0434\u0430\u0442\u044C \u043D\u043E\u0432\u0443\u044E \u0441\u0441\u044B\u043B\u043A\u0443.");
+        } catch (error) {
+          if (!(error instanceof CommunicationError)) throw error;
+          await enqueue(trx, n, thread, error.code === "IDENTITY_DELIVERY_BUSY" ? "\u0415\u0441\u0442\u044C \u043D\u0435\u0437\u0430\u0432\u0435\u0440\u0448\u0451\u043D\u043D\u0430\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430. \u041F\u043E\u0432\u0442\u043E\u0440\u0438\u0442\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0435\u0451 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u043E\u043C." : "\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E \u0438\u043B\u0438 \u043F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u0438\u0441\u0442\u0435\u043A\u043B\u043E. \u041E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \xAB\u041C\u043E\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u044B\xBB \u0438\u043B\u0438 \u043E\u0431\u0440\u0430\u0442\u0438\u0442\u0435\u0441\u044C \u043A \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0443.");
         }
         handled = true;
       }
@@ -1122,7 +1391,7 @@ function createService(context) {
         resultCode = "selected";
       }
       if (["/dialogs", "dialogs"].includes(text)) {
-        const choices = await trx("comm_conversations as c").join("leads as l", "l.id", "c.lead_id").where("c.thread_id", thread.id).whereIn("l.status", ["new", "in_progress", "waiting"]).select("c.id", "l.reference_code");
+        const choices = await trx("comm_conversations as c").join("leads as l", "l.id", "c.lead_id").where("c.thread_id", thread.id).whereExists(trx("comm_access_grants as g").select(1).whereRaw("g.lead_id=c.lead_id").where({ "g.identity_id": identity.id }).whereNull("g.revoked_at")).whereIn("l.status", ["new", "in_progress", "waiting"]).select("c.id", "l.reference_code");
         await enqueue(
           trx,
           n,
@@ -1230,6 +1499,7 @@ function createService(context) {
   async function commands(a, command, transaction) {
     if (!UUID.test(command.key || "")) return fail("COMMAND_KEY_REQUIRED");
     const execute = async (trx) => {
+      if (command.type === "link_start") await identityLock(trx);
       const fingerprint = digest(canonical(command));
       await trx("comm_command_receipts").insert({
         actor_id: a.user,
@@ -1281,6 +1551,8 @@ function createService(context) {
       } else if (command.type === "reply" || command.type === "note") {
         if (command.type === "reply" && (!activeLead(lead) || lead.assigned_to !== a.user))
           return fail("CLAIM_REQUIRED", 403);
+        if (command.type === "reply" && !await trx("comm_access_grants").where({ identity_id: thread.identity_id, lead_id: lead.id }).whereNull("revoked_at").first())
+          return fail("LINK_ACCESS_REVOKED", 409);
         const text = validText(p.text ?? "");
         const ids = Array.isArray(p.attachment_ids) ? p.attachment_ids : [];
         if (ids.length > 10 || ids.some((id) => typeof id !== "string" || !UUID.test(id)))
@@ -1334,14 +1606,7 @@ function createService(context) {
         else if (handling === "agent") await service.updateOne(lead.id, { status: "in_progress" });
       } else if (command.type === "link_start") {
         if (lead.assigned_to !== a.user) return fail("CLAIM_REQUIRED", 403);
-        const token = randomBytes(32).toString("base64url");
-        await trx("comm_link_tokens").insert({
-          hash: digest(token),
-          source_identity_id: thread.identity_id,
-          lead_id: lead.id,
-          expires_at: new Date(Date.now() + 15 * 6e4)
-        });
-        result = { ok: true, token, expires_in: 900 };
+        result = await identities.invite(trx, n, thread, lead, p.target_connection_id);
       } else return fail("UNKNOWN_COMMAND");
       if (command.type !== "read")
         await trx("comm_conversations").where({ id: c.id }).increment("version", 1);
@@ -1382,6 +1647,8 @@ function createService(context) {
       "l.assigned_to",
       "n.platform",
       "i.external_user_id",
+      "i.contact_id",
+      "i.id as identity_id",
       db.raw(`CASE
           WHEN c.first_agent_response_at IS NOT NULL AND c.first_response_due_at IS NOT NULL
             THEN CASE WHEN c.first_agent_response_at<=c.first_response_due_at THEN 'met' ELSE 'breached' END
@@ -1409,12 +1676,13 @@ function createService(context) {
     const conversationId = String(query.conversation_id || "");
     const { c } = await permitted(db, a, conversationId);
     if (c.thread_id !== threadId) return fail("FORBIDDEN", 403);
-    let q = db("comm_messages").where({ conversation_id: c.id }).whereNull("deleted_at");
+    const related = db("comm_conversations as related").join("comm_threads as rt", "rt.id", "related.thread_id").join("comm_connections as rn", "rn.id", "rt.connection_id").where({ "related.lead_id": c.lead_id, "rn.store_id": c.store_id }).select("related.id");
+    let q = db("comm_messages as m").join("comm_threads as mt", "mt.id", "m.thread_id").join("comm_connections as mn", "mn.id", "mt.connection_id").whereIn("m.conversation_id", related).whereNull("m.deleted_at").select("m.*", "mn.platform");
     if (query.before) {
       if (!/^\d+$/.test(String(query.before))) return fail("INVALID_CURSOR");
-      q = q.where("sequence", "<", query.before);
+      q = q.where("m.sequence", "<", query.before);
     }
-    const rows = await q.orderBy("sequence", "desc").limit(50);
+    const rows = await q.orderBy("m.sequence", "desc").limit(50);
     const files = rows.length ? await db("comm_attachments").whereIn(
       "message_id",
       rows.map((r) => r.id)
@@ -1670,30 +1938,34 @@ function createService(context) {
     if (!UUID.test(contactId)) return fail("NOT_FOUND", 404);
     const scopes = await db("comm_staff").where({ user_id: a.user, enabled: true, can_manage: true }).pluck("store_id");
     if (!scopes.length) return fail("FORBIDDEN", 403);
-    const identities = await db("comm_identities as identity").join("comm_connections as connection", "connection.id", "identity.connection_id").where({ "identity.contact_id": contactId }).whereIn("connection.store_id", scopes).select(
+    const identities2 = await db("comm_identities as identity").join("comm_connections as connection", "connection.id", "identity.connection_id").where({ "identity.contact_id": contactId }).whereIn("connection.store_id", scopes).select(
       "identity.*",
       "connection.name as connection_name",
       "connection.platform",
       "connection.store_id"
     );
-    if (!identities.length) return fail("NOT_FOUND", 404);
-    const identityIds = identities.map((identity) => identity.id);
+    if (!identities2.length) return fail("NOT_FOUND", 404);
+    const identityIds = identities2.map((identity) => identity.id);
     const threads = await db("comm_threads").whereIn("identity_id", identityIds).select("id");
     const threadIds = threads.map((thread) => thread.id);
     const subscriptions2 = await db("comm_subscriptions as subscription").join("comm_topics as topic", "topic.key", "subscription.topic_key").whereIn("subscription.identity_id", identityIds).select("subscription.*", "topic.label");
     const conversations = threadIds.length ? await db("comm_conversations as conversation").join("comm_threads as thread", "thread.id", "conversation.thread_id").join("leads as lead", "lead.id", "conversation.lead_id").whereIn("conversation.thread_id", threadIds).orderBy("conversation.created_at", "desc").select("conversation.id", "conversation.handling", "conversation.created_at", "conversation.last_inbound_at", "lead.id as lead_id", "lead.reference_code", "lead.status") : [];
     return {
       contact: await db("comm_contacts").where({ id: contactId }).first(),
-      identities,
+      identities: identities2,
       subscriptions: subscriptions2,
       consent_events: await db("comm_consent_events").whereIn("identity_id", identityIds).orderBy("created_at", "desc").limit(100),
       events: await db("comm_events").whereIn("identity_id", identityIds).orderBy("occurred_at", "desc").limit(100),
       conversations,
+      links: await db("comm_identity_links").whereIn("source_identity_id", identityIds).whereIn("target_identity_id", identityIds).select("id", "source_identity_id", "target_identity_id", "lead_id", "created_at", "revoked_at"),
       deliveries: await db("comm_outbox as outbox").leftJoin("comm_campaigns as campaign", "campaign.id", "outbox.campaign_id").whereIn("outbox.identity_id", identityIds).whereNotNull("outbox.campaign_id").orderBy("outbox.created_at", "desc").limit(100).select("outbox.id", "outbox.state", "outbox.error_code", "outbox.accepted_at", "outbox.created_at", "outbox.test_delivery", "campaign.name as campaign_name"),
-      frequency_7d: Number(
-        (await db("comm_frequency").where({ contact_id: contactId }).whereNull("released_at").andWhere("reserved_at", ">", db.raw("now()-interval '7 days'")).count("* as count").first())?.count || 0
-      )
+      frequency_7d: await frequencyCount(db, contactId)
     };
+  }
+  async function linkOptions(a, conversationId) {
+    const { c } = await permitted(db, a, conversationId);
+    const source = await db("comm_connections").where({ id: c.connection_id }).first();
+    return db("comm_connections").where({ store_id: c.store_id, enabled: true }).whereNot("platform", source.platform).whereNotNull("bot_username").select("id", "name", "platform");
   }
   return {
     actor,
@@ -1708,6 +1980,8 @@ function createService(context) {
     audience,
     audienceContacts,
     audienceContact,
+    linkOptions,
+    contactAction: identities.action,
     enqueue,
     event,
     setStaffProcessor,

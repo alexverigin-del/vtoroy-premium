@@ -158,4 +158,13 @@ test("marketing rechecks consent and enforces two logical sends per seven days",
     (await db("comm_outbox").where({ id: withdrawnOutbox.id }).first()).error_code,
     "CONSENT_WITHDRAWN",
   );
+  // Contact-wide refusal wins over topic consent, including an explicit pilot test.
+  await db("comm_subscriptions").where({ identity_id: identity }).update({ consent: true });
+  await db("comm_contacts").where({ id: contact }).update({ marketing_opt_out: true });
+  for (const testDelivery of [false, true]) {
+    await db("comm_outbox").where({ id: withdrawnOutbox.id }).update({ state: "pending", test_delivery: testDelivery });
+    await db("comm_operations").where({ outbox_id: withdrawnOutbox.id }).update({ state: "pending" });
+    assert.equal(await delivery.next(connection, worker), null);
+    assert.equal((await db("comm_outbox").where({ id: withdrawnOutbox.id }).first()).error_code, "GLOBAL_OPT_OUT");
+  }
 });

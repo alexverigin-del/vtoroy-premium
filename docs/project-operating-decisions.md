@@ -1,10 +1,71 @@
 # Project Operating Decisions
 
-Last updated: 2026-10-04.
+Last updated: 2026-10-05.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Avito Pilot Feed Live (2026-10-05)
+
+- Feature release 418e793 is pushed to GitHub master and deployed on Beget via
+  git pull --ff-only, a separately built .next and PM2 isvoi-web restart. Source
+  base was actual production 414336e; no communication workers were restarted.
+  Full web:verify passes locally and on the VPS. Server build ran with systemd
+  MemoryHigh=1400M / MemoryMax=1800M / CPUQuota=150% / Nice=10.
+- Public URL: https://isvoi.ru/integrations/avito/feed.xml. GET returns 200 XML,
+  noindex/nofollow and private/no-store. Env enables the verified phone schema
+  and exactly the three approved external IDs. New site products do NOT enter
+  this pilot automatically; inclusion requires another explicit reviewed rollout.
+  Current stock/status and price are read on each request. Sold/unavailable,
+  zero-stock, blocked or unpublished rows are withheld; unsafe data fails closed.
+- Directus has exactly three active Avito channel records for т11/т29/т12 and
+  one dedicated confirmed smartphones-pilot-2026-10-04 mapping. Existing IDs
+  and site prices 57900/51599/57900 are preserved; no price overrides. Generic
+  mappings remain unconfirmed. Active here means feed eligibility, not an
+  observed Avito publication or moderation status.
+- Transactional write rehearsal restored the original rows and mapping.
+  Protected before-state is in the verified VPS backup
+  /opt/isvoi/backups/directus/20261004T205415Z/avito-pilot-before.json.
+  Web rollback retains the old compiled app, protected env and source reference
+  at /opt/isvoi/backups/web/20261004T205415Z-avito-pilot. To stop the pilot, disable
+  AVITO_FEED_ENABLED and restart only isvoi-web with the updated environment.
+  To roll back channel data, use activate_avito_pilot.py --rollback with the
+  original approved XML and backup directory; it refuses conflicting later edits.
+  Never restore the entire live database merely to undo these three channel rows.
+- Loopback preview and public HTTPS XML match the approved validator-input XML
+  semantically, including all text, prices, attributes and 18 image URLs. Public
+  feed SHA-256 is 3fd8b8072a0044f46fe9ee62c9d110bacf2af298e789f0940eeb8abfeb1cb015;
+  bytes differ from the offline input only in serialization, not announcement
+  data. This comparison is not another Avito-side validation or moderation.
+- Postrelease checks pass /, /catalog, robots, sitemap, all three pilot product
+  pages and Directus health. All 18 JPEG transforms return 200 with valid JPEG
+  signatures. smoke:prod and desktop/mobile visual smoke for home/catalog/т11
+  pass. Focused tests pass 79 Python + 30 feed cases. Fresh sanitized snapshot
+  covers 32 devices, zero identifier redactions, exactly three changed channel
+  records and no changes to any other device record.
+- Inventory and Catalog V3 SQL audits pass. Full production audit is NOT fully
+  green: studio_workspace.presentation_invalid=6 because six already-hidden
+  legacy Telegram collections lack the expected archive suffix in their labels.
+  Visibility/sort are correct; this rollout did not change those collections.
+  Keep this presentational drift explicit and separate from Avito rather than
+  overwriting communication metadata during this release.
+- All separately rerun Trade governance/legal/runtime/pricing/Studio, API policy,
+  integrations, publication guard and content-ownership checks pass. Standard
+  ops CLI is also blocked because deploy cannot read infra/directus-beget/.env.
+  Manual nonsecret runtime checks pass container state, pinned Directus 11.17.4,
+  localhost-only port, CORS, cache/auto-purge, import-network and upload-size
+  settings; verified backup and public health checks are separate evidence.
+  Do not describe the blocked ops CLI or whole production chain as passed.
+- Reports and XML are retained in the VPS backup; local evidence and six
+  screenshots are under ignored outputs/avito-pilot-review-2026-10-04. Original
+  local communication branch and unrelated files remain intact; active release
+  checkout is work/avito-pilot-release, not that divergent local branch.
+- No source was saved in the Avito cabinet, no autoload run/API write, no paid
+  operation and no publication were performed. Old 8312555394 remains untouched.
+  API profile/exact ID mapping 403 remains unresolved. Next operator step: check
+  this public URL in Avito's separate validator; saving it as the autoload source
+  and allowing scheduled publication require explicit marketplace authorization.
 
 ## Avito Pilot Feed Release Authorization (2026-10-04)
 

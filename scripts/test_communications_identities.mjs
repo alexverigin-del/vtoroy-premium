@@ -98,12 +98,28 @@ test("account linking requires both identities, grants only one case, and ignore
   assert.equal(await db("comm_access_grants").where({ identity_id: f.target, lead_id: f.lead }).first(), undefined);
   await f.post(f.source, invitation.targetButton); // A forwarded button does not prove target ownership.
   assert.equal((await db("comm_link_tokens").where({ hash: invitation.hash }).first()).state, "target_confirm");
+  await db("comm_link_tokens").where({ hash: invitation.hash }).update({ expires_at: new Date(Date.now() + 30000) });
   await f.post(f.target, invitation.targetButton);
   assert.equal((await db("comm_link_tokens").where({ hash: invitation.hash }).first()).state, "confirm");
+  const deadline = (await db("comm_link_tokens").where({ hash: invitation.hash }).first()).expires_at;
+  assert.ok(new Date(deadline).getTime() > Date.now() + 14 * 60000, "source gets a fresh 15-minute approval window");
+  await f.post(f.target, invitation.targetButton);
+  assert.equal(new Date((await db("comm_link_tokens").where({ hash: invitation.hash }).first()).expires_at).getTime(), new Date(deadline).getTime(),
+    "repeated target clicks cannot prolong approval indefinitely");
+  await f.post(f.target, `/start ${invitation.token}`, "message");
+  const duplicate = await db("comm_inbound").whereRaw("event->>'actorId' = ? AND event->>'callbackData' = ?",
+    ["222", invitation.targetButton]).orderBy("received_at", "desc").first();
+  assert.equal(duplicate.result.result, "account_handled");
+  assert.equal(duplicate.result.error, undefined);
+  assert.equal((await db("comm_link_tokens").where({ hash: invitation.hash }).first()).state, "confirm");
+  assert.equal(Number((await db("comm_operations").whereRaw("payload->>'text' like 'Аккаунт % подтвердил связь.%'").count("* as n").first()).n), 1,
+    "a repeated target confirmation must not reissue the source question");
   await f.post(f.target, invitation.sourceButton);
   assert.equal((await db("comm_identities").where({ id: f.target }).first()).contact_id, f.targetContact);
   await f.post(f.source, invitation.sourceButton);
   await f.post(f.source, invitation.sourceButton); // Replay cannot merge or grant again.
+  await f.post(f.target, invitation.targetButton);
+  await f.post(f.target, `/link ${invitation.token}`, "message");
   assert.equal((await db("comm_identities").where({ id: f.target }).first()).contact_id, f.sourceContact);
   assert.equal(Number((await db("comm_identity_links").count("* as n").first()).n), 1);
   assert.ok((await db("comm_access_grants").where({ identity_id: f.target, lead_id: f.lead }).first()).link_id);
@@ -112,6 +128,12 @@ test("account linking requires both identities, grants only one case, and ignore
   assert.equal(card.identities.length, 2);
   assert.equal(card.links.length, 1);
   assert.equal("hash" in card.links[0], false);
+  const lastNotice = await db("comm_operations as p").join("comm_outbox as o", "o.id", "p.outbox_id")
+    .orderBy("o.created_at", "desc").select("p.payload").first();
+  assert.match(lastNotice.payload.text, /^Аккаунты уже связаны/);
+  await db("comm_link_tokens").where({ hash: invitation.hash }).update({ expires_at: new Date(0) });
+  await f.post(f.source, invitation.sourceButton);
+  assert.equal(Number((await db("comm_identity_links").count("* as n").first()).n), 1);
   // Staff history is unified for the authorized lead, not the unrelated case.
   const [targetCase] = await db("comm_conversations").where({ thread_id: f.targetThread, lead_id: f.lead });
   await db("comm_messages").insert({ thread_id: f.targetThread, conversation_id: targetCase.id,

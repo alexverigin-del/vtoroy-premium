@@ -322,8 +322,17 @@ try {
   };
   await postIdentity(targetIdentity, `/start ${token}`, "message");
   await postIdentity(targetIdentity, `link:t:${hash}`);
+  const confirmation = await db("comm_link_tokens").where({ hash: link.hash }).first();
+  assert.ok(new Date(confirmation.expires_at).getTime() > Date.now() + 14 * 60000);
+  await postIdentity(targetIdentity, `link:t:${hash}`);
+  assert.equal(new Date((await db("comm_link_tokens").where({ hash: link.hash }).first()).expires_at).getTime(),
+    new Date(confirmation.expires_at).getTime(), "repeated confirmation does not renew the deadline");
+  assert.equal(Number((await db("comm_operations").whereRaw("payload->>'text' like 'Аккаунт % подтвердил связь.%'").count("* as n").first()).n), 1);
   assert.equal((await db("comm_identities").where({ id: targetIdentity }).first()).contact_id, targetContact);
   await postIdentity(sourceIdentity, `link:s:${hash}`);
+  await postIdentity(sourceIdentity, `link:s:${hash}`);
+  await postIdentity(targetIdentity, `link:t:${hash}`);
+  assert.equal(Number((await db("comm_identity_links").where({ hash: link.hash }).count("* as n").first()).n), 1);
   const card = await service.audienceContact(owner, source.contact_id);
   assert.equal(card.identities.length, 2);
   assert.equal(await db("comm_access_grants").where({ identity_id: targetIdentity, lead_id: legacyLead }).first(), undefined);

@@ -487,12 +487,14 @@ export function createService(context: Context) {
     if (accountLink) token = token.slice(5);
     if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return false;
     const link = await trx("comm_link_tokens")
-      .where({ hash: digest(token), state: "pending" })
+      .where({ hash: digest(token) })
       .andWhere("expires_at", ">", trx.fn.now())
       .forUpdate()
       .first();
     if (!link) return false;
     if (accountLink && !link.source_identity_id) return false;
+    if (link.source_identity_id && !["pending", "target_confirm", "confirm", "done"].includes(link.state)) return false;
+    if (!link.source_identity_id && link.state !== "pending") return false;
     const lead = await trx("leads").where({ id: link.lead_id }).first();
     if (!activeLead(lead) || (link.source_identity_id
       ? lead.store_location_id && lead.store_location_id !== n.store_id
@@ -585,6 +587,7 @@ export function createService(context: Context) {
       }
       let handled = false,
         resultCode = "ignored";
+      let accountError: string | undefined;
       let text = e.kind === "callback" ? e.callbackData || "" : e.text.trim();
       if (e.kind === "callback" && text.startsWith("conv:")) text = `dialog:${text.slice(5)}`;
       const start = text.match(/^\/start(?:@\w+)?(?:\s+(\S+))?$/);
@@ -625,9 +628,15 @@ export function createService(context: Context) {
         ["account", "/account"].includes(text)) {
         try {
           const handledAccount = await trx.transaction((sub: Database) => identities.customer(sub, n, thread, text, `account:${row.id}`));
-          if (!handledAccount) await enqueue(trx, n, thread, "Приглашение недоступно. Попросите менеджера выдать новую ссылку.");
+          resultCode = handledAccount ? "account_handled" : "account_rejected";
+          if (!handledAccount) {
+            accountError = "LINK_UNAVAILABLE";
+            await enqueue(trx, n, thread, "Приглашение недоступно. Попросите менеджера выдать новую ссылку.");
+          }
         } catch (error) {
           if (!(error instanceof CommunicationError)) throw error;
+          resultCode = "account_rejected";
+          accountError = error.code;
           await enqueue(trx, n, thread, error.code === "IDENTITY_DELIVERY_BUSY"
             ? "Есть незавершённая отправка. Повторите действие после её проверки менеджером."
             : "Действие недоступно или приглашение истекло. Откройте «Мои аккаунты» или обратитесь к менеджеру.");
@@ -814,7 +823,7 @@ export function createService(context: Context) {
       });
       await trx("comm_inbound")
         .where({ id: row.id })
-        .update({ state: "done", processed_at: trx.fn.now(), result: { result: resultCode } });
+        .update({ state: "done", processed_at: trx.fn.now(), result: { result: resultCode, ...(accountError ? { error: accountError } : {}) } });
       return { id: row.id, result: resultCode };
     });
   }

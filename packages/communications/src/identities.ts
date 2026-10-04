@@ -155,7 +155,11 @@ export function createIdentities(context: Context, service: any) {
   }
   async function bind(trx: Database, n: any, thread: any, link: any) {
     const target = await trx("comm_identities").where({ id: thread.identity_id }).first();
+    if (link.state !== "pending" && link.target_identity_id !== target.id) return fail("LINK_UNAVAILABLE", 409);
+    if (link.state === "done") return linkStatus(trx, n, thread, link);
     const checked = await validateLink(trx, link, n, target);
+    if (link.state === "confirm") return service.enqueue(trx, n, thread, "Ваше подтверждение уже сохранено. Нажмите «Подтвердить связь» в исходном боте; до этого история недоступна.");
+    if (!["pending", "target_confirm"].includes(link.state)) return fail("LINK_UNAVAILABLE", 409);
     await trx("comm_link_tokens").where({ hash: link.hash }).update({ target_identity_id: target.id, state: "target_confirm" });
     const h = callbackHash(link.hash);
     await service.enqueue(trx, n, thread,
@@ -164,11 +168,20 @@ export function createIdentities(context: Context, service: any) {
       { expires_at: link.expires_at }, [["Да, это мои аккаунты", `link:t:${h}`], ["Отмена", `link:x:${h}`]]);
     return true;
   }
+  async function linkStatus(trx: Database, n: any, thread: any, link: any) {
+    const record = await trx("comm_identity_links").where({ hash: link.hash }).first();
+    await service.enqueue(trx, n, thread, record && !record.revoked_at
+      ? "Аккаунты уже связаны. Управление доступно в разделе «Мои аккаунты»."
+      : "Эта связь уже отозвана. Откройте «Мои аккаунты» или получите новое приглашение.");
+    return true;
+  }
   async function confirm(trx: Database, n: any, thread: any, action: string, hash: string) {
-    const link = await trx("comm_link_tokens").where({ hash })
-      .andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
-    if (!link || !["target_confirm", "confirm"].includes(link.state)) return fail("LINK_UNAVAILABLE", 409);
+    const link = await trx("comm_link_tokens").where({ hash }).forUpdate().first();
     const who = thread.identity_id;
+    if (!link || ![link.source_identity_id, link.target_identity_id].includes(who)) return fail("LINK_UNAVAILABLE", 409);
+    if (link.state === "done" && ((action === "t" && who === link.target_identity_id) ||
+      (action === "s" && who === link.source_identity_id))) return linkStatus(trx, n, thread, link);
+    if (new Date(link.expires_at) <= new Date() || !["target_confirm", "confirm"].includes(link.state)) return fail("LINK_UNAVAILABLE", 409);
     if (action === "x") {
       if (![link.source_identity_id, link.target_identity_id].includes(who)) return fail("LINK_UNAVAILABLE", 409);
       await trx("comm_link_tokens").where({ hash }).update({ state: "revoked" });
@@ -178,11 +191,15 @@ export function createIdentities(context: Context, service: any) {
     const targetConnection = await trx("comm_connections").where({ id: target.connection_id }).first();
     const { source, sourceConnection, lead, sourceGroup, targetGroup } = await validateLink(trx, link, targetConnection, target);
     const sourceThread = await trx("comm_threads").where({ identity_id: source.id }).first();
+    if (action === "t" && link.state === "confirm" && who === target.id && link.target_confirmed_at)
+      return service.enqueue(trx, n, thread, "Ваше подтверждение уже сохранено. Нажмите «Подтвердить связь» в исходном боте; до этого история недоступна.");
     if (action === "t" && link.state === "target_confirm" && who === target.id) {
-      await trx("comm_link_tokens").where({ hash }).update({ state: "confirm", target_confirmed_at: trx.fn.now() });
+      // The authenticated source gets its own bounded approval window; repeats never renew it.
+      const sourceDeadline = new Date(Date.now() + 900_000);
+      await trx("comm_link_tokens").where({ hash }).update({ state: "confirm", target_confirmed_at: trx.fn.now(), expires_at: sourceDeadline });
       await service.enqueue(trx, sourceConnection, sourceThread,
-        `Аккаунт ${targetConnection.platform.toUpperCase()} ${masked(target.external_user_id)} подтвердил связь. Это ваш аккаунт?`,
-        { expires_at: link.expires_at }, [["Подтвердить связь", `link:s:${callbackHash(hash)}`], ["Отмена", `link:x:${callbackHash(hash)}`]]);
+        `Аккаунт ${targetConnection.platform.toUpperCase()} ${masked(target.external_user_id)} подтвердил связь. Это ваш аккаунт? Подтвердите в течение 15 минут.`,
+        { expires_at: sourceDeadline }, [["Подтвердить связь", `link:s:${callbackHash(hash)}`], ["Отмена", `link:x:${callbackHash(hash)}`]]);
       return service.enqueue(trx, n, thread, "Ожидаем подтверждение в исходном чате. История пока недоступна.");
     }
     if (action !== "s" || link.state !== "confirm" || who !== source.id || !link.target_confirmed_at)

@@ -38480,7 +38480,11 @@ function createIdentities(context, service) {
   }
   async function bind(trx, n4, thread, link) {
     const target = await trx("comm_identities").where({ id: thread.identity_id }).first();
+    if (link.state !== "pending" && link.target_identity_id !== target.id) return fail("LINK_UNAVAILABLE", 409);
+    if (link.state === "done") return linkStatus(trx, n4, thread, link);
     const checked = await validateLink(trx, link, n4, target);
+    if (link.state === "confirm") return service.enqueue(trx, n4, thread, "\u0412\u0430\u0448\u0435 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0436\u0435 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E. \u041D\u0430\u0436\u043C\u0438\u0442\u0435 \xAB\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044C \u0441\u0432\u044F\u0437\u044C\xBB \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u043C \u0431\u043E\u0442\u0435; \u0434\u043E \u044D\u0442\u043E\u0433\u043E \u0438\u0441\u0442\u043E\u0440\u0438\u044F \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u0430.");
+    if (!["pending", "target_confirm"].includes(link.state)) return fail("LINK_UNAVAILABLE", 409);
     await trx("comm_link_tokens").where({ hash: link.hash }).update({ target_identity_id: target.id, state: "target_confirm" });
     const h6 = callbackHash(link.hash);
     await service.enqueue(
@@ -38493,10 +38497,17 @@ function createIdentities(context, service) {
     );
     return true;
   }
+  async function linkStatus(trx, n4, thread, link) {
+    const record = await trx("comm_identity_links").where({ hash: link.hash }).first();
+    await service.enqueue(trx, n4, thread, record && !record.revoked_at ? "\u0410\u043A\u043A\u0430\u0443\u043D\u0442\u044B \u0443\u0436\u0435 \u0441\u0432\u044F\u0437\u0430\u043D\u044B. \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E \u0432 \u0440\u0430\u0437\u0434\u0435\u043B\u0435 \xAB\u041C\u043E\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u044B\xBB." : "\u042D\u0442\u0430 \u0441\u0432\u044F\u0437\u044C \u0443\u0436\u0435 \u043E\u0442\u043E\u0437\u0432\u0430\u043D\u0430. \u041E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \xAB\u041C\u043E\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u044B\xBB \u0438\u043B\u0438 \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u0435 \u043D\u043E\u0432\u043E\u0435 \u043F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435.");
+    return true;
+  }
   async function confirm(trx, n4, thread, action2, hash) {
-    const link = await trx("comm_link_tokens").where({ hash }).andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
-    if (!link || !["target_confirm", "confirm"].includes(link.state)) return fail("LINK_UNAVAILABLE", 409);
+    const link = await trx("comm_link_tokens").where({ hash }).forUpdate().first();
     const who = thread.identity_id;
+    if (!link || ![link.source_identity_id, link.target_identity_id].includes(who)) return fail("LINK_UNAVAILABLE", 409);
+    if (link.state === "done" && (action2 === "t" && who === link.target_identity_id || action2 === "s" && who === link.source_identity_id)) return linkStatus(trx, n4, thread, link);
+    if (new Date(link.expires_at) <= /* @__PURE__ */ new Date() || !["target_confirm", "confirm"].includes(link.state)) return fail("LINK_UNAVAILABLE", 409);
     if (action2 === "x") {
       if (![link.source_identity_id, link.target_identity_id].includes(who)) return fail("LINK_UNAVAILABLE", 409);
       await trx("comm_link_tokens").where({ hash }).update({ state: "revoked" });
@@ -38506,14 +38517,17 @@ function createIdentities(context, service) {
     const targetConnection = await trx("comm_connections").where({ id: target.connection_id }).first();
     const { source, sourceConnection, lead, sourceGroup, targetGroup } = await validateLink(trx, link, targetConnection, target);
     const sourceThread = await trx("comm_threads").where({ identity_id: source.id }).first();
+    if (action2 === "t" && link.state === "confirm" && who === target.id && link.target_confirmed_at)
+      return service.enqueue(trx, n4, thread, "\u0412\u0430\u0448\u0435 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0436\u0435 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E. \u041D\u0430\u0436\u043C\u0438\u0442\u0435 \xAB\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044C \u0441\u0432\u044F\u0437\u044C\xBB \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u043C \u0431\u043E\u0442\u0435; \u0434\u043E \u044D\u0442\u043E\u0433\u043E \u0438\u0441\u0442\u043E\u0440\u0438\u044F \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u0430.");
     if (action2 === "t" && link.state === "target_confirm" && who === target.id) {
-      await trx("comm_link_tokens").where({ hash }).update({ state: "confirm", target_confirmed_at: trx.fn.now() });
+      const sourceDeadline = new Date(Date.now() + 9e5);
+      await trx("comm_link_tokens").where({ hash }).update({ state: "confirm", target_confirmed_at: trx.fn.now(), expires_at: sourceDeadline });
       await service.enqueue(
         trx,
         sourceConnection,
         sourceThread,
-        `\u0410\u043A\u043A\u0430\u0443\u043D\u0442 ${targetConnection.platform.toUpperCase()} ${masked(target.external_user_id)} \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u043B \u0441\u0432\u044F\u0437\u044C. \u042D\u0442\u043E \u0432\u0430\u0448 \u0430\u043A\u043A\u0430\u0443\u043D\u0442?`,
-        { expires_at: link.expires_at },
+        `\u0410\u043A\u043A\u0430\u0443\u043D\u0442 ${targetConnection.platform.toUpperCase()} ${masked(target.external_user_id)} \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u043B \u0441\u0432\u044F\u0437\u044C. \u042D\u0442\u043E \u0432\u0430\u0448 \u0430\u043A\u043A\u0430\u0443\u043D\u0442? \u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0432 \u0442\u0435\u0447\u0435\u043D\u0438\u0435 15 \u043C\u0438\u043D\u0443\u0442.`,
+        { expires_at: sourceDeadline },
         [["\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044C \u0441\u0432\u044F\u0437\u044C", `link:s:${callbackHash(hash)}`], ["\u041E\u0442\u043C\u0435\u043D\u0430", `link:x:${callbackHash(hash)}`]]
       );
       return service.enqueue(trx, n4, thread, "\u041E\u0436\u0438\u0434\u0430\u0435\u043C \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u043C \u0447\u0430\u0442\u0435. \u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u043A\u0430 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u0430.");
@@ -39009,9 +39023,11 @@ function createService(context) {
     const accountLink = token.startsWith("link_");
     if (accountLink) token = token.slice(5);
     if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return false;
-    const link = await trx("comm_link_tokens").where({ hash: digest(token), state: "pending" }).andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
+    const link = await trx("comm_link_tokens").where({ hash: digest(token) }).andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
     if (!link) return false;
     if (accountLink && !link.source_identity_id) return false;
+    if (link.source_identity_id && !["pending", "target_confirm", "confirm", "done"].includes(link.state)) return false;
+    if (!link.source_identity_id && link.state !== "pending") return false;
     const lead = await trx("leads").where({ id: link.lead_id }).first();
     if (!activeLead(lead) || (link.source_identity_id ? lead.store_location_id && lead.store_location_id !== n4.store_id : lead.store_location_id !== n4.store_id)) return false;
     if (link.source_identity_id) {
@@ -39070,6 +39086,7 @@ function createService(context) {
         });
       }
       let handled = false, resultCode = "ignored";
+      let accountError;
       let text2 = e6.kind === "callback" ? e6.callbackData || "" : e6.text.trim();
       if (e6.kind === "callback" && text2.startsWith("conv:")) text2 = `dialog:${text2.slice(5)}`;
       const start = text2.match(/^\/start(?:@\w+)?(?:\s+(\S+))?$/);
@@ -39104,9 +39121,15 @@ function createService(context) {
       if (e6.kind === "callback" && (text2.startsWith("link:") || text2.startsWith("account:")) || ["account", "/account"].includes(text2)) {
         try {
           const handledAccount = await trx.transaction((sub) => identities.customer(sub, n4, thread, text2, `account:${row.id}`));
-          if (!handledAccount) await enqueue(trx, n4, thread, "\u041F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E. \u041F\u043E\u043F\u0440\u043E\u0441\u0438\u0442\u0435 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0430 \u0432\u044B\u0434\u0430\u0442\u044C \u043D\u043E\u0432\u0443\u044E \u0441\u0441\u044B\u043B\u043A\u0443.");
+          resultCode = handledAccount ? "account_handled" : "account_rejected";
+          if (!handledAccount) {
+            accountError = "LINK_UNAVAILABLE";
+            await enqueue(trx, n4, thread, "\u041F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E. \u041F\u043E\u043F\u0440\u043E\u0441\u0438\u0442\u0435 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0430 \u0432\u044B\u0434\u0430\u0442\u044C \u043D\u043E\u0432\u0443\u044E \u0441\u0441\u044B\u043B\u043A\u0443.");
+          }
         } catch (error) {
           if (!(error instanceof CommunicationError)) throw error;
+          resultCode = "account_rejected";
+          accountError = error.code;
           await enqueue(trx, n4, thread, error.code === "IDENTITY_DELIVERY_BUSY" ? "\u0415\u0441\u0442\u044C \u043D\u0435\u0437\u0430\u0432\u0435\u0440\u0448\u0451\u043D\u043D\u0430\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430. \u041F\u043E\u0432\u0442\u043E\u0440\u0438\u0442\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0435\u0451 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u043E\u043C." : "\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E \u0438\u043B\u0438 \u043F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u0438\u0441\u0442\u0435\u043A\u043B\u043E. \u041E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \xAB\u041C\u043E\u0438 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u044B\xBB \u0438\u043B\u0438 \u043E\u0431\u0440\u0430\u0442\u0438\u0442\u0435\u0441\u044C \u043A \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0443.");
         }
         handled = true;
@@ -39239,7 +39262,7 @@ function createService(context) {
         occurred_at: e6.occurredAt,
         is_test: identity.is_test
       });
-      await trx("comm_inbound").where({ id: row.id }).update({ state: "done", processed_at: trx.fn.now(), result: { result: resultCode } });
+      await trx("comm_inbound").where({ id: row.id }).update({ state: "done", processed_at: trx.fn.now(), result: { result: resultCode, ...accountError ? { error: accountError } : {} } });
       return { id: row.id, result: resultCode };
     });
   }

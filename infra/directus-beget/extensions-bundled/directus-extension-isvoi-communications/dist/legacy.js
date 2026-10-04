@@ -180,14 +180,18 @@ function createIdentities(context, service) {
       lead_id: lead.id,
       expires_at: expires
     });
-    const url = target.platform === "telegram" ? `https://t.me/${username}?start=${token}` : target.platform === "max" ? `https://max.ru/${username}?start=${token}` : `https://vk.me/${username}?ref=${token}&ref_source=account_link`;
+    const argument = `link_${token}`;
+    const url = target.platform === "telegram" ? `https://t.me/${username}?start=${argument}` : target.platform === "max" ? `https://max.ru/${username}?start=${argument}` : `https://vk.me/${username}?ref=${argument}&ref_source=account_link`;
     await service.enqueue(
       trx,
       n,
       thread,
-      `\u0427\u0442\u043E\u0431\u044B \u0441\u0432\u044F\u0437\u0430\u0442\u044C \u0432\u0430\u0448 \u0430\u043A\u043A\u0430\u0443\u043D\u0442 \u0441 ${target.platform.toUpperCase()}, \u043E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \u0441\u0441\u044B\u043B\u043A\u0443 \u043D\u0430 \u0441\u0432\u043E\u0451\u043C \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u0435: ${url}
-\u0421\u0441\u044B\u043B\u043A\u0430 \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 15 \u043C\u0438\u043D\u0443\u0442. \u041F\u043E\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044F \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0432 \u043E\u0431\u043E\u0438\u0445 \u0447\u0430\u0442\u0430\u0445; \u0434\u043E\u0441\u0442\u0443\u043F \u0432\u044B\u0434\u0430\u0451\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u044D\u0442\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0435.`,
-      { expires_at: expires }
+      `\u0427\u0442\u043E\u0431\u044B \u0441\u0432\u044F\u0437\u0430\u0442\u044C \u0432\u0430\u0448 \u0430\u043A\u043A\u0430\u0443\u043D\u0442 \u0441 ${target.platform.toUpperCase()}, \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \xAB\u041E\u0442\u043A\u0440\u044B\u0442\u044C ${target.platform.toUpperCase()}\xBB.
+\u041F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0445\u043E\u0434\u0430 \u0432 Telegram \u043F\u0440\u0438 \u043D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E\u0441\u0442\u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \xAB\u041D\u0430\u0447\u0430\u0442\u044C\xBB: \u0431\u043E\u0442 \u0434\u043E\u043B\u0436\u0435\u043D \u043F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0441\u0432\u044F\u0437\u0438. \u0415\u0441\u043B\u0438 \u043E\u0442\u043A\u0440\u044B\u043B\u043E\u0441\u044C \u0442\u043E\u043B\u044C\u043A\u043E \u0433\u043B\u0430\u0432\u043D\u043E\u0435 \u043C\u0435\u043D\u044E, \u0441\u043A\u043E\u043F\u0438\u0440\u0443\u0439\u0442\u0435 \u0432 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u044B\u0439 \u0431\u043E\u0442 \u0432\u0441\u044E \u043A\u043E\u043C\u0430\u043D\u0434\u0443:
+/link ${argument}
+\u041F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 15 \u043C\u0438\u043D\u0443\u0442. \u041F\u043E\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044F \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0432 \u043E\u0431\u043E\u0438\u0445 \u0447\u0430\u0442\u0430\u0445; \u0434\u043E\u0441\u0442\u0443\u043F \u0432\u044B\u0434\u0430\u0451\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u044D\u0442\u043E\u0439 \u0437\u0430\u044F\u0432\u043A\u0435.`,
+      { expires_at: expires },
+      [[`\u041E\u0442\u043A\u0440\u044B\u0442\u044C ${target.platform.toUpperCase()}`, url, "url"]]
     );
     return { ok: true, issued: true, expires_in: 900 };
   }
@@ -925,7 +929,7 @@ function keyboard(platform, rows) {
   if (platform === "telegram")
     return {
       reply_markup: {
-        inline_keyboard: rows.map(([text, data]) => [{ text, callback_data: data }])
+        inline_keyboard: rows.map(([text, data, type]) => [type === "url" ? { text, url: data } : { text, callback_data: data }])
       }
     };
   if (platform === "max")
@@ -934,7 +938,7 @@ function keyboard(platform, rows) {
         {
           type: "inline_keyboard",
           payload: {
-            buttons: rows.map(([text, data]) => [{ type: "callback", text, payload: data }])
+            buttons: rows.map(([text, data, type]) => [type === "url" ? { type: "link", text, url: data } : { type: "callback", text, payload: data }])
           }
         }
       ]
@@ -942,8 +946,8 @@ function keyboard(platform, rows) {
   return {
     keyboard: JSON.stringify({
       inline: true,
-      buttons: rows.map(([label, action]) => [
-        {
+      buttons: rows.map(([label, action, type]) => [
+        type === "url" ? { action: { type: "open_link", label, link: action } } : {
           action: { type: "callback", label, payload: JSON.stringify({ action }) },
           color: "secondary"
         }
@@ -1265,9 +1269,12 @@ function createService(context) {
     );
   }
   async function bindToken(trx, n, thread, token) {
+    const accountLink = token.startsWith("link_");
+    if (accountLink) token = token.slice(5);
     if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return false;
     const link = await trx("comm_link_tokens").where({ hash: digest(token), state: "pending" }).andWhere("expires_at", ">", trx.fn.now()).forUpdate().first();
     if (!link) return false;
+    if (accountLink && !link.source_identity_id) return false;
     const lead = await trx("leads").where({ id: link.lead_id }).first();
     if (!activeLead(lead) || (link.source_identity_id ? lead.store_location_id && lead.store_location_id !== n.store_id : lead.store_location_id !== n.store_id)) return false;
     if (link.source_identity_id) {
@@ -1329,10 +1336,13 @@ function createService(context) {
       let text = e.kind === "callback" ? e.callbackData || "" : e.text.trim();
       if (e.kind === "callback" && text.startsWith("conv:")) text = `dialog:${text.slice(5)}`;
       const start = text.match(/^\/start(?:@\w+)?(?:\s+(\S+))?$/);
-      if (start?.[1] && /^[A-Za-z0-9_-]{43}$/.test(start[1])) {
+      const linkCommand = text.match(/^\/link(?:@\w+)?(?:\s+(\S+))?$/);
+      const linkArgument = linkCommand?.[1] ?? start?.[1];
+      const linkAttempt = Boolean(linkCommand || start && linkArgument && (linkArgument.startsWith("link_") || /^[A-Za-z0-9_-]{40,44}$/.test(linkArgument)));
+      if (linkAttempt) {
         let linked = false;
         try {
-          linked = await trx.transaction((sub) => bindToken(sub, n, thread, start[1]));
+          linked = await trx.transaction((sub) => bindToken(sub, n, thread, linkArgument || ""));
         } catch (error) {
           if (!(error instanceof CommunicationError)) throw error;
         }
@@ -1342,7 +1352,7 @@ function createService(context) {
             trx,
             n,
             thread,
-            "\u0421\u0441\u044B\u043B\u043A\u0430 \u0443\u0436\u0435 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0430 \u0438\u043B\u0438 \u0441\u0440\u043E\u043A \u0435\u0451 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F \u0438\u0441\u0442\u0451\u043A. \u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u044E\u0449\u0443\u044E \u0437\u0430\u044F\u0432\u043A\u0443 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043D\u043E\u0432\u043E\u0435 \u043E\u0431\u0440\u0430\u0449\u0435\u043D\u0438\u0435.",
+            "\u041F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E: \u043A\u043E\u0434 \u043F\u043E\u0432\u0440\u0435\u0436\u0434\u0451\u043D, \u0441\u0441\u044B\u043B\u043A\u0430 \u0443\u0436\u0435 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0430 \u0438\u043B\u0438 \u0438\u0441\u0442\u0435\u043A\u043B\u0430. \u041E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u0438\u0437 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0435\u0433\u043E \u043F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u044F; \u0435\u0441\u043B\u0438 \u043F\u0435\u0440\u0435\u0445\u043E\u0434 \u043D\u0435 \u0440\u0430\u0431\u043E\u0442\u0430\u0435\u0442, \u0441\u043A\u043E\u043F\u0438\u0440\u0443\u0439\u0442\u0435 \u0438\u0437 \u043D\u0435\u0433\u043E \u0432\u0441\u044E \u043A\u043E\u043C\u0430\u043D\u0434\u0443 /link \u0432 \u044D\u0442\u043E\u0442 \u0447\u0430\u0442. \u041F\u0440\u0438 \u043D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E\u0441\u0442\u0438 \u043F\u043E\u043F\u0440\u043E\u0441\u0438\u0442\u0435 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u0430 \u0432\u044B\u0434\u0430\u0442\u044C \u043D\u043E\u0432\u043E\u0435 \u043F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435.",
             {},
             menu
           );

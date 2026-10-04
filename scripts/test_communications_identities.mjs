@@ -58,7 +58,8 @@ async function fixture(t) {
     assert.deepEqual(await service.commands(actor, command), result, "replay must not issue a second invitation");
     const notice = await db("comm_operations as p").join("comm_outbox as o", "o.id", "p.outbox_id")
       .orderBy("o.created_at", "desc").select("p.*").first();
-    const token = notice.payload.text.match(/start=([A-Za-z0-9_-]{43})/)[1];
+    const token = notice.payload.text.match(/\/link (link_[A-Za-z0-9_-]{43})/)[1];
+    assert.equal(notice.payload.reply_markup.inline_keyboard[0][0].url, `https://max.ru/fixture_max_bot?start=${token}`);
     const link = await db("comm_link_tokens").where({ state: "pending" }).first();
     const h = Buffer.from(link.hash, "hex").toString("base64url");
     return { token, hash: link.hash, targetButton: `link:t:${h}`, sourceButton: `link:s:${h}` };
@@ -137,6 +138,27 @@ test("link confirmation rechecks closed case, expiry and connection scope", asyn
   await db("store_locations").insert({ id: otherStore });
   await db("comm_connections").where({ id: f.targetConnection }).update({ store_id: otherStore });
   await assert.rejects(f.issue(), /LINK_UNAVAILABLE/);
+});
+
+test("damaged start token never becomes attribution; full fallback command requires both confirmations", async (t) => {
+  const f = await fixture(t);
+  const invite = await f.issue();
+  const raw = invite.token.slice(5);
+  const damaged = raw.slice(0, 33) + raw.slice(34);
+  assert.equal(damaged.length, 42);
+  await f.post(f.target, `/start ${damaged}`, "message");
+  const badEvent = await f.db("comm_inbound").whereRaw("event->>'text' = ?", [`/start ${damaged}`]).first();
+  assert.equal(badEvent.result.result, "invalid_link");
+  assert.equal((await f.db("comm_identities").where({ id: f.target }).first()).source, null);
+  assert.equal((await f.db("comm_link_tokens").where({ hash: invite.hash }).first()).state, "pending");
+  await f.post(f.target, `/start ${invite.token.slice(0, -1)}`, "message");
+  assert.equal((await f.db("comm_link_tokens").where({ hash: invite.hash }).first()).state, "pending");
+  await f.post(f.target, `/link ${invite.token}`, "message");
+  assert.equal((await f.db("comm_link_tokens").where({ hash: invite.hash }).first()).state, "target_confirm");
+  assert.equal((await f.db("comm_identities").where({ id: f.target }).first()).contact_id, f.targetContact);
+  await f.post(f.target, invite.targetButton);
+  await f.post(f.source, invite.sourceButton);
+  assert.equal((await f.db("comm_identities").where({ id: f.target }).first()).contact_id, f.sourceContact);
 });
 
 test("unlink revokes shared access, cancels queued reply, and preserves frequency and refusal", async (t) => {

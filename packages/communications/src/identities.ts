@@ -141,13 +141,16 @@ export function createIdentities(context: Context, service: any) {
       .whereIn("state", ["pending", "target_confirm", "confirm"]).update({ state: "revoked" });
     await trx("comm_link_tokens").insert({ hash: digest(token), source_identity_id: thread.identity_id,
       target_connection_id: target.id, lead_id: lead.id, expires_at: expires });
-    const url = target.platform === "telegram" ? `https://t.me/${username}?start=${token}`
-      : target.platform === "max" ? `https://max.ru/${username}?start=${token}`
-      : `https://vk.me/${username}?ref=${token}&ref_source=account_link`;
+    const argument = `link_${token}`;
+    const url = target.platform === "telegram" ? `https://t.me/${username}?start=${argument}`
+      : target.platform === "max" ? `https://max.ru/${username}?start=${argument}`
+      : `https://vk.me/${username}?ref=${argument}&ref_source=account_link`;
     await service.enqueue(trx, n, thread,
-      `Чтобы связать ваш аккаунт с ${target.platform.toUpperCase()}, откройте ссылку на своём аккаунте: ${url}\n` +
-      "Ссылка действует 15 минут. Потребуется подтверждение в обоих чатах; доступ выдаётся только к этой заявке.",
-      { expires_at: expires });
+      `Чтобы связать ваш аккаунт с ${target.platform.toUpperCase()}, нажмите кнопку «Открыть ${target.platform.toUpperCase()}».\n` +
+      "После перехода в Telegram при необходимости нажмите «Начать»: бот должен показать подтверждение связи. " +
+      `Если открылось только главное меню, скопируйте в выбранный бот всю команду:\n/link ${argument}\n` +
+      "Приглашение действует 15 минут. Потребуется подтверждение в обоих чатах; доступ выдаётся только к этой заявке.",
+      { expires_at: expires }, [[`Открыть ${target.platform.toUpperCase()}`, url, "url"]]);
     return { ok: true, issued: true, expires_in: 900 };
   }
   async function bind(trx: Database, n: any, thread: any, link: any) {

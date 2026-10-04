@@ -82,6 +82,20 @@ test("empty menus do not create invalid keyboard payloads", () => {
   assert.deepEqual(keyboard("vk", []), {});
 });
 
+test("invitation buttons preserve URL parameters and keep callbacks distinct", () => {
+  const url = "https://t.me/fixture_bot?start=link_a_B-123";
+  const rows = [["Открыть Telegram", url, "url"], ["Отмена", "link:x:hash"]];
+  assert.deepEqual(keyboard("telegram", rows).reply_markup.inline_keyboard, [
+    [{ text: "Открыть Telegram", url }], [{ text: "Отмена", callback_data: "link:x:hash" }],
+  ]);
+  assert.deepEqual(keyboard("max", rows).attachments[0].payload.buttons, [
+    [{ type: "link", text: "Открыть Telegram", url }], [{ type: "callback", text: "Отмена", payload: "link:x:hash" }],
+  ]);
+  assert.deepEqual(JSON.parse(keyboard("vk", rows).keyboard).buttons[0], [
+    { action: { type: "open_link", label: "Открыть Telegram", link: url } },
+  ]);
+});
+
 test("SLA deadlines count only configured working time", () => {
   assert.deepEqual(serviceDeadlines("2026-09-07T07:05:00.000Z", defaultServiceLevel), {
     firstResponseDueAt: new Date("2026-09-07T07:15:00.000Z"),

@@ -303,8 +303,9 @@ try {
   const issued = await service.commands(owner, invitation);
   assert.deepEqual(await service.commands(owner, invitation), issued);
   assert.equal("url" in issued, false, "Studio command receipt never reveals the capability");
-  const notice = await db("comm_operations").whereRaw("payload->>'text' like '%start=%'").first();
-  const token = notice.payload.text.match(/start=([A-Za-z0-9_-]{43})/)[1];
+  const notice = await db("comm_operations").whereRaw("payload->>'text' like '%/link link_%'").first();
+  const token = notice.payload.text.match(/\/link (link_[A-Za-z0-9_-]{43})/)[1];
+  assert.equal(notice.payload.reply_markup.inline_keyboard[0][0].url, `https://max.ru/fixture_max_bot?start=${token}`);
   const link = await db("comm_link_tokens").where({ source_identity_id: sourceIdentity, state: "pending" }).first();
   const hash = Buffer.from(link.hash, "hex").toString("base64url");
   const postIdentity = async (identityId, text, kind = "callback") => {

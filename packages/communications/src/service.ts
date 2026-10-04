@@ -55,7 +55,7 @@ export function keyboard(platform: string, rows: string[][]): Record<string, unk
   if (platform === "telegram")
     return {
       reply_markup: {
-        inline_keyboard: rows.map(([text, data]) => [{ text, callback_data: data }]),
+        inline_keyboard: rows.map(([text, data, type]) => [type === "url" ? { text, url: data } : { text, callback_data: data }]),
       },
     };
   if (platform === "max")
@@ -64,7 +64,7 @@ export function keyboard(platform: string, rows: string[][]): Record<string, unk
         {
           type: "inline_keyboard",
           payload: {
-            buttons: rows.map(([text, data]) => [{ type: "callback", text, payload: data }]),
+            buttons: rows.map(([text, data, type]) => [type === "url" ? { type: "link", text, url: data } : { type: "callback", text, payload: data }]),
           },
         },
       ],
@@ -72,8 +72,8 @@ export function keyboard(platform: string, rows: string[][]): Record<string, unk
   return {
     keyboard: JSON.stringify({
       inline: true,
-      buttons: rows.map(([label, action]) => [
-        {
+      buttons: rows.map(([label, action, type]) => [
+        type === "url" ? { action: { type: "open_link", label, link: action } } : {
           action: { type: "callback", label, payload: JSON.stringify({ action }) },
           color: "secondary",
         },
@@ -483,6 +483,8 @@ export function createService(context: Context) {
     );
   }
   async function bindToken(trx: Database, n: Connection, thread: any, token: string) {
+    const accountLink = token.startsWith("link_");
+    if (accountLink) token = token.slice(5);
     if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return false;
     const link = await trx("comm_link_tokens")
       .where({ hash: digest(token), state: "pending" })
@@ -490,6 +492,7 @@ export function createService(context: Context) {
       .forUpdate()
       .first();
     if (!link) return false;
+    if (accountLink && !link.source_identity_id) return false;
     const lead = await trx("leads").where({ id: link.lead_id }).first();
     if (!activeLead(lead) || (link.source_identity_id
       ? lead.store_location_id && lead.store_location_id !== n.store_id
@@ -585,10 +588,15 @@ export function createService(context: Context) {
       let text = e.kind === "callback" ? e.callbackData || "" : e.text.trim();
       if (e.kind === "callback" && text.startsWith("conv:")) text = `dialog:${text.slice(5)}`;
       const start = text.match(/^\/start(?:@\w+)?(?:\s+(\S+))?$/);
-      if (start?.[1] && /^[A-Za-z0-9_-]{43}$/.test(start[1])) {
+      const linkCommand = text.match(/^\/link(?:@\w+)?(?:\s+(\S+))?$/);
+      const linkArgument = linkCommand?.[1] ?? start?.[1];
+      // A damaged capability must never become acquisition attribution or the welcome flow.
+      const linkAttempt = Boolean(linkCommand || (start && linkArgument &&
+        (linkArgument.startsWith("link_") || /^[A-Za-z0-9_-]{40,44}$/.test(linkArgument))));
+      if (linkAttempt) {
         let linked = false;
         try {
-          linked = await trx.transaction((sub: Database) => bindToken(sub, n, thread, start[1]));
+          linked = await trx.transaction((sub: Database) => bindToken(sub, n, thread, linkArgument || ""));
         } catch (error) {
           if (!(error instanceof CommunicationError)) throw error;
         }
@@ -598,7 +606,7 @@ export function createService(context: Context) {
             trx,
             n,
             thread,
-            "Ссылка уже использована или срок её действия истёк. Выберите действующую заявку или создайте новое обращение.",
+            "Приглашение недоступно: код повреждён, ссылка уже использована или истекла. Откройте кнопку из последнего приглашения; если переход не работает, скопируйте из него всю команду /link в этот чат. При необходимости попросите менеджера выдать новое приглашение.",
             {},
             menu,
           );

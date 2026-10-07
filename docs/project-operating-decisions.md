@@ -6,6 +6,29 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Catalog Gallery Operator Release (2026-10-07)
+
+- Owner explicitly confirmed push to origin/master and Beget fast-forward for
+  commit 646d5b8 (Add guarded catalog gallery curation workflow). The initial
+  automated push rejection was resolved by this fresh confirmation, not bypassed.
+- GitHub and clean /opt/isvoi advanced from a88af18 to 646d5b8 with
+  git pull --ff-only. Only eight operator/test scripts and two docs changed.
+  No media manifest replay, migration, Directus data write or marketplace action.
+- App/package tree hashes, existing Next BUILD_ID and sanitized PM2 process
+  status/restart counts/uptimes are unchanged. No rebuild or PM2 restart was
+  required for this operator-only release. Whole-row hashes of all 17 protected
+  business tables match before/after, including prices, stock and publication.
+- Protected release records: /opt/isvoi/backups/releases/
+  20261007T091452Z-gallery-operator/before.json and after.json. The verified
+  Directus backup remains /opt/isvoi/backups/directus/20261007T081944Z-gallery.
+- Deployed fixture-based curation integration/rollback test passes. Production
+  browser smoke and Catalog V3, inventory and product-passports-v8 SQL audits
+  pass. Home/catalog/product/robots/sitemap/Directus health return 200; Avito
+  feed returns 200 with exactly three ads and 18 image URLs, no cabinet writes.
+- Existing global audit caveats remain: six archived Telegram presentation
+  warnings and the standard ops CLI's protected infra env read limitation.
+  The original primary checkout's unrelated unfinished work is preserved.
+
 ## Catalog Gallery Curation Live (2026-10-07)
 
 - Initial owner authorization approved production photo/caption/order updates
@@ -67,7 +90,8 @@ memory alone.
   exactly three approved announcements and 18 JPEG URLs at 51599/57900/57900;
   listings and prices did not change. No Avito source save, autoload/API write,
   paid operation or activation of old 8312555394 occurred.
-- Origin master and production source remain clean at a88af18. Operator code is
+- At media-apply completion origin/master and production were clean at a88af18;
+  the subsequent source-only release is recorded above. Operator code is
   isolated in work/avito-pilot-release on codex/photo-gallery-review-2026-10-07;
   unrelated primary checkout Avito/communications work is preserved.
 - Evidence: ignored outputs/product-photo-audit-2026-10-07, original hashes,

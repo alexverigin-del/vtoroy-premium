@@ -1,10 +1,80 @@
 # Project Operating Decisions
 
-Last updated: 2026-10-05.
+Last updated: 2026-10-07.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Catalog Gallery Curation Live (2026-10-07)
+
+- Initial owner authorization approved production photo/caption/order updates
+  after backup and NON-generative local masked retouch. It excluded prices,
+  stock, grades, product taxonomy/status, app deploy, GitHub push and marketplace
+  publication. The subsequent explicit deploy request on the same date authorizes
+  publishing the reviewed operator scripts and operating memory; it does not
+  authorize replaying the already applied photo batch or any marketplace write.
+- Visual review covered 25 linked cards and 144 original WebP images, including
+  the five images of draft т38. No duplicate gallery sorts/file IDs or identical
+  cross-device image hashes were found. Classifications follow actual pictures,
+  not numbered source filenames: overview, screen, cameras/rear, left/right,
+  bottom. Ambiguous sides use factual screen-angle labels instead of guessing.
+- Live changes: 19 replacement images (18 background blemishes, plus backdrop
+  edges on two images, one overlapping the blemish set); 54 corrected captions
+  and 73 changed sort positions. 102 gallery rows changed in total. All listing
+  image IDs, image-row IDs, roles/statuses and product fields are preserved.
+- Replacement delivery is lossless WebP, 2400x1800, largest 901134 bytes. Pixel
+  comparison verifies zero changes outside the reviewed union masks and zero
+  overlap with declared protected device/shadow regions. Real wear/reflections
+  remain untouched; in particular preserve grade-B т39 side wear and the genuine
+  camera reflection on т24. Uncertain foreground marks are not erased.
+- Verified local VPS backup:
+  /opt/isvoi/backups/directus/20261007T081944Z-gallery. Database and uploads pass
+  SHA256SUMS, gzip and tar checks. Protected bundle/curation-state.json retains
+  the exact original/new gallery references and file metadata for scoped rollback.
+  The 19 previous files remain in ISVOI File Review; no files were deleted.
+- Initial atomic API request hit UNIQUE(product,sort) and rolled back fully.
+  Corrected operator stages vacant sort values and final order in the SAME
+  Directus 11.17.4 updateBatch transaction. Explicit resume requires prepared
+  state, exact manifest SHA and an unchanged original live before-state; uploaded
+  files were reused, not duplicated. Do not disable constraints or use separate
+  committed staging/final requests.
+- Ordered whole-row hashes of 17 protected business tables match before/after,
+  including products/offers, device/accessory details, passports/reports,
+  inventory/issues/receipts, brands/categories/models/specifications/compatibility,
+  channel listings/cost profiles/mappings. Sold cards remain sold, т38 stays draft.
+- Temporary non-admin catalog release identity was removed after each run and
+  the old token returns 401. No permanent Public/Editor/Manager permissions or
+  infrastructure env file permissions changed. Credentials stayed server-side.
+- API writes retain Directus activity/events/cache purge; authenticated existing
+  site-content revalidation succeeds. Public replacement bytes match all 19
+  approved hashes. Local web:verify, six retouch unit cases, guarded curation
+  integration/rollback test, Catalog V3/inventory/passport audits and standard
+  production smoke pass. Local generated next-env.d.ts required formatting before
+  web:verify; it is ignored, not an application source change.
+- Final full gallery QA passes 50 page cases at explicit 1366x900 / 390x844:
+  278 gallery-image checks across 24 published cards and draft 404 on both sizes.
+  All six fullscreen images pass on т8/т18/т34/т39 at each viewport. Eight
+  correctly sized screenshots and gallery-smoke.json replace the preliminary
+  report; visual inspection caught/fixed a nominal-mobile test using default
+  desktop size. The test now asserts actual viewport dimensions. Early rehearsal
+  timeouts came from clicking before hydration/angle transition completed; the
+  final test waits for the current DOM/file ID. No frontend fix was necessary.
+  Full global production chain is not claimed green:
+  previously reported six archived Telegram label warnings and protected infra
+  env limitation remain outside this media task.
+- Site/Directus health, robots and sitemap return 200. Avito feed still contains
+  exactly three approved announcements and 18 JPEG URLs at 51599/57900/57900;
+  listings and prices did not change. No Avito source save, autoload/API write,
+  paid operation or activation of old 8312555394 occurred.
+- Origin master and production source remain clean at a88af18. Operator code is
+  isolated in work/avito-pilot-release on codex/photo-gallery-review-2026-10-07;
+  unrelated primary checkout Avito/communications work is preserved.
+- Evidence: ignored outputs/product-photo-audit-2026-10-07, original hashes,
+  reviewed decisions/masks, before-after sheets, curation manifest/state and
+  public-browser captures. Repeatable procedure: docs/catalog-photo-curation.md
+  in the isolated operator branch. No photos/raw manifests/full identifiers or
+  private source filenames are committed.
 
 ## Avito Pilot Feed Live (2026-10-05)
 

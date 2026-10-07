@@ -6,6 +6,63 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Avito Six-Ad Feed Released (2026-10-07)
+
+- Owner explicitly instructed "не ждать, выкат": live release of the approved
+  cumulative six-ad roster is authorized and the 72-hour wait is explicitly
+  waived for this batch. This is NOT completed 72-hour observation or approval
+  of extra paid services. Existing т11/т29/т12 are retained; only т13/т14/т27
+  were added. т20 remains a distinct physical device outside this roster.
+- Application release commit 58e4e9fb77f4f43a24cf9b304e603a86f0714f7b
+  was pushed to origin/master and pulled --ff-only on Beget. Production build,
+  restart of only isvoi-web and smoke passed first with the original three-ID
+  allowlist. The original feed remained byte-identical before activation.
+- Fresh full Directus database/uploads backup is verified at
+  /opt/isvoi/backups/directus/20261007T134907Z-gallery.
+  Private stage: avito-expansion-preparation beneath this backup.
+  Guarded activation changed exactly three product_channel_listings once;
+  protected business data stayed unchanged. Durable private rollback receipt:
+  avito-expansion-receipt.json beneath the backup. No products, offers, prices,
+  stock, grades, photos, mappings or schema were modified.
+- Connected https://isvoi.ru/integrations/avito/feed.xml now serves six ads
+  and 36 approved JPEG URLs, with noindex and no-store. All IDs, field values,
+  exact leaf text, prices and per-ad photo order match the approved cumulative
+  XML; original three ads are preserved. т14 exports Color=золотистый,
+  battery 99% / 259 cycles; August diagnostic dates remain unchanged.
+- Approved file SHA-256:
+  b9f05e2aa9669b0ba0e300cb6c629f058ad938d6addaa5484d38058c8e23c285.
+  Live compact XML SHA-256:
+  7cdd000f2b522bccf4bfc86eca643d6ed54e88c1f3bea7beb58ba56063b7943d.
+  Different byte hashes reflect formatting and named-field order, NOT changed
+  data. Compare ads by immutable ID and fields by name; ignore only container
+  layout whitespace. Preserve exact scalar text and image order; reject
+  duplicate ads/fields. Seven additional comparator tests pass.
+- Initial switch attempts recovered the original three-ID allowlist because
+  the deployment comparator treated XML layout/field order as data changes.
+  PM2 also retained its original allowlist independently of .env.local.
+  Idempotent retries verified the applied receipt with changed=0, without
+  replaying business writes. Final runtime switch uses pm2 restart isvoi-web
+  --update-env with only the approved allowlist value supplied, then pm2 save.
+  PM2 top-level/nested config and .env.local were independently checked:
+  all contain the exact six IDs; isvoi-web is online, isvoi-telegram stays stopped.
+  Original env and PM2 dump remain private on VPS for recovery.
+- Verification: fresh 32-device sanitized snapshot, zero identifier redactions;
+  six pages/six masked certificates/36 decoded JPEGs with unchanged hashes;
+  full local web:verify; 61 Python plus 36 feed tests; 13 isolated SQL scenarios;
+  production smoke before and after expansion; HTTP 200 for home, catalog,
+  robots, sitemap and Directus health. Final read-only source equals the
+  approved active projection; unrelated devices and stores are unchanged.
+- Local ignored evidence: outputs/avito-next-batch-2026-10-07/
+  release-preparation/release-completion.json, after-release-catalog-snapshot.json,
+  authorization.json, stability.json and activate-result.json.
+  Credentials, full env and private receipts never entered Git/public artifacts.
+  Primary checkout's unrelated unfinished changes were preserved.
+- Avito will consume the connected URL through the owner's saved schedule.
+  New-party account ingestion, numeric Avito IDs, moderation and actual charges
+  are NOT yet verified; no Avito API/upload/billing calls or paid-feature
+  activation were made. Next: inspect the owner's next six-ad load report and
+  public QA; retain the old inactive 8312555394 without reactivation.
+
 ## Avito Six-Ad Live Release Authorized (2026-10-07)
 
 - Owner explicitly instructed: "не ждать, выкат". This authorizes commit,

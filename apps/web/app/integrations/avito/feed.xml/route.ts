@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { parseAvitoPilotIds, prepareAvitoFeed, type AvitoListingRow } from "@/lib/avito-feed";
+import {
+  AVITO_FEED_MAX_IDS,
+  parseAvitoPilotIds,
+  prepareAvitoFeed,
+  type AvitoListingRow,
+} from "@/lib/avito-feed";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -87,7 +92,7 @@ export async function GET() {
     "filter[channel][_eq]": "avito",
     "filter[external_id][_in]": allowedIds.join(","),
     fields,
-    limit: "4",
+    limit: String(AVITO_FEED_MAX_IDS + 1),
   });
   let report;
   try {

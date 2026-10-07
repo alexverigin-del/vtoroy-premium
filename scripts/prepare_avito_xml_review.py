@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
 
-from prepare_avito_catalog_workbook import COLORS, image_urls, one, percentage, prepare
+from prepare_avito_catalog_workbook import avito_color, image_urls, one, percentage, prepare
 
 
 def build_review(pilot, snapshot, public, approved):
@@ -80,7 +80,7 @@ def build_review(pilot, snapshot, public, approved):
             "Address": store["address"], "Title": title, "Description": description,
             "Price": int(price), "AdType": "Товар приобретен на продажу", "Condition": "Б/у",
             "Vendor": "Apple", "Model": product["model"], "MemorySize": details["storage"],
-            "Color": COLORS.get(product["color"]), "RamSize": ram, "Akb": battery,
+            "Color": avito_color(product["model"], product["color"]), "RamSize": ram, "Akb": battery,
             "DeviceFlaws": "Включается", "ScreenCondition": attrs["ScreenCondition"],
             "CaseCondition": attrs["CaseCondition"],
         }

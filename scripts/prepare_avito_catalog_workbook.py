@@ -20,8 +20,17 @@ TEMPLATE_SHA256 = "8f2c75e5dab0801a0b3b4693e58df82f73f09563db9a837a479e68b338d7c
 PHONE_SHEET = "Телефоны-Мобильные телефоны"
 COLORS = {"Deep Purple": "фиолетовый", "Silver": "серебристый", "Space Black": "черный",
           "Black Titanium": "черный", "White Titanium": "белый", "Blue Titanium": "синий",
-          "Natural Titanium": "серый", "Desert Titanium": "бежевый", "Burgundy": "красный",
+          "Natural Titanium": "серый", "Burgundy": "красный",
           "Cream": "бежевый", "Titanium Black": "черный", "Gold": "золотистый"}
+# Owner's validator rejected beige; owner then confirmed gold in the model's
+# Color dictionary. Full XML/account validation remains a separate gate.
+MODEL_COLORS = {("iPhone 16 Pro Max", "Desert Titanium"): "золотистый"}
+
+
+def avito_color(model, color):
+    return MODEL_COLORS.get((model, color), COLORS.get(color))
+
+
 LABELS = {
     "not_published_ready": "Черновик/архив или карточка не ready",
     "unsupported_phone_category": "Не смартфон: требуется отдельный шаблон Avito",
@@ -379,7 +388,7 @@ def write_workbook(template, target, report, snapshot):
                   8: entry["description_override"], 9: " | ".join(entry["image_urls"]),
                   12: "Телефоны", 13: entry["price_rub"], 14: "Мобильные телефоны",
                   15: "Товар приобретен на продажу", 16: "Б/у", 18: vendor,
-                  19: p["model"], 20: d["storage"], 22: COLORS.get(p["color"], ""),
+                  19: p["model"], 20: d["storage"], 22: avito_color(p["model"], p["color"]) or "",
                   27: percentage(d["battery"]) if vendor == "Apple" else None, 28: "Включается"}
         values[23] = entry.get("model_reference_attributes", {}).get("RamSize")
         values[26] = entry.get("confirmed_phone_attributes", {}).get("BoxSealed")

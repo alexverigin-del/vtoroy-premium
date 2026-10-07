@@ -1,6 +1,7 @@
 """Check public Directus JPEG variants in memory; no CMS writes or API tokens."""
 
 import io
+import hashlib
 import json
 import re
 import sys
@@ -47,7 +48,8 @@ def run(products):
                     width, height = image.size
                 if min(width, height) <= 0 or max(width, height) > 1600:
                     raise ValueError('Invalid transformed dimensions')
-                info.update(ok=True, bytes=len(body), width=width, height=height)
+                info.update(ok=True, bytes=len(body), width=width, height=height,
+                            sha256=hashlib.sha256(body).hexdigest())
             except urllib.error.HTTPError as error:
                 info['code'] = 'http_' + str(error.code)
             except (urllib.error.URLError, TimeoutError, OSError, ValueError):

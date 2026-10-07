@@ -30,6 +30,22 @@ def xml_evidence():
 
 
 class XmlReviewTests(unittest.TestCase):
+    def test_desert_titanium_color_candidate_does_not_grant_avito_validation(self):
+        pilot, snapshot, public = xml_evidence()
+        snapshot["products"][0].update(model="iPhone 16 Pro Max", color="Desert Titanium")
+        reference = pilot["model_reference"]["models"].pop("iPhone 14 Pro")
+        reference["attributes"]["RamSize"] = "8 ГБ"
+        pilot["model_reference"]["models"]["iPhone 16 Pro Max"] = reference
+        previous = deepcopy(snapshot)
+        previous["captured_at"] = public["captured_at"]
+        pilot["entries"] = select_pilot(previous, snapshot, public, {}, ["TEST-1"], pilot["owner_confirmation"])["entries"]
+        pilot["entries"][0]["model_reference_attributes"] = {"RamSize": "8 ГБ"}
+        xml, manifest = build_review(pilot, snapshot, public, {})
+        self.assertEqual(ET.fromstring(xml).findtext("Ad/Color"), "золотистый")
+        self.assertIn("Desert Titanium", ET.fromstring(xml).findtext("Ad/Description"))
+        self.assertFalse(manifest["dependent_catalog_combinations_verified"])
+        self.assertFalse(manifest["ready_to_upload"])
+
     def test_example_roundtrip_does_not_confirm_mapping_or_publication(self):
         pilot, snapshot, public = xml_evidence()
         untouched = deepcopy(snapshot)

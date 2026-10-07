@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  AVITO_FEED_MAX_IDS,
   buildAvitoFeed,
   parseAvitoPilotIds,
   prepareAvitoFeed,
@@ -100,6 +102,12 @@ test("phone values, plain text escaping and explicit JPEG URLs", () => {
   assert.equal(buildAvitoFeed([ready], "https://api.isvoi.ru", options), report.xml);
 });
 
+test("owner-rejected iPhone 16 Pro Max beige cannot enter the feed", () => {
+  invalid(changed({ attributes: { ...ready.attributes, Model: "iPhone 16 Pro Max", Color: "бежевый" } }), "rejected_model_color_combination");
+  assert.deepEqual(run(changed({ attributes: { ...ready.attributes, Model: "iPhone 16 Pro Max", Color: "золотистый" } })).errors, []);
+  assert.deepEqual(run(changed({ attributes: { ...ready.attributes, Color: "бежевый" } })).errors, []);
+});
+
 test("unverified kit and dependent box fields fail closed in defaults and listing attributes", () => {
   for (const attributes of [
     { BoxSealed: "Нет" },
@@ -175,13 +183,71 @@ test("at most ten published images", () => {
   assert.equal((run(row).xml.match(/<Image url=/gu) || []).length, 10);
 });
 
-test("only explicit 1-3 unique pilot IDs", () => {
+test("only explicit 1-6 unique pilot IDs", () => {
+  assert.equal(AVITO_FEED_MAX_IDS, 6);
   assert.deepEqual(parseAvitoPilotIds("a,b,c"), ["a", "b", "c"]);
-  for (const value of ["", "a,a", "a,b,c,d", "a,", "a b", "<Id>"]) {
+  assert.deepEqual(parseAvitoPilotIds("a,b,c,d,e,f"), ["a", "b", "c", "d", "e", "f"]);
+  for (const value of ["", "a,a", "a,b,c,d,e,f,g", "a,", "a b", "<Id>"]) {
     assert.deepEqual(parseAvitoPilotIds(value), []);
   }
   assert.equal(run(ready, { allowedIds: [] }).errors[0].codes[0], "invalid_pilot_allowlist");
   assert.equal(run(ready, { allowedIds: ["missing"] }).errors[0].codes[0], "missing_pilot_listing");
+});
+
+test("route fetch limit includes a duplicate detection row beyond the shared cap", () => {
+  const source = readFileSync(new URL("../apps/web/app/integrations/avito/feed.xml/route.ts", import.meta.url), "utf8");
+  assert.match(source, /limit:\s*String\(AVITO_FEED_MAX_IDS \+ 1\)/u);
+});
+
+const sixRows = () => Array.from({ length: 6 }, (_, index) => {
+  const row = structuredClone(ready);
+  row.external_id = `isvoi-${imageId(index + 1)}`;
+  row.product.id = `product-${index + 1}`;
+  row.product.inventory_item[0].product = row.product.id;
+  row.product.listing_file = imageId(index * 10 + 1);
+  row.product.images = [];
+  return row;
+});
+const feedFor = (rows, allowedIds = rows.map((row) => row.external_id)) =>
+  prepareAvitoFeed(rows, "https://api.isvoi.ru", { allowedIds });
+
+test("six explicit IDs preserve the first three ads including their photo order", () => {
+  const rows = sixRows();
+  const previous = feedFor(rows.slice(0, 3));
+  const expanded = feedFor(rows);
+  assert.deepEqual(expanded.errors, []);
+  assert.deepEqual(expanded.exportedIds, rows.map((row) => row.external_id));
+  const ads = (xml) => xml.match(/<Ad>.*?<\/Ad>/gsu);
+  assert.deepEqual(ads(expanded.xml).slice(0, 3), ads(previous.xml));
+});
+
+test("a seventh allowlisted ID is rejected; an outside row is never a replacement", () => {
+  const rows = sixRows();
+  const outside = changed({ external_id: "seventh" });
+  assert.equal(feedFor([...rows, outside]).xml, "");
+  const report = feedFor([...rows, outside], rows.map((row) => row.external_id));
+  assert.equal(report.exportedIds.length, 6);
+  assert.equal(report.excluded[0].codes[0], "outside_pilot");
+});
+
+test("six-ID feed fails closed for missing, duplicate or invalid sixth row", () => {
+  const rows = sixRows();
+  const ids = rows.map((row) => row.external_id);
+  assert.equal(feedFor(rows.slice(0, 5), ids).xml, "");
+  assert.equal(feedFor([...rows, structuredClone(rows[5])], ids).xml, "");
+  rows[5].attributes.IMEI = "123456789012345";
+  assert.equal(feedFor(rows, ids).xml, "");
+});
+
+test("sold and draft sixth rows remain excluded in the cumulative feed", () => {
+  for (const kind of ["sold", "draft"]) {
+    const rows = sixRows();
+    if (kind === "draft") rows[5].status = "draft";
+    else Object.assign(rows[5].product, { stock_status: "sold", stock_quantity: 0 });
+    const report = feedFor(rows);
+    assert.deepEqual(report.errors, []);
+    assert.deepEqual(report.exportedIds, rows.slice(0, 5).map((row) => row.external_id));
+  }
 });
 
 test("outside-pilot rows cannot enter the feed", () => {

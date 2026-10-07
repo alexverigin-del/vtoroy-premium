@@ -8,7 +8,7 @@ from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from prepare_avito_catalog_workbook import PHONE_SHEET, apply_reference_evidence, assess, balanced_copy, percentage, prepare, validate_template_choices
+from prepare_avito_catalog_workbook import PHONE_SHEET, apply_reference_evidence, assess, avito_color, balanced_copy, percentage, prepare, validate_template_choices
 from avito_html_privacy import check_html_identifiers
 
 
@@ -42,6 +42,13 @@ def fixture():
 
 
 class CatalogPreparationTests(unittest.TestCase):
+    def test_desert_titanium_requires_model_specific_color_mapping(self):
+        self.assertEqual(avito_color("iPhone 16 Pro Max", "Desert Titanium"), "золотистый")
+        self.assertIsNone(avito_color("unreviewed-model", "Desert Titanium"))
+        self.assertEqual(avito_color("unreviewed-model", "Cream"), "бежевый")
+        self.assertEqual(avito_color("iPhone 15 Pro Max", "Natural Titanium"), "серый")
+        self.assertEqual(avito_color("iPhone 14 Pro Max", "Silver"), "серебристый")
+
     def dictionary_fixture(self):
         workbook = Workbook()
         sheet = workbook.active

@@ -6,6 +6,280 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Avito Six-Ad Live Release Authorized (2026-10-07)
+
+- Owner explicitly instructed: "не ждать, выкат". This authorizes commit,
+  push, deployment and expansion of the connected feed to the exact approved
+  six IDs, and explicitly waives the 72-hour waiting period for this batch.
+  It does not assert that 72-hour observation was completed or authorize
+  extra paid services, unrelated inventory changes or other devices.
+- Release sequence: fresh source/media preflight and verified VPS backup;
+  deploy six-ID code while retaining the existing three-ID configuration;
+  guarded activation of only т13/т14/т27; expand the allowlist and restart
+  only isvoi-web; verify the public XML against the approved cumulative file.
+  Exact authorization and waiver evidence stay in private local/VPS staging.
+  Marketplace ingestion/moderation must be verified separately after upload.
+- This entry records authorization and intended sequence, not a successful
+  deployment. Actual release outcome is recorded separately after verification.
+
+## Avito Six-Ad Release Prepared (2026-10-07)
+
+- Scope: prepare the cumulative release only. Existing т11/т29/т12 remain
+  active; new т13/т14/т27 remain draft. т20 is a distinct physical device and
+  is outside this roster. Owner format/copy acceptance is not publication
+  authorization; the 72-hour stability period has not elapsed or been waived.
+- Added prepare_avito_expansion_release.py and activate_avito_expansion.py,
+  with the runbook in docs/avito-expansion-release.md. The operator defaults
+  to dry-run and reuses the existing confirmed category mapping. It checks
+  immutable IDs, stock, prices, diagnostic facts, all 36 JPEG SHA-256 values,
+  source freshness (one hour), private identifiers internally on the server
+  and exact original three-ad preservation. т14 retains 99% / 259 cycles.
+  Apply requires separate owner authorization, the stability gate or explicit
+  waiver, a verified VPS backup less than 24 hours old, and six-ID-capable
+  built code. It does not change env, restart PM2 or call Avito.
+- Transactional guards protect all six listings and source records; only the
+  new three channel rows can be activated. A private durable receipt supports
+  guarded rollback, preserves unrelated operator notes and refuses intervening
+  owned-field edits or collateral trigger mutations. No production apply or
+  rollback was performed in this preparation.
+- Verified local VPS backup:
+  /opt/isvoi/backups/directus/20261007T132328Z-gallery.
+  Existing gallery backup helper creates a full Directus database/uploads
+  backup; the suffix does not limit its scope to photos. SHA256SUMS, gzip and
+  tar checks pass. Offsite backup and production restore remain deferred.
+  Private operator staging is beneath this backup at
+  avito-expansion-preparation, not in the deployed application checkout.
+- Fresh sanitized catalog snapshot contains 32 products. Public checks pass
+  six pages, six masked certificates and 36 decoded 1600x1200 JPEGs, whose
+  hashes match the earlier accepted media evidence. Corrected offline XML
+  SHA-256 is b9f05e2aa9669b0ba0e300cb6c629f058ad938d6addaa5484d38058c8e23c285;
+  live three-ad XML stays byte-identical at
+  9a8f0f124c04279d7c72e77fbb0defadf00d82db8b0c873406ff4a1e87d68fee.
+  Source, checks, plan and readiness are ignored local evidence under
+  outputs/avito-next-batch-2026-10-07/release-preparation.
+- Verification: full web:verify passes, including lint, typecheck, build and
+  bundle gates; 61 focused Python tests and 36 feed tests pass. All 13 SQL
+  integration scenarios pass, including idempotency, concurrent edits,
+  collateral mutations and rollback. Fixtures use an existing postgres:16-alpine
+  image with no network, ports, mounts or production database credentials;
+  the disposable fixture container was removed.
+- Final production dry-run passes with changed=0 and all 19 protected table
+  hashes unchanged. Production checkout remains clean at
+  aef2191c27daaea54f6d67acd39a731322b74835. No commit, push, pull, application
+  deployment, PM2/env change, business-table write, Avito call or publication.
+  Primary checkout's unrelated unfinished work is preserved.
+- Actual release still needs explicit commit/deploy/publication authorization,
+  72-hour observation or an explicit owner waiver, fresh source/media checks
+  and a fresh verified backup when the current evidence expires. Approve any
+  extra placement costs separately. Successful XML validation does not prove
+  account ingestion, moderation or absence of marketplace charges.
+
+## Avito Corrected Six-Ad Format Accepted Per Owner (2026-10-07)
+
+- Owner confirmed the corrected six-ad XML passed validation: "Проверка пройдена,
+  всё ок". Scope is the COLOR_FIXED file below, with т14 Color=золотистый and
+  unchanged six IDs/copy/prices/photos. Descriptions were already approved.
+- Local file SHA-256:
+  b9f05e2aa9669b0ba0e300cb6c629f058ad938d6addaa5484d38058c8e23c285.
+  Record in outputs/avito-next-batch-2026-10-07/implementation/
+  format-validation-success.json; matching manifest records the owner result.
+  No fresh screenshot/report timestamp or independently verified validator input
+  hash was supplied. This is owner-reported FORMAT acceptance, not agent inspection,
+  account ingestion/moderation, photo validation or production release approval.
+- No live changes. Connected feed stays at the original three; next three stay
+  draft. Pending: 72-hour stability (not elapsed/waived), fresh release preflight,
+  backup, reviewed expansion operator and explicit commit/deploy/publication
+  authorization; extra placement costs require approval if applicable.
+
+## Avito Six-Ad Color Correction (2026-10-07)
+
+- Owner supplied six-ad format validator evidence: visible errors affect ONLY
+  т14 / isvoi-2435b3c8-b93a-4067-8958-4ecee4a9c330, iPhone 16 Pro Max.
+  Generic Desert Titanium -> beige mapping was rejected for this model despite
+  beige being present in the supplied XLSX flat dictionary. A flat list does not
+  validate dependent model/color combinations. Other five visible rows have
+  informational condition messages; no full successful validation is claimed.
+- Owner then confirmed GOLDEN in this model's Color dictionary. Serialize exact
+  lowercase золотистый, preserving canonical Desert Titanium in catalog/title/
+  approved description. Add model-specific avito_color mapping for this pair;
+  unknown Desert Titanium model combinations have no guessed generic fallback.
+  Feed regression guard rejects the observed invalid 16 Pro Max/beige pair.
+- Local replacement: outputs/avito-next-batch-2026-10-07/implementation/
+  ISVOI_Avito_SIX_AD_REVIEW_2026-10-07_COLOR_FIXED.xml, SHA-256
+  b9f05e2aa9669b0ba0e300cb6c629f058ad938d6addaa5484d38058c8e23c285.
+  Original six-ad XML/report preserved. Exact comparison proves ONLY т14 Color
+  changed; all six IDs, first three ads, prices, approved copy and 36 photo URLs
+  are unchanged. Prior public-media evidence is reused explicitly; normalized
+  XML used by identifier checks is identical, preserving privacy proof.
+- Evidence: avito-six-ad-color-error-2026-10-07.png, model-color-confirmation.json
+  and six-ad-color-fixed-manifest.json in that ignored implementation directory.
+  Model color confirmation is owner-supplied, not independently fetched. Full
+  corrected XML still needs separate Avito validation; no successful run invented.
+- 36 feed tests, 51 focused Python preparation/XML tests, full web:verify and
+  text audit pass. No commit/push/deploy/CMS/marketplace writes; connected live
+  feed remains the original three. Existing stability/release/payment gates stay.
+
+## Avito Six-Ad Expansion Implemented Locally (2026-10-07)
+
+- Owner requested implementation of the next-batch step. Local code in
+  work/avito-pilot-release supports 1-6 explicit immutable IDs through shared
+  AVITO_FEED_MAX_IDS. The route fetches cap + 1 for duplicate detection. Existing
+  guards for draft/sold/stock/mapping/inventory/privacy remain unchanged. No new
+  site product joins the live feed automatically; no config or channel write.
+- New prepare_avito_expansion_review.py re-runs the existing guarded preparation
+  and appends exactly three new ads to a pinned captured three-ad XML. Exact
+  existing SHA/order are required; original Ad subtrees, including copy, prices
+  and gallery order, are retained. Duplicate/overlapping/seventh IDs, private
+  fields and unsafe media fail closed. Historical activation operator is untouched.
+- Fresh sanitized 32-device snapshot and selected-product equality checks pass.
+  Existing live feed remains byte-identical to the accepted three-ad capture
+  9a8f0f124c04279d7c72e77fbb0defadf00d82db8b0c873406ff4a1e87d68fee.
+  Offline cumulative roster: existing т11/т29/т12 plus new т13/т14/т27, six ads
+  and 36 current JPEG URLs. т20 remains a distinct phone outside this selection.
+- Output: outputs/avito-next-batch-2026-10-07/implementation/
+  ISVOI_Avito_SIX_AD_REVIEW_2026-10-07.xml, SHA-256
+  f136c51b6ba4d4bc3d3c2459e5e85d22842abff10972a000d74b27feaff3aa94.
+  Adapter, sanitized source, pilot-review and six-ad-review-manifest remain
+  ignored local evidence. Owner subsequently explicitly approved the exact
+  workbook descriptions for т13/т14/т27 without changes, descriptions only, NOT
+  publication. copy-approval.json pins each SKU/ID/text hash; read-only workbook
+  comparison and fresh preparation confirm approval against unchanged facts.
+  Manifest records approval and removes that pending item; XML hash is unchanged.
+  Owner physical-state/battery/open-box confirmations remain separately scoped.
+- Verification: 35 feed regression cases and 49 focused Python preparation/XML
+  cases pass; full web:verify (lint/typecheck/build/bundle budgets), text audit
+  and git diff --check pass. Sandbox blocked the localhost warmup fixture;
+  authorized verification outside that restriction passes. Cumulative XML is locally well formed, NOT
+  Avito-validated: previous passing owner report covers only three IDs.
+  All 36 exact JPEG URLs decode to 1600x1200 with distinct bytes. Private serial/
+  IMEI comparison ran inside a read-only VPS query: zero matches and no 15-digit
+  sequences. Only counts/results returned; identifiers stayed on the server.
+  Evidence: implementation/six-ad-public-preflight.json. CLI regeneration gives
+  the same XML SHA. Primary checkout's unrelated unfinished changes are preserved.
+- No commit/push/deploy, Directus changes, Avito calls, uploads or publication.
+  Live feed is still three ads; new channel rows remain draft. Before expanding:
+  separate six-ad XML validator QA, 72-hour stability or
+  an explicit rule change, fresh stock/photo/live-feed checks, backup and
+  separate live-release authorization; approve extra costs if applicable.
+
+## Avito Next Batch Prepared (2026-10-07)
+
+- Owner requested the next batch after accepting the published pilot. Preparation
+  selects т13 (15 Pro Max / 512 GB / Natural Titanium / 64100), т14 (16 Pro Max /
+  256 GB / Desert Titanium / 75900) and т27 (15 Pro / 512 GB / Blue Titanium /
+  60200). All have stock 1, matched inventory, verified authenticity, grade A,
+  complete Passport and six distinct current photos. Existing channel IDs remain.
+- Fresh sanitized read-only snapshot and scoped public checks pass three pages,
+  three certificates and 18 decoded 1600x1200 JPEGs. No duplicate selected photo
+  hashes, shared gallery files, channel IDs or overlap with the first pilot.
+  Sanitizer is server-side before SSH output; full serial/IMEI stay on the VPS.
+- Owner separately confirmed current screen/body without defects, working
+  functions, open box/cable kit and unchanged battery: т13 100%/0, т14 99%/259,
+  т27 100%/0. Original 05.08 / 05.08 / 10.08 diagnostic dates are preserved.
+- Owner clarified т13 and т20 are separate physical phones. A subsequent private
+  production SQL comparison confirms both serials present and DISTINCT, distinct
+  product/inventory links, matched identities, stock 1 each and price 64100 each.
+  Full serial values/hashes were not exported. Remove the earlier automatic
+  deferral by model/storage/color/price: т20 remains a separate export candidate.
+  Keep distinct stable channel IDs, actual photos and diagnostics; do not merge
+  inventory or invent differences. This correction does not change the selected
+  three-device roster or publish т20 automatically. Evidence and workbook note
+  are corrected locally in outputs/avito-next-batch-2026-10-07.
+- Local evidence and the two-sheet review workbook are under ignored
+  outputs/avito-next-batch-2026-10-07. Copy initially awaited approval; later owner
+  approval is recorded above. Hardware RAM
+  reference is 8 GB per iFixit; this is NOT Avito account dictionary validation.
+- No live data/feed/code deploy changed; existing three listings are preserved.
+  New listings remain draft. Current parser/preparer/route cap is three IDs;
+  next authorized rollout must support the cumulative SIX explicit IDs, preserve
+  the first three, raise the fetch limit consistently and add regression tests.
+  Do not replace the connected source with an XML containing only the new batch.
+- Pending: text approval, Avito model/storage/color/RAM combination and XML QA,
+  backup plus reviewed source/config/data rollout, placement cost approval if
+  extra. The 72-hour stability window is not complete or waived by this preparation.
+
+## Avito Pilot Published Per Owner Report (2026-10-07)
+
+- After confirming URL-mode format validation, owner authorized connecting and
+  publishing the existing three-device pilot. Owner then investigated preload
+  without publication, confirmed that no such cabinet mode is available, and
+  explicitly chose publication as-is. Scope is ONLY т11/т29/т12 with the existing
+  IDs, approved descriptions, prices and 18 JPEG URLs; no pilot expansion.
+- Additional payment, upgrades and paid promotion are NOT authorized. Check
+  placement cost/current package in the cabinet before any charge; stop for
+  owner confirmation if extra spending is required.
+- Managed browser policy blocks Avito access. No source was saved, profile
+  changed, upload started or publication performed by the agent. Do not bypass
+  this restriction with alternate browser surfaces or API writes. Owner completed
+  the cabinet connection in their browser and reported it in chat on 07.10.2026.
+  This is owner confirmation, not an independently inspected saved profile.
+- Fresh own-site check confirms HTTP 200, three ads, six JPEGs each and exact
+  unchanged validated XML SHA-256
+  9a8f0f124c04279d7c72e77fbb0defadf00d82db8b0c873406ff4a1e87d68fee.
+  URL: https://isvoi.ru/integrations/avito/feed.xml. Preserve other sources if
+  present, leave old 8312555394 untouched, and inspect all three external IDs,
+  image order, moderation results and actual placement costs after upload.
+- Owner supplied the autoload report screenshot: three found ads, each marked
+  Successfully published / Unchanged, activation displayed 07.10.2026 13:10
+  (timezone not shown). This supersedes the earlier results-pending state and
+  confirms publication per report, not an independent public-page inspection.
+- Exact screenshot crosswalk (XML Id -> numeric Avito ID):
+  т29 isvoi-872f3638-c9d6-4c1d-b494-c4f5f02885c0 -> 8315599734;
+  т11 isvoi-87da52ec-4e2a-4018-baf8-79f14043cfa8 -> 8453675830;
+  т12 isvoi-e307d9cd-48aa-4475-a784-674749fde517 -> 8350567885.
+  Stable XML IDs are preserved; no extra/old 8312555394 row appears in this report.
+  These are evidence records, NOT a Directus schema/data migration.
+- Report notes automatic phone-number substitution on all three. Owner then
+  confirmed the requested public-card QA is complete and everything is correct:
+  photos/order, colors, prices, contact and card content. This is owner-reported
+  acceptance, not agent browser/API inspection. Exact cost amounts were not supplied.
+  Visible condition messages are informational, not publication errors; the
+  supplied screenshot is cropped at the bottom, not a full raw upload report.
+- Evidence: ignored outputs/avito-photo-recheck-2026-10-07/
+  avito-publication-report-2026-10-07.png and publication-report-evidence.json.
+  Upload ID, exact URLs, actual costs, saved schedule and independent public/
+  moderation QA remain unverified. Hourly loading was recommended. No polling
+  automation or marketplace/CMS write was started by the agent. Keep the pilot
+  limited to three until 72 hours without synchronization issues; initial
+  publication and owner public QA are complete. Expansion needs separate approval.
+
+## Avito Photo Recheck (2026-10-07)
+
+- READ ONLY recheck after gallery curation; no CMS/stock updates, application
+  deploy or Avito account writes. Checkout HEAD, origin/master and production match
+  aef2191. Sanitized snapshot: 2026-10-07T09:31:23Z, 32 devices, zero redactions.
+- All 24 published pages, 24 public certificates and 139 JPEG transforms pass.
+  None of the 19 retired photo IDs remains in published galleries/listing files.
+  Catalog V3/inventory SQL audits pass; 30 feed and 30 preparation tests pass.
+- Live feed remains exactly three active listings: т11/т29/т12, prices
+  57900/51599/57900, stock 1 each. All 18 exact feed JPEG URLs decode to
+  1600x1200, with unique bytes and current gallery ordering; visual contact sheets
+  were inspected. Known full inventory identifiers do not occur in the XML.
+- Relative to the owner's 04.10 validator-input XML, all three image lists are
+  reordered, but file-ID sets and ALL non-media fields are unchanged. These pilot
+  photos were not among the 19 retouched replacements. Local historical XML/XLSX
+  files do not update automatically; the dynamic public feed uses current media.
+- Current catalog has 18 available and SIX sold published devices; т31 is now
+  sold/0 in product and store offer and must not re-enter export from the older
+  inventory quantity=1. Basic preparation passes 15 available candidates, not
+  the historical 16. т34/т36/т37 still have unmatched receipt identity; do not
+  relabel them matched automatically. The pilot is not expanded by this audit.
+- Fresh exact feed XML and readiness/catalog/public evidence are under ignored
+  outputs/avito-photo-recheck-2026-10-07. XML SHA-256:
+  9a8f0f124c04279d7c72e77fbb0defadf00d82db8b0c873406ff4a1e87d68fee.
+  Owner subsequently supplied a passing FORMAT validator screenshot: accepted
+  07.10.2026 12:47:50 (timezone not shown), three ads, all pilot IDs match.
+  Each visible message rates condition Excellent; this is informational, not an
+  error. Evidence/screenshot are retained in the same ignored output directory.
+  Expanded owner screenshot confirms the selected By URL tab and the exact
+  https://isvoi.ru/integrations/avito/feed.xml URL with the same three IDs and
+  accepted time. This establishes URL-mode validation, not a second independent
+  run. Validator does not attest the local byte hash. Revalidate after XML changes.
+  Photos still require publication/moderation QA; the format tool does not check
+  them. No Avito API was called and prior profile/ID-link 403 is not resolved.
+  Passing format QA is NOT publication authorization. Saving the source,
+  scheduled autoload, payment and publication need explicit owner authorization.
+
 ## Catalog Gallery Operator Release (2026-10-07)
 
 - Owner explicitly confirmed push to origin/master and Beget fast-forward for

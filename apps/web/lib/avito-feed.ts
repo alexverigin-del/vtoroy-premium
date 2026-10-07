@@ -115,9 +115,12 @@ function validId(value: string): boolean {
   );
 }
 
+export const AVITO_FEED_MAX_IDS = 6;
+
 export function parseAvitoPilotIds(value: string): string[] {
   const ids = value.split(",").map((id) => id.trim());
-  if (ids.length < 1 || ids.length > 3 || ids.some((id) => !validId(id))) return [];
+  if (ids.length < 1 || ids.length > AVITO_FEED_MAX_IDS || ids.some((id) => !validId(id)))
+    return [];
   return new Set(ids).size === ids.length ? ids : [];
 }
 
@@ -178,7 +181,7 @@ export function prepareAvitoFeed(
   }
   if (
     allowedIds.length < 1 ||
-    allowedIds.length > 3 ||
+    allowedIds.length > AVITO_FEED_MAX_IDS ||
     allowedIds.some((id) => !validId(id)) ||
     new Set(allowedIds).size !== allowedIds.length
   ) {
@@ -311,6 +314,8 @@ export function prepareAvitoFeed(
     }
     if (attributes.AdType !== "Товар приобретен на продажу") codes.push("invalid_ad_type");
     if (!COLORS.has(text(attributes.Color))) codes.push("invalid_color");
+    if (attributes.Model === "iPhone 16 Pro Max" && attributes.Color === "бежевый")
+      codes.push("rejected_model_color_combination");
     if (!/^\d+(?:[.,]\d+)? (?:МБ|ГБ|ТБ)$/u.test(text(attributes.MemorySize))) {
       codes.push("invalid_memory_size");
     }

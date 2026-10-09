@@ -6,6 +6,58 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Avito Nine-Ad Feed Released (2026-10-09)
+
+- Application commit c709e7f45a94bf1200baf7c8f2b448008e2ae6d1 was pushed to
+  origin/master and deployed on Beget with git pull --ff-only. A detached build
+  with linked production .env.local passed build/bundle and isolated /trade plus
+  exact six-ad feed smoke before swapping .next and restarting only isvoi-web.
+  Temporary build checkout: /opt/isvoi/work/avito-nine-build-20261009, retained
+  for diagnosis. Prior .next, env and PM2 dump remain inside the private backup.
+- Verified full backup: /opt/isvoi/backups/directus/20261009T095844Z-gallery.
+  Private stage: avito-nine-ad-release; rollback receipt avito-nine-ad-receipt.json.
+  Guarded activation changed exactly three channel rows (т9/т24/т26) once;
+  protected tables, all existing six listings and category mapping are unchanged.
+  These rows now have active channel status, which does not attest moderation.
+- Connected https://isvoi.ru/integrations/avito/feed.xml now serves nine exact
+  approved IDs and 52 JPEG URLs. Existing six texts/fields/prices/photo order
+  are preserved; new prices are 53900/80300/70500. August diagnostic dates,
+  separately confirmed headset note and open-box/cable kit are retained.
+  No products, offers, inventory, prices, grades, photo files or schema changed.
+- Approved review SHA-256 remains
+  77bdc8705f26d2555d4fb8db0fa956da7dde1b2acb9fb6ab91e0e4625e407e4f.
+  Live compact XML SHA-256:
+  5bbde21c441cf2a8bc1800c0a68ad10d32d6daf030a01b0a15cda8b6bc376e6e.
+  Exact per-ID/named-field comparison confirms matching text and image order
+  despite formatting/field ordering differences. No-store/noindex verified.
+- Env file and PM2 top-level/nested allowlists contain all nine approved IDs;
+  restart used --update-env with only the allowlist supplied, followed by pm2
+  save after verification. isvoi-web online; isvoi-telegram remains stopped.
+- Verification: full local web:verify; 76 Python and 39 feed tests; 26 isolated
+  SQL scenarios across historical/current contracts; production write rehearsal
+  rolled back; production smoke passes both before and after expansion.
+  External HTTP 200 for home/catalog/robots/sitemap, all three added products,
+  and Directus health status ok. Fresh post-release 32-device snapshot has zero
+  identifier redactions, equals approved active projection, and confirms all
+  unrelated products/stores unchanged. Full production Directus audit was not
+  rerun; prior archived Telegram/ops-env audit limitations are not erased.
+- Read-only Avito account check at 2026-10-09T10:22:28Z, BEFORE expansion,
+  confirms all six current bindings active, INCLUDING т13 / 8338081334 at 64100.
+  This supersedes the earlier rejected observation. New three IDs were absent;
+  old unrelated 8312555394 remains old/inactive. New-party numeric Avito IDs,
+  account ingestion, moderation and actual charges are still unverified.
+  No Avito upload/publish/billing API or paid-feature activation was called.
+- Owner explicitly authorized this live expansion and separately waived waiting
+  for this batch; no completed 72-hour observation is claimed. Saved autoload
+  schedule will ingest the connected URL. Next: inspect the owner's nine-ad load
+  report, match each immutable XML ID to its numeric Avito ID and verify new
+  texts/photos/prices/moderation; do not create replacements or extra sources.
+- Ignored local evidence: outputs/avito-next-batch-2026-10-09/nine-ad-release,
+  including release-completion.json and after-release-catalog-snapshot.json.
+  Private full receipts/env/keys remain on VPS. Primary checkout's unrelated
+  unfinished work is preserved; the isolated release checkout is authoritative
+  for this feature. Documentation completion is committed separately afterward.
+
 ## Avito Nine-Ad Live Release Authorized And Rehearsed (2026-10-09)
 
 - Owner explicitly confirms deployment and inclusion of т9/т24/т26 in the

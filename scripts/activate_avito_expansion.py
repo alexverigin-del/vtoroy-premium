@@ -27,33 +27,34 @@ SOURCE_QUERY = "SELECT jsonb_build_object(" + SQL.split("SELECT jsonb_build_obje
 IMMUTABLE = ("id", "product", "channel", "external_id", "price_override")
 
 
-def read_state():
+def read_state(allowed_ids=ALL_IDS):
     return db(f"""BEGIN READ ONLY;
 SELECT jsonb_build_object(
  'listings',(SELECT coalesce(jsonb_agg(to_jsonb(l) ORDER BY l.id),'[]') FROM product_channel_listings l
-   WHERE l.channel='avito' AND l.external_id IN (SELECT jsonb_array_elements_text({json_sql(ALL_IDS)}))),
+   WHERE l.channel='avito' AND l.external_id IN (SELECT jsonb_array_elements_text({json_sql(allowed_ids)}))),
  'mapping',(SELECT to_jsonb(m) FROM channel_category_mappings m WHERE m.id='{MAPPING_ID}'));
 ROLLBACK;""")
 
 
-def validate_state(plan, state):
+def validate_state(plan, state, identities=None):
+    identities = identities if identities is not None else NEW | PILOT
     rows, mapping = state.get("listings", []), state.get("mapping") or {}
-    if (len(rows) != 6 or {r.get("external_id") for r in rows} != set(ALL_IDS)
+    if (len(rows) != len(identities) or {r.get("external_id") for r in rows} != set(identities)
             or mapping.get("channel") != "avito" or mapping.get("product_category") != CATEGORY_ID
             or mapping.get("external_category") != "Телефоны"
             or mapping.get("external_goods_type") != "Мобильные телефоны"
             or mapping.get("is_active") is not True or mapping.get("is_confirmed") is not True
             or mapping.get("template_version") != plan["mapping_version"]
             or mapping.get("default_attributes") != {}):
-        raise ValueError("Existing mapping or six-row identity changed")
+        raise ValueError("Existing mapping or release identity changed")
     for row in rows:
-        spec = (NEW | PILOT)[row["external_id"]]
+        spec = identities[row["external_id"]]
         if (row["id"] != spec[0] or row["product"] != spec[1] or row.get("price_override") is not None):
             raise ValueError("Channel identity or manual price changed")
 
 
-def protection_sql():
-    new_ids = json_sql([spec[0] for spec in NEW.values()])
+def protection_sql(new_rows=NEW):
+    new_ids = json_sql([spec[0] for spec in new_rows.values()])
     return f"""FOREACH table_name IN ARRAY ARRAY{json.dumps(PROTECTED).replace(chr(34), chr(39))} LOOP
  IF to_regclass('public.'||table_name) IS NOT NULL THEN
    condition := CASE WHEN table_name='product_channel_listings' THEN
@@ -65,8 +66,12 @@ def protection_sql():
 END LOOP;"""
 
 
-def transaction_sql(plan, before, xml, write=False, commit=False):
-    validate_state(plan, before)
+def transaction_sql(plan, before, xml, write=False, commit=False, identities=None, new_rows=NEW):
+    identities = identities if identities is not None else NEW | PILOT
+    allowed_ids = list(identities)
+    validate_state(plan, before, identities)
+    if len(new_rows) != 3 or not set(new_rows) <= set(identities):
+        raise ValueError("Exactly three known new release rows required")
     projection = f"""jsonb_build_object(
  'products',(SELECT jsonb_agg(value ORDER BY value->>'id') FROM jsonb_array_elements(src->'products')
    WHERE value->>'id' IN (SELECT value->>'id' FROM jsonb_array_elements({json_sql(plan['expected_before']['products'])}))),
@@ -85,7 +90,7 @@ BEGIN
   END IF;
  END LOOP;
  IF (SELECT coalesce(jsonb_agg(to_jsonb(l) ORDER BY l.id),'[]') FROM product_channel_listings l
-     WHERE l.channel='avito' AND l.external_id IN (SELECT jsonb_array_elements_text({json_sql(ALL_IDS)})))
+     WHERE l.channel='avito' AND l.external_id IN (SELECT jsonb_array_elements_text({json_sql(allowed_ids)})))
      IS DISTINCT FROM {json_sql(before['listings'])}
     OR (SELECT to_jsonb(m) FROM channel_category_mappings m WHERE id='{MAPPING_ID}')
      IS DISTINCT FROM {json_sql(before['mapping'])} THEN
@@ -112,14 +117,14 @@ BEGIN
   RAISE EXCEPTION 'Product/inventory/offer/diagnostic/photo facts changed';
  ELSE
   IF EXISTS(SELECT 1 FROM product_channel_listings l WHERE l.external_id IN
-       (SELECT jsonb_array_elements_text({json_sql(list(NEW))}))
+       (SELECT jsonb_array_elements_text({json_sql(list(new_rows))}))
        AND (l.status<>'draft' OR l.category_mapping IS NOT NULL OR l.price_override IS NOT NULL
          OR l.title_override IS NOT NULL OR l.description_override IS NOT NULL
          OR coalesce(l.attributes,'{{}}'::jsonb)<>'{{}}'::jsonb)) THEN
    RAISE EXCEPTION 'Unreviewed channel fields present';
   END IF;
  END IF;
- {protection_sql()}
+ {protection_sql(new_rows)}
  protected_before:=protected;
  IF {str(write).lower()} AND NOT already THEN
   UPDATE product_channel_listings l SET status='active', title_override=x->>'title_override',
@@ -135,25 +140,25 @@ BEGIN
   END IF;
  END IF;
  protected:='{{}}';
- {protection_sql()}
+ {protection_sql(new_rows)}
  IF protected IS DISTINCT FROM protected_before THEN RAISE EXCEPTION 'Protected business data changed'; END IF;
  INSERT INTO expansion_result VALUES (jsonb_build_object('guards_passed',true,'changed',changed,
   'already_applied',already,'protected_unchanged',true,'new_after',
   (SELECT jsonb_agg(to_jsonb(l) ORDER BY l.id) FROM product_channel_listings l WHERE l.external_id IN
-    (SELECT jsonb_array_elements_text({json_sql(list(NEW))})))));
+    (SELECT jsonb_array_elements_text({json_sql(list(new_rows))})))));
 END $expansion$;
 SELECT data FROM expansion_result;
 {'COMMIT' if commit else 'ROLLBACK'};"""
 
 
-def rollback_sql(plan, current, receipt):
+def rollback_sql(plan, current, receipt, new_rows=NEW):
     if receipt.get("xml_sha256") != plan["xml_sha256"]:
         raise ValueError("Rollback receipt belongs to another release")
-    saved = [r for r in receipt["before"]["listings"] if r["external_id"] in NEW]
+    saved = [r for r in receipt["before"]["listings"] if r["external_id"] in new_rows]
     expected = receipt["after"]
-    rows = [r for r in current["listings"] if r["external_id"] in NEW]
+    rows = [r for r in current["listings"] if r["external_id"] in new_rows]
     if (len(saved) != 3 or len(expected) != 3 or len(rows) != 3
-            or {r["id"] for r in saved} != {spec[0] for spec in NEW.values()}):
+            or {r["id"] for r in saved} != {spec[0] for spec in new_rows.values()}):
         raise ValueError("Invalid rollback identity set")
     for row in rows:
         previous = next(r for r in expected if r["id"] == row["id"])
@@ -176,23 +181,23 @@ BEGIN
   END IF;
  END LOOP;
  IF (SELECT jsonb_agg(to_jsonb(l) ORDER BY l.id) FROM product_channel_listings l WHERE l.external_id IN
-     (SELECT jsonb_array_elements_text({json_sql(list(NEW))}))) IS DISTINCT FROM {json_sql(sorted(rows,key=lambda r:r['id']))} THEN
+     (SELECT jsonb_array_elements_text({json_sql(list(new_rows))}))) IS DISTINCT FROM {json_sql(sorted(rows,key=lambda r:r['id']))} THEN
   RAISE EXCEPTION 'Rollback concurrent edit';
  END IF;
- {protection_sql()}
+ {protection_sql(new_rows)}
  protected_before:=protected;
 UPDATE product_channel_listings l SET {assignments}, updated_at=now()
  FROM jsonb_populate_recordset(NULL::product_channel_listings,{json_sql(saved)}) old WHERE l.id=old.id;
  GET DIAGNOSTICS changed=ROW_COUNT;
  IF changed<>3 THEN RAISE EXCEPTION 'Expected three rollback rows'; END IF;
  protected:='{{}}';
- {protection_sql()}
+ {protection_sql(new_rows)}
  IF protected IS DISTINCT FROM protected_before THEN RAISE EXCEPTION 'Rollback changed protected business data'; END IF;
 END $rollback$;
 COMMIT;"""
 
 
-def require_three_id_environment(repo):
+def require_id_environment(repo, allowed_ids):
     keys = {}
     for line in (repo / "apps/web/.env.local").read_text().splitlines():
         key, separator, value = line.partition('=')
@@ -201,9 +206,13 @@ def require_three_id_environment(repo):
                 raise ValueError("Duplicate feed config key")
             keys[key] = value.strip().strip('"').strip("'")
     if (keys.get("AVITO_FEED_ENABLED") != "1" or keys.get("AVITO_PHONE_SCHEMA_VERIFIED") != "1"
-            or set(keys.get("AVITO_FEED_ALLOWED_IDS", "").split(',')) != set(PILOT)
-            or len(keys.get("AVITO_FEED_ALLOWED_IDS", "").split(',')) != 3):
-        raise ValueError("Keep the existing three-ID allowlist before activation or rollback")
+            or set(keys.get("AVITO_FEED_ALLOWED_IDS", "").split(',')) != set(allowed_ids)
+            or len(keys.get("AVITO_FEED_ALLOWED_IDS", "").split(',')) != len(allowed_ids)):
+        raise ValueError("Keep the existing allowlist before activation or rollback")
+
+
+def require_three_id_environment(repo):
+    require_id_environment(repo, list(PILOT))
 
 
 def require_fresh_backup(folder, now=None):
@@ -220,15 +229,20 @@ def require_fresh_backup(folder, now=None):
     subprocess.run(['tar','-tzf','uploads.tar.gz'], cwd=folder, check=True, stdout=subprocess.DEVNULL)
 
 
-def require_six_id_code(repo):
-    code = "const m=await import('file://" + str(repo / 'apps/web/lib/avito-feed.ts') + "'); if(m.parseAvitoPilotIds('a,b,c,d,e,f').length!==6)process.exit(1);"
+def require_application_code(repo, cap):
+    ids = ','.join('id'+str(index) for index in range(cap))
+    code = "const m=await import('file://" + str(repo / 'apps/web/lib/avito-feed.ts') + "'); if(m.AVITO_FEED_MAX_IDS!==" + str(cap) + "||m.parseAvitoPilotIds('" + ids + "').length!==" + str(cap) + ")process.exit(1);"
     result = subprocess.run(['node','--disable-warning=MODULE_TYPELESS_PACKAGE_JSON','--experimental-strip-types',
                              '--input-type=module','-e',code],capture_output=True,timeout=30)
     build_id=repo / 'apps/web/.next/BUILD_ID'
     sources=[repo / 'apps/web/lib/avito-feed.ts',repo / 'apps/web/app/integrations/avito/feed.xml/route.ts']
     if (result.returncode or not build_id.is_file()
             or build_id.stat().st_mtime < max(source.stat().st_mtime for source in sources)):
-        raise ValueError('Deploy and build six-ID application support before activation')
+        raise ValueError('Deploy and build application support before activation')
+
+
+def require_six_id_code(repo):
+    require_application_code(repo, 6)
 
 
 def verify_public_images(plan):
@@ -252,7 +266,17 @@ def require_recent_source(plan):
         raise ValueError('Release snapshot older than one hour; regenerate preflight/plan')
 
 
-def main():
+def main(release_module=None):
+    # A follow-up pins its own XML/roster; historical defaults remain unchanged.
+    identities = release_module.IDENTITIES if release_module else NEW | PILOT
+    new_rows = release_module.NEW if release_module else NEW
+    allowed_ids = release_module.ALL_IDS if release_module else ALL_IDS
+    existing_ids = release_module.EXISTING_IDS if release_module else list(PILOT)
+    existing_hash = release_module.EXISTING_HASH if release_module else EXISTING_HASH
+    code_cap = release_module.CODE_CAP if release_module else 6
+    receipt_name = release_module.RECEIPT_NAME if release_module else 'avito-expansion-receipt.json'
+    check_plan = release_module.validate_plan if release_module else validate_plan
+    check_auth = release_module.require_authorization if release_module else require_authorization
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--plan', required=True)
     parser.add_argument('--xml', required=True)
@@ -269,41 +293,41 @@ def main():
     repo = Path('/opt/isvoi')
     load = lambda path: json.loads(Path(path).read_text(encoding='utf-8-sig'))
     plan, xml = load(args.plan), Path(args.xml).read_bytes()
-    validate_plan(plan, xml)
-    require_three_id_environment(repo)
+    check_plan(plan, xml)
+    require_id_environment(repo, existing_ids)
     if args.apply or args.rollback:
         if not args.confirm_publication or not args.authorization or not args.backup_dir or (args.apply and not args.stability):
             raise SystemExit('Separate authorization and fresh backup required; apply also needs stability evidence')
-        require_authorization(plan, load(args.authorization), load(args.stability) if args.stability else {},rollback=args.rollback)
+        check_auth(plan, load(args.authorization), load(args.stability) if args.stability else {},rollback=args.rollback)
         require_fresh_backup(Path(args.backup_dir))
         if args.apply:
-            require_six_id_code(repo)
+            require_application_code(repo, code_cap)
     if not args.rollback:
         require_recent_source(plan)
         with urlopen('http://127.0.0.1:3000/integrations/avito/feed.xml', timeout=30) as response:
             content = response.read(1024 * 1024 + 1)
-        if hashlib.sha256(content).hexdigest() != EXISTING_HASH:
+        if hashlib.sha256(content).hexdigest() != existing_hash:
             raise SystemExit('Connected pilot feed changed; refresh review')
         verify_public_images(plan)
         require_recent_source(plan)
-    before = read_state()
+    before = read_state(allowed_ids)
     if args.rollback:
-        receipt_path=Path(args.receipt or (Path(args.backup_dir) / 'avito-expansion-receipt.json')).resolve()
+        receipt_path=Path(args.receipt or (Path(args.backup_dir) / receipt_name)).resolve()
         if not receipt_path.is_relative_to(Path('/opt/isvoi/backups/directus')):
             raise SystemExit('Rollback receipt must remain inside the protected VPS backup root')
         receipt = load(receipt_path)
-        db(rollback_sql(plan, before, receipt))
+        db(rollback_sql(plan, before, receipt, new_rows))
         print(json.dumps({'rolled_back':True,'rows':3,'mapping_retained':True,'env_changed':False,'avito_called':False}))
         return
     if args.receipt:
         raise SystemExit('--receipt is only valid with --rollback')
-    validate_state(plan, before)
+    validate_state(plan, before, identities)
     if args.apply:
         # Receipt stays inside the VPS backup, never in a public artifact.
-        receipt_file = Path(args.backup_dir) / 'avito-expansion-receipt.json'
+        receipt_file = Path(args.backup_dir) / receipt_name
         if receipt_file.exists():
             saved = load(receipt_file)
-            result = db(transaction_sql(plan, before, xml))
+            result = db(transaction_sql(plan, before, xml, identities=identities, new_rows=new_rows))
             if saved.get('xml_sha256') != plan['xml_sha256'] or not result['already_applied']:
                 raise SystemExit('Existing release receipt must not be overwritten')
             if saved.get('phase') == 'prepared':
@@ -315,13 +339,13 @@ def main():
             receipt = {'xml_sha256':plan['xml_sha256'],'before':before,'phase':'prepared'}
             with receipt_file.open('x',encoding='utf-8') as out:
                 json.dump(receipt,out,ensure_ascii=True,indent=2)
-            result = db(transaction_sql(plan,before,xml,write=True,commit=True))
+            result = db(transaction_sql(plan,before,xml,write=True,commit=True,identities=identities,new_rows=new_rows))
             receipt.update(after=result['new_after'],phase='applied')
             temporary = receipt_file.with_suffix('.tmp')
             temporary.write_text(json.dumps(receipt,ensure_ascii=True,indent=2),encoding='utf-8')
             temporary.replace(receipt_file)
     else:
-        result = db(transaction_sql(plan,before,xml))
+        result = db(transaction_sql(plan,before,xml,identities=identities,new_rows=new_rows))
     print(json.dumps({key:result[key] for key in ('guards_passed','changed','already_applied','protected_unchanged')}
                      | {'dry_run':not args.apply,'env_changed':False,'avito_called':False}))
 

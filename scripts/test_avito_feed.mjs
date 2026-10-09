@@ -183,11 +183,12 @@ test("at most ten published images", () => {
   assert.equal((run(row).xml.match(/<Image url=/gu) || []).length, 10);
 });
 
-test("only explicit 1-6 unique pilot IDs", () => {
-  assert.equal(AVITO_FEED_MAX_IDS, 6);
+test("only explicit 1-9 unique pilot IDs", () => {
+  assert.equal(AVITO_FEED_MAX_IDS, 9);
   assert.deepEqual(parseAvitoPilotIds("a,b,c"), ["a", "b", "c"]);
   assert.deepEqual(parseAvitoPilotIds("a,b,c,d,e,f"), ["a", "b", "c", "d", "e", "f"]);
-  for (const value of ["", "a,a", "a,b,c,d,e,f,g", "a,", "a b", "<Id>"]) {
+  assert.equal(parseAvitoPilotIds("a,b,c,d,e,f,g,h,i").length, 9);
+  for (const value of ["", "a,a", "a,b,c,d,e,f,g,h,i,j", "a,", "a b", "<Id>"]) {
     assert.deepEqual(parseAvitoPilotIds(value), []);
   }
   assert.equal(run(ready, { allowedIds: [] }).errors[0].codes[0], "invalid_pilot_allowlist");
@@ -199,7 +200,7 @@ test("route fetch limit includes a duplicate detection row beyond the shared cap
   assert.match(source, /limit:\s*String\(AVITO_FEED_MAX_IDS \+ 1\)/u);
 });
 
-const sixRows = () => Array.from({ length: 6 }, (_, index) => {
+const batchRows = (length = 6) => Array.from({ length }, (_, index) => {
   const row = structuredClone(ready);
   row.external_id = `isvoi-${imageId(index + 1)}`;
   row.product.id = `product-${index + 1}`;
@@ -208,6 +209,7 @@ const sixRows = () => Array.from({ length: 6 }, (_, index) => {
   row.product.images = [];
   return row;
 });
+const sixRows = () => batchRows();
 const feedFor = (rows, allowedIds = rows.map((row) => row.external_id)) =>
   prepareAvitoFeed(rows, "https://api.isvoi.ru", { allowedIds });
 
@@ -221,13 +223,43 @@ test("six explicit IDs preserve the first three ads including their photo order"
   assert.deepEqual(ads(expanded.xml).slice(0, 3), ads(previous.xml));
 });
 
-test("a seventh allowlisted ID is rejected; an outside row is never a replacement", () => {
-  const rows = sixRows();
-  const outside = changed({ external_id: "seventh" });
+test("a tenth allowlisted ID is rejected; an outside row is never a replacement", () => {
+  const rows = batchRows(9);
+  const outside = changed({ external_id: "tenth" });
   assert.equal(feedFor([...rows, outside]).xml, "");
   const report = feedFor([...rows, outside], rows.map((row) => row.external_id));
-  assert.equal(report.exportedIds.length, 6);
+  assert.equal(report.exportedIds.length, 9);
   assert.equal(report.excluded[0].codes[0], "outside_pilot");
+});
+
+test("nine explicit IDs preserve all six previous ads and their photo order", () => {
+  const rows = batchRows(9);
+  const previous = feedFor(rows.slice(0, 6));
+  const expanded = feedFor(rows);
+  assert.deepEqual(expanded.errors, []);
+  assert.deepEqual(expanded.exportedIds, rows.map((row) => row.external_id));
+  const ads = (xml) => xml.match(/<Ad>.*?<\/Ad>/gsu);
+  assert.deepEqual(ads(expanded.xml).slice(0, 6), ads(previous.xml));
+});
+
+test("nine-ID feed rejects a missing, duplicate or invalid ninth row", () => {
+  const rows = batchRows(9);
+  const ids = rows.map((row) => row.external_id);
+  assert.equal(feedFor(rows.slice(0, 8), ids).xml, "");
+  assert.equal(feedFor([...rows, structuredClone(rows[8])], ids).xml, "");
+  rows[8].attributes.IMEI = "123456789012345";
+  assert.equal(feedFor(rows, ids).xml, "");
+});
+
+test("sold and draft ninth rows are excluded without a replacement", () => {
+  for (const kind of ["sold", "draft"]) {
+    const rows = batchRows(9);
+    if (kind === "draft") rows[8].status = "draft";
+    else Object.assign(rows[8].product, { stock_status: "sold", stock_quantity: 0 });
+    const report = feedFor(rows);
+    assert.deepEqual(report.errors, []);
+    assert.deepEqual(report.exportedIds, rows.slice(0, 8).map((row) => row.external_id));
+  }
 });
 
 test("six-ID feed fails closed for missing, duplicate or invalid sixth row", () => {

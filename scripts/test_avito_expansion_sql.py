@@ -5,7 +5,9 @@ credentials, mounts, ports or marketplace APIs are used.
 """
 
 import argparse
+from contextlib import ExitStack
 from copy import deepcopy
+from functools import partial
 import json
 import subprocess
 import time
@@ -74,7 +76,7 @@ def seed(plan,state):
     return '\n'.join(sql)
 
 
-def run():
+def run(followup=False):
     name='isvoi-avito-expansion-qa-'+uuid.uuid4().hex[:10]
     created=False
     phases=[]
@@ -101,14 +103,32 @@ def run():
             if ready.returncode==0: break
             time.sleep(0.5)
         else: raise RuntimeError('Isolated fixture did not become ready')
-        plan,xml,_,state=fixture()
+        contract, build_fixture = release, fixture
+        if followup:
+            import prepare_avito_followup_release as contract
+            from test_avito_followup_release import fixture as build_fixture
+        plan,xml,_,state=build_fixture()
         db(seed(plan,state))
-        with patch.object(operator,'db',db),patch.object(release,'APPROVED_HASH',plan['xml_sha256']):
+        with ExitStack() as context:
+            context.enter_context(patch.object(operator,'db',db))
+            context.enter_context(patch.object(contract,'APPROVED_HASH',plan['xml_sha256']))
+            if followup:
+                context.enter_context(patch.object(contract,'EXISTING_HASH',plan['existing_feed_sha256']))
+                context.enter_context(patch.object(operator,'read_state',partial(operator.read_state,contract.ALL_IDS)))
+                context.enter_context(patch.object(operator,'transaction_sql',partial(operator.transaction_sql,
+                    identities=contract.IDENTITIES,new_rows=contract.NEW)))
+                context.enter_context(patch.object(operator,'rollback_sql',partial(operator.rollback_sql,new_rows=contract.NEW)))
             source=db(operator.SOURCE_QUERY)
             source.pop('_private_identifiers')
-            plan['expected_before']=release.selected_source(source)
-            plan['expected_active']=active_projection(plan)
-            release.validate_plan(plan,xml)
+            if followup:
+                plan['expected_before']={'products':sorted([p for p in source['products'] if p['id'] in
+                    {s[1] for s in contract.IDENTITIES.values()}],key=lambda p:p['id']),
+                    'stores':[s for s in source['stores'] if s['slug']=='belgorod']}
+                plan['expected_active']=contract.projection(plan['expected_before'],plan['desired'],plan['mapping_version'])
+            else:
+                plan['expected_before']=release.selected_source(source)
+                plan['expected_active']=active_projection(plan)
+            contract.validate_plan(plan,xml)
             before=operator.read_state()
             result=db(operator.transaction_sql(plan,before,xml))
             assert result['changed']==0 and operator.read_state()==before
@@ -131,7 +151,7 @@ def run():
             db(f"UPDATE product_channel_listings SET attributes='{{\"PurchasePrice\":1}}' WHERE id='{target['id']}';")
             rejected(lambda:db(operator.transaction_sql(plan,operator.read_state(),xml,write=True,commit=True)),'unfiltered_private_attributes_refused')
             db(f"UPDATE product_channel_listings SET attributes='{{}}' WHERE id='{target['id']}';")
-            old_id=release.PILOT[release.ALL_IDS[0]][0]
+            old_id=next(r['id'] for r in before['listings'] if r['external_id'] in plan['existing_ids'])
             db(f"UPDATE product_channel_listings SET notes='concurrent fixture edit' WHERE id='{old_id}';")
             rejected(lambda:db(operator.transaction_sql(plan,before,xml,write=True,commit=True)),'concurrent_pilot_edit_refused')
             db(f"UPDATE product_channel_listings SET notes='unowned fixture note' WHERE id='{old_id}';")
@@ -143,7 +163,7 @@ def run():
             result=db(operator.transaction_sql(plan,before,xml,write=True,commit=True))
             assert result['changed']==3 and result['protected_unchanged']
             after=operator.read_state()
-            assert [r for r in after['listings'] if r['external_id'] in release.PILOT]==[r for r in before['listings'] if r['external_id'] in release.PILOT]
+            assert [r for r in after['listings'] if r['external_id'] in plan['existing_ids']]==[r for r in before['listings'] if r['external_id'] in plan['existing_ids']]
             assert after['mapping']==before['mapping']
             phases.append('only_new_three_applied_originals_and_mapping_preserved')
             result=db(operator.transaction_sql(plan,after,xml,write=True,commit=True))
@@ -167,7 +187,7 @@ def run():
             assert next(r for r in rolled['listings'] if r['id']==target['id'])['notes']=='later unowned note'
             assert rolled['mapping']==before['mapping']
             phases.append('rollback_restores_new_drafts_preserves_unowned_notes_and_mapping')
-        return {'ok':True,'phases':phases,'fixture_network':'none','production_database_used':False,'avito_called':False}
+        return {'ok':True,'phases':phases,'ads':len(plan['allowed_ids']),'fixture_network':'none','production_database_used':False,'avito_called':False}
     finally:
         if created:
             assert name.startswith('isvoi-avito-expansion-qa-')
@@ -175,5 +195,7 @@ def run():
 
 
 if __name__=='__main__':
-    argparse.ArgumentParser(description=__doc__).parse_args()
-    print(json.dumps(run()))
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--followup',action='store_true',help='Exercise the nine-ad contract instead of the historical six-ad contract')
+    args=parser.parse_args()
+    print(json.dumps(run(args.followup)))

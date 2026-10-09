@@ -115,7 +115,7 @@ function validId(value: string): boolean {
   );
 }
 
-export const AVITO_FEED_MAX_IDS = 6;
+export const AVITO_FEED_MAX_IDS = 9;
 
 export function parseAvitoPilotIds(value: string): string[] {
   const ids = value.split(",").map((id) => id.trim());

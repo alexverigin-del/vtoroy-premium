@@ -8,7 +8,7 @@ from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from prepare_avito_catalog_workbook import PHONE_SHEET, apply_reference_evidence, assess, avito_color, balanced_copy, percentage, prepare, validate_template_choices
+from prepare_avito_catalog_workbook import PHONE_SHEET, apply_reference_evidence, assess, avito_color, balanced_copy, percentage, prepare, remove_stock_check_cta, validate_template_choices
 from avito_html_privacy import check_html_identifiers
 
 
@@ -42,6 +42,29 @@ def fixture():
 
 
 class CatalogPreparationTests(unittest.TestCase):
+    def test_stock_cta_removed_without_price_or_fact_changes(self):
+        old = "Цена 64100. Батарея: 99%. Напишите в чат: уточним наличие и согласуем время просмотра."
+        expected = "Цена 64100. Батарея: 99%. Напишите в чат, чтобы согласовать время просмотра."
+        self.assertEqual(remove_stock_check_cta(old), expected)
+        self.assertEqual(remove_stock_check_cta(expected), expected)
+        text = balanced_copy(fixture()[0], "Тестовый адрес")[1]
+        self.assertNotIn("уточним наличие", text)
+        self.assertIn("согласовать время просмотра", text)
+
+    def test_old_copy_approval_cannot_restore_stock_cta(self):
+        p, public = fixture()
+        title, text = balanced_copy(p, "Тестовый адрес")
+        old = text.replace("Напишите в чат, чтобы согласовать время просмотра.",
+                           "Напишите в чат: уточним наличие и согласуем время просмотра.")
+        approved = {"copy_operator_approved": True, "entries": [
+            {"sku": p["sku"], "external_id": "isvoi-test-1", "description_override": old}]}
+        snapshot = {"captured_at": "2026-10-09", "products": [p],
+                    "stores": [{"slug": "belgorod", "status": "published", "address": "Тестовый адрес"}]}
+        result = prepare(snapshot, public, approved)["entries"][0]
+        self.assertEqual(result["description_override"], text)
+        self.assertFalse(result["copy_operator_approved"])
+        self.assertFalse(result["ready_to_publish"])
+
     def test_desert_titanium_requires_model_specific_color_mapping(self):
         self.assertEqual(avito_color("iPhone 16 Pro Max", "Desert Titanium"), "золотистый")
         self.assertIsNone(avito_color("unreviewed-model", "Desert Titanium"))

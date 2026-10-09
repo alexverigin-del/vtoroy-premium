@@ -148,6 +148,13 @@ def assess(product, public):
     return blockers, warnings
 
 
+def remove_stock_check_cta(description):
+    return description.replace(
+        "Напишите в чат: уточним наличие и согласуем время просмотра.",
+        "Напишите в чат, чтобы согласовать время просмотра.",
+    )
+
+
 def balanced_copy(product, address):
     if product.get("condition") != "used":
         return "", ""
@@ -196,7 +203,7 @@ def balanced_copy(product, address):
     passport = "Есть Passport с результатами проверки. Публичная выписка скрывает полные идентификаторы; полный сертификат доступен в магазине."
     if address == 'Белгород, ул. Костюкова д.67А ТЦ "Виктория", 2 этаж':
         address = "Белгород, ул. Костюкова, д. 67А, ТЦ «Виктория», 2 этаж"
-    cta = "Посмотреть устройство можно в I СВОИ: " + address.rstrip(".") + ". Напишите в чат: уточним наличие и согласуем время просмотра."
+    cta = "Посмотреть устройство можно в I СВОИ: " + address.rstrip(".") + ". Напишите в чат, чтобы согласовать время просмотра."
     description = "\n\n".join(x for x in [intro, battery, " ".join(x for x in [verification, repair, story] if x),
                                             manual_note, contents, passport, cta] if x)
     if len(title) > 50 or len(description) > 7500 or re.search(r"[<>]|\d{15}|\[redacted", title + description):
@@ -289,6 +296,9 @@ def prepare(snapshot, public, approved):
                     and re.search(rf"(?<!\d){percentage(d['battery'])}%", old)
                     and re.search(rf"(?<!\d){d['battery_cycles']} цикл", old)):
                 description, approval = old, True
+        normalized = remove_stock_check_cta(description)
+        if normalized != description:
+            description, approval = normalized, False
         entries.append({"sku": p["sku"], "product_id": p["id"], "channel": "avito",
                         "external_id": listing.get("external_id"), "title_override": title,
                         "description_override": description, "price_rub": effective_price,

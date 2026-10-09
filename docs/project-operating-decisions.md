@@ -1,10 +1,220 @@
 # Project Operating Decisions
 
-Last updated: 2026-10-07.
+Last updated: 2026-10-09.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Avito Nine-Ad Live Release Authorized And Rehearsed (2026-10-09)
+
+- Owner explicitly confirms deployment and inclusion of т9/т24/т26 in the
+  connected autoload feed, then separately states "Да, запустить сейчас без
+  ожидания". Record a batch-specific 72-hour waiver, not completed observation.
+  No extra paid service, unrelated product or replacement ID is authorized.
+- Exact approved XML is pinned by prepare_avito_followup_release.py; runtime
+  cap expands from six to nine, but config stays at six until application
+  deployment and guarded three-channel activation have succeeded. Existing
+  six fields/IDs and the corrected stock-check CTA must remain unchanged.
+- Fresh full verified backup:
+  /opt/isvoi/backups/directus/20261009T095844Z-gallery.
+  Private staging: avito-nine-ad-release. Fresh 32-device sanitized snapshot,
+  nine pages/nine certificates/52 JPEGs pass. Plan and approval evidence stay
+  ignored locally and private on VPS; no keys/full identifiers are committed.
+- 76 focused Python tests and 39 runtime feed tests pass; full local web:verify
+  including lint/typecheck/build/bundle passes after granting loopback access.
+  Thirteen isolated PostgreSQL scenarios pass for EACH six/nine contract.
+  Production dry-run changed zero; write rehearsal changed exactly three then
+  ROLLBACK restored the exact channel/mapping before-state and protected data.
+  The initial rehearsal wrapper selected system Python lacking openpyxl; it
+  failed before business writes. Retried through project venv successfully.
+- Shared transaction/rollback helpers accept an explicit release identity set
+  while historical CLI defaults remain fixed. New CLI activate_avito_followup.py
+  selects the nine-ad contract, uses avito-nine-ad-receipt.json, requires code
+  cap nine and existing six-ID env, exact authorization/waiver, fresh backup,
+  source CAS, public photo fingerprints and protected-table invariants.
+- Intended next operations: commit/push, isolated VPS build with production env,
+  git pull --ff-only, deploy while retaining six IDs, production smoke; activate
+  only the three new channel rows, then switch allowlist in file and PM2 with
+  --update-env, verify nine-ad XML and pm2 save. This entry records authorization
+  and rehearsal, NOT completed deployment. See docs/avito-followup-release.md.
+
+## Avito Nine-Ad Validator Passed: Owner Report (2026-10-09)
+
+- Owner reports "проверка пройдена, все ок" in response to the local nine-ad
+  XML review. File SHA-256 remains
+  77bdc8705f26d2555d4fb8db0fa956da7dde1b2acb9fb6ab91e0e4625e407e4f.
+  Record this as owner-reported Avito validator acceptance of this exact review
+  version, not an independently inspected validator report or reusable blanket
+  approval of future model/category combinations.
+- Receipt: outputs/avito-next-batch-2026-10-09/nine-ad-review/
+  owner-validator-confirmation.json. Original generation manifest remains a
+  historical pre-validation record; read the subsequent receipt for this gate.
+- This closes the owner XML validation step only. No new publication, connected
+  autoload expansion, stability waiver, paid service or deployment is authorized
+  by that message. Actual ingestion/photo processing/moderation remain unproven
+  for т9, т24 and т26. The prior т13 rejection is not cleared by XML validation.
+- Next release work: implement and test a nine-ID runtime cap plus a separately
+  reviewed expansion/rollback operator, preserving all existing six IDs/data;
+  obtain live release permission and a current stability decision, then fresh
+  backup, guarded dry-run/rehearsal, deploy and three-record activation. Do not
+  run the historical fixed six-ad operator against this file. Current production
+  is unchanged by this documentation-only update.
+
+## Avito Nine-Ad Offline Review Prepared (2026-10-09)
+
+- Owner's contextual "сделай" after the quoted next step is recorded as approval
+  of the exact three descriptions in the Oct 9 workbook and local cumulative
+  XML preparation ONLY. This is not authorization to expand connected autoload,
+  publish, deploy, change Directus or incur additional marketplace charges.
+  Exact workbook/title/description hashes are saved in copy-approval.json.
+- Fresh sanitized production snapshot covers 32 products with zero identifier
+  redactions. All nine selected product records exactly match the source used
+  for the approved workbook: stock, prices, identities, dated diagnostics,
+  kit, Passport and photo ordering are unchanged. Initial SSH export failed;
+  read-only retry succeeded, with production still at 020e13f.
+- Prepared local review file:
+  outputs/avito-next-batch-2026-10-09/nine-ad-review/
+  ISVOI_Avito_CUMULATIVE_REVIEW_9_2026-10-09.xml.
+  SHA-256: 77bdc8705f26d2555d4fb8db0fa956da7dde1b2acb9fb6ab91e0e4625e407e4f.
+  Six current Ad subtrees are preserved exactly by named-field comparison,
+  including leaf text, prices and ordered Images. Added only т9 (53900), т24
+  (80300), т26 (70500), with existing stable inventory-based external IDs.
+  Nine distinct IDs and 52 distinct JPEG URLs; no placeholder photo padding.
+- Reused the existing guarded three-device XML builder for the approved new
+  copy and a local cumulative serialization adapter. All nine public pages,
+  nine masked certificates and 52 decoded JPEGs passed fresh HTTP/media checks.
+  A read-only VPS privacy comparison checked 34 known serial/IMEI values against
+  the final XML: zero full-identifier matches, no private identifiers exported.
+  Existing minimal fieldset is retained; Set/BoxSealed/SimConfig/IMEI omitted.
+  RAM evidence remains model hardware provenance, not Avito dictionary approval.
+- Account reconciliation observed at 2026-10-09T09:17:00Z confirms all six current
+  exact bindings and prices; none of the three new IDs exists in the account.
+  т13 remains rejected; the five other current ads are active. Keep т13's ID
+  rather than creating a replacement. The old unrelated ad remains old/inactive.
+- Directus status active denotes inclusion of the six channel records, NOT proof
+  of Avito moderation success (т13 illustrates the distinction). New three rows
+  remain draft. The connected public feed remains six ads with SHA-256
+  ced267b8c8d192ab174b4ec1473b21feb3e2083a3691952e963c8e239cd608d1.
+  Runtime cap and allowlist remain six. No server/CMS/account mutations occurred.
+- 68 focused Python preparation/release/activation tests, eight local merge
+  regressions and 36 runtime feed tests pass (112 total). Broad discovery was
+  interrupted; scoped retry exposed Windows sandbox temporary-path permissions,
+  then all focused tests passed using an ignored writable test-temp directory.
+  This is focused verification, not a claim of full web/Directus release gates.
+- Next: owner checks this LOCAL nine-ad file in Avito's validator, not the saved
+  autoload source. Official nine-ad schema/dependent combinations remain pending.
+  Then implement/review nine-ID runtime cap and an activation/rollback operator,
+  obtain separate live release approval plus a current stability decision and
+  fresh VPS backup. Oct 7's release waiver is not inherited. Historical fixed
+  six-ad operators/hashes must not be replayed against the new XML.
+- Evidence/build adapters remain ignored under the output directory. Updated
+  operational docs in both checkouts; prior dirty work preserved. No commit,
+  push or deploy performed.
+
+## Avito Stock-Check CTA Corrected And Next Batch Prepared (2026-10-09)
+
+- Owner supplied a specific support response: show the actual price for an
+  in-stock item and remove the phrase about checking availability. Owner then
+  explicitly requested the description correction for ALL devices. This is
+  authorized existing-description maintenance, not permission to publish the
+  next batch or change prices/IDs. Website lead/contact text is outside scope.
+- Replaced only "Напишите в чат: уточним наличие и согласуем время просмотра."
+  with "Напишите в чат, чтобы согласовать время просмотра." in all six existing
+  nonempty Avito descriptions. Prices, titles, diagnostics, kit, photos, IDs,
+  mapping, publication/stock statuses and all other business data are retained.
+  No numeric price was duplicated into description, avoiding future drift.
+- Fresh full Directus backup is verified at
+  /opt/isvoi/backups/directus/20261009T085001Z-gallery.
+  Private before/after feed and rollback receipt are under avito-copy-correction.
+  Transactional rehearsal rolled back successfully; actual transaction updated
+  exactly six description_override values plus updated_at, preserving protected
+  table hashes. Absent legacy tables are skipped via to_regclass, and psql
+  command tags are separated from the JSON result. Early dry-run/parser failures
+  occurred before the business commit; no production dump restore was performed.
+- Public feed remains six ads. New feed SHA-256:
+  ced267b8c8d192ab174b4ec1473b21feb3e2083a3691952e963c8e239cd608d1.
+  Prior hash 7cdd000f2b522bccf4bfc86eca643d6ed54e88c1f3bea7beb58ba56063b7943d
+  is retained as historical evidence, not a current activation baseline.
+  Exact per-ID XML comparison proves only the targeted phrase changed; no
+  remaining stock-check CTA was found in stored/public Avito descriptions.
+  Scheduled autoload will ingest the correction; т13 moderation success is
+  still unverified. Do not create a duplicate or alter its price to bypass it.
+- Future local preparation generator now uses the corrected CTA. Reusing old
+  approved copy cannot restore the forbidden phrase or silently retain exact
+  text approval after normalization. 63 Python preparation/release tests plus
+  36 feed tests pass. Python generator changes remain local pending commit/push;
+  runtime web code, server env/PM2 and deployed application were not changed.
+- Independently read-only account reconciliation found all six exact XML bindings:
+  т11=8453675830 active, т29=8315599734 active, т12=8350567885 active,
+  т13=8338081334 rejected, т14=8405483878 active, т27=8525110581 active.
+  These statuses were observed BEFORE re-moderation of corrected descriptions.
+  Old 8312555394 is old with no autoload_item_id; do not reactivate or guess SKU.
+- Next batch selected: т9 (15 Pro / 256 GB / Natural Titanium / 53900),
+  т24 (16 Pro Max / 512 GB / Black Titanium / 80300), т26
+  (16 Pro / 256 GB / White Titanium / 70500). Owner explicitly confirmed current
+  screen/body without defects, working functions, open box/cable and unchanged
+  battery: 100%/0, 92%/307, 90%/541 respectively. Original Aug 5/Aug 10 diagnostic
+  dates remain. т9 headset was not connected to NSYS; its separately confirmed
+  functionality is explicitly preserved in the proposed copy.
+- Three fresh pages, three masked certificates and 16 distinct JPEGs pass:
+  т9 has six photos; т24/т26 have five each, without padding/duplicates. Full
+  catalog checks confirm matched single inventory links, positive aligned prices/
+  stock, no serial collision/open issues, distinct channel IDs and photo files.
+  Complete account binding review finds none of the three proposed IDs present.
+  The sanitized snapshot covers 32 products with zero identifier redactions.
+- Local review workbook:
+  outputs/avito-next-batch-2026-10-09/ISVOI_Avito_NEXT_BATCH_2026-10-09.xlsx.
+  Four sheets contain selected facts, proposed descriptions, observed current
+  Avito statuses and deferred candidates. Authored with bundled artifact-tool;
+  values/error scan and rendered sheets verified. RAM reference is 8 GB per
+  iFixit Device pages for the three models, checked Oct 9; hardware sources do
+  NOT attest Avito model/storage/color/RAM dictionary combinations.
+- New three channel rows remain draft; live allowlist/code cap stay at six.
+  Text approval, official combination/nine-ad XML QA, reviewed nine-ID code/
+  activation operator, separate live authorization/stability decision and fresh
+  pre-release backup remain pending. Oct 7's waiver applied only to that release.
+  No cumulative nine-ad XML was submitted or new ads published. т20 remains a
+  distinct phone, deferred pending the same-variant т13 case; unmatched devices
+  and grade-B condition wording are tracked rather than silently overridden.
+- Evidence is ignored under outputs/avito-next-batch-2026-10-09 and
+  outputs/avito-moderation-2026-10-09/copy-correction-result.json.
+  No API price/publish/billing calls, secret export, app deployment or commit/
+  push occurred. Primary checkout's unrelated unfinished work is preserved.
+
+## Avito т13 Moderation Rejection Investigated (2026-10-09)
+
+- Owner supplied a rejection screenshot for Avito 8338081334 / XML ID
+  isvoi-4f62161b-0ca6-49ef-82d5-8499a791968a (т13, iPhone 15 Pro Max 512 GB).
+  Visible reason is "Неактуальная цена"; the report requests an XML description
+  correction but does not identify the offending sentence. Do not treat the
+  report as an instruction to invent a new price, change ID or create a duplicate.
+- Fresh read-only Avito API independently confirms rejected status, exact
+  autoload_item_id and price 64100. Current XML, site Product/Offer JSON-LD,
+  Directus product, Belgorod offer and inventory retail_price all equal 64100.
+  Channel price_override is null; product/offer stock is 1 and available.
+- Live six-ad feed SHA-256 remains
+  7cdd000f2b522bccf4bfc86eca643d6ed54e88c1f3bea7beb58ba56063b7943d,
+  identical to the completed Oct 7 release. Description contains no conditional
+  price, exchange-rate clause or request for a price list. The chat CTA refers
+  to stock/viewing, not pricing; blaming that sentence would be an unproven
+  hypothesis. No current price-sync or XML format defect was found.
+- The moderator's exact rationale and actual retail purchase conditions are
+  not independently established. Ask the owner to confirm 64100 is the full
+  unconditional price including the stated kit before adding clarifying claims.
+  A manual-review support request and an optional targeted clarification are
+  prepared in ignored outputs/avito-moderation-2026-10-09/moderation-review.md.
+  If a price is repeated in description, future price changes must update it too.
+- API authentication and existing GET allowlists only; credentials remain on
+  VPS, no price/publish/billing/settings calls. No production or business writes,
+  resubmission, commit/push/deploy or unrelated worktree changes. Local channel
+  active means included in the feed, NOT approved by Avito; rejected does not
+  mean sold and must not zero stock. Other ads' moderation is not inferred.
+- Evidence: public-evidence.json, current-feed.xml, sanitized catalog-snapshot.json,
+  account-status.json and owner-rejection.png in that ignored output folder.
+  Avito's detailed policy was not independently retrieved; primary screenshot,
+  supplied OpenAPI contract, own-site/CMS evidence and actual read-only API
+  responses are the basis. Keep the existing stable ID when resolving the case.
 
 ## Avito Six-Ad Feed Released (2026-10-07)
 

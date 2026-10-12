@@ -183,12 +183,13 @@ test("at most ten published images", () => {
   assert.equal((run(row).xml.match(/<Image url=/gu) || []).length, 10);
 });
 
-test("only explicit 1-9 unique pilot IDs", () => {
-  assert.equal(AVITO_FEED_MAX_IDS, 9);
+test("only explicit 1-12 unique pilot IDs", () => {
+  assert.equal(AVITO_FEED_MAX_IDS, 12);
   assert.deepEqual(parseAvitoPilotIds("a,b,c"), ["a", "b", "c"]);
   assert.deepEqual(parseAvitoPilotIds("a,b,c,d,e,f"), ["a", "b", "c", "d", "e", "f"]);
   assert.equal(parseAvitoPilotIds("a,b,c,d,e,f,g,h,i").length, 9);
-  for (const value of ["", "a,a", "a,b,c,d,e,f,g,h,i,j", "a,", "a b", "<Id>"]) {
+  assert.equal(parseAvitoPilotIds("a,b,c,d,e,f,g,h,i,j,k,l").length, 12);
+  for (const value of ["", "a,a", "a,b,c,d,e,f,g,h,i,j,k,l,m", "a,", "a b", "<Id>"]) {
     assert.deepEqual(parseAvitoPilotIds(value), []);
   }
   assert.equal(run(ready, { allowedIds: [] }).errors[0].codes[0], "invalid_pilot_allowlist");
@@ -223,12 +224,12 @@ test("six explicit IDs preserve the first three ads including their photo order"
   assert.deepEqual(ads(expanded.xml).slice(0, 3), ads(previous.xml));
 });
 
-test("a tenth allowlisted ID is rejected; an outside row is never a replacement", () => {
-  const rows = batchRows(9);
-  const outside = changed({ external_id: "tenth" });
+test("a thirteenth allowlisted ID is rejected; an outside row is never a replacement", () => {
+  const rows = batchRows(12);
+  const outside = changed({ external_id: "thirteenth" });
   assert.equal(feedFor([...rows, outside]).xml, "");
   const report = feedFor([...rows, outside], rows.map((row) => row.external_id));
-  assert.equal(report.exportedIds.length, 9);
+  assert.equal(report.exportedIds.length, 12);
   assert.equal(report.excluded[0].codes[0], "outside_pilot");
 });
 
@@ -260,6 +261,38 @@ test("sold and draft ninth rows are excluded without a replacement", () => {
     assert.deepEqual(report.errors, []);
     assert.deepEqual(report.exportedIds, rows.slice(0, 8).map((row) => row.external_id));
   }
+});
+
+test("twelve registered IDs export eleven available ads and preserve the previous eight", () => {
+  const rows = batchRows(12);
+  Object.assign(rows[1].product, { stock_status: "sold", stock_quantity: 0 });
+  const previous = feedFor(rows.slice(0, 9));
+  const expanded = feedFor(rows);
+  assert.deepEqual(expanded.errors, []);
+  assert.equal(expanded.exportedIds.length, 11);
+  assert.equal(previous.exportedIds.length, 8);
+  assert.ok(!expanded.exportedIds.includes(rows[1].external_id));
+  const ads = (xml) => xml.match(/<Ad>.*?<\/Ad>/gsu);
+  assert.deepEqual(ads(expanded.xml).slice(0, 8), ads(previous.xml));
+});
+
+test("twelve-ID scope fails closed on missing, duplicate or private final row", () => {
+  const rows = batchRows(12);
+  const ids = rows.map((row) => row.external_id);
+  assert.equal(feedFor(rows.slice(0, 11), ids).xml, "");
+  assert.equal(feedFor([...rows, structuredClone(rows[11])], ids).xml, "");
+  rows[11].attributes.IMEI = "123456789012345";
+  assert.equal(feedFor(rows, ids).xml, "");
+});
+
+test("confirmed small case scratches remain visible in the cumulative feed", () => {
+  const rows = batchRows(12);
+  rows[10].attributes.CaseCondition = "Мелкие царапины";
+  rows[10].description_override = "Грейд B: мелкие потертости на боковых гранях. На фото именно этот телефон.";
+  const report = feedFor(rows);
+  assert.deepEqual(report.errors, []);
+  assert.match(report.xml, /<CaseCondition>Мелкие царапины<\/CaseCondition>/u);
+  assert.match(report.xml, /Грейд B: мелкие потертости/u);
 });
 
 test("six-ID feed fails closed for missing, duplicate or invalid sixth row", () => {

@@ -76,7 +76,7 @@ def seed(plan,state):
     return '\n'.join(sql)
 
 
-def run(followup=False):
+def run(followup=False, available=False):
     name='isvoi-avito-expansion-qa-'+uuid.uuid4().hex[:10]
     created=False
     phases=[]
@@ -107,12 +107,15 @@ def run(followup=False):
         if followup:
             import prepare_avito_followup_release as contract
             from test_avito_followup_release import fixture as build_fixture
+        if available:
+            import prepare_avito_available_release as contract
+            from test_avito_available_release import fixture as build_fixture
         plan,xml,_,state=build_fixture()
         db(seed(plan,state))
         with ExitStack() as context:
             context.enter_context(patch.object(operator,'db',db))
             context.enter_context(patch.object(contract,'APPROVED_HASH',plan['xml_sha256']))
-            if followup:
+            if followup or available:
                 context.enter_context(patch.object(contract,'EXISTING_HASH',plan['existing_feed_sha256']))
                 context.enter_context(patch.object(operator,'read_state',partial(operator.read_state,contract.ALL_IDS)))
                 context.enter_context(patch.object(operator,'transaction_sql',partial(operator.transaction_sql,
@@ -120,7 +123,7 @@ def run(followup=False):
                 context.enter_context(patch.object(operator,'rollback_sql',partial(operator.rollback_sql,new_rows=contract.NEW)))
             source=db(operator.SOURCE_QUERY)
             source.pop('_private_identifiers')
-            if followup:
+            if followup or available:
                 plan['expected_before']={'products':sorted([p for p in source['products'] if p['id'] in
                     {s[1] for s in contract.IDENTITIES.values()}],key=lambda p:p['id']),
                     'stores':[s for s in source['stores'] if s['slug']=='belgorod']}
@@ -197,5 +200,8 @@ def run(followup=False):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--followup',action='store_true',help='Exercise the nine-ad contract instead of the historical six-ad contract')
+    parser.add_argument('--available',action='store_true',help='Exercise the twelve-ID / eleven-available-ad contract')
     args=parser.parse_args()
-    print(json.dumps(run(args.followup)))
+    if args.followup and args.available:
+        parser.error('Choose one release contract')
+    print(json.dumps(run(args.followup, args.available)))

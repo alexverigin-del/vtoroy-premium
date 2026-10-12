@@ -1,10 +1,171 @@
 # Project Operating Decisions
 
-Last updated: 2026-10-09.
+Last updated: 2026-10-12.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Avito Eleven-Available Release Authorized And Rehearsed (2026-10-12)
+
+- Owner reports "xml соответствует формату, всё ок, продолжаем" for the
+  exact eleven-ad review hash b90f6f21bf99356b474090f15d13f895c25d808984a4ebda7ccba388291f88d7.
+  Record owner-reported validator acceptance, not independently inspected
+  moderation or ingestion. Then owner separately authorizes commit/push/deploy
+  and connected-feed publication, and explicitly waives 72-hour waiting for
+  THIS batch. No extra paid feature is enabled or completed observation claimed.
+- Fresh verified full backup:
+  /opt/isvoi/backups/directus/20261012T144544Z-gallery.
+  Private stage: avito-eleven-ad-release. Approval/validator/authorization/
+  stability and sanitized plan stay ignored locally or private on VPS.
+- Code cap becomes 12 registered IDs; eleven available IDs are emitted because
+  sold т11 remains registered but excluded. New sold-aware contract/operator:
+  prepare_avito_available_release.py and activate_avito_available_batch.py.
+  They pin twelve source identities, exact copy/diagnostic/price/media/stock,
+  64 JPEG fingerprints and the sold device/offer state; only three new channel
+  rows may change. Historical pilot/six/nine contracts are retained.
+- Full local web:verify passes, including lint/typecheck/build/bundle. 80
+  focused Python tests, 42 feed tests, text:audit and git diff --check pass.
+  First sandbox attempts failed on loopback/temp-file permissions before
+  application changes; rerun with required permissions passes.
+- All 39 isolated SQL scenarios pass across six/nine/twelve-ID contracts:
+  network-less disposable PostgreSQL, sold/diagnostic/photo drift, concurrent
+  edits, collateral triggers, idempotency and guarded rollback. Production
+  dry-run changed zero. Production write rehearsal changed exactly three
+  within a transaction; ROLLBACK restored all source/channel/mapping state.
+  Protected business tables are unchanged.
+- Intended next operations: scoped commit/push; git pull --ff-only; isolated
+  production-env build and /trade plus exact eight-ad baseline smoke; swap
+  .next/restart only isvoi-web while keeping old nine-ID env/PM2; guarded
+  three-row apply; then update only allowlist to twelve IDs and verify eleven
+  public ads/no-store/noindex/exact fields/photo order and production smoke.
+  This entry records authorization and rehearsal, NOT completed rollout.
+  See docs/avito-available-release.md.
+- Product/photo/inventory/offer/price/grade/schema changes are outside this
+  release. т11 must not reappear and т20 must not be deduplicated against т13.
+  Avito's saved URL schedule handles ingestion; new numeric IDs, moderation
+  and actual charges remain separate post-load checks.
+
+## Avito Eleven-Ad Offline Review Prepared And Copy Approved (2026-10-12)
+
+- Owner explicitly replies "Да, одобряю тексты" for the exact т20/т39/т18
+  descriptions in ISVOI_Avito_NEXT_BATCH_2026-10-12.xlsx. Approval is copy-only,
+  NOT permission to publish, deploy, expand the connected feed or waive waiting.
+  Receipt binds the original workbook SHA-256, three title/description hashes,
+  physical facts, dates, prices, photo order and case enums. The workbook remains
+  a historical pre-approval artifact; the subsequent receipt records approval.
+- Refreshed read-only 32-device snapshot at 2026-10-12T13:46:25Z has zero
+  identifier redactions. Avito API at 13:46:44Z again confirms eight active
+  bindings and inactive sold т11. Current live feed is unchanged from the
+  earlier October 12 capture: eight ads, 46 JPEGs, same prices/text/photo order.
+  Public preflight again passes 11 pages, 11 current masked certificates,
+  64 JPEGs. Newly approved facts/copy exactly match the refreshed sources.
+- New scoped generator scripts/prepare_avito_available_batch_review.py adds
+  three explicit draft channel IDs to the captured eight-ad source and pins
+  all nine historical bindings. It excludes sold т11 despite old positive
+  inventory quantity. Requires exact owner copy/physical proof, source/public
+  timestamps, feed hash/order, matched inventory and unshared galleries;
+  rejects changes in copy, price, kit, grade, battery, images or existing
+  identity/model/storage/color/battery. Historical pilot/six/nine tools are
+  unchanged; runtime cap remains nine and no activation operator is added.
+- Grade B is exported honestly: т39 CaseCondition="Мелкие царапины" with
+  precise minor side-edge wear/point-mark wording; т18 has CaseCondition=
+  "Без дефектов" and explicitly states battery-only grade B at 88%/711 cycles.
+  т20 remains grade A. Exact approved descriptions and August report dates
+  are preserved. No stock-check CTA, inferred SIM configuration, full IMEI,
+  serial, original certificate, finance, contact or historical AvitoId added.
+- RAM model references checked October 12: iPhone 15 Pro Max 8 GB from
+  iFixit's Chip ID teardown /165320; iPhone 14 Pro 6 GB from its iFixit Device
+  specification. These are model reference facts, not instance measurements
+  or Avito dependent-dictionary acceptance. Provenance stays in review evidence.
+  Set/BoxSealed are omitted as before; confirmed open-box/cable kit stays in
+  the description. Current phone template hash and flat list values verified.
+- Output: outputs/avito-next-batch-2026-10-12/eleven-ad-review/
+  ISVOI_Avito_ELEVEN_AD_REVIEW_2026-10-12.xml.
+  SHA-256:
+  b90f6f21bf99356b474090f15d13f895c25d808984a4ebda7ccba388291f88d7.
+  Exactly 11 ads/64 JPEGs; existing eight Ad subtrees preserved byte-for-byte;
+  new IDs append in т20/т39/т18 order; sold т11 absent, 12 historical
+  configured IDs would be retained after a future release.
+- Verification: 52 focused Python tests, including sold-state exclusion,
+  immutable roster, case-enum truthfulness, source drift, exact copy scope,
+  private fields/entities/duplicate IDs and reference provenance. Read-only
+  source-template check passes 36 flat-dictionary comparisons for the new
+  three ads. Flat lists and well-formed XML do NOT prove model-dependent
+  Avito acceptance, moderation, billing or live publication readiness.
+  Repository text:audit and git diff --check also pass; frontend runtime,
+  source cap and production build are unchanged.
+- Next: owner checks THIS file in Avito's separate validator (not autoload
+  publication) and reports acceptance. Then obtain separate live expansion
+  authorization and batch-specific stability decision; implement/test cap 12
+  plus a guarded sold-aware activation contract, fresh backup/rehearsal/deploy.
+  The connected live URL still serves eight ads. No Directus, Avito schedule,
+  product/channel/photo/stock/price/grade/env write, commit, push or deploy made.
+
+## Avito Current Account Reconciled And Next Trio Prepared (2026-10-12)
+
+- Fresh read-only reconciliation: isolated release checkout, origin/master and
+  Beget /opt/isvoi remain at d3ff15775ccb46ef7d27bfac5144c5e1c356ba38.
+  Primary checkout's unrelated unfinished work is preserved; only this
+  operational-memory entry is mirrored there. No commit, push or deploy made.
+- Avito API at 2026-10-12T13:17:38Z returns eight active ads. New October 9
+  bindings are confirmed: т9 / 8399050508, т24 / 8350837990,
+  т26 / 8315441414. Existing т13 / 8338081334 is also active.
+  This supersedes the earlier pending ingestion/moderation observation;
+  actual ad-page appearance, billing and continuous 72-hour history were not
+  independently inspected. Owner reports all current ads checked and okay.
+- т11 / 8453675830 is old/inactive in Avito and sold with quantity zero on
+  the site and store offer. Its immutable historical XML ID remains registered
+  but is absent from the live feed. Positive quantity in the historical
+  inventory snapshot must not restore or republish a sold device.
+  Old unrelated 8312555394 remains inactive and unbound; no inferred SKU link.
+- Public feed at 2026-10-12T13:30:29Z has eight ads and 46 JPEG URLs, exactly
+  matching all active account IDs and current site prices/photo order.
+  The remaining eight ads are byte-equivalent per Ad to October 9 evidence.
+  Current feed SHA-256:
+  8c87691cfc96df6a7cacc27afa7bace63ec91bc005255164769bf9cea7ed4fec.
+  The historical nine-ad hash is not a current invariant after legitimate sale.
+- Next proposed batch: т20 (iPhone 15 Pro Max 512 GB Natural Titanium, 64100),
+  т39 (iPhone 14 Pro 256 GB Deep Purple, 44500),
+  т18 (iPhone 15 Pro Max 256 GB Blue Titanium, 56900).
+  Owner confirms current condition, battery, function and device/open box/cable
+  kit on October 12. Original report dates remain August 6/August 28/August 6;
+  batteries/cycles remain 100%/0, 95%/247, 88%/711 respectively.
+- Owner also approves ScreenCondition="Без дефектов" for all three and
+  CaseCondition="Мелкие царапины" for т39 as the nearest Avito enum;
+  exact side-edge small wear/point marks remain in the copy. т18 grade B is
+  battery-only; т20 grade A. No cosmetic/grade/battery claims are normalized
+  away to satisfy channel validation. т20 and т13 are distinct physical phones:
+  use separate inventory identity, immutable ID and gallery, not model matching.
+- Fresh sanitized full 32-device snapshot has zero private-identifier redactions.
+  All three have matched inventory, eligible/verified operator review, quantity
+  one and matching site/Belgorod offer prices, no serial duplicates/open issues.
+  Selected photos are not shared across product identities. Public checks for
+  eight active plus three proposed devices pass: 11 pages, 11 current masked
+  certificates and 64 JPEGs. No original certificate or full IMEI/serial exported.
+- Ignored evidence and review workbook:
+  outputs/avito-next-batch-2026-10-12/ISVOI_Avito_NEXT_BATCH_2026-10-12.xlsx,
+  account-status.json, catalog-snapshot.json, public-preflight.json,
+  current-reconciliation.json, owner-confirmation.json and
+  next-batch-preparation.json. Copy uses the approved balanced approach and
+  corrected viewing-time CTA; approval of these three exact new texts remains
+  pending. Facts/case-enum approval is NOT text or live-publication permission.
+- After text approval prepare cumulative XML with 11 available ads, keeping all
+  eight existing ads unchanged and excluding sold т11. There would be 12
+  historical configured IDs including т11, not 12 available ads. Current
+  runtime cap remains nine: a separately tested expansion/activation contract
+  must handle the sold existing member and grade-B CaseCondition before deploy.
+  Existing six/nine release scripts must not be replayed for this new scope.
+- Deferred: т30 needs precise cosmetic condition; т25 model-specific iPhone 16
+  Pro Desert Titanium color remains unconfirmed; т7 has serial with
+  identity=not_applicable; т37/т34/т36 remain unmatched and need separate
+  Samsung/category QA. No blocked/sold device is silently substituted.
+- Next gates: exact-text approval, local cumulative XML, owner Avito validator
+  acceptance, separate live expansion authorization and batch-specific
+  stability decision, then fresh verified VPS backup/rehearsal/deploy.
+  Prior October 9 waiting waiver does not authorize this batch. No Directus,
+  product, channel, photo, stock, price, grade, secret, Avito schedule or paid
+  service was changed during this preparation.
 
 ## Avito Nine-Ad Feed Released (2026-10-09)
 

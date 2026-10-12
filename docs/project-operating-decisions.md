@@ -6,6 +6,64 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Avito Eleven-Available Feed Released (2026-10-12)
+
+- Application commit 5c898a824c04ef06d834972b1810b50f68ec2e0a was pushed
+  to origin/master and deployed on Beget with git pull --ff-only. Isolated
+  production-env build/bundle and /trade smoke passed before .next replacement;
+  exact eight-ad baseline remained unchanged after code rollout. Only
+  isvoi-web restarted; isvoi-telegram remains stopped.
+  Retained build checkout: /opt/isvoi/work/avito-eleven-build-20261012.
+- Full verified backup: /opt/isvoi/backups/directus/20261012T144544Z-gallery.
+  Private stage: avito-eleven-ad-release. Prior .next, web env and PM2 dump
+  remain in backup. Guarded apply changed exactly three channel rows once:
+  т20/т39/т18 now active. Protected tables, all prior nine channel rows and
+  category mapping are unchanged. No product, inventory, offer, price, stock,
+  grade, photo or schema change was performed.
+- Connected https://isvoi.ru/integrations/avito/feed.xml now serves exactly
+  eleven available ads and 64 JPEG URLs. Configuration keeps twelve immutable
+  IDs, including historical sold т11; т11 is absent from the feed and remains
+  sold/quantity zero. т20 is distinct from т13 and has its own ID/photos.
+  Existing eight ads' text, prices, fields and image order are preserved.
+- Exact approved offline XML SHA-256:
+  b90f6f21bf99356b474090f15d13f895c25d808984a4ebda7ccba388291f88d7.
+  Live compact XML SHA-256:
+  854f195cf953abbfa949433a2dfc7fd8cc487a460f165cd968defb4049265b90.
+  Per-ID/named-field comparison verifies exact text/price/photo order despite
+  serialization formatting. no-store/noindex verified. New prices are
+  64100/44500/56900. Grade-B case/battery reasons and August report dates stay
+  intact; confirmed device/open box/cable kit remains in descriptions.
+- Allowlist was changed only after validated three-row activation, in env and
+  PM2 top-level/nested environment via --update-env, followed by pm2 save.
+  File/runtime allowlists both contain all twelve IDs. Other settings/secrets
+  were not changed or exported. No Avito upload, publication, billing or extra
+  paid-service API was called: saved URL autoload handles ingestion.
+- Verification: full local web:verify, 80 focused Python tests, 42 feed tests,
+  text:audit and diff checks. All 39 disposable SQL scenarios pass across
+  historical six/nine and new twelve-ID contracts. Production dry-run changed
+  zero; write rehearsal changed three then ROLLBACK restored the exact state.
+  Production smoke passes before and after expansion. HTTP 200 for
+  home/catalog/trade/robots/sitemap and all three added products; Directus
+  health status ok. Fresh post-release 32-device snapshot has zero private
+  identifier redactions, equals the exact approved active projection, and
+  confirms unrelated products/stores unchanged. Full Directus audit was not
+  rerun; prior archived Telegram/ops-env audit limitations are not erased.
+- Read-only Avito check at 2026-10-12T15:05:50Z (18:05 Moscow) still shows the
+  previous eight active bindings; new т20/т39/т18 IDs are not yet in the account.
+  Sold т11 / 8453675830 and unrelated 8312555394 remain inactive. This is
+  completed ISVOI feed rollout, NOT confirmation of new Avito ingestion,
+  moderation or actual charges. Next: inspect the owner's eleven-ad load
+  report, match three new immutable IDs to numeric Avito IDs, verify prices,
+  photos/text and moderation; do not create replacement IDs or extra sources.
+- Owner authorized connected-feed publication and separately waived waiting
+  for THIS batch. No completed 72-hour stability observation is claimed.
+  Evidence: outputs/avito-next-batch-2026-10-12/eleven-ad-review/live-release,
+  including release-completion.json and after-release-catalog-snapshot.json.
+  Private full receipt remains in backup as avito-eleven-available-receipt.json.
+  The isolated release checkout remains authoritative; primary checkout's
+  unrelated unfinished work is preserved, with this memory entry mirrored.
+  Documentation completion is committed and synced separately afterward.
+
 ## Avito Eleven-Available Release Authorized And Rehearsed (2026-10-12)
 
 - Owner reports "xml соответствует формату, всё ок, продолжаем" for the

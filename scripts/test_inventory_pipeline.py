@@ -272,6 +272,49 @@ class InventoryPipelineTest(unittest.TestCase):
         self.assertEqual(summary["receipts"]["central_office_units"], 2)
         self.assertEqual(summary["receipts"]["movement_counts"]["central_office"], 1)
 
+    def test_name_only_receipt_cannot_downgrade_exact_serial_match(self) -> None:
+        title = "Apple iPhone 16 Pro Max 512 GB Gold"
+        for reverse in (False, True):
+            inventory_path, receipt_path = self.root / "inventory.xlsx", self.root / "receipts.xlsx"
+            save_inventory(inventory_path, [self.inventory_row("source-1", title, "sku-1", "SERIAL-1")])
+            rows = [self.receipt_row(1, title, "SERIAL-1"), self.receipt_row(2, title)]
+            save_receipts(receipt_path, list(reversed(rows)) if reverse else rows)
+            inventory, receipts = parse_inventory(inventory_path), parse_receipts(receipt_path)
+            issues, matches = reconcile(inventory, receipts)
+            with self.subTest(reverse=reverse):
+                self.assertEqual(inventory[0]["identity_status"], "matched")
+                anonymous = next(row for row in receipts if not row["serial_full"])
+                self.assertEqual(anonymous["match_status"], "unmatched")
+                self.assertEqual(anonymous["movement_status"], "unclassified")
+                self.assertNotIn(anonymous["row_number"], matches)
+                self.assertIn("receipt_serial_required", [issue.code for issue in issues])
+
+    def test_name_only_receipt_does_not_prove_serialized_device_or_location(self) -> None:
+        title = "Apple iPhone 16 Pro 256 GB Gold"
+        inventory_path, receipt_path = self.root / "inventory.xlsx", self.root / "receipts.xlsx"
+        save_inventory(inventory_path, [self.inventory_row("source-1", title, "sku-1", "SERIAL-1")])
+        save_receipts(receipt_path, [self.receipt_row(1, title, comment="в ЦО")])
+        inventory, receipts = parse_inventory(inventory_path), parse_receipts(receipt_path)
+        _, matches = reconcile(inventory, receipts)
+        self.assertEqual(inventory[0]["identity_status"], "unmatched")
+        self.assertEqual(receipts[0]["movement_status"], "unclassified")
+        self.assertEqual(receipts[0]["source_note"], "в ЦО")
+        self.assertEqual(matches, {})
+
+    def test_serial_identity_conflict_is_not_erased_by_later_matches(self) -> None:
+        title = "Apple iPhone 16 Pro 256 GB Gold"
+        for reverse in (False, True):
+            inventory_path, receipt_path = self.root / "inventory.xlsx", self.root / "receipts.xlsx"
+            save_inventory(inventory_path, [self.inventory_row("source-1", title, "sku-1", "SERIAL-1")])
+            rows = [self.receipt_row(1, "Apple iPhone 16 Pro 512 GB Black", "SERIAL-1"),
+                    self.receipt_row(2, title, "SERIAL-1"), self.receipt_row(3, title)]
+            save_receipts(receipt_path, list(reversed(rows)) if reverse else rows)
+            inventory, receipts = parse_inventory(inventory_path), parse_receipts(receipt_path)
+            issues, _ = reconcile(inventory, receipts)
+            with self.subTest(reverse=reverse):
+                self.assertEqual(inventory[0]["identity_status"], "conflict")
+                self.assertIn("serialized_identity_conflict", [issue.code for issue in issues])
+
     def test_serialized_identity_ignores_generic_phone_and_5g_tokens(self) -> None:
         inventory_path = self.root / "inventory.xlsx"
         receipt_path = self.root / "receipts.xlsx"

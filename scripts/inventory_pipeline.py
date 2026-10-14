@@ -326,13 +326,24 @@ def classify_receipt_movement(receipt: dict[str, Any], match: dict[str, Any] | N
 def reconcile(inventory: list[dict[str, Any]], receipts: list[dict[str, Any]]) -> tuple[list[Issue], dict[int, dict[str, Any]]]:
     issues: list[Issue] = []
     by_serial = {row["serial_full"]: row for row in inventory if row["serial_full"]}
-    by_name = {relaxed_name(row["source_title"]): row for row in inventory}
+    by_name = {relaxed_name(row["source_title"]): row for row in inventory if not row["serial_full"]}
+    serialized_names = {relaxed_name(row["source_title"]) for row in inventory if row["serial_full"]}
     receipt_matches: dict[int, dict[str, Any]] = {}
     identity_by_source: dict[str, str] = {}
     receipt_title_by_source: dict[str, str] = {}
 
     for receipt in receipts:
         serial = receipt["serial_full"]
+        if not serial and relaxed_name(receipt["source_title"]) in serialized_names:
+            receipt.update(
+                match_status="unmatched", movement_status="unclassified", central_office_quantity=0,
+                match_note="Нужен серийный номер: наименование не подтверждает конкретное устройство или его место хранения.",
+            )
+            issues.append(Issue(
+                "warning", "receipt_serial_required", "receipt", receipt["row_number"], None,
+                "Строка поступления без серийного номера похожа на серийный товар; требуется ручная сверка.",
+            ))
+            continue
         match = by_serial.get(serial) if serial else by_name.get(relaxed_name(receipt["source_title"]))
         movement_status, central_office_quantity, match_note = classify_receipt_movement(receipt, match)
         receipt["movement_status"] = movement_status
@@ -376,7 +387,9 @@ def reconcile(inventory: list[dict[str, Any]], receipts: list[dict[str, Any]]) -
             identity_by_source[match["source_id"]] = "conflict"
             receipt["match_status"] = "conflict"
         else:
-            identity_by_source[match["source_id"]] = "matched" if serial else "not_applicable"
+            # A later matching row cannot erase a conflict in the same source batch.
+            if identity_by_source.get(match["source_id"]) != "conflict":
+                identity_by_source[match["source_id"]] = "matched" if serial else "not_applicable"
             receipt["match_status"] = "matched"
 
     for item in inventory:

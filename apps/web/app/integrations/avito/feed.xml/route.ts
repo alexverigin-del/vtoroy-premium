@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   AVITO_FEED_MAX_IDS,
   parseAvitoPilotIds,
+  parseAvitoCashStockApprovals,
   prepareAvitoFeed,
   type AvitoListingRow,
 } from "@/lib/avito-feed";
@@ -32,6 +33,11 @@ export async function GET() {
   if (!allowedIds.length) {
     return privateError("avito_pilot_not_configured", 503);
   }
+  const cashStockApprovals = parseAvitoCashStockApprovals(
+    process.env.AVITO_CASH_STOCK_APPROVALS || "",
+  );
+  if (!cashStockApprovals || Object.keys(cashStockApprovals).some((id) => !allowedIds.includes(id)))
+    return privateError("avito_cash_stock_approval_invalid", 503);
   const directusUrl = (process.env.DIRECTUS_URL || "").replace(/\/+$/, "");
   const publicUrl = (
     process.env.NEXT_PUBLIC_DIRECTUS_URL ||
@@ -61,6 +67,7 @@ export async function GET() {
     "category_mapping.is_confirmed",
     "attributes",
     "product.id",
+    "product.sku",
     "product.category.id",
     "product.category.slug",
     "product.status",
@@ -79,6 +86,11 @@ export async function GET() {
     "product.images.sort",
     "product.images.role",
     "product.inventory_item.product",
+    "product.inventory_item.id",
+    "product.inventory_item.source_id",
+    "product.inventory_item.source_sku",
+    "product.inventory_item.barcode",
+    "product.inventory_item.for_sale",
     "product.inventory_item.quantity",
     "product.inventory_item.eligibility_status",
     "product.inventory_item.authenticity_status",
@@ -104,7 +116,7 @@ export async function GET() {
     if (!response.ok) return privateError("avito_feed_source_failed", 502);
     const payload = (await response.json()) as DirectusResponse<AvitoListingRow[]>;
     if (!Array.isArray(payload.data)) return privateError("avito_feed_source_failed", 502);
-    report = prepareAvitoFeed(payload.data, publicUrl, { allowedIds });
+    report = prepareAvitoFeed(payload.data, publicUrl, { allowedIds, cashStockApprovals });
   } catch {
     return privateError("avito_feed_source_failed", 502);
   }

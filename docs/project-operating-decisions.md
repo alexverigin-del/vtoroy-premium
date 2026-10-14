@@ -1,10 +1,245 @@
 # Project Operating Decisions
 
-Last updated: 2026-10-12.
+Last updated: 2026-10-14.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Fourteen-Ad Cash Release Authorized And Rehearsed (2026-10-14)
+
+- Owner explicitly authorizes commit/push/deploy and connected-feed publication
+  of т25/т34/т36: "Да, разрешаю выкат и публикацию". Owner separately confirms
+  Samsung screen/body without defects, working functions, device/open box/cable
+  kit and unchanged dated batteries 85%/786 and 96%/432; explicitly waives
+  72-hour waiting for THIS batch. No completed observation is claimed.
+- Verified full PostgreSQL/uploads backup:
+  /opt/isvoi/backups/directus/20261014T141150Z-gallery.
+  Private stage: avito-fourteen-cash-release. Fresh read-only Avito reconciliation
+  at 2026-10-14T14:15:56Z confirms eleven prior active bindings, no new three
+  IDs already in account, and both historical inactive ads unchanged.
+- New exact contract/operator: prepare_avito_cash_release.py /
+  activate_avito_cash_batch.py. Pins approved fourteen-ad XML, fifteen
+  registered IDs including sold т11, exact three empty channel drafts,
+  cash source evidence and all 81 JPEG fingerprints.
+- Runtime cap becomes fifteen locally. Optional server-only
+  AVITO_CASH_STOCK_APPROVALS binds only Samsung cash stock to product/inventory
+  IDs, source UUID/SKU, barcode SHA-256 and normalized serial SHA-256.
+  Identity unmatched remains unchanged; no receipt or financial field rewrite.
+  Missing proof, changed hashes, conflict, authenticity/review/stock failures
+  withhold export. Proof is private config, never an XML attribute.
+- Real service-token API preview supports all required cash fields and produces
+  fourteen eligible ads in memory without Directus writes. Shared transaction
+  runner adds opt-in module guards; historical contracts remain unchanged.
+- Verification passes: full local web:verify (including build/bundle/lint/types),
+  86 focused Python tests, 47 feed tests, and 56 isolated SQL scenarios across
+  historical six/nine/twelve and new fifteen-ID contracts. Disposable DB has
+  no network, ports, mounts or production credentials. Production dry-run
+  changes zero; write rehearsal changes exactly three and ROLLBACK restores
+  the original channel state and all protected business data.
+- Prepared, NOT deployed yet: connected feed still eleven. Next authorized
+  operations are scoped commit/push, ff-only pull, isolated production build
+  and unchanged-baseline probe, guarded activation, atomic allowlist/private
+  proof update with PM2 restart, then exact fourteen-ad field/photo comparison
+  and production smoke. Preserve old build/env/PM2 dump and receipts for rollback.
+
+## Fourteen-Ad XML Validator Accepted By Owner (2026-10-14)
+
+- Owner reports "проверка xml - все ок" for the latest fourteen-ad cumulative
+  XML, SHA-256 a611be062fae0ff9881eb0bcb0bdafdf29152e6eb2f0efa784645786efcaa53b.
+  Recorded 2026-10-14T13:54:00Z in ignored owner-validator-acceptance.json
+  under outputs/avito-next-batch-2026-10-14/cash-confirmed-review.
+  This is owner-reported validator acceptance, not independently inspected
+  validator output, ingestion, moderation or charges.
+- Validator gate is recorded passed; offline manifest retains its provenance
+  and all no-publication/no-write flags. Connected feed remains the eleven-ad
+  configuration; no push/deploy/Directus/channel/runtime change performed.
+- Remaining gates: current Samsung cosmetic/function/kit and unchanged dated
+  battery confirmation; reviewed cash-aware fifteen-historical-ID release
+  operator/runtime, backup and rollback rehearsal; explicit commit/push/deploy
+  and connected-feed publication authorization for т25/т34/т36; separate
+  decision on this batch's 72-hour waiting. Prior waiting waivers do not apply.
+- т7/т37 remain outside this fourteen-ad XML. Do not add extra URLs or create
+  new IDs for existing ads. Validator acceptance alone never triggers rollout.
+
+## Samsung Copy Approved And Fourteen-Ad Offline XML (2026-10-14)
+
+- Owner approves both exact т34/т36 descriptions: "Да, одобряю оба текста".
+  Scope is text approval only, not connected-feed publication. This supersedes
+  the pending Samsung-copy status in the preceding cash-source review.
+  Description SHA-256: т34
+  e87086b9b2a19fa259b124c1f17f284bbb2be2cadfc7d2120659bccf1dc88535;
+  т36 ed15c8757aef83994e4e39ba982a7eb33a0ffd61bf1c7e98cf726efbb3c53f05.
+  Owner-confirmed т34 physical RAM is 12 GB; both descriptions include 12 GB
+  with their respective owner/manufacturer provenance.
+- Offline cumulative file: outputs/avito-next-batch-2026-10-14/
+  cash-confirmed-review/ISVOI_Avito_CUMULATIVE_REVIEW_14_2026-10-14.xml.
+  SHA-256: a611be062fae0ff9881eb0bcb0bdafdf29152e6eb2f0efa784645786efcaa53b.
+  Preserves all twelve ad subtrees from the approved т25 review exactly,
+  then adds т34 / isvoi-710af179-9f6b-4a1f-bb0f-6d90b1362e23 and
+  т36 / isvoi-ec52dfa6-0062-493a-9f3f-b022e7784526 at 47995 / 60998 RUB.
+  Candidate Color values are бежевый / черный; Vendor Samsung, 256 GB storage,
+  12 GB RAM, dated Akb 85 / 96. Model-dependent Avito validation is pending.
+- Fresh read-only fourteen-device preflight passes fourteen pages, fourteen
+  masked certificates and 81 distinct JPEG URLs. Current eleven-ad feed
+  hash remains unchanged; it matches the first eleven preserved offline ads.
+  All selected source products are unchanged from the earlier т25 snapshot.
+- Six new Samsung offline tests and seven preceding cumulative-review tests
+  pass, checking exact output preservation, owner-copy hashes, source/stock/
+  barcode/serial drift, duplicates, conflicts, grade and no publication flags.
+  Together with the 86 focused Python tests, 99 tests pass.
+- т7/т37 are NOT added to this XML; cash evidence clears their receipt-based
+  preparation gate, but their separate new-batch copy/physical QA remains.
+  Future fourteen-available release needs fifteen registered historical IDs,
+  cash-aware guarded activation, backup/rehearsal and explicit publication
+  authorization. No existing Apple-only operator/runtime guard was weakened.
+- No production/Directus/runtime/feed writes, commit, push or deploy.
+  Next: validate this exact fourteen-ad XML in Avito, confirm Samsung current
+  cosmetic/battery facts before activation, then authorize live release.
+  Never connect a second source or upload this review as publication implicitly.
+
+## Cash Stock Authority And Samsung Copy Review (2026-10-14)
+
+- Owner instructs to use the cash-register export and confirms all devices
+  present. Stock/retail authority remains cash snapshot plus live product/offer
+  sold/reserved state. Missing receipt association is a separate historical
+  purchase-cost reconciliation issue, not proof that the device is absent.
+  Explicit serial/model conflicts, duplicate identities, authenticity blocks,
+  open issues and sold state remain blockers; do not invent receipt matches.
+- Fresh read-only comparison of corrected cash workbook against Directus proves
+  exact UUID/product source binding, SKU, internal barcode and full serial
+  matches for т34 (cash row 37), т37 (row 70), т36 (row 84) and т7 (row 87).
+  Cash, inventory and published product prices/quantities agree: one unit each,
+  47995 / 80300 / 60998 / 80300 RUB respectively.
+  Cash file SHA-256:
+  537b5a85e0ed837f3cf28e38fd6d7408bcb3118072654f0618cef69074107c67.
+  Comparisons run privately; raw serial/IMEI never appear in review exports.
+- Local preparation adds optional --cash-stock-confirmation / fourth prepare
+  argument. It requires owner scope/date, exact snapshot capture, source hash,
+  product/inventory/external-ID binding, positive cash quantity/price and all
+  UUID/SKU/barcode/serial checks. Only receipt-unmatched changes from blocker
+  to warning for these explicitly proven cash-source devices. No blanket
+  unmatched bypass or identity_status mutation; original receipt audit stays.
+  Existing callers without cash evidence retain prior behavior.
+- All four cash-confirmed devices pass local catalog preparation and fresh
+  public preflight: four pages, four masked certificates, 24 JPEG images.
+  т7 reconciliation fix remains separately unapplied; using its cash evidence
+  for preparation does not require falsifying its current not_applicable state.
+  Earlier "must find receipt before preparation" wording is superseded by this
+  owner-authorized stock/source separation, not by waiver of identity conflicts.
+- Samsung copy keeps grade A and clean-body wording, but removes broad
+  "no battery remarks" assertion. т34 keeps dated 85% / 786 cycles, т36
+  96% / 432 cycles, both NSYS 2026-08-21. No True Tone/Face ID or unsupported
+  component-originality claims. ROOT/KNOX statuses remain explicitly attributed
+  to the report; no claim that the Samsung Knox security platform is absent.
+  Confirmed kit and 90-day warranty stay intact; no stock-check CTA.
+- Model summaries use official Samsung pages: 6.8-inch Dynamic AMOLED 2X,
+  up to 120 Hz, primary 200 MP camera and USB-C. S23 Ultra 256 GB has
+  regional 8/12 GB RAM variants; owner separately confirms actual т34 RAM
+  12 GB (excluding RAM Plus). S24 Ultra 12 GB RAM is manufacturer-model
+  evidence, not an inferred S23 variant or an Avito dictionary validation.
+  Samsung model/RAM/color combinations still require Avito validator QA.
+- Evidence/draft text: outputs/avito-next-batch-2026-10-14/
+  cash-confirmed-review. Both Samsung descriptions await exact copy approval.
+  Local 86 focused Python tests pass, including cash-proof drift, serial/stock/
+  barcode guards, conflicts/sold/authenticity and truthful Samsung wording.
+- No production schema/data/channel/env/feed changes, commit, push or deploy.
+  Connected feed still has eleven ads; approved т25 twelve-ad XML is unchanged.
+  Future release must add a reviewed cash-aware activation path and preserve
+  all existing IDs/sold exclusions; prior Apple-only operators are not silently
+  weakened. Next: approve Samsung text and validate model-specific fields,
+  then prepare the separately authorized cumulative release.
+
+## Avito Twelve-Available Offline XML Prepared (2026-10-14)
+
+- Owner explicitly approves exact т25 description without edits on workbook
+  "Описание": "Да, одобряю текст". Approval covers text and offline XML only,
+  NOT connected-feed expansion, publication, costs or a waiting waiver.
+  Reviewed workbook SHA-256:
+  93c8272b0e2cbff3ed40f14870067497095307cfe85d54d867bd5ec297e05a3a.
+  Immutable approval receipt records exact title/description hashes separately
+  from the unchanged workbook's pending dropdown.
+- Fresh read-only 32-product snapshot has zero private-ID redactions.
+  All thirteen selected historical/new source records are unchanged from
+  the approved review snapshot. Connected eleven-ad baseline SHA-256 remains
+  854f195cf953abbfa949433a2dfc7fd8cc487a460f165cd968defb4049265b90.
+- Offline cumulative XML adds only т25 /
+  isvoi-e697a34e-751c-4457-ae3e-fd489c5bf487:
+  iPhone 16 Pro / 256 GB / Desert Titanium, 70500 RUB, grade A,
+  Color "золотистый", battery 97% / 262 cycles with report date 2026-08-10.
+  Owner-confirmed open box/cable kit stays in the approved description.
+  RAM 8 GB provenance: https://www.ifixit.com/Device/iPhone_16_Pro,
+  checked 2026-10-14; hardware reference is not Avito dictionary validation.
+- Local file: outputs/avito-next-batch-2026-10-14/twelve-ad-review/
+  ISVOI_Avito_CUMULATIVE_REVIEW_12_2026-10-14.xml.
+  SHA-256: 44cc489c97710830e4a97d6e671f3d5b3675741629877c99145225648ea81cc7.
+  Twelve available ads / 69 distinct JPEG URLs; prior eleven complete ad
+  subtrees, descriptions, IDs, prices and photo order are preserved exactly.
+  Sold т11 and т30 stay excluded. No full IMEI/serial, purchase cost or margin
+  is exported; optional Set/BoxSealed/SimConfig stay omitted.
+- Fresh public preflight passes twelve pages, twelve masked certificates
+  and 69 JPEG images. Seven local offline guard tests pass, covering exact
+  preservation, changed baseline, duplicate IDs, private fields/entities,
+  shared photos, source drift and missing copy approval.
+- Evidence and one-off offline adapter remain ignored under outputs.
+  No Directus/channel/runtime/env/feed writes, commit, push or deploy.
+  Current runtime cap remains twelve registered IDs; future rollout needs
+  thirteen historical registered IDs, reviewed activation/rehearsal and backup.
+  Next: owner validates this exact twelve-ad XML, then separately authorizes
+  connected-feed publication and decides this batch's stability waiting.
+  Do not replace the connected URL or publish the review file yet.
+
+## Avito Next Device And Inventory Identity Review (2026-10-14)
+
+- Fresh read-only reconciliation: isolated release checkout, origin/master
+  and Beget /opt/isvoi remain on a4bbfc06df4872cad1ef924bb2126133c0b9a2dd.
+  Avito API at 2026-10-14T12:46:24Z confirms eleven active ads, including
+  т20 / 8315254002, т39 / 8545494434 and т18 / 8483274032.
+  Sold т11 / 8453675830 and unrelated 8312555394 remain inactive.
+  Owner reports all previously added ads checked and satisfactory.
+- Connected feed remains unchanged: eleven ads / 64 JPEG URLs, SHA-256
+  854f195cf953abbfa949433a2dfc7fd8cc487a460f165cd968defb4049265b90.
+  IDs, prices, descriptions and photo order match the source/account
+  reconciliation. This is a point-in-time check, not continuous 72-hour QA
+  or independent inspection of actual charges.
+- Fresh catalog snapshot: 32 products, 24 published, sixteen available and
+  eight sold. т30 is now sold / quantity zero and must not re-enter the feed.
+  Public preflight passes for sixteen product pages, sixteen masked current
+  certificates and 93 JPEG images; snapshot has zero private-ID redactions.
+- Next eligible candidate is т25: iPhone 16 Pro 256 GB Desert Titanium,
+  70500 RUB, grade A, five photographs. Owner confirms clean screen/body,
+  functional device, open box/cable kit and unchanged 97% / 262 cycles.
+  Original NSYS report date 2026-08-10 stays explicit. Owner separately
+  confirms model-specific Avito Color "Золотистый" for iPhone 16 Pro.
+  Add this exact model/color pair locally; do not generalize to other models.
+- Review workbook: outputs/avito-next-batch-2026-10-14/
+  ISVOI_Avito_NEXT_BATCH_2026-10-14.xlsx. Description approval remains pending;
+  facts/color confirmation is NOT approval of text or live publication.
+  Next: approve description, prepare cumulative twelve-available XML,
+  validate, then obtain separate connected-feed release authorization.
+  This requires thirteen registered historical IDs including sold т11;
+  current twelve-ID runtime cap and allowlist are unchanged.
+- т7 has a reconciliation defect: latest batch
+  5f0904cb-5c22-45f1-9bf2-43e8e42c2dfa contains exact serial/name row 24,
+  then same-name row 77 without serial. Old reconciliation overwrites matched
+  with not_applicable. Local fix excludes serialized inventory from name-only
+  matching, emits receipt_serial_required, leaves anonymous receipt unmatched
+  / unclassified and preserves source notes. It never infers sold/CO location.
+  A genuine serial/name conflict remains sticky within the batch.
+- Read-only in-memory replay on latest production batch proves old т7 result
+  not_applicable -> proposed matched, exact row 24 retained and anonymous
+  row 77 unmatched/unclassified; stock and price unchanged. Historical
+  corrected August identity conflict remains in the audit trail. Production
+  rows/links have NOT changed. Guarded backup/apply is required separately
+  before т7 can be selected, with current physical facts confirmed.
+- т37, т34 and т36 remain deferred: no linked receipt or exact serial receipt
+  exists in this snapshot. Require a confirmed receipt source; Samsung also
+  needs model-specific RAM/color/category QA. Site publication alone does not
+  establish inventory identity or component originality.
+- Local verification: 82 focused Python tests pass, including receipt-order,
+  anonymous serialized receipt and sticky-conflict regressions.
+  No production writes, upload, commit, push or deploy this turn. Previous
+  publication approvals and waiting waivers do not transfer to this batch.
 
 ## Avito Eleven-Available Feed Released (2026-10-12)
 

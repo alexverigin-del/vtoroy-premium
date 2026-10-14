@@ -42,6 +42,95 @@ def fixture():
 
 
 class CatalogPreparationTests(unittest.TestCase):
+    def cash_inputs(self):
+        product, public = fixture()
+        product["inventory"][0].update(id="inventory-fixture", identity_status="unmatched")
+        external_id = "isvoi-00000000-0000-4000-8000-000000000001"
+        product["listings"][0]["external_id"] = external_id
+        snapshot = {"captured_at": "2026-10-14T13:00:00Z", "products": [product],
+                    "stores": [{"slug": "belgorod", "status": "published", "address": "Тестовый адрес"}]}
+        evidence = {"source": "owner_cash_snapshot_confirmation",
+                    "scope": "stock_not_receipt_identity_or_publication",
+                    "confirmed_on": "2026-10-14", "snapshot_captured_at": snapshot["captured_at"],
+                    "cash_file_sha256": "a" * 64, "publication_authorized": False,
+                    "entries": [{"sku": product["sku"], "product_id": product["id"],
+                                 "inventory_id": "inventory-fixture",
+                                 "source_id": external_id.removeprefix("isvoi-"), "external_id": external_id,
+                                 "source_uuid_matches": True, "sku_matches": True,
+                                 "barcode_matches": True, "serial_matches": True,
+                                 "quantity": 1, "inventory_quantity": 1, "retail_price": 40000,
+                                 "identity_status": "unmatched"}]}
+        return snapshot, public, evidence
+
+    def test_cash_stock_confirmation_does_not_invent_receipt_match_or_publication(self):
+        snapshot, public, evidence = self.cash_inputs()
+        before = deepcopy(snapshot)
+        self.assertFalse(prepare(snapshot, public, {})["entries"][0]["catalog_checks_pass"])
+        entry = prepare(snapshot, public, {}, evidence)["entries"][0]
+        self.assertTrue(entry["catalog_checks_pass"])
+        self.assertIn("receipt_identity_unmatched_cash_confirmed", entry["warnings"])
+        self.assertEqual(entry["identity_status"], "unmatched")
+        self.assertFalse(entry["ready_to_publish"])
+        self.assertFalse(entry["copy_operator_approved"])
+        self.assertEqual(snapshot, before)
+
+    def test_cash_evidence_fails_closed_on_source_or_confirmation_drift(self):
+        for change in ("serial", "barcode", "uuid", "product", "inventory", "stock", "price",
+                       "day", "capture", "publication", "scope", "duplicate"):
+            snapshot, public, evidence = self.cash_inputs()
+            row = evidence["entries"][0]
+            if change in ("serial", "barcode"):
+                row[change + "_matches"] = False
+            if change == "uuid": row["source_id"] = "invalid"
+            if change == "product": row["product_id"] = "other"
+            if change == "inventory": row["inventory_id"] = "other"
+            if change == "stock": row["quantity"] = 0
+            if change == "price": row["retail_price"] += 1
+            if change == "day": evidence["confirmed_on"] = "2026-10-13"
+            if change == "capture": evidence["snapshot_captured_at"] = "older"
+            if change == "publication": evidence["publication_authorized"] = True
+            if change == "scope": evidence["scope"] = "facts_only"
+            if change == "duplicate": evidence["entries"].append(deepcopy(row))
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                prepare(snapshot, public, {}, evidence)
+
+    def test_cash_source_does_not_override_conflict_sold_or_authenticity_guards(self):
+        for change in ("conflict", "sold", "authenticity", "duplicate", "issue", "offer"):
+            snapshot, public, evidence = self.cash_inputs()
+            product = snapshot["products"][0]
+            if change == "conflict":
+                product["inventory"][0]["identity_status"] = "conflict"
+                evidence["entries"][0]["identity_status"] = "conflict"
+            if change == "sold": product["stock_status"] = "sold"
+            if change == "authenticity": product["inventory"][0]["authenticity_status"] = "pending"
+            if change == "duplicate": product["inventory"][0]["duplicate_serial"] = True
+            if change == "issue": product["inventory"][0]["open_issue_codes"] = ["serialized_identity_conflict"]
+            if change == "offer": product["offers"][0]["price"] += 1
+            report = prepare(snapshot, public, {}, evidence)
+            with self.subTest(change=change):
+                self.assertFalse(report["audits"][0]["catalog_checks_pass"])
+
+    def test_samsung_copy_separates_grade_battery_and_model_features(self):
+        for model, battery in (("Galaxy S23 Ultra", "85%"), ("Galaxy S24 Ultra", "96%")):
+            product, _ = fixture()
+            product["model"] = model
+            product["device_details"][0]["battery"] = battery
+            product["passports"][0].update(
+                condition_note="Грейд A: замечаний по корпусу и батарее нет.",
+                repair="Отчёт NSYS не содержит отдельной проверки оригинальности компонентов.",
+                diagnostics_checklist=[{"text": "Экран и мультитач", "state": "ok"}],
+                story_facts=["FRP / ROOT / KNOX не обнаружены"])
+            text = balanced_copy(product, "Тестовый адрес")[1]
+            with self.subTest(model=model):
+                self.assertIn("Грейд A. Нет замечаний по корпусу.", text)
+                self.assertNotIn("замечаний по корпусу и батарее нет", text)
+                self.assertIn(battery, text)
+                self.assertIn("Характеристики модели:", text)
+                self.assertNotIn("True Tone", text)
+                self.assertNotIn("Face ID", text)
+                self.assertNotIn("отмечены как оригинальные", text)
+                self.assertIn("в отчёте отмечено «не обнаружено»", text)
+
     def test_stock_cta_removed_without_price_or_fact_changes(self):
         old = "Цена 64100. Батарея: 99%. Напишите в чат: уточним наличие и согласуем время просмотра."
         expected = "Цена 64100. Батарея: 99%. Напишите в чат, чтобы согласовать время просмотра."
@@ -67,6 +156,7 @@ class CatalogPreparationTests(unittest.TestCase):
 
     def test_desert_titanium_requires_model_specific_color_mapping(self):
         self.assertEqual(avito_color("iPhone 16 Pro Max", "Desert Titanium"), "золотистый")
+        self.assertEqual(avito_color("iPhone 16 Pro", "Desert Titanium"), "золотистый")
         self.assertIsNone(avito_color("unreviewed-model", "Desert Titanium"))
         self.assertEqual(avito_color("unreviewed-model", "Cream"), "бежевый")
         self.assertEqual(avito_color("iPhone 15 Pro Max", "Natural Titanium"), "серый")

@@ -22,9 +22,16 @@ COLORS = {"Deep Purple": "фиолетовый", "Silver": "серебристы
           "Black Titanium": "черный", "White Titanium": "белый", "Blue Titanium": "синий",
           "Natural Titanium": "серый", "Burgundy": "красный",
           "Cream": "бежевый", "Titanium Black": "черный", "Gold": "золотистый"}
-# Owner's validator rejected beige; owner then confirmed gold in the model's
-# Color dictionary. Full XML/account validation remains a separate gate.
-MODEL_COLORS = {("iPhone 16 Pro Max", "Desert Titanium"): "золотистый"}
+# Owner confirmed each model's Color dictionary separately (Pro Max after
+# beige rejection, then Pro). Full XML/account validation is a separate gate.
+MODEL_COLORS = {
+    ("iPhone 16 Pro Max", "Desert Titanium"): "золотистый",
+    ("iPhone 16 Pro", "Desert Titanium"): "золотистый",
+}
+SAMSUNG_MODEL_SUMMARIES = {
+    "Galaxy S23 Ultra": "Экран 6,8 дюйма Dynamic AMOLED 2X, до 120 Гц; основная камера 200 Мп; USB-C.",
+    "Galaxy S24 Ultra": "Экран 6,8 дюйма Dynamic AMOLED 2X, до 120 Гц; основная камера 200 Мп; USB-C.",
+}
 
 
 def avito_color(model, color):
@@ -39,6 +46,8 @@ LABELS = {
     "inventory_link_count": "Нет однозначной связи со складом",
     "inventory_sku_mismatch": "SKU карточки не совпадает со складской строкой",
     "inventory_identity_unmatched": "Нет подтверждённого сопоставления с поступлением",
+    "receipt_identity_unmatched_cash_confirmed": "Наличие и устройство сверены по кассе; поступление/закупка требуют отдельной сверки",
+    "stock_confirmed_from_cash": "Наличие подтверждено по кассовым UUID, SKU, штрихкоду и serial",
     "inventory_not_approved": "Нет полного допуска складской позиции",
     "inventory_sale_duplicate_or_issue": "Запрет продажи, дубль serial или открытая проблема",
     "inventory_stock_shortfall": "На складе меньше, чем на сайте",
@@ -91,7 +100,26 @@ def image_urls(product):
             for i in valid[:10]]
 
 
-def assess(product, public):
+def cash_stock_matches(product, evidence):
+    inventory = one(product.get("inventory"))
+    listing = one(product.get("listings"))
+    return bool(inventory and listing and evidence
+                and evidence.get("sku") == product["sku"]
+                and evidence.get("product_id") == product["id"]
+                and evidence.get("inventory_id") == inventory.get("id")
+                and re.fullmatch(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", evidence.get("source_id") or "")
+                and evidence.get("external_id") == listing.get("external_id") == "isvoi-" + evidence["source_id"]
+                and all(evidence.get(key) is True for key in
+                        ("source_uuid_matches", "sku_matches", "barcode_matches", "serial_matches"))
+                and type(evidence.get("quantity")) is int
+                and evidence["quantity"] == evidence.get("inventory_quantity") == inventory.get("quantity")
+                and evidence["quantity"] >= product["stock_quantity"] > 0
+                and evidence.get("retail_price") == inventory.get("retail_price") == product["price"]
+                and evidence.get("identity_status") == inventory.get("identity_status")
+                and inventory.get("serial_present") is True)
+
+
+def assess(product, public, cash_stock=None):
     blockers, warnings = [], []
     if product["status"] != "published" or product["content_status"] != "ready":
         blockers.append("not_published_ready")
@@ -107,8 +135,13 @@ def assess(product, public):
     else:
         if inventory["source_sku"] != product["sku"]:
             blockers.append("inventory_sku_mismatch")
-        if inventory["identity_status"] not in ("matched", "not_applicable"):
+        cash_confirmed = cash_stock_matches(product, cash_stock)
+        if inventory["identity_status"] == "unmatched" and cash_confirmed:
+            warnings.append("receipt_identity_unmatched_cash_confirmed")
+        elif inventory["identity_status"] not in ("matched", "not_applicable"):
             blockers.append("inventory_identity_" + inventory["identity_status"])
+        if cash_confirmed:
+            warnings.append("stock_confirmed_from_cash")
         if inventory["eligibility_status"] != "eligible" or inventory["authenticity_status"] not in (
                 "verified", "not_required") or not inventory["review_override"] or not inventory["review_note_present"]:
             blockers.append("inventory_not_approved")
@@ -168,6 +201,8 @@ def balanced_copy(product, address):
     if "Galaxy" in title and not title.startswith("Samsung"):
         title = "Samsung " + title
     condition = p.get("condition_note") or "Состояние показано на реальных фотографиях."
+    if "Galaxy" in product["model"] and condition == "Грейд A: замечаний по корпусу и батарее нет.":
+        condition = "Грейд A. Нет замечаний по корпусу. Функциональные тесты пройдены."
     notes = p.get("condition_notes") or []
     explicit_body = next((n for n in notes if re.search(r"нет замечаний по корпусу|замечаний по корпусу.*не обнаружено", n, re.I)), "")
     if condition.startswith("Диагностика пройдена, состояние корпуса показано"):
@@ -193,7 +228,11 @@ def balanced_copy(product, address):
     repair = p.get("repair") or ""
     if repair == "Проверенные компоненты отмечены диагностикой как оригинальные.":
         repair = "Проверенные компоненты отмечены как оригинальные."
-    story = ". ".join(p.get("story_facts") or [])
+    facts = p.get("story_facts") or []
+    if "Galaxy" in product["model"]:
+        facts = [fact.replace("FRP / ROOT / KNOX не обнаружены",
+                             "FRP / ROOT / KNOX: в отчёте отмечено «не обнаружено»") for fact in facts]
+    story = ". ".join(facts)
     if story:
         story += "."
     warranty = product["warranty_text"]
@@ -204,7 +243,9 @@ def balanced_copy(product, address):
     if address == 'Белгород, ул. Костюкова д.67А ТЦ "Виктория", 2 этаж':
         address = "Белгород, ул. Костюкова, д. 67А, ТЦ «Виктория», 2 этаж"
     cta = "Посмотреть устройство можно в I СВОИ: " + address.rstrip(".") + ". Напишите в чат, чтобы согласовать время просмотра."
-    description = "\n\n".join(x for x in [intro, battery, " ".join(x for x in [verification, repair, story] if x),
+    model_summary = SAMSUNG_MODEL_SUMMARIES.get(product["model"])
+    specification = "Характеристики модели: " + model_summary if model_summary else ""
+    description = "\n\n".join(x for x in [intro, battery, specification, " ".join(x for x in [verification, repair, story] if x),
                                             manual_note, contents, passport, cta] if x)
     if len(title) > 50 or len(description) > 7500 or re.search(r"[<>]|\d{15}|\[redacted", title + description):
         raise ValueError("Unsafe or oversized channel copy")
@@ -232,12 +273,28 @@ def extra_sheet(workbook, name, headers, rows, widths):
     return sheet
 
 
-def prepare(snapshot, public, approved):
+def prepare(snapshot, public, approved, cash_stock_confirmation=None):
     products = snapshot["products"]
     stores = [s for s in snapshot["stores"] if s["slug"] == "belgorod" and s["status"] == "published"]
     store = one(stores)
     if not store.get("address") or snapshot.get("private_identifier_redactions"):
         raise ValueError("Missing store or redacted public source; operator review required")
+    cash_rows = {}
+    if cash_stock_confirmation is not None:
+        evidence = cash_stock_confirmation
+        if (evidence.get("source") != "owner_cash_snapshot_confirmation"
+                or evidence.get("scope") != "stock_not_receipt_identity_or_publication"
+                or evidence.get("snapshot_captured_at") != snapshot["captured_at"]
+                or evidence.get("confirmed_on") != snapshot["captured_at"][:10]
+                or evidence.get("publication_authorized") is not False
+                or not re.fullmatch(r"[0-9a-f]{64}", evidence.get("cash_file_sha256") or "")):
+            raise ValueError("Missing exact cash-source owner confirmation")
+        for row in evidence.get("entries") or []:
+            sku = row.get("sku")
+            product = one([p for p in products if p["sku"] == sku])
+            if sku in cash_rows or not product or not cash_stock_matches(product, row):
+                raise ValueError("Cash evidence does not match exact product/source/stock")
+            cash_rows[sku] = row
     by_sku = Counter(p["sku"] for p in products)
     by_id = Counter(p["id"] for p in products)
     external_ids = Counter(l["external_id"] for p in products for l in p.get("listings") or [])
@@ -248,7 +305,7 @@ def prepare(snapshot, public, approved):
     shared_photos = {url for url, owners in assets.items() if len(owners) > 1}
     audits, entries = [], []
     for p in products:
-        blockers, warnings = assess(p, public)
+        blockers, warnings = assess(p, public, cash_rows.get(p["sku"]))
         if by_sku[p["sku"]] > 1 or by_id[p["id"]] > 1:
             blockers.append("duplicate_product_or_sku")
         if any(url in shared_photos for url in image_urls(p)):
@@ -488,12 +545,14 @@ def main():
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--model-reference")
     parser.add_argument("--box-confirmation")
+    parser.add_argument("--cash-stock-confirmation")
     args = parser.parse_args()
     load = lambda name: json.loads(Path(name).read_text(encoding="utf-8"))
     snapshot, public, approved = load(args.snapshot), load(args.public_preflight), load(args.approved_copy)
     if public["captured_at"] != snapshot["captured_at"]:
         raise ValueError("Preflight belongs to another snapshot")
-    report = prepare(snapshot, public, approved)
+    report = prepare(snapshot, public, approved,
+                     load(args.cash_stock_confirmation) if args.cash_stock_confirmation else None)
     apply_reference_evidence(report, snapshot, load(args.model_reference) if args.model_reference else None,
                              load(args.box_confirmation) if args.box_confirmation else None)
     out = Path(args.output_dir)

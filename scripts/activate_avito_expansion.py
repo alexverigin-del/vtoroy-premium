@@ -66,7 +66,7 @@ def protection_sql(new_rows=NEW):
 END LOOP;"""
 
 
-def transaction_sql(plan, before, xml, write=False, commit=False, identities=None, new_rows=NEW):
+def transaction_sql(plan, before, xml, write=False, commit=False, identities=None, new_rows=NEW, extra_guard_sql=""):
     identities = identities if identities is not None else NEW | PILOT
     allowed_ids = list(identities)
     validate_state(plan, before, identities)
@@ -103,6 +103,7 @@ BEGIN
   RAISE EXCEPTION 'Private identifier in approved XML';
  END IF;
  current_source := {projection};
+ {extra_guard_sql}
  IF current_source={json_sql(plan['expected_active'])} THEN
   already:=true;
   IF EXISTS(SELECT 1 FROM jsonb_array_elements({json_sql(plan['desired'])}) x
@@ -277,6 +278,7 @@ def main(release_module=None):
     receipt_name = release_module.RECEIPT_NAME if release_module else 'avito-expansion-receipt.json'
     check_plan = release_module.validate_plan if release_module else validate_plan
     check_auth = release_module.require_authorization if release_module else require_authorization
+    extra_guards = getattr(release_module, 'transaction_guards', lambda plan: '') if release_module else lambda plan: ''
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--plan', required=True)
     parser.add_argument('--xml', required=True)
@@ -327,7 +329,7 @@ def main(release_module=None):
         receipt_file = Path(args.backup_dir) / receipt_name
         if receipt_file.exists():
             saved = load(receipt_file)
-            result = db(transaction_sql(plan, before, xml, identities=identities, new_rows=new_rows))
+            result = db(transaction_sql(plan, before, xml, identities=identities, new_rows=new_rows, extra_guard_sql=extra_guards(plan)))
             if saved.get('xml_sha256') != plan['xml_sha256'] or not result['already_applied']:
                 raise SystemExit('Existing release receipt must not be overwritten')
             if saved.get('phase') == 'prepared':
@@ -339,13 +341,13 @@ def main(release_module=None):
             receipt = {'xml_sha256':plan['xml_sha256'],'before':before,'phase':'prepared'}
             with receipt_file.open('x',encoding='utf-8') as out:
                 json.dump(receipt,out,ensure_ascii=True,indent=2)
-            result = db(transaction_sql(plan,before,xml,write=True,commit=True,identities=identities,new_rows=new_rows))
+            result = db(transaction_sql(plan,before,xml,write=True,commit=True,identities=identities,new_rows=new_rows,extra_guard_sql=extra_guards(plan)))
             receipt.update(after=result['new_after'],phase='applied')
             temporary = receipt_file.with_suffix('.tmp')
             temporary.write_text(json.dumps(receipt,ensure_ascii=True,indent=2),encoding='utf-8')
             temporary.replace(receipt_file)
     else:
-        result = db(transaction_sql(plan,before,xml,identities=identities,new_rows=new_rows))
+        result = db(transaction_sql(plan,before,xml,identities=identities,new_rows=new_rows,extra_guard_sql=extra_guards(plan)))
     print(json.dumps({key:result[key] for key in ('guards_passed','changed','already_applied','protected_unchanged')}
                      | {'dry_run':not args.apply,'env_changed':False,'avito_called':False}))
 

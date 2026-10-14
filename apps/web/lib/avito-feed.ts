@@ -1,4 +1,15 @@
+import { createHash } from "node:crypto";
+
 type Row = Record<string, unknown>;
+
+export type AvitoCashStockApproval = {
+  productId: string;
+  inventoryId: string;
+  sourceId: string;
+  sku: string;
+  barcodeSha256: string;
+  serialSha256: string;
+};
 
 export type AvitoListingRow = {
   channel?: unknown;
@@ -15,6 +26,7 @@ export type AvitoListingRow = {
 export type AvitoFeedOptions = {
   allowedIds: string[];
   preview?: boolean;
+  cashStockApprovals?: Record<string, AvitoCashStockApproval>;
 };
 
 export type AvitoFeedReport = {
@@ -115,7 +127,72 @@ function validId(value: string): boolean {
   );
 }
 
-export const AVITO_FEED_MAX_IDS = 12;
+export const AVITO_FEED_MAX_IDS = 15;
+
+export function parseAvitoCashStockApprovals(
+  value: string,
+): Record<string, AvitoCashStockApproval> | null {
+  if (!value.trim()) return {};
+  try {
+    const payload = record(JSON.parse(value));
+    if (payload.version !== 1 || payload.authority !== "cash_snapshot_owner_confirmation")
+      return null;
+    if (!payload.entries || typeof payload.entries !== "object" || Array.isArray(payload.entries))
+      return null;
+    const entries = record(payload.entries);
+    if (Object.keys(entries).length > AVITO_FEED_MAX_IDS) return null;
+    const result: Record<string, AvitoCashStockApproval> = {};
+    const keys = ["productId", "inventoryId", "sourceId", "sku", "barcodeSha256", "serialSha256"];
+    const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/u;
+    for (const [id, raw] of Object.entries(entries)) {
+      const entry = record(raw);
+      if (Object.keys(entry).length !== keys.length || keys.some((key) => !text(entry[key])))
+        return null;
+      if (
+        id !== "isvoi-" + entry.sourceId ||
+        !uuid.test(text(entry.sourceId)) ||
+        !uuid.test(text(entry.inventoryId)) ||
+        !/^[0-9a-f]{64}$/u.test(text(entry.barcodeSha256)) ||
+        !/^[0-9a-f]{64}$/u.test(text(entry.serialSha256))
+      )
+        return null;
+      result[id] = entry as AvitoCashStockApproval;
+    }
+    return result;
+  } catch {
+    return null;
+  }
+}
+
+function cashStockApproved(
+  id: string,
+  product: Row,
+  inventory: Row,
+  options: AvitoFeedOptions,
+): boolean {
+  const approval = options.cashStockApprovals?.[id];
+  if (!approval || inventory.identity_status !== "unmatched") return false;
+  const serial = text(inventory.serial_full)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/gu, "");
+  const barcode = text(inventory.barcode);
+  const digest = (value: string) => createHash("sha256").update(value).digest("hex");
+  return Boolean(
+    serial &&
+    barcode &&
+    approval.productId === product.id &&
+    approval.inventoryId === inventory.id &&
+    approval.sourceId === inventory.source_id &&
+    id === "isvoi-" + approval.sourceId &&
+    approval.sku === product.sku &&
+    approval.sku === inventory.source_sku &&
+    approval.barcodeSha256 === digest(barcode) &&
+    approval.serialSha256 === digest(serial) &&
+    inventory.for_sale === true &&
+    numeric(inventory.quantity) === 1 &&
+    numeric(product.stock_quantity) === 1,
+  );
+}
 
 export function parseAvitoPilotIds(value: string): string[] {
   const ids = value.split(",").map((id) => id.trim());
@@ -255,7 +332,8 @@ export function prepareAvitoFeed(
       inventory[0]?.product !== productId ||
       inventory[0]?.eligibility_status !== "eligible" ||
       !["verified", "not_required"].includes(text(inventory[0]?.authenticity_status)) ||
-      !["matched", "not_applicable"].includes(text(inventory[0]?.identity_status)) ||
+      (!["matched", "not_applicable"].includes(text(inventory[0]?.identity_status)) &&
+        !cashStockApproved(id, product, inventory[0] || {}, options)) ||
       inventory[0]?.review_override !== true ||
       !text(inventory[0]?.review_note) ||
       numeric(inventory[0]?.quantity) < numeric(product.stock_quantity) ||

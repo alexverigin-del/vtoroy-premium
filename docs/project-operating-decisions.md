@@ -6,6 +6,59 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Fourteen-Ad Cash Feed Deployed (2026-10-14)
+
+- Authorized application release 7351359d56ea508242e434ea12555f3a1d30a9d3
+  is pushed and deployed on Beget. This entry supersedes the prepared-only state
+  below. Owner's publication approval and THIS batch's explicit 72-hour waiver
+  cover т25/т34/т36 only; no extra paid promotion or Avito write API was used.
+- Connected https://isvoi.ru/integrations/avito/feed.xml now serves fourteen
+  available ads and 81 approved JPEGs. Registered allowlist has fifteen stable
+  IDs, including historical sold т11, which remains excluded. Added т25
+  (70500), т34 (47995), т36 (60998); existing eleven ad fields and photo order
+  match the approved cumulative XML. Public live SHA-256:
+  ad30e9e5873bf192b6c0bcd8960fb2aefc6d60cd6b30e2fca2575547f1ffa214.
+  Serialization differs from offline review, but every exported field matches.
+- Verified PostgreSQL/uploads backup:
+  /opt/isvoi/backups/directus/20261014T141150Z-gallery.
+  Previous compiled web build, web env, PM2 dump, transaction receipt and
+  deployment/verification reports remain private in that backup. Offsite
+  backup and restore rehearsal remain deferred.
+- Fresh preflight was renewed before apply. Fifty-six isolated SQL scenarios
+  and production transactional rehearsal passed again. Apply changed exactly
+  three product_channel_listings rows; protected products, inventory,
+  receipts, prices, stock, photos, certificates and category mapping remained
+  unchanged. Post-activation source/cash guards and exact receipt comparison
+  pass, with zero additional writes.
+- Built in isolated VPS worktree, passed unchanged bundle budgets, probed
+  previous eleven-ad baseline, then swapped compiled build with rollback copy.
+  Full production smoke passed before and after feed activation. Separate
+  browser smoke for all three new cards passed images, Passport/story,
+  store offer, lead form, image viewer and JSON-LD. Public home/catalog,
+  all three product routes, robots/sitemap return 200; Directus health is ok.
+  All 81 public JPEG bytes match approved SHA-256 fingerprints.
+- Server-only AVITO_CASH_STOCK_APPROVALS covers the two exact Samsung inventory
+  bindings only. Private source UUID/SKU and barcode/serial hashes are checked;
+  no full identifiers, costs or proof config enter the feed. Missing receipt
+  identity stays unmatched rather than being fabricated as resolved.
+- PM2 web is online; Telegram stays intentionally stopped. Allowlist/proof
+  agree in private env and both PM2 env representations; pm2 save completed.
+  A false-negative case-sensitive HTTP-header check triggered safe config
+  rollback to eleven; corrected case-insensitive checking and repeated switch
+  completed, then public fourteen-ad verification passed again.
+- Read-only Avito API at 2026-10-14T15:32:17Z still reports eleven active
+  historical ads and two inactive historical ads, with no bindings yet for
+  the new three. Feed deployment is complete, but ingestion/moderation and
+  actual tariff charges are NOT claimed complete. Await the connected
+  autoload report; no extra source URL or schedule was added.
+- Remaining available site devices outside this feed are т7/т37. Their next
+  batch still requires current facts, exact copy/XML review and separate
+  publication authorization; they were not silently added by cash approval.
+- Local release verification already passed full web:verify, 86 focused
+  Python tests and 47 feed tests. Primary checkout's unrelated unfinished work
+  was preserved; private outputs, source workbooks and server config were
+  not committed.
+
 ## Fourteen-Ad Cash Release Authorized And Rehearsed (2026-10-14)
 
 - Owner explicitly authorizes commit/push/deploy and connected-feed publication

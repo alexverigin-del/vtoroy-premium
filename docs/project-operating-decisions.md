@@ -6,6 +6,58 @@ This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
 
+## Final Sixteen-Ad Feed Deployed (2026-10-15)
+
+- Authorized application release 67767b6d0bd239e064794c0eacb980c159ba6212
+  is pushed and deployed on Beget. Owner's publication authorization and
+  explicit waiting waiver apply to т7/т37 only. This entry supersedes the
+  pending-activation checkpoint below.
+- Connected https://isvoi.ru/integrations/avito/feed.xml now serves sixteen
+  available ads and 93 distinct approved JPEGs. Seventeen registered IDs
+  retain historical sold т11, excluded from output; sold т30 is not added.
+  т7 and т37 are included at 80300 RUB each with their exact approved copy,
+  dated batteries and six-photo galleries. All fourteen previous ad fields
+  and image order match the accepted cumulative XML.
+  Public live SHA-256:
+  42d933504ef0743798aa2c29f55d59449445ec89d5e4adc7e9946c680b5f6471.
+- Fresh verified PostgreSQL/uploads backup:
+  /opt/isvoi/backups/directus/20261015T130920Z-gallery.
+  Old compiled build, original private web env and PM2 dump, two-row receipt,
+  plan and deployment/final verification reports remain in that private
+  backup. Offsite/restore rehearsal remains deferred.
+- Guarded apply changed exactly two product_channel_listings rows and no
+  protected product, stock, offer, receipt, price, photo, certificate or
+  mapping data. Final read-only source guard is already-applied/zero-change;
+  receipt matches both new rows and all historical channel rows unchanged.
+  т7 identity stays not_applicable; т37 stays unmatched, without a fabricated
+  receipt. All four cash bindings require exact private identifiers/hashes.
+- Isolated VPS production build and unchanged budgets passed; old fourteen-ad
+  baseline was verified before channel/config activation. PM2 web is online;
+  intentionally stopped Telegram is untouched. New allowlist/proof agree in
+  private env and both PM2 representations; pm2 save completed. Rollback
+  configuration retains prior Samsung proofs, not an empty proof envelope.
+- Full production smoke passed before and after activation. Separate browser
+  smoke passes both т7/т37 cards (images, Passport/story, store offer, form,
+  image viewer, JSON-LD). Public home/catalog, product routes, robots and
+  sitemap return 200; Directus health is ok. All 93 public JPEG byte hashes
+  match approved evidence; exact public XML field comparison passes.
+- Release verification: web:verify, 86 regression plus six scoped-contract
+  Python tests, 48 feed tests and 66 isolated SQL scenarios. The final
+  twenty-seven cash/two-row SQL scenarios were rerun after making the new
+  test runner import-safe. SQL tests do not run on import or touch production;
+  scoped unit tests skip discovery without a supplied private fixture.
+- Read-only Avito API at 2026-10-15T13:24:15Z (16:24 Moscow) still reports
+  fourteen active historical ads and two inactive historical ads. Neither
+  т7 nor т37 has an account binding yet. Feed launch is complete, but
+  ingestion, moderation and actual tariff charges remain unverified.
+  Existing autoload URL/schedule are unchanged; no write API, extra source
+  or paid promotion was used. Await the next autoload report.
+- Every currently reviewed available site device is now in the sixteen-ad
+  feed. Future new devices still require separate facts/copy/XML review and
+  release authorization; this is not blanket automatic publication approval.
+  Primary checkout's unrelated work is preserved, and private artifacts,
+  raw spreadsheets and full identifiers are not committed.
+
 ## Final Two-Device Release Authorized And Rehearsed (2026-10-15)
 
 - Owner explicitly authorizes commit/push/deploy and connected-feed publication

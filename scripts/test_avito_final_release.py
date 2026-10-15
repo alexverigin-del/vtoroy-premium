@@ -14,6 +14,8 @@ XML = None
 
 class FinalReleaseTests(unittest.TestCase):
     def setUp(self):
+        if PLAN is None:
+            self.skipTest('Run with --plan and --xml for the scoped private release fixture')
         self.plan=deepcopy(PLAN)
 
     def state(self):

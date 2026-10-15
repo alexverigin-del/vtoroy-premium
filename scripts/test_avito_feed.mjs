@@ -184,14 +184,14 @@ test("at most ten published images", () => {
   assert.equal((run(row).xml.match(/<Image url=/gu) || []).length, 10);
 });
 
-test("only explicit 1-15 unique pilot IDs", () => {
-  assert.equal(AVITO_FEED_MAX_IDS, 15);
+test("only explicit 1-17 unique pilot IDs", () => {
+  assert.equal(AVITO_FEED_MAX_IDS, 17);
   assert.deepEqual(parseAvitoPilotIds("a,b,c"), ["a", "b", "c"]);
   assert.deepEqual(parseAvitoPilotIds("a,b,c,d,e,f"), ["a", "b", "c", "d", "e", "f"]);
   assert.equal(parseAvitoPilotIds("a,b,c,d,e,f,g,h,i").length, 9);
   assert.equal(parseAvitoPilotIds("a,b,c,d,e,f,g,h,i,j,k,l").length, 12);
   assert.equal(parseAvitoPilotIds("a,b,c,d,e,f,g,h,i,j,k,l,m,n,o").length, 15);
-  for (const value of ["", "a,a", "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p", "a,", "a b", "<Id>"]) {
+  for (const value of ["", "a,a", "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r", "a,", "a b", "<Id>"]) {
     assert.deepEqual(parseAvitoPilotIds(value), []);
   }
   assert.equal(run(ready, { allowedIds: [] }).errors[0].codes[0], "invalid_pilot_allowlist");
@@ -226,12 +226,12 @@ test("six explicit IDs preserve the first three ads including their photo order"
   assert.deepEqual(ads(expanded.xml).slice(0, 3), ads(previous.xml));
 });
 
-test("a sixteenth allowlisted ID is rejected; an outside row is never a replacement", () => {
-  const rows = batchRows(15);
-  const outside = changed({ external_id: "sixteenth" });
+test("an eighteenth allowlisted ID is rejected; an outside row is never a replacement", () => {
+  const rows = batchRows(17);
+  const outside = changed({ external_id: "eighteenth" });
   assert.equal(feedFor([...rows, outside]).xml, "");
   const report = feedFor([...rows, outside], rows.map((row) => row.external_id));
-  assert.equal(report.exportedIds.length, 15);
+  assert.equal(report.exportedIds.length, 17);
   assert.equal(report.excluded[0].codes[0], "outside_pilot");
 });
 

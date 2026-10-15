@@ -42,6 +42,14 @@ test("cash approval admits exact serialized stock without changing receipt ident
 test("unmatched still fails without explicit cash approval", () => {
   assert.equal(prepareAvitoFeed([row], "https://api.isvoi.ru", { allowedIds: [id] }).xml, "");
 });
+test("serialized not_applicable requires exact cash proof and preserves the warning status", () => {
+  const changed = structuredClone(row);
+  changed.product.inventory_item[0].identity_status = "not_applicable";
+  assert.deepEqual(run(changed).errors, []);
+  assert.equal(prepareAvitoFeed([changed], "https://api.isvoi.ru", { allowedIds: [id] }).xml, "");
+  changed.product.inventory_item[0].barcode = "OTHER";
+  assert.equal(run(changed).xml, "");
+});
 test("cash identifier, review, authenticity, stock and explicit conflict drift fail closed", () => {
   for (const patch of [
     { serial_full: "OTHER" }, { barcode: "123" }, { source_id: "other" }, { id: "other" },

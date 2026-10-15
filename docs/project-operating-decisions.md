@@ -1,10 +1,161 @@
 # Project Operating Decisions
 
-Last updated: 2026-10-14.
+Last updated: 2026-10-15.
 
 This document records the working agreements and production decisions for the
 ISVOI site so future changes can continue from the repository, not from chat
 memory alone.
+
+## Final Two-Device Release Authorized And Rehearsed (2026-10-15)
+
+- Owner explicitly authorizes commit/push/deploy and connected-feed publication
+  of т7/т37 after gates/backup/rollback rehearsal: "Да, разрешаю выкат и
+  публикацию". Explicit 72-hour waiver is also granted for THIS batch:
+  "Да, запускать без ожидания". No completed observation or extra paid
+  promotion is claimed; existing source URL/schedule are retained.
+- Fresh verified PostgreSQL/uploads backup:
+  /opt/isvoi/backups/directus/20261015T130920Z-gallery.
+  Private stage avito-sixteen-cash-release holds exact XML, authorization,
+  waiver, fresh plan and operator files. Snapshot at 2026-10-15T13:10Z and
+  read-only account evidence confirm fourteen active baseline ads and no
+  new т7/т37 account bindings.
+- New pinned prepare_avito_final_release.py / activate_avito_final_batch.py
+  contract declares BATCH_SIZE=2, seventeen registered IDs including sold т11,
+  exact accepted sixteen-ad XML/hash and all 93 JPEG fingerprints. Shared
+  SQL runner defaults remain three; two rows require explicit declaration,
+  including rollback. Historical six/nine/twelve SQL scenarios still pass.
+- Runtime cap becomes seventeen locally. Serialized not_applicable no longer
+  bypasses cash approval: т7 must match exact source UUID/SKU, internal
+  barcode/serial hashes, inventory/product binding and quantity. Private
+  proofs cover т7/т37 and the two existing Samsung rows. Explicit conflicts,
+  sold/unavailable stock, authenticity/review failures remain blocked.
+  Production identity statuses, receipt links, costs and photos are unchanged.
+- All release gates pass: full web:verify (format/lint/type/build/bundle),
+  86 regression Python tests plus six final-contract tests, 48 feed tests,
+  66 isolated SQL scenarios. Production dry-run changes zero; transactional
+  write rehearsal changes exactly two and ROLLBACK restores original state.
+  Protected products/inventory/offers/media/mapping and prior channel rows
+  remain unchanged. Real service-token preview exports sixteen in memory.
+- Application/config activation is still pending at this checkpoint. Next:
+  commit/push, ff-only pull, isolated production build, prove unchanged
+  fourteen-ad baseline, guarded two-row apply, atomic allowlist/four-proof
+  update, PM2 save and exact public sixteen-ad plus production smoke checks.
+  Preserve old web build/env/PM2 dump and private receipts for rollback.
+  No Avito write API, auto-promotion or additional source has been used.
+
+## Sixteen-Ad Validator Acceptance Reported (2026-10-15)
+
+- Owner reports "xml соответствует формату" for the latest sixteen-ad XML.
+  Exact local file SHA-256 is rechecked:
+  28103f80092f90ac78aec1c50fd5b6b58d8178dc8a72c333ca22fa3236e1fc7a.
+  Acceptance is recorded at 2026-10-15T13:05:22Z in ignored
+  sixteen-ad-review/owner-validator-acceptance.json. This is owner-reported
+  validator acceptance, not independently inspected output or moderation.
+- The validator gate for this exact file is recorded passed. Its original
+  offline manifest remains an unchanged preparation snapshot, while the
+  separate acceptance file records the new event and provenance. Do not
+  generalize this result to other model/storage/color combinations.
+- т7/т37 copy and current physical facts were already separately confirmed.
+  No further physical confirmation is requested for this same unchanged batch.
+  Publication, tariff placements and a batch-specific 72-hour waiver are
+  NOT granted by validator acceptance.
+- Next conditional release must implement/test a seventeen-registered-ID
+  runtime and exact two-row activation contract, retaining historical
+  sold т11 exclusion and all fourteen existing ads. Existing historical
+  three-row operators must not be silently repurposed for two rows.
+  Preserve and recheck exact private cash binding for т37; do not fabricate
+  receipt matches or treat т7's identity warning as a resolved receipt.
+- Remaining gates: explicit commit/push/deploy plus connected-feed publication
+  approval for т7/т37 and separate waiting-period decision; fresh source/
+  account/media checks, backup, transactional and rollback rehearsal, then
+  build/deploy/config activation and exact sixteen-ad verification.
+  No production/config/feed/Directus/Avito changes or commit/push performed.
+  Last verified connected feed remains fourteen, runtime cap fifteen.
+
+## Sixteen-Ad Offline XML And Final Copy Approved (2026-10-15)
+
+- Owner approves both exact т7/т37 texts: "Да, одобряю оба текста".
+  Approval scope is copy plus offline validator preparation only, not live
+  feed expansion, publication, placement charges or a waiting-period waiver.
+  Exact title/description hashes are retained in ignored approved-copy.json.
+- Local cumulative XML:
+  outputs/avito-next-batch-2026-10-15/sixteen-ad-review/
+  ISVOI_Avito_CUMULATIVE_REVIEW_16_2026-10-15.xml.
+  SHA-256: 28103f80092f90ac78aec1c50fd5b6b58d8178dc8a72c333ca22fa3236e1fc7a.
+  Sixteen unique stable IDs, 93 distinct JPEG URLs; all fourteen historical
+  Ad subtrees are preserved exactly. Appends т7 and т37 at 80300 RUB each,
+  six images each, dated batteries 91%/335 and 97%/275, grade A.
+- New candidate XML fields: Apple / iPhone 16 Pro Max / 512 GB / 8 GB RAM;
+  Color золотистый for Desert Titanium and белый for White Titanium. RAM
+  follows the already accepted same-model/storage baseline entry, not an
+  assertion that the new color combinations passed Avito's dependent catalog.
+  Model/storage-dependent color and official XML validator checks are pending.
+- Fresh read-only account evidence at 2026-10-15T13:01:32Z still confirms
+  fourteen active ads, with neither new ID in the account. Before writing
+  the local XML, current Directus source for all sixteen devices exactly
+  matches reviewed facts; connected fourteen-ad feed hash remains unchanged.
+  Server-side scan against full private inventory identifiers passes; raw
+  IMEI/serial values stay on VPS and are absent from the artifact.
+- Public evidence covers sixteen available pages, sixteen certificates and
+  93 JPEGs. Nineteen offline tests pass across reconciliation/XML generation,
+  including exact historical subtree preservation, approved copy, source/
+  stock/grade/battery/photo drift, both cash bindings including not_applicable,
+  duplicates, physical confirmation and no-publication/validation claim flags.
+- Production inventory identities and receipt links are unchanged.
+  Owner's cash authority remains dated 2026-10-14; recheck is not fabricated
+  as a new owner instruction or physical diagnostic report.
+- Live feed stays fourteen and runtime cap stays fifteen; a future complete
+  roster needs seventeen registered historical IDs including sold т11.
+  No Directus/config/feed/account write, commit/push/deploy or automatic
+  upload performed. Use the local XML in Avito's file validator only, never
+  connect a second autoload source. After validator acceptance, prepare the
+  reviewed runtime/operator and exact cash guard, fresh backup/rehearsal,
+  then obtain separate publication approval and this batch's waiting decision.
+
+## Final Two-Device Avito Batch Prepared (2026-10-15)
+
+- Read-only account check at 2026-10-15T12:54:25Z (15:54 Moscow) confirms
+  fourteen active ads. Previous batch is active: т25 / 8328336342 at 70500,
+  т34 / 8388217970 at 47995, т36 / 8438083754 at 60998. Historical sold т11
+  and unrelated 8312555394 stay inactive. No API write or paid promotion.
+- Current fourteen-ad live feed is unchanged, SHA-256
+  ad30e9e5873bf192b6c0bcd8960fb2aefc6d60cd6b30e2fca2575547f1ffa214.
+  All active external IDs, prices, descriptions and gallery order agree
+  between feed, Avito account and fresh Directus snapshot.
+- Next local batch is т7 / iPhone 16 Pro Max 512 GB Desert Titanium and
+  т37 / iPhone 16 Pro Max 512 GB White Titanium, both 80300 RUB, grade A,
+  one available unit each. Exact distinct source/external IDs and all photos
+  are preserved; neither external ID is present in the Avito account.
+- Owner confirms today's screen/body without defects, working functions,
+  device/open box/cable and unchanged dated NSYS battery readings:
+  т7 91%/335 cycles from 2026-08-05; т37 97%/275 from 2026-08-21.
+  This is physical-fact confirmation only, not a new NSYS test date, text
+  approval or publication authorization.
+- Fresh private cash comparison passes source UUID/product binding, SKU,
+  internal barcode, normalized full serial, quantity and retail price for
+  both. Authority remains owner's 2026-10-14 cash-source instruction and
+  canonical corrected workbook SHA-256
+  537b5a85e0ed837f3cf28e38fd6d7408bcb3118072654f0618cef69074107c67.
+  No new owner cash-confirmation date is fabricated.
+- т7 production identity_status remains not_applicable despite serial;
+  т37 remains unmatched with no linked receipt. These are still recorded
+  reconciliation warnings. Do not invent a matched receipt or rewrite costs.
+  Cash recheck is not a blanket bypass of conflicts, authenticity or sold gates.
+- Public read-only preflight passes all sixteen available site cards,
+  sixteen current public certificates and 93 JPEGs. Nine offline drift/
+  duplicate tests pass. Shared candidate photos, existing-ad copy/price
+  drift, duplicate SKU/account IDs and edited channel drafts are refused.
+- Local outputs: outputs/avito-next-batch-2026-10-15, including sanitized
+  source/account/media evidence, next-batch-preparation.json and two
+  SKU-description.txt drafts. Texts retain original NSYS dates and store
+  certificate availability; no price/availability-clarification CTA.
+- Next: owner approval of both exact texts, cumulative offline sixteen-ad
+  XML and model/storage-dependent Avito color validation (candidate
+  золотистый / белый). Then a separately reviewed seventeen-registered-ID
+  contract/runtime and exact private cash binding for т37, fresh backup,
+  release gates and explicit publication approval. Live cap stays fifteen,
+  live feed stays fourteen; no config, Directus, feed, commit/push/deploy or
+  account changes were made in this preparation.
 
 ## Fourteen-Ad Cash Feed Deployed (2026-10-14)
 

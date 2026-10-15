@@ -66,12 +66,13 @@ def protection_sql(new_rows=NEW):
 END LOOP;"""
 
 
-def transaction_sql(plan, before, xml, write=False, commit=False, identities=None, new_rows=NEW, extra_guard_sql=""):
+def transaction_sql(plan, before, xml, write=False, commit=False, identities=None, new_rows=NEW, extra_guard_sql="", expected_count=3):
     identities = identities if identities is not None else NEW | PILOT
     allowed_ids = list(identities)
     validate_state(plan, before, identities)
-    if len(new_rows) != 3 or not set(new_rows) <= set(identities):
-        raise ValueError("Exactly three known new release rows required")
+    if expected_count not in (2, 3) or len(new_rows) != expected_count or not set(new_rows) <= set(identities):
+        raise ValueError("Exact explicitly declared batch size and known identities required")
+    count_error = 'Expected exactly three changes' if expected_count == 3 else 'Expected exactly two changes'
     projection = f"""jsonb_build_object(
  'products',(SELECT jsonb_agg(value ORDER BY value->>'id') FROM jsonb_array_elements(src->'products')
    WHERE value->>'id' IN (SELECT value->>'id' FROM jsonb_array_elements({json_sql(plan['expected_before']['products'])}))),
@@ -133,7 +134,7 @@ BEGIN
    attributes=x->'attributes',updated_at=now()
    FROM jsonb_array_elements({json_sql(plan['desired'])}) x WHERE l.id=(x->>'id')::uuid;
   GET DIAGNOSTICS changed=ROW_COUNT;
-  IF changed<>3 THEN RAISE EXCEPTION 'Expected exactly three changes'; END IF;
+  IF changed<>{expected_count} THEN RAISE EXCEPTION '{count_error}'; END IF;
   src := ({SOURCE_QUERY});
   current_source := {projection};
   IF current_source IS DISTINCT FROM {json_sql(plan['expected_active'])} THEN
@@ -152,13 +153,14 @@ SELECT data FROM expansion_result;
 {'COMMIT' if commit else 'ROLLBACK'};"""
 
 
-def rollback_sql(plan, current, receipt, new_rows=NEW):
+def rollback_sql(plan, current, receipt, new_rows=NEW, expected_count=3):
     if receipt.get("xml_sha256") != plan["xml_sha256"]:
         raise ValueError("Rollback receipt belongs to another release")
     saved = [r for r in receipt["before"]["listings"] if r["external_id"] in new_rows]
     expected = receipt["after"]
     rows = [r for r in current["listings"] if r["external_id"] in new_rows]
-    if (len(saved) != 3 or len(expected) != 3 or len(rows) != 3
+    if (expected_count not in (2, 3) or len(new_rows) != expected_count
+            or len(saved) != expected_count or len(expected) != expected_count or len(rows) != expected_count
             or {r["id"] for r in saved} != {spec[0] for spec in new_rows.values()}):
         raise ValueError("Invalid rollback identity set")
     for row in rows:
@@ -190,7 +192,7 @@ BEGIN
 UPDATE product_channel_listings l SET {assignments}, updated_at=now()
  FROM jsonb_populate_recordset(NULL::product_channel_listings,{json_sql(saved)}) old WHERE l.id=old.id;
  GET DIAGNOSTICS changed=ROW_COUNT;
- IF changed<>3 THEN RAISE EXCEPTION 'Expected three rollback rows'; END IF;
+ IF changed<>{expected_count} THEN RAISE EXCEPTION 'Unexpected rollback row count'; END IF;
  protected:='{{}}';
  {protection_sql(new_rows)}
  IF protected IS DISTINCT FROM protected_before THEN RAISE EXCEPTION 'Rollback changed protected business data'; END IF;
@@ -275,6 +277,7 @@ def main(release_module=None):
     existing_ids = release_module.EXISTING_IDS if release_module else list(PILOT)
     existing_hash = release_module.EXISTING_HASH if release_module else EXISTING_HASH
     code_cap = release_module.CODE_CAP if release_module else 6
+    batch_size = getattr(release_module, 'BATCH_SIZE', 3) if release_module else 3
     receipt_name = release_module.RECEIPT_NAME if release_module else 'avito-expansion-receipt.json'
     check_plan = release_module.validate_plan if release_module else validate_plan
     check_auth = release_module.require_authorization if release_module else require_authorization
@@ -318,8 +321,8 @@ def main(release_module=None):
         if not receipt_path.is_relative_to(Path('/opt/isvoi/backups/directus')):
             raise SystemExit('Rollback receipt must remain inside the protected VPS backup root')
         receipt = load(receipt_path)
-        db(rollback_sql(plan, before, receipt, new_rows))
-        print(json.dumps({'rolled_back':True,'rows':3,'mapping_retained':True,'env_changed':False,'avito_called':False}))
+        db(rollback_sql(plan, before, receipt, new_rows, expected_count=batch_size))
+        print(json.dumps({'rolled_back':True,'rows':batch_size,'mapping_retained':True,'env_changed':False,'avito_called':False}))
         return
     if args.receipt:
         raise SystemExit('--receipt is only valid with --rollback')
@@ -329,7 +332,7 @@ def main(release_module=None):
         receipt_file = Path(args.backup_dir) / receipt_name
         if receipt_file.exists():
             saved = load(receipt_file)
-            result = db(transaction_sql(plan, before, xml, identities=identities, new_rows=new_rows, extra_guard_sql=extra_guards(plan)))
+            result = db(transaction_sql(plan, before, xml, identities=identities, new_rows=new_rows, extra_guard_sql=extra_guards(plan), expected_count=batch_size))
             if saved.get('xml_sha256') != plan['xml_sha256'] or not result['already_applied']:
                 raise SystemExit('Existing release receipt must not be overwritten')
             if saved.get('phase') == 'prepared':
@@ -341,13 +344,13 @@ def main(release_module=None):
             receipt = {'xml_sha256':plan['xml_sha256'],'before':before,'phase':'prepared'}
             with receipt_file.open('x',encoding='utf-8') as out:
                 json.dump(receipt,out,ensure_ascii=True,indent=2)
-            result = db(transaction_sql(plan,before,xml,write=True,commit=True,identities=identities,new_rows=new_rows,extra_guard_sql=extra_guards(plan)))
+            result = db(transaction_sql(plan,before,xml,write=True,commit=True,identities=identities,new_rows=new_rows,extra_guard_sql=extra_guards(plan),expected_count=batch_size))
             receipt.update(after=result['new_after'],phase='applied')
             temporary = receipt_file.with_suffix('.tmp')
             temporary.write_text(json.dumps(receipt,ensure_ascii=True,indent=2),encoding='utf-8')
             temporary.replace(receipt_file)
     else:
-        result = db(transaction_sql(plan,before,xml,identities=identities,new_rows=new_rows,extra_guard_sql=extra_guards(plan)))
+        result = db(transaction_sql(plan,before,xml,identities=identities,new_rows=new_rows,extra_guard_sql=extra_guards(plan),expected_count=batch_size))
     print(json.dumps({key:result[key] for key in ('guards_passed','changed','already_applied','protected_unchanged')}
                      | {'dry_run':not args.apply,'env_changed':False,'avito_called':False}))
 

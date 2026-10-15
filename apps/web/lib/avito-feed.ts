@@ -127,7 +127,7 @@ function validId(value: string): boolean {
   );
 }
 
-export const AVITO_FEED_MAX_IDS = 15;
+export const AVITO_FEED_MAX_IDS = 17;
 
 export function parseAvitoCashStockApprovals(
   value: string,
@@ -171,7 +171,8 @@ function cashStockApproved(
   options: AvitoFeedOptions,
 ): boolean {
   const approval = options.cashStockApprovals?.[id];
-  if (!approval || inventory.identity_status !== "unmatched") return false;
+  if (!approval || !["unmatched", "not_applicable"].includes(text(inventory.identity_status)))
+    return false;
   const serial = text(inventory.serial_full)
     .toUpperCase()
     .replace(/[^A-Z0-9]/gu, "");
@@ -332,7 +333,9 @@ export function prepareAvitoFeed(
       inventory[0]?.product !== productId ||
       inventory[0]?.eligibility_status !== "eligible" ||
       !["verified", "not_required"].includes(text(inventory[0]?.authenticity_status)) ||
-      (!["matched", "not_applicable"].includes(text(inventory[0]?.identity_status)) &&
+      ((!["matched", "not_applicable"].includes(text(inventory[0]?.identity_status)) ||
+        (inventory[0]?.identity_status === "not_applicable" && text(inventory[0]?.serial_full)) ||
+        Boolean(options.cashStockApprovals?.[id])) &&
         !cashStockApproved(id, product, inventory[0] || {}, options)) ||
       inventory[0]?.review_override !== true ||
       !text(inventory[0]?.review_note) ||
